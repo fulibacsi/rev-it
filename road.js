@@ -152,7 +152,7 @@ function drawRoad(g, w, h, dt) {
   }
 
   // sprites, far to near: palms, traffic and speed signs (x: metres from the centre line, w/h: metres)
-  const signs = game.mode === 'speed' ? game.signs.map(s => ({ z: s.z, x: ROAD.half + 2, w: 1.5, h: 4.1, img: signSprite(s.value) })) : [];
+  const signs = game.on ? game.signs.map(s => ({ z: s.z, x: ROAD.half + 2, w: 1.5, h: 4.1, img: signSprite(s.value) })) : [];
   const ahead = [...traffic.map(c => ({ z: c.z, x: c.x, w: 1.8, h: 1.4, img: c.dir > 0 ? c.look.rear : c.look.front })), ...signs]
     .map(o => ({ ...o, d: o.z - odo })).filter(o => o.d > 2 && o.d < (ROAD.draw - 2) * ROAD.segment).sort((p, q) => q.d - p.d);
   let t = 0;

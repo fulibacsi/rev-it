@@ -17,12 +17,8 @@
   #hud-main { display: flex; justify-content: center; align-items: baseline; gap: 10px; letter-spacing: 1px; }
   #hud-speed { font-size: 46px; font-weight: 600; min-width: 2.2em; text-align: right; }
   #hud-gear { font-size: 30px; font-weight: 600; border: 2px solid var(--hud); border-radius: 6px; padding: 0 8px; }
-  #hud-rpm { position: relative; height: 7px; margin: 6px 30px 0; border: 1px solid var(--hud); border-radius: 4px; }
+  #hud-rpm { height: 7px; margin: 6px 30px 0; border: 1px solid var(--hud); border-radius: 4px; }
   #fill { height: 100%; width: 0; background: var(--hud); }
-  #target { position: absolute; top: -4px; bottom: -4px; display: none; border: 2px solid #fff; border-radius: 3px; }
-  .game #target { display: block; }
-  .speed-game #target { display: none; } /* the speed game's band is on the speedometer */
-  .hit #target { border-color: #5f5; background: #5f54; }
   .hit #hud-speed { color: #5f5; }
   #pips { display: none; justify-content: center; align-items: center; gap: 5px; margin-top: 8px; font-size: 11px; }
   .game #pips { display: flex; }
@@ -88,7 +84,7 @@
 <div id="hud">
   <div id="flash"></div>
   <div id="hud-main"><span id="hud-speed">0</span><small>km/h</small><span id="hud-gear">N</span></div>
-  <div id="hud-rpm"><div id="fill"></div><div id="target"></div></div>
+  <div id="hud-rpm"><div id="fill"></div></div>
   <div id="pips"><span id="lvl">LEVEL</span></div>
   <div id="score"></div>
 </div>
@@ -150,7 +146,7 @@
 </svg>
 
 <div id="help">
-  <b>ENTER</b> start · <b>ESC</b> stop · <b>1–3</b> engine · <b>G</b> game: off / rev / speed<br>
+  <b>ENTER</b> start · <b>ESC</b> stop · <b>1–3</b> engine · <b>G</b> speed game<br>
   <b>SPACE</b> gas · <b>SHIFT</b> clutch · <b>B</b> brake<br>
   <b>↑ ↓</b> change gear (clutch down)<br>
   <small>Sounds from Freesound: Ears68, Angel_soto, editboy23, dezoris, t33kno (CC0), iainmccurdy (CC BY 4.0)</small>

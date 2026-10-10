@@ -13,7 +13,6 @@ function selectEngine(i) {
   engine = ENGINES[i];
   [...list.children].forEach((b, j) => b.classList.toggle('on', j === i));
   if (engine.buffers) buildPlayers();
-  game.left = 0; // new rev range: pick a fresh target
   buildDials();
 }
 
@@ -29,7 +28,7 @@ function arc(cx, a1, a2, r) {
 function buildDial(g, cx, max, step, major, labelEvery, label, format, redFrom) {
   let s = `<circle cx="${cx}" cy="${DIAL.cy}" r="${DIAL.r + 6}" fill="#111" stroke="#2c2c35" stroke-width="2"/>`;
   if (redFrom) s += `<path d="${arc(cx, dialAngle(redFrom, max), DIAL.sweep, DIAL.r - 4)}" stroke="#c22" stroke-width="8" fill="none"/>`;
-  s += `<path class="band" fill="none" stroke-width="8"/>`; // game target, filled in per frame
+  else s += `<path class="band" fill="none" stroke-width="8"/>`; // speedometer: game target, filled in per frame
   for (let v = 0; v <= max; v += step) {
     const a = dialAngle(v, max), big = v % major === 0;
     const [x1, y1] = polar(cx, a, DIAL.r), [x2, y2] = polar(cx, a, DIAL.r - (big ? 14 : 7));
@@ -94,33 +93,24 @@ const pips = $('pips');
 LEVELS.forEach(() => pips.append(document.createElement('i')));
 
 function renderGame(onTarget) {
-  const speedGame = game.mode === 'speed';
   document.body.classList.toggle('game', game.on);
-  document.body.classList.toggle('speed-game', speedGame);
   document.body.classList.toggle('hit', onTarget);
-  $('game-toggle').textContent = `GAME: ${game.mode.toUpperCase()}`;
+  $('game-toggle').textContent = game.on ? 'GAME ON' : 'GAME OFF';
   // levels below are solid; the current one is the gauge, green when nearly full, red when nearly empty
   $('lvl').textContent = `LEVEL ${game.level + 1}`;
   pips.querySelectorAll('i').forEach((p, i) => {
     p.style.setProperty('--f', i < game.level ? '100%' : i > game.level ? '0%' : game.gauge * 100 + '%');
     p.style.setProperty('--c', i !== game.level ? 'var(--hud)' : game.gauge >= 0.75 ? '#5f5' : game.gauge <= 0.25 ? '#f55' : 'var(--hud)');
   });
-  const s = $('score'), pps = LEVELS[game.level][1];
-  const band = speedGame ? `${SPEED_WIDTHS[game.level]} km/h` : `${LEVELS[game.level][0]} rpm`, next = game.signs[0];
-  const target = !speedGame ? `target ${game.lo}–${game.hi} · new in ${Math.ceil(game.left)}s` :
-    (game.lo ? `target ${Math.round(game.lo)}–${Math.round(game.hi)} km/h · ` : '') +
-    `next sign ${next.value} in ${Math.max(0, Math.round(next.z - odo))} m`;
+  const s = $('score'), [width, pps] = LEVELS[game.level], next = game.signs[0];
   if (!game.on) s.textContent = game.points ? `${Math.round(game.points)} pts\nlast game · best level ${game.best + 1}` : '';
   else if (state !== 'running' && !game.lo) s.textContent = 'press ENTER to start';
-  else s.textContent = `${Math.round(game.points)} pts\n${band} band · ${pps} pts/s\n${target}` + (game.note ? `\n${game.note}` : '');
-  // target band: rev game on the HUD rpm strip and the tachometer, speed game on the speedometer
-  $('target').style.left = game.lo / tachMax * 100 + '%';
-  $('target').style.width = (game.hi - game.lo) / tachMax * 100 + '%';
-  for (const [id, cx, max, show] of [['tach', 140, tachMax, game.mode === 'rev'], ['speedo', 420, SPEEDO_MAX, speedGame]]) {
-    const arcEl = $(id).querySelector('.band');
-    arcEl.setAttribute('d', show && game.lo ? arc(cx, dialAngle(game.lo, max), dialAngle(game.hi, max), DIAL.r - 4) : '');
-    arcEl.setAttribute('stroke', onTarget ? '#5f5' : '#fff');
-  }
+  else s.textContent = `${Math.round(game.points)} pts\n${width} km/h band · ${pps} pts/s\n` +
+    (game.lo ? `target ${Math.round(game.lo)}–${Math.round(game.hi)} km/h · ` : '') +
+    `next sign ${next.value} in ${Math.max(0, Math.round(next.z - odo))} m` + (game.note ? `\n${game.note}` : '');
+  const band = $('speedo').querySelector('.band'); // target band on the speedometer
+  band.setAttribute('d', game.on && game.lo ? arc(420, dialAngle(game.lo, SPEEDO_MAX), dialAngle(game.hi, SPEEDO_MAX), DIAL.r - 4) : '');
+  band.setAttribute('stroke', onTarget ? '#5f5' : '#fff');
 }
 
 // ---- main loop ----
