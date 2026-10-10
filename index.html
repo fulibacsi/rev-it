@@ -32,31 +32,28 @@
   #cluster { position: fixed; left: 50%; top: 64vh; transform: translateX(-50%); width: 34vw; pointer-events: none; }
   #cluster text { font-family: system-ui, sans-serif; fill: #ccc; text-anchor: middle; }
   #wheel { position: fixed; left: 50%; top: 83vh; transform: translateX(-50%); width: 54vw; pointer-events: none; }
-  #ignition { position: fixed; left: 70vw; top: 69vh; width: 9vw; cursor: pointer; }
+  /* kinetic controls: dragged with the mouse */
+  #ignition { position: fixed; left: 67vw; top: 65vh; width: 11vw; cursor: grab; touch-action: none; }
   #ignition text { font: bold 10px system-ui, sans-serif; fill: #777; text-anchor: middle; }
-  #key { transform-origin: 65px 70px; transform: rotate(-35deg); transition: transform 0.2s; }
-  #ignition[data-state="running"] #key { transform: rotate(35deg); }
-  #ignition[data-state="cranking"] #key { transform: rotate(90deg); }
-  #ignition[data-state="off"] .off, #ignition[data-state="running"] .on,
-  #ignition[data-state="cranking"] .start { fill: var(--accent); }
-  #shifter { position: fixed; left: 72vw; top: 81vh; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-  #shifter b { font-size: 28px; width: 46px; height: 46px; line-height: 46px; text-align: center; border-radius: 50%;
-               background: radial-gradient(#444, #111); border: 2px solid #555; }
-  #shifter button, #console button { background: #1c1c22; color: #bbb; border: 1px solid #444; border-radius: 5px;
-               cursor: pointer; font: inherit; padding: 2px 10px; }
+  #key { transform-origin: 65px 70px; }
+  #ignition[data-state="off"] .off, #ignition[data-state="on"] .on, #ignition[data-state="start"] .start { fill: var(--accent); }
+  #shifter { position: fixed; left: 67.5vw; top: 78vh; height: 19vh; cursor: grab; touch-action: none; }
+  #shifter text { font: bold 0.32px system-ui, sans-serif; fill: #889; text-anchor: middle; }
+  #console button { background: #1c1c22; color: #bbb; border: 1px solid #444; border-radius: 5px;
+                    cursor: pointer; font: inherit; padding: 2px 10px; }
   #console { position: fixed; left: 80vw; top: 66vh; width: 18vw; padding: 8px; box-sizing: border-box;
              background: #0d1018; border: 1px solid #2c3140; border-radius: 8px; font-size: clamp(10px, 1.5vh, 13px); }
   #engines { display: flex; flex-direction: column; gap: 5px; }
   #engines button.on, .game #game-toggle { border-color: var(--accent); color: var(--accent); }
   #game-toggle { margin-top: 8px; width: 100%; }
-  #pedals { position: fixed; right: 1.5vw; bottom: 1.5vh; display: flex; gap: 1.2vh; align-items: flex-end; }
-  .pedal { width: 5.5vh; cursor: pointer; touch-action: none; transform-origin: 50% 100%;
-           transform: perspective(300px) rotateX(0deg); transition: transform var(--out) linear; }
-  .pedal.down { transform: perspective(300px) rotateX(35deg); transition-duration: var(--in); }
-  .pedal.down { --pad: #4a4a4a; } /* reaches into the shared <symbol> drawing */
-  #gas { --in: 0.4s; --out: 0.25s; width: 4.8vh; }   /* PEDAL_IN / PEDAL_OUT */
-  #clutch { --in: 0.12s; --out: 0.6s; }              /* CAR.clutchIn / clutchOut */
-  #brake { --in: 0.1s; --out: 0.1s; width: 6.6vh; }
+  #pedals { position: fixed; right: 1.5vw; bottom: 1vh; display: flex; gap: 2vh; align-items: flex-end; }
+  .pedal-box { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px;
+               font-size: 10px; color: #889; letter-spacing: 1px; }
+  .pedal { width: 6vh; cursor: grab; touch-action: none; transform-origin: 50% 100%; }
+  #brake { width: 7.5vh; }
+  .depth { position: absolute; left: -7px; bottom: 16px; width: 4px; height: 10vh; background: #222; border-radius: 2px; }
+  .depth::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; border-radius: 2px;
+                  height: calc(var(--depth, 0) * 100%); background: var(--accent); } /* how far the pedal is pressed */
   #help { position: fixed; left: 1.5vw; bottom: 1.5vh; white-space: nowrap; font-size: clamp(10px, 1.4vh, 12px);
           line-height: 1.6; color: #888; }
   #help small { color: #556; }
@@ -108,7 +105,7 @@
   </g>
 </svg>
 
-<svg id="ignition" data-state="off" viewBox="0 0 150 110"><title>click to start / stop</title>
+<svg id="ignition" data-state="off" viewBox="0 0 150 110"><title>drag to START and hold; drag to OFF to stop</title>
   <text class="off" x="33" y="27">OFF</text>
   <text class="on" x="97" y="27">ON</text>
   <text class="start" x="125" y="74">START</text>
@@ -120,7 +117,17 @@
   </g>
 </svg>
 
-<div id="shifter"><button id="gear-up">▲</button><b id="gear">N</b><button id="gear-down">▼</button></div>
+<svg id="shifter" viewBox="-1.6 -1.75 3.2 3.5"><title>drag the knob through the H (clutch down)</title>
+  <rect x="-1.55" y="-1.7" width="3.1" height="3.4" rx="0.4" fill="#111117" stroke="#2a2a33" stroke-width="0.05"/>
+  <path d="M-1,0 H1 M-1,-1 V1 M0,-1 V1 M1,-1 V1" stroke="#050507" stroke-width="0.32" stroke-linecap="round"/>
+  <text x="-1" y="-1.3">1</text><text x="0" y="-1.3">3</text><text x="1" y="-1.3">5</text>
+  <text x="-1" y="1.53">2</text><text x="0" y="1.53">4</text><text x="1" y="1.53">6</text>
+  <g id="knob">
+    <circle r="0.36" fill="#2b2b33" stroke="#666" stroke-width="0.05"/>
+    <circle r="0.27" fill="#3a3a44"/>
+    <text id="knob-gear" y="0.11" style="font-size: 0.3px; fill: #ddd">N</text>
+  </g>
+</svg>
 
 <div id="console">
   <div id="engines"></div>
@@ -128,9 +135,9 @@
 </div>
 
 <div id="pedals">
-  <svg id="clutch" class="pedal" viewBox="0 0 80 140" aria-label="clutch pedal"><use href="#pedal-art"/></svg>
-  <svg id="brake" class="pedal" viewBox="0 0 80 140" aria-label="brake pedal"><use href="#pedal-art"/></svg>
-  <svg id="gas" class="pedal" viewBox="0 0 80 140" aria-label="gas pedal"><use href="#pedal-art"/></svg>
+  <div class="pedal-box"><i class="depth"></i><svg id="clutch" class="pedal" viewBox="0 0 80 140" aria-label="clutch pedal"><use href="#pedal-art"/></svg>CLUTCH</div>
+  <div class="pedal-box"><i class="depth"></i><svg id="brake" class="pedal" viewBox="0 0 80 140" aria-label="brake pedal"><use href="#pedal-art"/></svg>BRAKE</div>
+  <div class="pedal-box"><i class="depth"></i><svg id="gas" class="pedal" viewBox="0 0 80 140" aria-label="gas pedal"><use href="#pedal-art"/></svg>GAS</div>
 </div>
 <svg width="0" height="0" style="position: absolute">
   <symbol id="pedal-art" viewBox="0 0 80 140">
@@ -146,9 +153,10 @@
 </svg>
 
 <div id="help">
-  <b>ENTER</b> start · <b>ESC</b> stop · <b>1–3</b> engine · <b>G</b> speed game<br>
-  <b>SPACE</b> gas · <b>SHIFT</b> clutch · <b>B</b> brake<br>
-  <b>↑ ↓</b> change gear (clutch down)<br>
+  everything is done with the mouse: drag it like the real thing<br>
+  <b>KEY</b> drag to START and hold it until the engine fires · drag to OFF to stop<br>
+  <b>PEDALS</b> drag down to press · they stay where you leave them · double-click to let go<br>
+  <b>SHIFTER</b> clutch down first, then drag the knob through the H<br>
   <small>Sounds from Freesound: Ears68, Angel_soto, editboy23, dezoris, t33kno (CC0), iainmccurdy (CC BY 4.0)</small>
 </div>
 

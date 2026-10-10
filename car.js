@@ -8,13 +8,14 @@ const CAR = {
   roll: 200,                                    // rolling resistance, N
   brake: 11000,                                 // brake force, N
   grip: 0.9,                                    // tyre friction: drive force tops out at grip · weight (wheelspin)
-  clutchIn: 0.12, clutchOut: 0.6,               // seconds to press / let out the clutch pedal
+  bite: [0.25, 0.75],                           // clutch pedal travel: fully engaged above / free below this range
   stall: 0.5,                                   // stalls when dragged below this share of idle rpm
 };
 const RAD = 2 * Math.PI / 60; // rpm -> rad/s
 
-// clutch: engagement 0..1 (1 = pedal up); speed: m/s; odo: metres driven; locked: clutch and tyres not slipping
-let gear = 0, clutch = 1, clutchDown = false, braking = false, speed = 0, odo = 0, locked = false, stalled = false;
+// clutchPedal / brakePedal: 0..1 how far each pedal is pressed; clutch: engagement 0..1 (1 = pedal up);
+// speed: m/s; odo: metres driven; locked: clutch and tyres not slipping
+let gear = 0, clutch = 1, clutchPedal = 0, brakePedal = 0, speed = 0, odo = 0, locked = false, stalled = false;
 
 function ratio() { return CAR.gears[gear] * CAR.final; }
 function wheelRpm() { return speed * ratio() / CAR.wheel / RAD; } // engine rpm that matches the road speed
@@ -22,22 +23,21 @@ function wheelRpm() { return speed * ratio() / CAR.wheel / RAD; } // engine rpm 
 // torque the clutch holds before slipping: a margin over the engine's strongest pull
 function clutchCapacity(e) { return 1.3 * e.inertia * e.drive * RAD * (e.turbo ? 1.2 : 1); }
 
-// shift one gear up or down; with the engine running that needs the clutch down, otherwise the gears grind
-function shift(step) {
-  const next = Math.min(CAR.gears.length - 1, Math.max(0, gear + step));
-  if (next === gear) return true;
-  if (state === 'running' && clutch > 0.3) return false;
-  gear = next;
-  locked = false;
+// the gear lever moving into gear g (0 = neutral). Out of gear is always possible; into a gear with the engine
+// running needs the clutch down, otherwise the gears grind and it won't go in.
+function engage(g) {
+  if (g && g !== gear && state === 'running' && clutch > 0.3) return false;
+  if (g !== gear) { gear = g; locked = false; }
   return true;
 }
 
 // one physics step; alpha: the engine's free-rev acceleration (rpm/s) from updateEngine()
 function stepCar(dt, alpha) {
   const e = engine, G = ratio(), running = state === 'running';
-  clutch = clutchDown ? Math.max(0, clutch - dt / CAR.clutchIn) : Math.min(1, clutch + dt / CAR.clutchOut);
+  const [bite0, bite1] = CAR.bite; // the clutch bites in the middle of the pedal's travel
+  clutch = Math.min(1, Math.max(0, (bite1 - clutchPedal) / (bite1 - bite0)));
   // N holding the car back: air, tyres, brakes and gravity along the slope (negative downhill)
-  const resist = CAR.drag * speed * speed + CAR.roll + (braking ? CAR.brake : 0) + e.mass * 9.81 * roadSlope(odo);
+  const resist = CAR.drag * speed * speed + CAR.roll + brakePedal * CAR.brake + e.mass * 9.81 * roadSlope(odo);
   // torque the clutch, or the tyres if they give first, can pass between engine and wheels
   const cap = G && running ? Math.min(clutch * clutchCapacity(e), CAR.grip * e.mass * 9.81 * CAR.wheel / G) : 0;
   const push = f => { // drive force f (N) against the resistance; a stopped car only moves if f overcomes it

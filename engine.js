@@ -19,12 +19,15 @@ const ENGINES = [
   { name: 'JDM Boxer', loops: SOUNDS.boxer, idle: 855, redline: 7400, drive: 6500, tauDown: 0.8, torqueDip: 3800,
     revHang: 0.6, inertia: 0.31, mass: 1250 },
 ];
-const PEDAL_IN = 0.4, PEDAL_OUT = 0.25; // seconds to fully press / release the throttle
+const PEDAL_IN = 0.4, PEDAL_OUT = 0.25; // fastest the throttle follows the pedal: seconds for full travel
+const CRANK = 0.9; // seconds the key has to be held in START before the engine catches
 const LIMITER_CUT = 0.06; // seconds the rev limiter cuts the fuel each time the redline is hit (stutters in any gear)
 
 let engine, ctx, loading, players = [], filter, master, noise, starterBuffer, starterGain, wind;
 // state: 'off' | 'cranking' | 'running'; cut: rev limiter has cut the fuel, for cutLeft more seconds
-let rpm = 0, throttle = 0, boost = 0, hang = 0, cut = false, cutLeft = 0, gas = false, state = 'off', crankUntil = 0;
+// gasPedal: 0..1 how far the gas pedal is pressed; lifted: the pedal has come up since the last lift-off
+let rpm = 0, throttle = 0, boost = 0, hang = 0, cut = false, cutLeft = 0, gasPedal = 0, lifted = true;
+let state = 'off', crankUntil = 0, crankWanted = false;
 
 async function start() {
   ctx = new AudioContext();
@@ -131,23 +134,21 @@ function grind() { // gears clashing: shifting without the clutch
   src.stop(t + 0.35);
 }
 
-async function ignite() {
+// the key held in START turns the starter; the engine catches after CRANK seconds, letting go earlier stops it
+async function crank(on) {
+  crankWanted = on;
+  if (!on) { if (state === 'cranking') state = 'off'; return; }
   loading ??= start(); // browsers only allow audio after a user gesture
   await loading;
+  if (!crankWanted || state !== 'off') return; // let go while the sounds were loading, or already running
   state = 'cranking';
-  crankUntil = performance.now() + 900;
-  const starter = ctx.createBufferSource(); // looping starter motor, faded out by updateAudio()
+  crankUntil = performance.now() + CRANK * 1000;
+  const starter = ctx.createBufferSource(); // looping starter motor, faded out by updateAudio() when it stops
   starter.buffer = starterBuffer;
   starter.loop = true;
   starter.connect(starterGain);
   starter.start();
-  starter.stop(ctx.currentTime + 1.2);
-}
-
-function setGas(on) {
-  if (!on && gas && engine.turbo && boost > 0.5) blowOff();
-  if (!on && gas && engine.revHang) hang = engine.revHang;
-  gas = on;
+  starter.stop(ctx.currentTime + 3);
 }
 
 // free-revving acceleration (rpm/s) at this rpm and throttle: drive torque from the throttle against friction and
@@ -165,9 +166,16 @@ function engineAccel(e, r, thr) {
 // throttle pedal, starter, turbo and limiter; returns the engine's free-rev acceleration (rpm/s) for this step
 function updateEngine(dt, now) {
   const e = engine;
-  // the pedal moves progressively, so short taps only open the throttle a little
-  throttle = gas && state === 'running' ? Math.min(1, throttle + dt / PEDAL_IN) : Math.max(0, throttle - dt / PEDAL_OUT);
+  // the throttle follows the pedal, no faster than PEDAL_IN / PEDAL_OUT for a full sweep
+  const want = state === 'running' ? gasPedal : 0;
+  throttle = want > throttle ? Math.min(want, throttle + dt / PEDAL_IN) : Math.max(want, throttle - dt / PEDAL_OUT);
   hang = Math.max(0, hang - dt);
+  if (gasPedal > 0.4) lifted = false; // lifting off: turbo blow-off valve, and the boxer's rev hang
+  else if (gasPedal < 0.15 && !lifted) {
+    lifted = true;
+    if (e.turbo && boost > 0.5) blowOff();
+    if (e.revHang) hang = e.revHang;
+  }
   if (state === 'cranking') {
     rpm = 250 + 80 * Math.sin(now / 40); // starter motor chugging
     if (now > crankUntil) { state = 'running'; rpm = e.idle + 1000; } // catches, flares, settles to idle

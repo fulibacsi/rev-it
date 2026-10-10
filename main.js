@@ -49,7 +49,6 @@ const needle = (id, cx, v, max) => $(id).querySelector('.needle').setAttribute('
 selectEngine(0);
 
 $('game-toggle').onclick = toggleGame;
-$('ignition').onclick = () => state === 'off' ? ignite() : (state = 'off');
 
 function flash(text, color, rise) { // short message floating up (good news) or sinking (bad news) on the HUD
   const f = $('flash'), [from, to] = rise ? ['0px', '-50px'] : ['-50px', '10px'];
@@ -60,33 +59,71 @@ function flash(text, color, rise) { // short message floating up (good news) or 
 }
 function onLevelChange(up) { flash(up ? '▲ LEVEL UP' : '▼ LEVEL DOWN', up ? '#5f5' : '#f55', up); }
 
-function tryShift(step) {
-  if (!shift(step)) { grind(); flash('CLUTCH!', '#f55', false); }
+// ---- kinetic controls: everything is dragged with the mouse (or a finger) ----
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+const svgPoint = (svg, e) => { const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(svg.getScreenCTM().inverse()); return [p.x, p.y]; };
+function drag(el, onMove, onUp) { // pointer capture keeps the drag going when the pointer leaves the control
+  el.onpointerdown = e => { el.setPointerCapture(e.pointerId); onMove(e, true); };
+  el.onpointermove = e => { if (el.hasPointerCapture(e.pointerId)) onMove(e, false); };
+  el.onpointerup = el.onpointercancel = () => onUp?.();
+  el.oncontextmenu = e => e.preventDefault(); // long-press on touch screens
 }
 
-// ---- input: keyboard, plus on-screen pedals and gear buttons for the mouse ----
-const KEYS = { ' ': v => setGas(v), Shift: v => { clutchDown = v; }, b: v => { braking = v; }, B: v => { braking = v; } };
-addEventListener('keydown', e => {
-  const n = Number(e.key);
-  if (KEYS[e.key]) { e.preventDefault(); KEYS[e.key](true); }
-  else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); if (!e.repeat) tryShift(e.key === 'ArrowUp' ? 1 : -1); }
-  else if (n >= 1 && n <= ENGINES.length) selectEngine(n - 1);
-  else if (e.key.toLowerCase() === 'g') toggleGame();
-  else if (e.key === 'Enter' && state === 'off') ignite();
-  else if (e.key === 'Escape') state = 'off';
+// ignition key: turn it clockwise to START and hold it there until the engine fires; it springs back to ON.
+// Turned back to OFF, the engine stops. Angles in degrees from straight up.
+const KEY = { off: -35, on: 35, start: 90, startZone: 70 };
+let keyAngle = KEY.off;
+drag($('ignition'), e => {
+  const [x, y] = svgPoint($('ignition'), e);
+  keyAngle = clamp(Math.atan2(x - 65, 70 - y) * 180 / Math.PI, KEY.off, KEY.start);
+  crank(keyAngle >= KEY.startZone);
+  if (keyAngle <= 0) state = 'off';
+}, () => {
+  keyAngle = keyAngle > 0 ? KEY.on : KEY.off;
+  crank(false);
+  if (keyAngle === KEY.off) state = 'off';
 });
-addEventListener('keyup', e => { if (KEYS[e.key]) KEYS[e.key](false); });
-addEventListener('blur', () => { setGas(false); clutchDown = braking = false; }); // don't get stuck if focus is lost
 
-// pointer capture keeps the release even if it happens off the pedal
-for (const [id, set] of [['gas', v => setGas(v)], ['clutch', v => { clutchDown = v; }], ['brake', v => { braking = v; }]]) {
-  const p = $(id);
-  p.onpointerdown = e => { p.setPointerCapture(e.pointerId); set(true); };
-  p.onpointerup = p.onpointercancel = () => set(false);
-  p.oncontextmenu = e => e.preventDefault(); // long-press on touch screens
+// pedals: drag down to press. One pointer can't hold two pedals at once, so they stay where you leave them;
+// a double-click lets a pedal spring back up.
+const PEDALS = { clutch: [() => clutchPedal, v => { clutchPedal = v; }], brake: [() => brakePedal, v => { brakePedal = v; }],
+                 gas: [() => gasPedal, v => { gasPedal = v; }] };
+for (const [id, [get, set]] of Object.entries(PEDALS)) {
+  const el = $(id);
+  let from;
+  drag(el, (e, first) => {
+    if (first) from = { y: e.clientY, v: get() };
+    // full travel = the pedal box's height (the pedal itself looks shorter as it tilts, so it can't be the ruler)
+    set(clamp(from.v + (e.clientY - from.y) / el.parentNode.getBoundingClientRect().height, 0, 1));
+  });
+  el.ondblclick = () => set(0);
 }
-$('gear-up').onclick = () => tryShift(1);
-$('gear-down').onclick = () => tryShift(-1);
+
+// gear lever in an H gate: slide along the neutral rail, push up or down into a slot when lined up with it.
+// Gate units: x -1..1 across the three slots, y -1 (towards the dash: 1, 3, 5) .. 1 (2, 4, 6).
+const SLOTS = { '-1,-1': 1, '-1,1': 2, '0,-1': 3, '0,1': 4, '1,-1': 5, '1,1': 6 };
+const lever = { x: 0, y: 0, grinding: false };
+drag($('shifter'), (e, first) => {
+  const [px, py] = svgPoint($('shifter'), e);
+  if (first) lever.held = Math.hypot(px - lever.x, py - lever.y) <= 0.6; // grab the knob, not the gate
+  if (!lever.held) return;
+  let { x, y } = lever;
+  if (Math.abs(y) < 0.05) { // on the rail: slide sideways, drop into a slot only when lined up with it
+    x = clamp(px, -1, 1);
+    const col = Math.round(x);
+    if (Math.abs(x - col) < 0.2 && Math.abs(py) > 0.1) { x = col; y = clamp(py, -1, 1); } else y = 0;
+  } else y = clamp(py, -1, 1); // in a slot: only along it (straight through neutral to the opposite gear is fine)
+  if (Math.abs(y) >= 0.45) { // into gear: only with the clutch down while the engine runs
+    if (!engage(SLOTS[`${x},${Math.sign(y)}`])) {
+      y = 0.44 * Math.sign(y);
+      if (!lever.grinding) { grind(); flash('CLUTCH!', '#f55', false); lever.grinding = true; }
+    }
+  } else { engage(0); lever.grinding = false; }
+  Object.assign(lever, { x, y });
+}, () => { // let go: it snaps fully into the gear, or springs back to the middle of the rail
+  if (!lever.held) return;
+  Object.assign(lever, gear ? { y: Math.sign(lever.y) } : { x: 0, y: 0 }, { held: false, grinding: false });
+});
 
 // ---- head-up display ----
 const pips = $('pips');
@@ -104,7 +141,7 @@ function renderGame(onTarget) {
   });
   const s = $('score'), [width, pps] = LEVELS[game.level], next = game.signs[0];
   if (!game.on) s.textContent = game.points ? `${Math.round(game.points)} pts\nlast game · best level ${game.best + 1}` : '';
-  else if (state !== 'running' && !game.lo) s.textContent = 'press ENTER to start';
+  else if (state !== 'running' && !game.lo) s.textContent = 'turn the key to start';
   else s.textContent = `${Math.round(game.points)} pts\n${width} km/h band · ${pps} pts/s\n` +
     (game.lo ? `target ${Math.round(game.lo)}–${Math.round(game.hi)} km/h · ` : '') +
     `next sign ${next.value} in ${Math.max(0, Math.round(next.z - odo))} m` + (game.note ? `\n${game.note}` : '');
@@ -138,15 +175,22 @@ function tick(now) {
   needle('speedo', 420, kmh, SPEEDO_MAX);
   $('shift-light').setAttribute('fill', cut && now % 200 < 100 ? '#f22' : rpm > engine.redline - 600 ? '#fa0' : '#330');
   const lamp = (id, on, color) => $(id).style.fill = on ? color : '#333';
-  lamp('lamp-batt', state !== 'running', '#f44'); lamp('lamp-oil', state !== 'running', '#f44');
-  lamp('lamp-brake', braking, '#f44'); lamp('lamp-clutch', clutchDown, '#fb3');
-  $('cluster-gear').textContent = $('gear').textContent = $('hud-gear').textContent = gear || 'N';
+  const ignitionOn = keyAngle > 0; // warning lamps glow with the ignition on and the engine not running
+  lamp('lamp-batt', ignitionOn && state !== 'running', '#f44'); lamp('lamp-oil', ignitionOn && state !== 'running', '#f44');
+  lamp('lamp-brake', brakePedal > 0.05, '#f44'); lamp('lamp-clutch', clutchPedal > CAR.bite[0], '#fb3');
+  $('cluster-gear').textContent = $('hud-gear').textContent = gear || 'N';
   $('hud-speed').textContent = Math.round(kmh);
   $('fill').style.width = Math.min(100, shown / tachMax * 100) + '%';
-  $('ignition').dataset.state = state;
-  $('gas').classList.toggle('down', gas);
-  $('clutch').classList.toggle('down', clutchDown);
-  $('brake').classList.toggle('down', braking);
+
+  // controls follow their state: key angle, pedal depth, lever position
+  $('key').style.transform = `rotate(${keyAngle}deg)`;
+  $('ignition').dataset.state = keyAngle >= KEY.startZone ? 'start' : keyAngle > 0 ? 'on' : 'off';
+  for (const [id, [get]] of Object.entries(PEDALS)) {
+    $(id).style.transform = `perspective(300px) rotateX(${get() * 35}deg)`;
+    $(id).parentNode.style.setProperty('--depth', get());
+  }
+  $('knob').setAttribute('transform', `translate(${lever.x} ${lever.y})`);
+  $('knob-gear').textContent = gear || 'N';
 
   renderGame(updateGame(dt));
   requestAnimationFrame(tick);
