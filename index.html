@@ -4,83 +4,140 @@
 <meta charset="utf-8">
 <title>Rev It</title>
 <style>
-  body { margin: 0; height: 100vh; display: grid; place-content: center; text-align: center;
-         background: #111; color: #eee; font-family: system-ui, sans-serif; }
-  #rpm { font-size: 96px; font-variant-numeric: tabular-nums; }
-  #bar { position: relative; width: 60vw; height: 20px; background: #333; border-radius: 10px; overflow: hidden; }
-  #fill { height: 100%; width: 0; background: linear-gradient(90deg, #4c4, #ec4 70%, #e44) 0 0 / 60vw 100%; }
-  #engines span { display: inline-block; margin: 4px; padding: 6px 10px; border: 1px solid #444;
-                  border-radius: 6px; cursor: pointer; }
-  #engines span.on { border-color: #ec4; color: #ec4; }
-  small { color: #777; }
-  #ignition { width: 170px; margin: 8px auto 0; cursor: pointer; }
-  #ignition text { font: bold 10px system-ui, sans-serif; fill: #666; text-anchor: middle; }
+  :root { --hud: #8fffd8; --accent: #ec4; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color: #eee;
+               font-family: system-ui, sans-serif; user-select: none; -webkit-user-select: none; }
+  #world, #frame { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #frame { pointer-events: none; }
+
+  /* head-up display, projected on the windscreen */
+  #hud { position: fixed; left: 50%; top: 45vh; transform: translateX(-50%); width: 360px; text-align: center;
+         color: var(--hud); text-shadow: 0 0 8px #0f8a, 0 0 2px #000; opacity: 0.92;
+         font-variant-numeric: tabular-nums; pointer-events: none; }
+  #hud-main { display: flex; justify-content: center; align-items: baseline; gap: 10px; letter-spacing: 1px; }
+  #hud-speed { font-size: 46px; font-weight: 600; min-width: 2.2em; text-align: right; }
+  #hud-gear { font-size: 30px; font-weight: 600; border: 2px solid var(--hud); border-radius: 6px; padding: 0 8px; }
+  #hud-rpm { position: relative; height: 7px; margin: 6px 30px 0; border: 1px solid var(--hud); border-radius: 4px; }
+  #fill { height: 100%; width: 0; background: var(--hud); }
+  #target { position: absolute; top: -4px; bottom: -4px; display: none; border: 2px solid #fff; border-radius: 3px; }
+  .game #target { display: block; }
+  .hit #target { border-color: #5f5; background: #5f54; }
+  .hit #hud-speed { color: #5f5; }
+  #pips { display: none; justify-content: center; align-items: center; gap: 5px; margin-top: 8px; font-size: 11px; }
+  .game #pips { display: flex; }
+  #pips i { width: 22px; height: 7px; border-radius: 3px; border: 1px solid var(--hud);
+            background: linear-gradient(90deg, var(--c, var(--hud)) var(--f, 0%), transparent 0); }
+  #score { margin-top: 6px; white-space: pre-line; font-size: 13px; }
+  #score::first-line { font-size: 22px; font-weight: 600; }
+  #flash { position: absolute; left: 50%; top: -10px; opacity: 0; white-space: nowrap; font-size: 30px; font-weight: bold; }
+
+  /* instrument cluster behind the wheel, the wheel itself, and the controls around it */
+  #cluster { position: fixed; left: 50%; top: 64vh; transform: translateX(-50%); width: 34vw; pointer-events: none; }
+  #cluster text { font-family: system-ui, sans-serif; fill: #ccc; text-anchor: middle; }
+  #wheel { position: fixed; left: 50%; top: 83vh; transform: translateX(-50%); width: 54vw; pointer-events: none; }
+  #ignition { position: fixed; left: 70vw; top: 69vh; width: 9vw; cursor: pointer; }
+  #ignition text { font: bold 10px system-ui, sans-serif; fill: #777; text-anchor: middle; }
   #key { transform-origin: 65px 70px; transform: rotate(-35deg); transition: transform 0.2s; }
   #ignition[data-state="running"] #key { transform: rotate(35deg); }
   #ignition[data-state="cranking"] #key { transform: rotate(90deg); }
   #ignition[data-state="off"] .off, #ignition[data-state="running"] .on,
-  #ignition[data-state="cranking"] .start { fill: #ec4; }
-  #hud { position: fixed; top: 16px; right: 16px; text-align: right; }
-  #game-toggle { display: inline-block; padding: 6px 10px; border: 1px solid #444; border-radius: 6px;
-                 cursor: pointer; color: #777; }
-  #game-toggle .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #444; }
-  .game #game-toggle { border-color: #ec4; color: #ec4; }
-  .game #game-toggle .dot { background: #4c4; }
-  #score { margin-top: 8px; white-space: pre-line; font-variant-numeric: tabular-nums; color: #777; }
-  #score::first-line { font-size: 28px; font-weight: bold; }
-  .game #score { color: #eee; }
-  #pedals { position: fixed; right: 30px; bottom: 30px; display: flex; gap: 14px; align-items: flex-end; }
-  .pedal { width: 64px; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none;
-           transform-origin: 50% 100%; transform: perspective(300px) rotateX(0deg);
-           transition: transform var(--out) linear; }
+  #ignition[data-state="cranking"] .start { fill: var(--accent); }
+  #shifter { position: fixed; left: 72vw; top: 81vh; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  #shifter b { font-size: 28px; width: 46px; height: 46px; line-height: 46px; text-align: center; border-radius: 50%;
+               background: radial-gradient(#444, #111); border: 2px solid #555; }
+  #shifter button, #console button { background: #1c1c22; color: #bbb; border: 1px solid #444; border-radius: 5px;
+               cursor: pointer; font: inherit; padding: 2px 10px; }
+  #console { position: fixed; left: 80vw; top: 66vh; width: 18vw; padding: 8px; box-sizing: border-box;
+             background: #0d1018; border: 1px solid #2c3140; border-radius: 8px; font-size: clamp(10px, 1.5vh, 13px); }
+  #engines { display: flex; flex-direction: column; gap: 5px; }
+  #engines button.on, .game #game-toggle { border-color: var(--accent); color: var(--accent); }
+  #game-toggle { margin-top: 8px; width: 100%; }
+  #pedals { position: fixed; right: 1.5vw; bottom: 1.5vh; display: flex; gap: 1.2vh; align-items: flex-end; }
+  .pedal { width: 5.5vh; cursor: pointer; touch-action: none; transform-origin: 50% 100%;
+           transform: perspective(300px) rotateX(0deg); transition: transform var(--out) linear; }
   .pedal.down { transform: perspective(300px) rotateX(35deg); transition-duration: var(--in); }
-  .pedal.down .pad { fill: #4a4a4a; }
-  #gas { --in: 0.4s; --out: 0.25s; width: 56px; }  /* PEDAL_IN / PEDAL_OUT */
-  #clutch { --in: 0.12s; --out: 0.6s; }             /* CAR.clutchIn / clutchOut */
-  #brake { --in: 0.1s; --out: 0.1s; width: 76px; }
-  #drive { margin-top: 10px; color: #aaa; font-variant-numeric: tabular-nums; }
-  #drive b { color: #eee; font-size: 22px; }
-  #drive button { background: #222; color: #ccc; border: 1px solid #555; border-radius: 4px; cursor: pointer; }
-  #target { position: absolute; top: 0; bottom: 0; display: none; box-sizing: border-box;
-            border: 2px solid #eee; border-radius: 4px; background: #fff3; }
-  .game #target { display: block; }
-  .hit #target { border-color: #4c4; background: #4c46; }
-  .hit #rpm { color: #4c4; }
-  #gauge { position: relative; }
-  #flash { position: absolute; left: 50%; top: 0; opacity: 0; pointer-events: none; white-space: nowrap;
-           font-size: 30px; font-weight: bold; text-shadow: 0 0 10px #000; }
-  #pips { display: none; justify-content: center; align-items: center; gap: 6px; margin-top: 10px;
-          font-size: 11px; color: #777; }
-  .game #pips { display: flex; }
-  #pips i { width: 26px; height: 8px; border-radius: 4px; /* --f: how full, --c: fill colour */
-            background: linear-gradient(90deg, var(--c, #ec4) var(--f, 0%), #333 0); }
+  .pedal.down { --pad: #4a4a4a; } /* reaches into the shared <symbol> drawing */
+  #gas { --in: 0.4s; --out: 0.25s; width: 4.8vh; }   /* PEDAL_IN / PEDAL_OUT */
+  #clutch { --in: 0.12s; --out: 0.6s; }              /* CAR.clutchIn / clutchOut */
+  #brake { --in: 0.1s; --out: 0.1s; width: 6.6vh; }
+  #help { position: fixed; left: 1.5vw; bottom: 1.5vh; white-space: nowrap; font-size: clamp(10px, 1.4vh, 12px);
+          line-height: 1.6; color: #888; }
+  #help small { color: #556; }
+  #help b { color: #ccc; }
 </style>
 </head>
 <body>
-  <div id="hud">
-    <div id="game-toggle"><span class="dot"></span> GAME</div>
-    <div id="score"></div>
-  </div>
-  <div id="engines"></div>
-  <svg id="ignition" data-state="off" viewBox="0 0 150 110"><title>click to start / stop</title>
-    <text class="off" x="33" y="27">OFF</text>
-    <text class="on" x="97" y="27">ON</text>
-    <text class="start" x="125" y="74">START</text>
-    <circle cx="65" cy="70" r="18" fill="#222" stroke="#555" stroke-width="2"/>
-    <g id="key">
-      <rect x="61" y="56" width="8" height="14" fill="#999"/>
-      <rect x="53" y="28" width="24" height="30" rx="9" fill="#bbb"/>
-      <circle cx="65" cy="38" r="4" fill="#111"/>
-    </g>
-  </svg>
-  <div id="gauge"><div id="rpm">0</div><div id="flash"></div></div>
-  <div id="bar"><div id="fill"></div><div id="target"></div></div>
+<canvas id="world"></canvas>
+
+<svg id="frame" viewBox="0 0 1600 900" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="dash" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#26262f"/><stop offset="0.3" stop-color="#15151b"/><stop offset="1" stop-color="#09090c"/>
+    </linearGradient>
+  </defs>
+  <path d="M0,0 H1600 V36 Q800,60 0,36 Z" fill="#121218"/>
+  <path d="M0,0 L120,0 L38,600 L0,650 Z" fill="#121218"/>
+  <path d="M1600,0 L1480,0 L1562,600 L1600,650 Z" fill="#121218"/>
+  <rect x="690" y="34" width="220" height="62" rx="14" fill="#17171d" stroke="#2a2a33" stroke-width="4"/>
+  <rect x="700" y="42" width="200" height="46" rx="10" fill="#3a3352"/>
+  <path d="M0,650 Q240,578 800,572 Q1360,578 1600,650 V900 H0 Z" fill="url(#dash)"/>
+  <path d="M0,650 Q240,578 800,572 Q1360,578 1600,650" fill="none" stroke="#33333d" stroke-width="3"/>
+</svg>
+
+<div id="hud">
+  <div id="flash"></div>
+  <div id="hud-main"><span id="hud-speed">0</span><small>km/h</small><span id="hud-gear">N</span></div>
+  <div id="hud-rpm"><div id="fill"></div><div id="target"></div></div>
   <div id="pips"><span id="lvl">LEVEL</span></div>
-  <div id="drive"><button id="gear-down">▼</button> gear <b id="gear">N</b> <button id="gear-up">▲</button> · <b id="speed">0</b> km/h</div>
-  <p><b>1–3</b> pick engine · <b>ENTER</b> start · hold <b>SPACE</b> or the pedal to rev · <b>ESC</b> stop · <b>G</b> game<br><b>SHIFT</b> clutch · <b>B</b> brake · <b>↑ ↓</b> gears (clutch down)</p>
-  <div id="pedals">
-  <svg id="clutch" class="pedal" viewBox="0 0 80 140" aria-label="clutch pedal">
-    <rect class="pad" x="4" y="4" width="72" height="118" rx="12" fill="#333" stroke="#777" stroke-width="2"/>
+  <div id="score"></div>
+</div>
+
+<svg id="cluster" viewBox="0 0 560 200">
+  <path d="M20,190 Q20,20 140,14 H420 Q540,20 540,190 Z" fill="#0b0b0f" stroke="#2a2a33" stroke-width="3"/>
+  <g id="tach"></g><g id="speedo"></g>
+  <circle id="shift-light" cx="280" cy="40" r="9" fill="#330"/>
+  <text id="cluster-gear" x="280" y="112" font-size="54" font-weight="bold">N</text>
+  <g id="lamps" font-size="11" font-weight="bold">
+    <text id="lamp-batt" x="250" y="150">BATT</text><text id="lamp-oil" x="310" y="150">OIL</text>
+    <text id="lamp-brake" x="250" y="168">BRAKE</text><text id="lamp-clutch" x="310" y="168">CLUTCH</text>
+  </g>
+</svg>
+
+<svg id="wheel" viewBox="0 0 1000 300">
+  <g id="wheel-rim">
+    <circle cx="500" cy="560" r="500" fill="none" stroke="#141418" stroke-width="70"/>
+    <circle cx="500" cy="560" r="500" fill="none" stroke="#24242b" stroke-width="4"/>
+    <rect x="490" y="25" width="20" height="70" fill="#a33"/>
+  </g>
+</svg>
+
+<svg id="ignition" data-state="off" viewBox="0 0 150 110"><title>click to start / stop</title>
+  <text class="off" x="33" y="27">OFF</text>
+  <text class="on" x="97" y="27">ON</text>
+  <text class="start" x="125" y="74">START</text>
+  <circle cx="65" cy="70" r="18" fill="#222" stroke="#555" stroke-width="2"/>
+  <g id="key">
+    <rect x="61" y="56" width="8" height="14" fill="#999"/>
+    <rect x="53" y="28" width="24" height="30" rx="9" fill="#bbb"/>
+    <circle cx="65" cy="38" r="4" fill="#111"/>
+  </g>
+</svg>
+
+<div id="shifter"><button id="gear-up">▲</button><b id="gear">N</b><button id="gear-down">▼</button></div>
+
+<div id="console">
+  <div id="engines"></div>
+  <button id="game-toggle">GAME OFF</button>
+</div>
+
+<div id="pedals">
+  <svg id="clutch" class="pedal" viewBox="0 0 80 140" aria-label="clutch pedal"><use href="#pedal-art"/></svg>
+  <svg id="brake" class="pedal" viewBox="0 0 80 140" aria-label="brake pedal"><use href="#pedal-art"/></svg>
+  <svg id="gas" class="pedal" viewBox="0 0 80 140" aria-label="gas pedal"><use href="#pedal-art"/></svg>
+</div>
+<svg width="0" height="0" style="position: absolute">
+  <symbol id="pedal-art" viewBox="0 0 80 140">
+    <rect x="4" y="4" width="72" height="118" rx="12" style="fill: var(--pad, #333)" stroke="#777" stroke-width="2"/>
     <g stroke="#555" stroke-width="4" stroke-linecap="round">
       <line x1="18" y1="22" x2="62" y2="22"/><line x1="18" y1="36" x2="62" y2="36"/>
       <line x1="18" y1="50" x2="62" y2="50"/><line x1="18" y1="64" x2="62" y2="64"/>
@@ -88,32 +145,20 @@
       <line x1="18" y1="106" x2="62" y2="106"/>
     </g>
     <rect x="26" y="124" width="28" height="12" rx="3" fill="#555"/>
-  </svg>
-  <svg id="brake" class="pedal" viewBox="0 0 80 140" aria-label="brake pedal">
-    <rect class="pad" x="4" y="4" width="72" height="118" rx="12" fill="#333" stroke="#777" stroke-width="2"/>
-    <g stroke="#555" stroke-width="4" stroke-linecap="round">
-      <line x1="18" y1="22" x2="62" y2="22"/><line x1="18" y1="36" x2="62" y2="36"/>
-      <line x1="18" y1="50" x2="62" y2="50"/><line x1="18" y1="64" x2="62" y2="64"/>
-      <line x1="18" y1="78" x2="62" y2="78"/><line x1="18" y1="92" x2="62" y2="92"/>
-      <line x1="18" y1="106" x2="62" y2="106"/>
-    </g>
-    <rect x="26" y="124" width="28" height="12" rx="3" fill="#555"/>
-  </svg>
-  <svg id="gas" class="pedal" viewBox="0 0 80 140" aria-label="gas pedal">
-    <rect class="pad" x="4" y="4" width="72" height="118" rx="12" fill="#333" stroke="#777" stroke-width="2"/>
-    <g stroke="#555" stroke-width="4" stroke-linecap="round">
-      <line x1="18" y1="22" x2="62" y2="22"/><line x1="18" y1="36" x2="62" y2="36"/>
-      <line x1="18" y1="50" x2="62" y2="50"/><line x1="18" y1="64" x2="62" y2="64"/>
-      <line x1="18" y1="78" x2="62" y2="78"/><line x1="18" y1="92" x2="62" y2="92"/>
-      <line x1="18" y1="106" x2="62" y2="106"/>
-    </g>
-    <rect x="26" y="124" width="28" height="12" rx="3" fill="#555"/>
-  </svg>
-  </div>
-  <small>Recordings from Freesound: Ears68, Angel_soto, editboy23, dezoris, t33kno (CC0), iainmccurdy (CC BY 4.0)</small>
+  </symbol>
+</svg>
+
+<div id="help">
+  <b>ENTER</b> start · <b>ESC</b> stop · <b>1–3</b> engine · <b>G</b> game<br>
+  <b>SPACE</b> gas · <b>SHIFT</b> clutch · <b>B</b> brake<br>
+  <b>↑ ↓</b> change gear (clutch down)<br>
+  <small>Sounds from Freesound: Ears68, Angel_soto, editboy23, dezoris, t33kno (CC0), iainmccurdy (CC BY 4.0)</small>
+</div>
+
 <script src="sounds.js"></script>
 <script src="engine.js"></script>
 <script src="car.js"></script>
+<script src="road.js"></script>
 <script src="game.js"></script>
 <script src="main.js"></script>
 </body>
