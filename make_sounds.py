@@ -39,7 +39,8 @@ ENGINES = {
     # idle: (source, start s, length s, rpm); sweep: (source, start s, end s); loops: target rpms
     "v8": {"idle": ("vette", 11.5, 4.0, 825), "sweep": ("hotrod", 1.0, 13.4),
            "loops": [3300, 4200, 5100, 6000, 6800]},
-    "supra": {"sweep": ("supra", 11.6, 25.4), "loops": [3300, 4200, 5200, 6200, 7200, 7900]},
+    # the dyno recording has a loud turbo whine (7-12 kHz) at high rpm: cut it down so it doesn't pierce
+    "supra": {"sweep": ("supra", 11.6, 25.4), "loops": [3300, 4200, 5200, 6200, 7200, 7900], "lowpass": 5500},
     # this idle is almost all sub-bass, which laptop speakers can't play: cut it before normalising
     "boxer": {"idle": ("impreza", 6.5, 4.5, 855), "idle_highpass": 120, "sweep": ("frs", 8.4, 22.9),
               "loops": [3300, 4200, 5100, 6000, 6800, 7300]},
@@ -98,6 +99,14 @@ def flatten(x, t, rpm, target):
     return np.interp(np.interp(out_t, u, tau), tau, x)
 
 
+def loop_filter(sos, x):  # filter a loop as if it repeats forever, so the seam stays seamless
+    return signal.sosfiltfilt(sos, np.tile(x, 3))[len(x):2 * len(x)]
+
+
+def unwav(b64):
+    return sf.read(io.BytesIO(base64.b64decode(b64)))[0]
+
+
 def wav_b64(x):
     x = x / np.sqrt(np.mean(x ** 2)) * 10 ** (-18 / 20)  # -18 dBFS RMS
     buf = io.BytesIO()
@@ -127,6 +136,9 @@ def main():
             off = max(0, (len(seg) - size) // 2)
             loops.append([target, wav_b64(make_loop(seg[off:off + size], 120 / target))])
             print(f"{name:6s} {target:5d} rpm  from {src} @ {a + mid:5.2f}s (tracked {np.interp(mid, t, rpm):5.0f})")
+        if "lowpass" in cfg:
+            sos = signal.butter(4, cfg["lowpass"], "lowpass", fs=SR, output="sos")
+            loops = [[rpm, wav_b64(loop_filter(sos, unwav(b64)))] for rpm, b64 in loops]
         out[name] = loops
     src, start, length, period = STARTER
     out["starter"] = wav_b64(make_loop(audio[src][int(start * SR):int((start + length) * SR)], period))
