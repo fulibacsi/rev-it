@@ -2,28 +2,29 @@
 // Classic script: shares globals with car.js, game.js and main.js.
 
 // loops: [rpm, base64 WAV] recorded at a steady rpm, built by make_sounds.py
-// tauUp / tauDown: seconds for the rpm to close ~63% of the gap to where the pedal points (free-revving feel)
+// drive: free-revving acceleration at full throttle, rpm/s (a flat torque curve, so power peaks near the redline)
+// tauDown: engine braking: seconds for the revs to close ~63% of the gap to idle with the throttle shut
 // lope: rpm the idle hunts by (big cam); turbo: pulls weakly until boost builds; torqueDip: rpm where the
 // factory tune pulls torque; revHang: seconds the e-throttle's late closing (emissions) slows the drop after lift-off
-// inertia: flywheel kg·m²; with the free-rev response it sets the engine's torque, i.e. how hard it pulls in gear
+// inertia: flywheel kg·m²; times drive it gives the engine's torque, i.e. how hard it pulls in gear
 // mass: kg of the car around it
 const ENGINES = [
   // big-cam V8, heavy flywheel: lumpy idle, steady but slow to rev and slow to drop; lots of torque
-  { name: 'Muscle V8', loops: SOUNDS.v8, idle: 825, redline: 7000, tauUp: 0.75, tauDown: 1.3, lope: 40,
-    inertia: 1.3, mass: 1650 },
+  { name: 'Muscle V8', loops: SOUNDS.v8, idle: 825, redline: 7000, drive: 5000, tauDown: 1.3, lope: 40,
+    inertia: 0.76, mass: 1650 },
   // Supra 2JZ with a big turbo: lazy off idle, then pulls hard once spooled, blow-off on lift
-  { name: 'JDM Turbo I6', loops: SOUNDS.supra, idle: 1000, redline: 8000, tauUp: 0.5, tauDown: 0.9, turbo: true,
-    inertia: 0.45, mass: 1500 },
+  { name: 'JDM Turbo I6', loops: SOUNDS.supra, idle: 1000, redline: 8000, drive: 7000, tauDown: 0.9, turbo: true,
+    inertia: 0.57, mass: 1500 },
   // 86 / BRZ FA20: light and eager, torque dip around 3500-4500 rpm, rev hang on lift-off; the weakest pull
-  { name: 'JDM Boxer', loops: SOUNDS.boxer, idle: 855, redline: 7400, tauUp: 0.5, tauDown: 0.8, torqueDip: 3800,
-    revHang: 0.6, inertia: 0.28, mass: 1250 },
+  { name: 'JDM Boxer', loops: SOUNDS.boxer, idle: 855, redline: 7400, drive: 6500, tauDown: 0.8, torqueDip: 3800,
+    revHang: 0.6, inertia: 0.31, mass: 1250 },
 ];
 const PEDAL_IN = 0.4, PEDAL_OUT = 0.25; // seconds to fully press / release the throttle
-const LIMITER_DROP = 250; // fuel cut at the redline until the rpm falls this far
+const LIMITER_CUT = 0.06; // seconds the rev limiter cuts the fuel each time the redline is hit (stutters in any gear)
 
 let engine, ctx, loading, players = [], filter, master, noise, starterBuffer, starterGain, wind;
-// state: 'off' | 'cranking' | 'running'; cut: rev limiter has cut the fuel
-let rpm = 0, throttle = 0, boost = 0, hang = 0, cut = false, gas = false, state = 'off', crankUntil = 0;
+// state: 'off' | 'cranking' | 'running'; cut: rev limiter has cut the fuel, for cutLeft more seconds
+let rpm = 0, throttle = 0, boost = 0, hang = 0, cut = false, cutLeft = 0, gas = false, state = 'off', crankUntil = 0;
 
 async function start() {
   ctx = new AudioContext();
@@ -100,7 +101,7 @@ function blowOff() { // turbo blow-off valve "pssh"
 }
 
 function whoosh(relSpeed) { // a car passing on the left; louder the faster you pass each other
-  if (!ctx) return;
+  if (!ctx || !Number.isFinite(relSpeed)) return;
   const src = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g = ctx.createGain(), pan = ctx.createStereoPanner();
   const t = ctx.currentTime, level = Math.min(0.5, Math.max(0.001, relSpeed / 120)); // ramps can't reach 0
   src.buffer = noise;
@@ -149,15 +150,16 @@ function setGas(on) {
   gas = on;
 }
 
-// free-revving acceleration (rpm/s) at this rpm and throttle: rpm chases where the pedal points, quickly when
-// far away, easing in as it gets close. In gear the same torque (inertia x this) also has to move the car.
+// free-revving acceleration (rpm/s) at this rpm and throttle: drive torque from the throttle against friction and
+// pumping losses, which are large with the throttle shut (engine braking) and mostly gone at full throttle.
+// In gear the same torque (inertia x this) also has to move the car.
 function engineAccel(e, r, thr) {
-  const aim = e.idle + thr * (e.redline + 1000 - e.idle);
-  if (aim <= r) return (aim - r) / (e.tauDown * (e.revHang ? 1 + 3 * hang / e.revHang : 1)); // rev hang: slower drop
-  let pull = 1; // how hard the engine can accelerate at this rpm
+  if (r < e.idle && thr < 0.05) return (e.idle - r) / 0.5; // idle control holds the idle
+  let pull = 1; // how much of its torque the engine makes at this rpm
   if (e.turbo) pull = 0.35 + 0.85 * boost;
   if (e.torqueDip) pull *= 1 - 0.4 * Math.exp(-(((r - e.torqueDip) / 500) ** 2));
-  return (aim - r) * pull / e.tauUp;
+  const slow = e.revHang ? 1 + 3 * hang / e.revHang : 1; // rev hang: the drop after lift-off starts slower
+  return thr * e.drive * pull - (r - e.idle) / (e.tauDown * slow) * (1 - 0.8 * thr);
 }
 
 // throttle pedal, starter, turbo and limiter; returns the engine's free-rev acceleration (rpm/s) for this step
@@ -173,8 +175,9 @@ function updateEngine(dt, now) {
   // boost follows the throttle above 3000 rpm: spools up slowly (lag), dumps fast through the blow-off valve
   const boostAim = state === 'running' && rpm > 3000 ? throttle : 0;
   boost += (boostAim - boost) * Math.min(1, dt / (boostAim > boost ? 0.7 : 0.15));
-  if (rpm >= e.redline) cut = true; // rev limiter: cut the fuel until the revs drop back
-  else if (rpm < e.redline - LIMITER_DROP) cut = false;
+  cutLeft = Math.max(0, cutLeft - dt); // rev limiter: a short fuel cut each time the redline is reached
+  if (!cutLeft && rpm >= e.redline) cutLeft = LIMITER_CUT;
+  cut = cutLeft > 0;
   return state === 'running' ? engineAccel(e, rpm, cut ? 0 : throttle) : 0;
 }
 
@@ -187,15 +190,16 @@ function shownRpm(now) {
 
 function updateAudio(shown) {
   const e = engine, t = ctx.currentTime;
-  const level = (0.45 + 0.35 * throttle) * (0.5 + 0.5 * rpm / e.redline); // louder on throttle and with revs
-  const overrun = state === 'running' && throttle < 0.1 && rpm > e.idle * 1.5;
+  const power = cut ? 0 : throttle; // the limiter's fuel cut is heard as the engine dropping out
+  const level = (0.45 + 0.35 * power) * (0.5 + 0.5 * rpm / e.redline); // louder on throttle and with revs
+  const overrun = state === 'running' && power < 0.1 && rpm > e.idle * 1.5;
   loopGains(shown).forEach((g, i) => {
     players[i].gain.gain.setTargetAtTime(g, t, 0.03);
     players[i].src.playbackRate.setTargetAtTime(Math.max(0.05, shown / players[i].rpm), t, 0.03);
   });
-  filter.frequency.setTargetAtTime(overrun ? 2000 : 12000, t, 0.1);
+  filter.frequency.setTargetAtTime(overrun ? 2000 : 12000, t, 0.03);
   starterGain.gain.setTargetAtTime(state === 'cranking' ? 0.35 : 0, t, 0.03); // cut as soon as the engine catches
-  master.gain.setTargetAtTime(state === 'off' ? level * Math.min(1, rpm / e.idle) : level, t, 0.1);
+  master.gain.setTargetAtTime(state === 'off' ? level * Math.min(1, rpm / e.idle) : level, t, 0.03);
   wind.gain.gain.setTargetAtTime(Math.min(0.4, 0.3 * (speed / 40) ** 2), t, 0.2);
   wind.filter.frequency.setTargetAtTime(250 + speed * 25, t, 0.2);
 }

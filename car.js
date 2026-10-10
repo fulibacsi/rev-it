@@ -20,7 +20,7 @@ function ratio() { return CAR.gears[gear] * CAR.final; }
 function wheelRpm() { return speed * ratio() / CAR.wheel / RAD; } // engine rpm that matches the road speed
 
 // torque the clutch holds before slipping: a margin over the engine's strongest pull
-function clutchCapacity(e) { return 1.3 * e.inertia * (e.redline + 1000 - e.idle) / e.tauUp * RAD * (e.turbo ? 1.2 : 1); }
+function clutchCapacity(e) { return 1.3 * e.inertia * e.drive * RAD * (e.turbo ? 1.2 : 1); }
 
 // shift one gear up or down; with the engine running that needs the clutch down, otherwise the gears grind
 function shift(step) {
