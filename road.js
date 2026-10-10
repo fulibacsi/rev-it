@@ -12,6 +12,7 @@ const ROAD = {
   seat: 4.9,       // driver's sideways position from the centre line, m (right lane, sitting left in the car)
   fov: 75,         // horizontal field of view, degrees
   horizon: 0.40,   // horizon height as a share of the screen
+  grade: 0.07,     // steepest slope of the hills (7%, like a highway)
 };
 const LANES = { mine: 5.25, passing: 1.75, oncoming: [-1.75, -5.25] }; // lane centres, m from the centre line
 
@@ -29,6 +30,14 @@ function buildCourse() {
     for (let i = 30; i > 0; i--) add(c * (i / 30) ** 2); // and out of it
   }
   segs.length = ROAD.count;
+  segs.forEach(s => { s.y = 0; }); // elevation of each segment's start, m
+  for (let i = 30 + rand() * 60; ;) { // hills: smooth crests and dips that come back to the base level
+    const height = (rand() < 0.65 ? 1 : -1) * (8 + rand() * 22);
+    const len = Math.round(Math.max(80, Math.abs(height) * Math.PI / ROAD.grade / ROAD.segment)); // segments
+    if (i + len >= ROAD.count) break; // the loop must end level so it joins up
+    for (let j = 0; j < len; j++) segs[Math.floor(i) + j].y = height * (1 - Math.cos(2 * Math.PI * j / len)) / 2;
+    i += len + 20 + rand() * 80; // a level stretch between hills
+  }
   segs.forEach((s, i) => { // palm trees: a beach row on the left, a looser row on the right
     if (i % 7 === 0) s.sprites.push({ kind: 'palm', x: -(10 + rand() * 14), size: 0.8 + rand() * 0.5 });
     if (i % 11 === 3) s.sprites.push({ kind: 'palm', x: 10 + rand() * 16, size: 0.8 + rand() * 0.5 });
@@ -114,10 +123,18 @@ function updateTraffic(dt) {
 
 // ---- drawing ----
 let scenery = 0; // background shift, follows the bends
+const seg = i => segments[((i % ROAD.count) + ROAD.count) % ROAD.count]; // the course loops, both ways
+const elevation = pos => { // road height at a course position, m
+  const i = Math.floor(pos / ROAD.segment), f = pos / ROAD.segment - i;
+  return seg(i).y * (1 - f) + seg(i + 1).y * f;
+};
+// slope under the car (rise per metre), for gravity in car.js
+function roadSlope(pos) { return elevation(pos + 0.5) - elevation(pos - 0.5); }
+
 function drawRoad(g, w, h, dt) {
   const depth = 1 / Math.tan(ROAD.fov / 2 * Math.PI / 180), horizon = h * ROAD.horizon, k0 = w / 2;
   const pos = odo % (ROAD.count * ROAD.segment), base = Math.floor(pos / ROAD.segment);
-  const frac = pos / ROAD.segment - base, here = segments[base];
+  const frac = pos / ROAD.segment - base, here = segments[base], eyeY = elevation(pos) + ROAD.eye;
   scenery += here.curve * speed * dt * 40;
   drawSky(g, w, horizon);
 
@@ -125,22 +142,36 @@ function drawRoad(g, w, h, dt) {
   const proj = [];
   let x = 0, dx = -here.curve * frac;
   for (let n = 0; n <= ROAD.draw; n++) {
-    const z = Math.max(0.3, (n - frac) * ROAD.segment), scale = depth / z * k0;
-    proj.push({ x: w / 2 + (-ROAD.seat - x) * scale, y: horizon + ROAD.eye * scale, k: scale, z });
-    x += dx; dx += segments[(base + n) % ROAD.count].curve;
+    const s = segments[(base + n) % ROAD.count], z = Math.max(0.3, (n - frac) * ROAD.segment), scale = depth / z * k0;
+    proj.push({ x: w / 2 + (-ROAD.seat - x) * scale, y: horizon + (eyeY - s.y) * scale, k: scale, z });
+    x += dx; dx += s.curve;
   }
+  // below the horizon, beyond the drawn road (seen when it dips away): the sea on the left, the land on the right
+  const far = proj[ROAD.draw], split = far.x - ROAD.shore * far.k;
+  g.fillStyle = '#3b3974'; g.fillRect(0, horizon, split, h - horizon);
+  g.fillStyle = '#c4a058'; g.fillRect(split, horizon, w - split, h - horizon);
   const quad = (a, b, x1, x2, color) => { // band between sideways positions x1..x2 (m) from edge a to edge b
     g.fillStyle = color; g.beginPath();
     g.moveTo(a.x + x1 * a.k, a.y + 1); g.lineTo(a.x + x2 * a.k, a.y + 1);
     g.lineTo(b.x + x2 * b.k, b.y); g.lineTo(b.x + x1 * b.k, b.y); g.fill();
   };
+  // near to far; maxy is the top of what is drawn so far: anything below it is hidden behind a nearer crest
+  let maxy = h;
+  const clip = []; // per segment: screen y below which its sprites are hidden
   for (let n = 0; n < ROAD.draw; n++) {
-    const a = proj[n], b = proj[n + 1];
-    if (b.y >= h || a.y <= b.y) continue; // behind the camera
+    let a = proj[n];
+    const b = proj[n + 1];
+    clip[n] = maxy;
+    if (b.y >= maxy || a.y <= b.y) continue; // hidden behind a crest, or sloping away from us
+    if (a.y > maxy) { // partly hidden: start the slice at the crest line
+      const f = (a.y - maxy) / (a.y - b.y);
+      a = { x: a.x + (b.x - a.x) * f, y: maxy, k: a.k + (b.k - a.k) * f };
+    }
     const i = base + n, light = Math.floor(i / 2) % 2 === 0, R = ROAD.half;
-    g.fillStyle = light ? '#c9a35a' : '#bf9850'; g.fillRect(0, b.y, w, a.y - b.y + 1); // golden hills side
+    g.fillStyle = light ? '#c9a35a' : '#bf9850'; // golden hills side, from the road to the right edge
+    g.beginPath(); g.moveTo(a.x, a.y + 1); g.lineTo(w, a.y + 1); g.lineTo(w, b.y); g.lineTo(b.x, b.y); g.fill();
     quad(a, b, -ROAD.shore, 0, light ? '#e8b77a' : '#dcaa6c'); // beach
-    const sa = a.x - ROAD.shore * a.k, sb = b.x - ROAD.shore * b.k; // shoreline; the ocean runs to the screen edge
+    const sa = a.x - ROAD.shore * a.k, sb = b.x - ROAD.shore * b.k; // shoreline; the sea runs to the screen edge
     if (sa > 0 || sb > 0) {
       g.fillStyle = light ? '#3d3b78' : '#393670';
       g.beginPath(); g.moveTo(0, a.y + 1); g.lineTo(sa, a.y + 1); g.lineTo(sb, b.y); g.lineTo(0, b.y); g.fill();
@@ -149,7 +180,13 @@ function drawRoad(g, w, h, dt) {
     quad(a, b, -R, R, light ? '#4a4a55' : '#45454f'); // asphalt
     quad(a, b, -0.25, -0.1, '#f2c12e'); quad(a, b, 0.1, 0.25, '#f2c12e'); // double yellow centre line
     if (Math.floor(i / 3) % 2) { quad(a, b, -3.6, -3.4, '#eee'); quad(a, b, 3.4, 3.6, '#eee'); } // lane dashes
+    maxy = b.y;
   }
+  const drawClipped = (img, x, y, dw, dh, clipY) => { // the part below clipY is behind a crest
+    if (y >= clipY) return;
+    const vis = Math.min(dh, clipY - y);
+    g.drawImage(img, 0, 0, img.width, img.height * vis / dh, x, y, dw, vis);
+  };
 
   // sprites, far to near: palms, traffic and speed signs (x: metres from the centre line, w/h: metres)
   const signs = game.on ? game.signs.map(s => ({ z: s.z, x: ROAD.half + 2, w: 1.5, h: 4.1, img: signSprite(s.value) })) : [];
@@ -161,12 +198,12 @@ function drawRoad(g, w, h, dt) {
     g.globalAlpha = fog;
     for (const sp of s.sprites) {
       const ph = 11 * sp.size * a.k, pw = ph / 2;
-      g.drawImage(PALM, a.x + sp.x * a.k - pw / 2, a.y - ph, pw, ph);
+      drawClipped(PALM, a.x + sp.x * a.k - pw / 2, a.y - ph, pw, ph, clip[n]);
     }
     while (t < ahead.length && ahead[t].d >= a.z) { // cars and signs within this segment
       const o = ahead[t++], f = (o.d - a.z) / ROAD.segment, b = proj[n + 1] || a;
       const k = a.k + (b.k - a.k) * f, cx = a.x + (b.x - a.x) * f, cy = a.y + (b.y - a.y) * f;
-      g.drawImage(o.img, cx + (o.x - o.w / 2) * k, cy - o.h * k, o.w * k, o.h * k);
+      drawClipped(o.img, cx + (o.x - o.w / 2) * k, cy - o.h * k, o.w * k, o.h * k, clip[n]);
     }
   }
   g.globalAlpha = 1;

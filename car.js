@@ -36,7 +36,8 @@ function shift(step) {
 function stepCar(dt, alpha) {
   const e = engine, G = ratio(), running = state === 'running';
   clutch = clutchDown ? Math.max(0, clutch - dt / CAR.clutchIn) : Math.min(1, clutch + dt / CAR.clutchOut);
-  const resist = CAR.drag * speed * speed + CAR.roll + (braking ? CAR.brake : 0); // N holding the car back
+  // N holding the car back: air, tyres, brakes and gravity along the slope (negative downhill)
+  const resist = CAR.drag * speed * speed + CAR.roll + (braking ? CAR.brake : 0) + e.mass * 9.81 * roadSlope(odo);
   // torque the clutch, or the tyres if they give first, can pass between engine and wheels
   const cap = G && running ? Math.min(clutch * clutchCapacity(e), CAR.grip * e.mass * 9.81 * CAR.wheel / G) : 0;
   const push = f => { // drive force f (N) against the resistance; a stopped car only moves if f overcomes it
