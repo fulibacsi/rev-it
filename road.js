@@ -82,22 +82,32 @@ function carSprite(color, front) { // rear view (same direction) or front view (
   });
 }
 const CARS = CAR_COLORS.map(c => ({ rear: carSprite(c, false), front: carSprite(c, true) }));
-const SIGNS = new Map(); // speed game signs by value; drawn 1.5 m wide (oversized so they read from afar)
-function signSprite(value) {
-  if (!SIGNS.has(value)) SIGNS.set(value, sprite(120, 330, (g, w, h) => {
-    g.fillStyle = '#888'; g.fillRect(w * 0.45, h * 0.45, w * 0.1, h * 0.55); // post
-    g.fillStyle = '#111'; g.fillRect(0, 0, w, h * 0.47);
-    g.fillStyle = '#f4f4f4'; g.fillRect(6, 6, w - 12, h * 0.47 - 12);
-    g.fillStyle = '#111'; g.textAlign = 'center';
-    g.font = 'bold 20px sans-serif'; g.fillText('SPEED', w / 2, 34);
-    g.font = 'bold 60px sans-serif'; g.fillText(value, w / 2, 100);
-    g.font = 'bold 16px sans-serif'; g.fillText('km/h', w / 2, 132);
+const BOARDS = new Map(); // distance boards by value, drawn 1.6 m wide (oversized so they read from afar)
+function boardSprite(value) {
+  if (!BOARDS.has(value)) BOARDS.set(value, sprite(160, 300, (g, w, h) => {
+    g.fillStyle = '#888'; g.fillRect(w * 0.2, h * 0.3, w * 0.06, h * 0.7); g.fillRect(w * 0.74, h * 0.3, w * 0.06, h * 0.7);
+    g.fillStyle = '#eee'; g.beginPath(); g.roundRect(0, 0, w, h * 0.34, 10); g.fill(); // highway green, white rim
+    g.fillStyle = '#1d6b3a'; g.beginPath(); g.roundRect(5, 5, w - 10, h * 0.34 - 10, 7); g.fill();
+    g.fillStyle = '#fff'; g.textAlign = 'center'; g.font = 'bold 54px sans-serif'; g.fillText(`${value} m`, w / 2, 72);
   }));
-  return SIGNS.get(value);
+  return BOARDS.get(value);
+}
+let bestBanner = { value: NaN }; // checkered banner across the road at the best distance; redrawn when it moves
+function bannerSprite(value) {
+  if (bestBanner.value !== value) bestBanner = { value, img: sprite(640, 240, (g, w, h) => {
+    g.fillStyle = '#777'; g.fillRect(0, 0, 10, h); g.fillRect(w - 10, 0, 10, h); // poles at the kerbs
+    for (let x = 10; x < w - 10; x += 20) for (let y = 0; y < 60; y += 20) { // checkered cloth
+      g.fillStyle = (x + y) / 20 % 2 ? '#111' : '#f4f4f4'; g.fillRect(x, y, 20, 20);
+    }
+    g.fillStyle = '#ffd23a'; g.fillRect(10, 60, w - 20, 34);
+    g.fillStyle = '#111'; g.textAlign = 'center'; g.font = 'bold 28px sans-serif';
+    g.fillText(`BEST ${value.toLocaleString('en-US')} m`, w / 2, 88);
+  }) };
+  return bestBanner.img;
 }
 
 // ---- traffic: oncoming cars on the left, cars in the passing lane that you overtake or that overtake you ----
-const traffic = [];
+const traffic = Array.from({ length: 12 }, () => ({}));
 function spawnCar(car, d) {
   const oncoming = rand() < 0.55;
   Object.assign(car, {
@@ -107,7 +117,8 @@ function spawnCar(car, d) {
     d: NaN, // distance last frame: unknown for a fresh car, so it can't trigger a pass-by sound
   });
 }
-for (let i = 0; i < 12; i++) { const c = {}; spawnCar(c, 80 + i * 120); traffic.push(c); }
+function resetTraffic() { traffic.forEach((c, i) => spawnCar(c, 80 + i * 120)); } // spread out ahead
+resetTraffic();
 
 function updateTraffic(dt) {
   for (const c of traffic) {
@@ -188,9 +199,11 @@ function drawRoad(g, w, h, dt) {
     g.drawImage(img, 0, 0, img.width, img.height * vis / dh, x, y, dw, vis);
   };
 
-  // sprites, far to near: palms, traffic and speed signs (x: metres from the centre line, w/h: metres)
-  const signs = game.on ? game.signs.map(s => ({ z: s.z, x: ROAD.half + 2, w: 1.5, h: 4.1, img: signSprite(s.value) })) : [];
-  const ahead = [...traffic.map(c => ({ z: c.z, x: c.x, w: 1.8, h: 1.4, img: c.dir > 0 ? c.look.rear : c.look.front })), ...signs]
+  // sprites, far to near: palms, traffic and the game's marks (x: metres from the centre line, w/h: metres)
+  const marks = roadMarks().map(m => m.kind === 'best'
+    ? { z: m.z, x: 0, w: 2 * (ROAD.half + ROAD.rumble), h: 5.6, img: bannerSprite(m.value) }
+    : { z: m.z, x: ROAD.half + 2, w: 1.6, h: 3, img: boardSprite(m.value) });
+  const ahead = [...traffic.map(c => ({ z: c.z, x: c.x, w: 1.8, h: 1.4, img: c.dir > 0 ? c.look.rear : c.look.front })), ...marks]
     .map(o => ({ ...o, d: o.z - odo })).filter(o => o.d > 2 && o.d < (ROAD.draw - 2) * ROAD.segment).sort((p, q) => q.d - p.d);
   let t = 0;
   for (let n = ROAD.draw - 1; n > 0; n--) {

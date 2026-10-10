@@ -7,23 +7,23 @@
 // lope: rpm the idle hunts by (big cam); turbo: pulls weakly until boost builds; torqueDip: rpm where the
 // factory tune pulls torque; revHang: seconds the e-throttle's late closing (emissions) slows the drop after lift-off
 // inertia: flywheel kg·m²; times drive it gives the engine's torque, i.e. how hard it pulls in gear
-// mass: kg of the car around it
-const ENGINES = [
-  // big-cam V8, heavy flywheel: lumpy idle, steady but slow to rev and slow to drop; lots of torque
-  { name: 'Muscle V8', loops: SOUNDS.v8, idle: 825, redline: 7000, drive: 5000, tauDown: 1.3, lope: 40,
-    inertia: 0.76, mass: 1650 },
-  // Supra 2JZ with a big turbo: lazy off idle, then pulls hard once spooled, blow-off on lift
-  { name: 'JDM Turbo I6', loops: SOUNDS.supra, idle: 1000, redline: 8000, drive: 7000, tauDown: 0.9, turbo: true,
-    inertia: 0.57, mass: 1500 },
+// mass: kg of the car around it; final: its differential ratio (torquey engines pull taller gearing)
+const ENGINES = [ // weakest first: the garage unlocks them in this order
   // 86 / BRZ FA20: light and eager, torque dip around 3500-4500 rpm, rev hang on lift-off; the weakest pull
   { name: 'JDM Boxer', loops: SOUNDS.boxer, idle: 855, redline: 7400, drive: 6500, tauDown: 0.8, torqueDip: 3800,
-    revHang: 0.6, inertia: 0.31, mass: 1250 },
+    revHang: 0.6, inertia: 0.31, mass: 1250, final: 4.1 },
+  // big-cam V8, heavy flywheel: lumpy idle, steady but slow to rev and slow to drop; lots of torque
+  { name: 'Muscle V8', loops: SOUNDS.v8, idle: 825, redline: 7000, drive: 5000, tauDown: 1.3, lope: 40,
+    inertia: 0.76, mass: 1650, final: 3.42 },
+  // Supra 2JZ with a big turbo: lazy off idle, then pulls hard once spooled, blow-off on lift
+  { name: 'JDM Turbo I6', loops: SOUNDS.supra, idle: 1000, redline: 8000, drive: 7000, tauDown: 0.9, turbo: true,
+    inertia: 0.57, mass: 1500, final: 3.27 },
 ];
 const PEDAL_IN = 0.4, PEDAL_OUT = 0.25; // fastest the throttle follows the pedal: seconds for full travel
 const CRANK = 0.9; // seconds the key has to be held in START before the engine catches
 const LIMITER_CUT = 0.06; // seconds the rev limiter cuts the fuel each time the redline is hit (stutters in any gear)
 
-let engine, ctx, loading, players = [], filter, master, noise, starterBuffer, starterGain, wind;
+let engine, ctx, loading, players = [], filter, master, noise, starterBuffer, starterGain, wind, squeal;
 // state: 'off' | 'cranking' | 'running'; cut: rev limiter has cut the fuel, for cutLeft more seconds
 // gasPedal: 0..1 how far the gas pedal is pressed; lifted: the pedal has come up since the last lift-off
 let rpm = 0, throttle = 0, boost = 0, hang = 0, cut = false, cutLeft = 0, gasPedal = 0, lifted = true;
@@ -56,6 +56,16 @@ async function start() {
   wind.gain.gain.value = 0;
   roar.connect(wind.filter).connect(wind.gain).connect(ctx.destination);
   roar.start();
+  const scrub = ctx.createBufferSource(); // tyre squeal: noise in a narrow band, faded in while the tyres spin
+  scrub.buffer = noise;
+  scrub.loop = true;
+  squeal = { filter: ctx.createBiquadFilter(), gain: ctx.createGain() };
+  squeal.filter.type = 'bandpass';
+  squeal.filter.frequency.value = 1100;
+  squeal.filter.Q.value = 18;
+  squeal.gain.gain.value = 0;
+  scrub.connect(squeal.filter).connect(squeal.gain).connect(ctx.destination);
+  scrub.start();
 
   const decode = wav => ctx.decodeAudioData(Uint8Array.from(atob(wav), c => c.charCodeAt(0)).buffer);
   starterBuffer = await decode(SOUNDS.starter);
@@ -134,6 +144,18 @@ function grind() { // gears clashing: shifting without the clutch
   src.stop(t + 0.35);
 }
 
+function beep(freq, seconds) { // countdown and finish tones
+  if (!ctx) return;
+  const o = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime;
+  o.type = 'square';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(0.06, t);
+  g.gain.setTargetAtTime(0, t + seconds * 0.8, 0.02);
+  o.connect(g).connect(ctx.destination);
+  o.start(t);
+  o.stop(t + seconds + 0.2);
+}
+
 // the key held in START turns the starter; the engine catches after CRANK seconds, letting go earlier stops it
 async function crank(on) {
   crankWanted = on;
@@ -210,4 +232,6 @@ function updateAudio(shown) {
   master.gain.setTargetAtTime(state === 'off' ? level * Math.min(1, rpm / e.idle) : level, t, 0.03);
   wind.gain.gain.setTargetAtTime(Math.min(0.4, 0.3 * (speed / 40) ** 2), t, 0.2);
   wind.filter.frequency.setTargetAtTime(250 + speed * 25, t, 0.2);
+  squeal.gain.gain.setTargetAtTime(spinning ? 2.5 : 0, t, 0.05);
+  squeal.filter.frequency.setTargetAtTime(1000 + 250 * Math.random(), t, 0.03); // a wavering screech
 }

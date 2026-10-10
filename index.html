@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Rev It</title>
+<title>Rev It: Distance</title>
 <style>
   :root { --hud: #8fffd8; --accent: #ec4; }
   html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color: #eee;
@@ -19,14 +19,41 @@
   #hud-gear { font-size: 30px; font-weight: 600; border: 2px solid var(--hud); border-radius: 6px; padding: 0 8px; }
   #hud-rpm { height: 7px; margin: 6px 30px 0; border: 1px solid var(--hud); border-radius: 4px; }
   #fill { height: 100%; width: 0; background: var(--hud); }
-  .hit #hud-speed { color: #5f5; }
-  #pips { display: none; justify-content: center; align-items: center; gap: 5px; margin-top: 8px; font-size: 11px; }
-  .game #pips { display: flex; }
-  #pips i { width: 22px; height: 7px; border-radius: 3px; border: 1px solid var(--hud);
-            background: linear-gradient(90deg, var(--c, var(--hud)) var(--f, 0%), transparent 0); }
-  #score { margin-top: 6px; white-space: pre-line; font-size: 13px; }
-  #score::first-line { font-size: 22px; font-weight: 600; }
+  #run-dist { display: block; margin-top: 8px; font-size: 30px; font-weight: 600; }
+  #run-info { font-size: 14px; }
+  .low #run-info { color: #f66; }
   #flash { position: absolute; left: 50%; top: -10px; opacity: 0; white-space: nowrap; font-size: 30px; font-weight: bold; }
+  .garage #hud { display: none; }
+
+  /* garage between runs, over the windscreen */
+  #garage { display: none; position: fixed; left: 50%; top: 5vh; transform: translateX(-50%); width: min(780px, 66vw);
+            max-height: 57vh; overflow: auto; box-sizing: border-box; padding: 14px 16px; border-radius: 12px;
+            background: #0b0d16ee; border: 1px solid #2c3140; font-size: 13px; color: #bbb; }
+  .garage #garage { display: block; }
+  #garage header { display: flex; justify-content: space-between; align-items: baseline; }
+  #garage header b { font-size: 20px; letter-spacing: 3px; color: #eee; }
+  #bank { font-size: 20px; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
+  #report { margin: 4px 0 10px; color: #9ab; }
+  #report b { color: #5f5; }
+  #garage button { background: #1c1c22; color: #ccc; border: 1px solid #444; border-radius: 5px; cursor: pointer;
+                   font: inherit; padding: 3px 10px; }
+  #garage button:disabled { cursor: default; color: #667; border-color: #2a2a33; }
+  #garage button.on { border-color: var(--accent); color: var(--accent); }
+  #engine-row { display: flex; gap: 6px; margin-bottom: 10px; }
+  #engine-row button { flex: 1; }
+  #cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+  .card { display: flex; flex-direction: column; gap: 3px; padding: 7px 9px; border: 1px solid #262a36;
+          border-radius: 8px; background: #12141e; }
+  .card b { color: #eee; letter-spacing: 1px; }
+  .card i { font-style: normal; color: var(--accent); letter-spacing: 1px; font-size: 11px; }
+  .card small { min-height: 2.6em; color: #9ab; }
+  .card.bought { animation: bought 0.6s ease-out; }
+  @keyframes bought { from { background: #3a3410; } }
+  #garage footer { display: flex; justify-content: space-between; align-items: center; position: sticky; bottom: -14px;
+                   margin: 0 -16px -14px; padding: 10px 16px 14px; background: #0b0d16; } /* DRIVE stays in view */
+  #garage #drive { font-size: 18px; font-weight: 600; padding: 6px 28px; color: #111; background: var(--accent);
+                   border-color: var(--accent); }
+  #garage #reset { border: none; background: none; color: #556; }
 
   /* instrument cluster behind the wheel, the wheel itself, and the controls around it */
   #cluster { position: fixed; left: 50%; top: 64vh; transform: translateX(-50%); width: 34vw; pointer-events: none; }
@@ -39,13 +66,7 @@
   #ignition[data-state="off"] .off, #ignition[data-state="on"] .on, #ignition[data-state="start"] .start { fill: var(--accent); }
   #shifter { position: fixed; left: 67.5vw; top: 78vh; height: 19vh; cursor: grab; touch-action: none; }
   #shifter text { font: bold 0.32px system-ui, sans-serif; fill: #889; text-anchor: middle; }
-  #console button { background: #1c1c22; color: #bbb; border: 1px solid #444; border-radius: 5px;
-                    cursor: pointer; font: inherit; padding: 2px 10px; }
-  #console { position: fixed; left: 80vw; top: 66vh; width: 18vw; padding: 8px; box-sizing: border-box;
-             background: #0d1018; border: 1px solid #2c3140; border-radius: 8px; font-size: clamp(10px, 1.5vh, 13px); }
-  #engines { display: flex; flex-direction: column; gap: 5px; }
-  #engines button.on, .game #game-toggle { border-color: var(--accent); color: var(--accent); }
-  #game-toggle { margin-top: 8px; width: 100%; }
+  #shifter text.locked { fill: #2a2a33; }
   #pedals { position: fixed; right: 1.5vw; bottom: 1vh; display: flex; gap: 2vh; align-items: flex-end; }
   .pedal-box { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px;
                font-size: 10px; color: #889; letter-spacing: 1px; }
@@ -82,8 +103,15 @@
   <div id="flash"></div>
   <div id="hud-main"><span id="hud-speed">0</span><small>km/h</small><span id="hud-gear">N</span></div>
   <div id="hud-rpm"><div id="fill"></div></div>
-  <div id="pips"><span id="lvl">LEVEL</span></div>
-  <div id="score"></div>
+  <b id="run-dist"></b><span id="run-info"></span>
+</div>
+
+<div id="garage">
+  <header><b>GARAGE</b><span id="bank"></span></header>
+  <div id="report"></div>
+  <div id="engine-row"></div>
+  <div id="cards"></div>
+  <footer><button id="reset">reset progress</button><button id="drive">DRIVE ▶</button></footer>
 </div>
 
 <svg id="cluster" viewBox="0 0 560 200">
@@ -94,6 +122,7 @@
   <g id="lamps" font-size="11" font-weight="bold">
     <text id="lamp-batt" x="250" y="150">BATT</text><text id="lamp-oil" x="310" y="150">OIL</text>
     <text id="lamp-brake" x="250" y="168">BRAKE</text><text id="lamp-clutch" x="310" y="168">CLUTCH</text>
+    <text id="lamp-slip" x="280" y="186">SLIP</text>
   </g>
 </svg>
 
@@ -119,20 +148,14 @@
 
 <svg id="shifter" viewBox="-1.6 -1.75 3.2 3.5"><title>drag the knob through the H (clutch down)</title>
   <rect x="-1.55" y="-1.7" width="3.1" height="3.4" rx="0.4" fill="#111117" stroke="#2a2a33" stroke-width="0.05"/>
-  <path d="M-1,0 H1 M-1,-1 V1 M0,-1 V1 M1,-1 V1" stroke="#050507" stroke-width="0.32" stroke-linecap="round"/>
-  <text x="-1" y="-1.3">1</text><text x="0" y="-1.3">3</text><text x="1" y="-1.3">5</text>
-  <text x="-1" y="1.53">2</text><text x="0" y="1.53">4</text><text x="1" y="1.53">6</text>
+  <path id="gate" stroke="#050507" stroke-width="0.32" stroke-linecap="round"/>
+  <g id="gate-labels"></g>
   <g id="knob">
     <circle r="0.36" fill="#2b2b33" stroke="#666" stroke-width="0.05"/>
     <circle r="0.27" fill="#3a3a44"/>
     <text id="knob-gear" y="0.11" style="font-size: 0.3px; fill: #ddd">N</text>
   </g>
 </svg>
-
-<div id="console">
-  <div id="engines"></div>
-  <button id="game-toggle">GAME OFF</button>
-</div>
 
 <div id="pedals">
   <div class="pedal-box"><i class="depth"></i><svg id="clutch" class="pedal" viewBox="0 0 80 140" aria-label="clutch pedal"><use href="#pedal-art"/></svg>CLUTCH</div>
@@ -153,6 +176,7 @@
 </svg>
 
 <div id="help">
+  get as far as you can before the clock runs out · every metre is money for the garage<br>
   everything is done with the mouse: drag it like the real thing<br>
   <b>KEY</b> drag to START and hold it until the engine fires · drag to OFF to stop<br>
   <b>PEDALS</b> drag down to press · they stay where you leave them · double-click to let go<br>
@@ -165,6 +189,7 @@
 <script src="car.js"></script>
 <script src="road.js"></script>
 <script src="game.js"></script>
+<script src="aids.js"></script>
 <script src="main.js"></script>
 </body>
 </html>
