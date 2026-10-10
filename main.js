@@ -94,27 +94,33 @@ const pips = $('pips');
 LEVELS.forEach(() => pips.append(document.createElement('i')));
 
 function renderGame(onTarget) {
+  const speedGame = game.mode === 'speed';
   document.body.classList.toggle('game', game.on);
+  document.body.classList.toggle('speed-game', speedGame);
   document.body.classList.toggle('hit', onTarget);
-  $('game-toggle').textContent = game.on ? 'GAME: REV' : 'GAME OFF';
+  $('game-toggle').textContent = `GAME: ${game.mode.toUpperCase()}`;
   // levels below are solid; the current one is the gauge, green when nearly full, red when nearly empty
   $('lvl').textContent = `LEVEL ${game.level + 1}`;
   pips.querySelectorAll('i').forEach((p, i) => {
     p.style.setProperty('--f', i < game.level ? '100%' : i > game.level ? '0%' : game.gauge * 100 + '%');
     p.style.setProperty('--c', i !== game.level ? 'var(--hud)' : game.gauge >= 0.75 ? '#5f5' : game.gauge <= 0.25 ? '#f55' : 'var(--hud)');
   });
-  const s = $('score'), [width, pps] = LEVELS[game.level];
+  const s = $('score'), pps = LEVELS[game.level][1];
+  const band = speedGame ? `${SPEED_WIDTHS[game.level]} km/h` : `${LEVELS[game.level][0]} rpm`, next = game.signs[0];
+  const target = !speedGame ? `target ${game.lo}–${game.hi} · new in ${Math.ceil(game.left)}s` :
+    (game.lo ? `target ${Math.round(game.lo)}–${Math.round(game.hi)} km/h · ` : '') +
+    `next sign ${next.value} in ${Math.max(0, Math.round(next.z - odo))} m`;
   if (!game.on) s.textContent = game.points ? `${Math.round(game.points)} pts\nlast game · best level ${game.best + 1}` : '';
-  else if (!game.lo) s.textContent = 'press ENTER to start';
-  else s.textContent = `${Math.round(game.points)} pts\n` +
-    `${width} rpm band · ${pps} pts/s · target ${game.lo}–${game.hi} · new in ${Math.ceil(game.left)}s` +
-    (game.note ? `\n${game.note}` : '');
-  // target band on the HUD rpm strip and on the tachometer
+  else if (state !== 'running' && !game.lo) s.textContent = 'press ENTER to start';
+  else s.textContent = `${Math.round(game.points)} pts\n${band} band · ${pps} pts/s\n${target}` + (game.note ? `\n${game.note}` : '');
+  // target band: rev game on the HUD rpm strip and the tachometer, speed game on the speedometer
   $('target').style.left = game.lo / tachMax * 100 + '%';
   $('target').style.width = (game.hi - game.lo) / tachMax * 100 + '%';
-  const band = $('tach').querySelector('.band');
-  band.setAttribute('d', game.on && game.lo ? arc(140, dialAngle(game.lo, tachMax), dialAngle(game.hi, tachMax), DIAL.r - 4) : '');
-  band.setAttribute('stroke', onTarget ? '#5f5' : '#fff');
+  for (const [id, cx, max, show] of [['tach', 140, tachMax, game.mode === 'rev'], ['speedo', 420, SPEEDO_MAX, speedGame]]) {
+    const arcEl = $(id).querySelector('.band');
+    arcEl.setAttribute('d', show && game.lo ? arc(cx, dialAngle(game.lo, max), dialAngle(game.hi, max), DIAL.r - 4) : '');
+    arcEl.setAttribute('stroke', onTarget ? '#5f5' : '#fff');
+  }
 }
 
 // ---- main loop ----
@@ -152,7 +158,7 @@ function tick(now) {
   $('clutch').classList.toggle('down', clutchDown);
   $('brake').classList.toggle('down', braking);
 
-  renderGame(updateGame(dt, rpm));
+  renderGame(updateGame(dt));
   requestAnimationFrame(tick);
 }
 requestAnimationFrame(tick);

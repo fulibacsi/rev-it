@@ -73,6 +73,19 @@ function carSprite(color, front) { // rear view (same direction) or front view (
   });
 }
 const CARS = CAR_COLORS.map(c => ({ rear: carSprite(c, false), front: carSprite(c, true) }));
+const SIGNS = new Map(); // speed game signs by value; drawn 1.5 m wide (oversized so they read from afar)
+function signSprite(value) {
+  if (!SIGNS.has(value)) SIGNS.set(value, sprite(120, 330, (g, w, h) => {
+    g.fillStyle = '#888'; g.fillRect(w * 0.45, h * 0.45, w * 0.1, h * 0.55); // post
+    g.fillStyle = '#111'; g.fillRect(0, 0, w, h * 0.47);
+    g.fillStyle = '#f4f4f4'; g.fillRect(6, 6, w - 12, h * 0.47 - 12);
+    g.fillStyle = '#111'; g.textAlign = 'center';
+    g.font = 'bold 20px sans-serif'; g.fillText('SPEED', w / 2, 34);
+    g.font = 'bold 60px sans-serif'; g.fillText(value, w / 2, 100);
+    g.font = 'bold 16px sans-serif'; g.fillText('km/h', w / 2, 132);
+  }));
+  return SIGNS.get(value);
+}
 
 // ---- traffic: oncoming cars on the left, cars in the passing lane that you overtake or that overtake you ----
 const traffic = [];
@@ -135,9 +148,10 @@ function drawRoad(g, w, h, dt) {
     if (Math.floor(i / 3) % 2) { quad(a, b, -3.6, -3.4, '#eee'); quad(a, b, 3.4, 3.6, '#eee'); } // lane dashes
   }
 
-  // sprites, far to near: palms and traffic
-  const ahead = traffic.map(c => ({ c, d: c.z - odo }))
-    .filter(t => t.d > 2 && t.d < (ROAD.draw - 2) * ROAD.segment).sort((p, q) => q.d - p.d);
+  // sprites, far to near: palms, traffic and speed signs (x: metres from the centre line, w/h: metres)
+  const signs = game.mode === 'speed' ? game.signs.map(s => ({ z: s.z, x: ROAD.half + 2, w: 1.5, h: 4.1, img: signSprite(s.value) })) : [];
+  const ahead = [...traffic.map(c => ({ z: c.z, x: c.x, w: 1.8, h: 1.4, img: c.dir > 0 ? c.look.rear : c.look.front })), ...signs]
+    .map(o => ({ ...o, d: o.z - odo })).filter(o => o.d > 2 && o.d < (ROAD.draw - 2) * ROAD.segment).sort((p, q) => q.d - p.d);
   let t = 0;
   for (let n = ROAD.draw - 1; n > 0; n--) {
     const a = proj[n], s = segments[(base + n) % ROAD.count], fog = Math.min(1, 1.6 - n / ROAD.draw * 1.6);
@@ -146,10 +160,10 @@ function drawRoad(g, w, h, dt) {
       const ph = 11 * sp.size * a.k, pw = ph / 2;
       g.drawImage(PALM, a.x + sp.x * a.k - pw / 2, a.y - ph, pw, ph);
     }
-    while (t < ahead.length && ahead[t].d >= a.z) { // traffic within this segment
-      const { c, d } = ahead[t++], f = (d - a.z) / ROAD.segment, b = proj[n + 1] || a;
+    while (t < ahead.length && ahead[t].d >= a.z) { // cars and signs within this segment
+      const o = ahead[t++], f = (o.d - a.z) / ROAD.segment, b = proj[n + 1] || a;
       const k = a.k + (b.k - a.k) * f, cx = a.x + (b.x - a.x) * f, cy = a.y + (b.y - a.y) * f;
-      g.drawImage(c.dir > 0 ? c.look.rear : c.look.front, cx + (c.x - 0.9) * k, cy - 1.4 * k, 1.8 * k, 1.4 * k);
+      g.drawImage(o.img, cx + (o.x - o.w / 2) * k, cy - o.h * k, o.w * k, o.h * k);
     }
   }
   g.globalAlpha = 1;
