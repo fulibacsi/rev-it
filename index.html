@@ -29,11 +29,18 @@
   #score { margin-top: 8px; white-space: pre-line; font-variant-numeric: tabular-nums; color: #777; }
   #score::first-line { font-size: 28px; font-weight: bold; }
   .game #score { color: #eee; }
-  #pedal { position: fixed; right: 40px; bottom: 40px; width: 80px; cursor: pointer; touch-action: none;
-           user-select: none; -webkit-user-select: none; transform-origin: 50% 100%;
-           transform: perspective(300px) rotateX(0deg); transition: transform 0.25s linear; } /* PEDAL_OUT */
-  #pedal.down { transform: perspective(300px) rotateX(35deg); transition-duration: 0.4s; }  /* PEDAL_IN */
-  #pedal.down .pad { fill: #4a4a4a; }
+  #pedals { position: fixed; right: 30px; bottom: 30px; display: flex; gap: 14px; align-items: flex-end; }
+  .pedal { width: 64px; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none;
+           transform-origin: 50% 100%; transform: perspective(300px) rotateX(0deg);
+           transition: transform var(--out) linear; }
+  .pedal.down { transform: perspective(300px) rotateX(35deg); transition-duration: var(--in); }
+  .pedal.down .pad { fill: #4a4a4a; }
+  #gas { --in: 0.4s; --out: 0.25s; width: 56px; }  /* PEDAL_IN / PEDAL_OUT */
+  #clutch { --in: 0.12s; --out: 0.6s; }             /* CAR.clutchIn / clutchOut */
+  #brake { --in: 0.1s; --out: 0.1s; width: 76px; }
+  #drive { margin-top: 10px; color: #aaa; font-variant-numeric: tabular-nums; }
+  #drive b { color: #eee; font-size: 22px; }
+  #drive button { background: #222; color: #ccc; border: 1px solid #555; border-radius: 4px; cursor: pointer; }
   #target { position: absolute; top: 0; bottom: 0; display: none; box-sizing: border-box;
             border: 2px solid #eee; border-radius: 4px; background: #fff3; }
   .game #target { display: block; }
@@ -69,8 +76,10 @@
   <div id="gauge"><div id="rpm">0</div><div id="flash"></div></div>
   <div id="bar"><div id="fill"></div><div id="target"></div></div>
   <div id="pips"><span id="lvl">LEVEL</span></div>
-  <p><b>1–3</b> pick engine · <b>ENTER</b> start · hold <b>SPACE</b> or the pedal to rev · <b>ESC</b> stop · <b>G</b> game</p>
-  <svg id="pedal" viewBox="0 0 80 140" aria-label="gas pedal">
+  <div id="drive"><button id="gear-down">▼</button> gear <b id="gear">N</b> <button id="gear-up">▲</button> · <b id="speed">0</b> km/h</div>
+  <p><b>1–3</b> pick engine · <b>ENTER</b> start · hold <b>SPACE</b> or the pedal to rev · <b>ESC</b> stop · <b>G</b> game<br><b>SHIFT</b> clutch · <b>B</b> brake · <b>↑ ↓</b> gears (clutch down)</p>
+  <div id="pedals">
+  <svg id="clutch" class="pedal" viewBox="0 0 80 140" aria-label="clutch pedal">
     <rect class="pad" x="4" y="4" width="72" height="118" rx="12" fill="#333" stroke="#777" stroke-width="2"/>
     <g stroke="#555" stroke-width="4" stroke-linecap="round">
       <line x1="18" y1="22" x2="62" y2="22"/><line x1="18" y1="36" x2="62" y2="36"/>
@@ -80,280 +89,32 @@
     </g>
     <rect x="26" y="124" width="28" height="12" rx="3" fill="#555"/>
   </svg>
+  <svg id="brake" class="pedal" viewBox="0 0 80 140" aria-label="brake pedal">
+    <rect class="pad" x="4" y="4" width="72" height="118" rx="12" fill="#333" stroke="#777" stroke-width="2"/>
+    <g stroke="#555" stroke-width="4" stroke-linecap="round">
+      <line x1="18" y1="22" x2="62" y2="22"/><line x1="18" y1="36" x2="62" y2="36"/>
+      <line x1="18" y1="50" x2="62" y2="50"/><line x1="18" y1="64" x2="62" y2="64"/>
+      <line x1="18" y1="78" x2="62" y2="78"/><line x1="18" y1="92" x2="62" y2="92"/>
+      <line x1="18" y1="106" x2="62" y2="106"/>
+    </g>
+    <rect x="26" y="124" width="28" height="12" rx="3" fill="#555"/>
+  </svg>
+  <svg id="gas" class="pedal" viewBox="0 0 80 140" aria-label="gas pedal">
+    <rect class="pad" x="4" y="4" width="72" height="118" rx="12" fill="#333" stroke="#777" stroke-width="2"/>
+    <g stroke="#555" stroke-width="4" stroke-linecap="round">
+      <line x1="18" y1="22" x2="62" y2="22"/><line x1="18" y1="36" x2="62" y2="36"/>
+      <line x1="18" y1="50" x2="62" y2="50"/><line x1="18" y1="64" x2="62" y2="64"/>
+      <line x1="18" y1="78" x2="62" y2="78"/><line x1="18" y1="92" x2="62" y2="92"/>
+      <line x1="18" y1="106" x2="62" y2="106"/>
+    </g>
+    <rect x="26" y="124" width="28" height="12" rx="3" fill="#555"/>
+  </svg>
+  </div>
   <small>Recordings from Freesound: Ears68, Angel_soto, editboy23, dezoris, t33kno (CC0), iainmccurdy (CC BY 4.0)</small>
 <script src="sounds.js"></script>
-<script>
-// loops: [rpm, base64 WAV] recorded at a steady rpm, built by make_sounds.py
-// tauUp / tauDown: seconds for the rpm to close ~63% of the gap to where the pedal points (engine inertia)
-// lope: rpm the idle hunts by (big cam); turbo: pulls weakly until boost builds; torqueDip: rpm where the
-// factory tune pulls torque; revHang: seconds the e-throttle's late closing (emissions) slows the drop after lift-off
-const ENGINES = [
-  // big-cam V8, heavy flywheel: lumpy idle, steady but slow to rev and slow to drop
-  { name: 'Muscle V8', loops: SOUNDS.v8, idle: 825, redline: 7000, tauUp: 0.75, tauDown: 1.3, lope: 40 },
-  // Supra 2JZ with a big turbo: lazy off idle, then pulls hard once spooled, blow-off on lift
-  { name: 'JDM Turbo I6', loops: SOUNDS.supra, idle: 1000, redline: 8000, tauUp: 0.5, tauDown: 0.9, turbo: true },
-  // 86 / BRZ FA20: light and eager, torque dip around 3500-4500 rpm, rev hang on lift-off
-  { name: 'JDM Boxer', loops: SOUNDS.boxer, idle: 855, redline: 7400, tauUp: 0.5, tauDown: 0.8, torqueDip: 3800, revHang: 0.6 },
-];
-const PEDAL_IN = 0.4, PEDAL_OUT = 0.25; // seconds to fully press / release the throttle
-const TARGET_SECONDS = 5; // game: how long each target lasts
-// game levels: [band width rpm, points per second on target]. The level gauge fills while on target and drains
-// while off: full = level up, empty = level down, then it restarts half full (pace tuned by simulating players)
-const LEVELS = [[1600, 5], [1200, 8], [900, 10], [700, 15], [550, 20], [420, 30], [300, 40]];
-const START_LEVEL = 2, GAUGE_SECONDS = 6; // seconds of net on-target time to take the gauge from empty to full
-
-let engine, ctx, loading, players = [], filter, master, noise, starterBuffer, starterGain;
-let rpm = 0, throttle = 0, boost = 0, hang = 0, gas = false, last, state = 'off', crankUntil = 0; // state: 'off' | 'cranking' | 'running'
-// left: seconds until the next target; gauge: 0..1 progress within the current level; best: highest level reached
-const game = { on: false, level: START_LEVEL, best: START_LEVEL, lo: 0, hi: 0, left: 0, gauge: 0.5, points: 0, note: '' };
-
-const list = document.getElementById('engines');
-ENGINES.forEach((e, i) => {
-  const s = document.createElement('span');
-  s.textContent = `${i + 1} · ${e.name}`;
-  s.onclick = () => selectEngine(i);
-  list.append(s);
-});
-
-function selectEngine(i) {
-  engine = ENGINES[i];
-  [...list.children].forEach((s, j) => s.classList.toggle('on', j === i));
-  if (engine.buffers) buildPlayers();
-  game.left = 0; // new rev range: pick a fresh target
-}
-selectEngine(0);
-
-function toggleGame() {
-  game.on = !game.on;
-  if (game.on) Object.assign(game, { level: START_LEVEL, best: START_LEVEL, lo: 0, hi: 0, left: 0, gauge: 0.5, points: 0, note: '' });
-  document.body.classList.toggle('game', game.on);
-  renderScore();
-}
-document.getElementById('game-toggle').onclick = toggleGame;
-
-function nextTarget() { // a band away from the last one
-  const lo = engine.idle + 1000, hi = engine.redline - 1200, prev = (game.lo + game.hi) / 2;
-  let mid;
-  do mid = lo + Math.random() * (hi - lo); while (Math.abs(mid - prev) < 1200);
-  setBand(mid);
-  game.left = TARGET_SECONDS;
-}
-
-function setBand(mid) { // band centred on mid, as wide as the current level allows
-  const width = LEVELS[game.level][0];
-  game.lo = Math.round((mid - width / 2) / 50) * 50;
-  game.hi = game.lo + width;
-}
-
-function changeLevel(step) { // gauge ran full or empty: move a level and resize the band in place
-  game.level += step;
-  game.best = Math.max(game.best, game.level);
-  game.gauge = 0.5;
-  game.note = step > 0 ? '▲ level up' : '▼ level down';
-  setBand((game.lo + game.hi) / 2);
-  flashLevel(step > 0);
-}
-
-function flashLevel(up) { // "level up" floats up from the rpm readout, "level down" sinks into it
-  const f = document.getElementById('flash'), [from, to] = up ? ['0px', '-60px'] : ['-60px', '20px'];
-  f.textContent = up ? '▲ LEVEL UP' : '▼ LEVEL DOWN';
-  f.style.color = up ? '#4c4' : '#e44';
-  f.animate([{ opacity: 1, transform: `translate(-50%, ${from}) scale(1.3)` },
-             { opacity: 0, transform: `translate(-50%, ${to}) scale(1)` }], { duration: 1200, easing: 'ease-out' });
-}
-
-const pips = document.getElementById('pips'); // central level indicator under the rpm bar
-LEVELS.forEach(() => pips.append(document.createElement('i')));
-
-function renderScore() {
-  // levels below are solid; the current one is the gauge, green when nearly full, red when nearly empty
-  document.getElementById('lvl').textContent = `LEVEL ${game.level + 1}`;
-  pips.querySelectorAll('i').forEach((p, i) => {
-    p.style.setProperty('--f', i < game.level ? '100%' : i > game.level ? '0%' : game.gauge * 100 + '%');
-    p.style.setProperty('--c', i !== game.level ? '#ec4' : game.gauge >= 0.75 ? '#4c4' : game.gauge <= 0.25 ? '#e44' : '#ec4');
-  });
-  const s = document.getElementById('score'), [width, pps] = LEVELS[game.level];
-  if (!game.on) s.textContent = game.points ? `${Math.round(game.points)} pts\nlast game · best level ${game.best + 1}` : '';
-  else if (!game.lo) s.textContent = 'press ENTER to start';
-  else s.textContent = `${Math.round(game.points)} pts\n` +
-    `level ${game.level + 1}/${LEVELS.length} · ${width} rpm band · ${pps} pts/s\n` +
-    `target ${game.lo}–${game.hi} · new in ${Math.ceil(game.left)}s` + (game.note ? `\n${game.note}` : '');
-}
-renderScore();
-
-async function start() {
-  ctx = new AudioContext();
-  master = ctx.createGain();
-  master.gain.value = 0;
-  master.connect(ctx.destination);
-  filter = ctx.createBiquadFilter(); // muffles the sound when coasting off throttle
-  filter.type = 'lowpass';
-  filter.frequency.value = 12000;
-  filter.connect(master);
-
-  // one second of white noise for the blow-off valve
-  noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
-  const d = noise.getChannelData(0);
-  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-
-  starterGain = ctx.createGain(); // starter motor has its own level, independent of rpm
-  starterGain.gain.value = 0;
-  starterGain.connect(ctx.destination);
-
-  const decode = wav => ctx.decodeAudioData(Uint8Array.from(atob(wav), c => c.charCodeAt(0)).buffer);
-  starterBuffer = await decode(SOUNDS.starter);
-  await Promise.all(ENGINES.map(async e => {
-    e.buffers = await Promise.all(e.loops.map(([, wav]) => decode(wav)));
-  }));
-  buildPlayers();
-  last = performance.now();
-  requestAnimationFrame(tick);
-}
-
-function buildPlayers() {
-  players.forEach(p => p.src.stop());
-  players = engine.loops.map(([loopRpm], i) => {
-    const src = ctx.createBufferSource(), gain = ctx.createGain();
-    src.buffer = engine.buffers[i];
-    src.loop = true;
-    gain.gain.value = 0;
-    src.connect(gain).connect(filter);
-    src.start();
-    return { src, gain, rpm: loopRpm };
-  });
-}
-
-// equal-power crossfade (in log-rpm) between the two loops recorded closest to r
-function loopGains(r) {
-  const g = players.map(() => 0), hi = players.findIndex(p => p.rpm >= r);
-  if (hi <= 0) g[hi === 0 ? 0 : g.length - 1] = 1;
-  else {
-    const lo = players[hi - 1].rpm, x = Math.log(r / lo) / Math.log(players[hi].rpm / lo);
-    g[hi - 1] = Math.cos(x * Math.PI / 2);
-    g[hi] = Math.sin(x * Math.PI / 2);
-  }
-  return g;
-}
-
-function blowOff() { // turbo blow-off valve "pssh"
-  const src = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g = ctx.createGain(), t = ctx.currentTime;
-  src.buffer = noise;
-  bp.type = 'bandpass';
-  bp.frequency.setValueAtTime(4000, t);
-  bp.frequency.exponentialRampToValueAtTime(1500, t + 0.5);
-  g.gain.setValueAtTime(boost, t);
-  g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
-  src.connect(bp).connect(g).connect(master);
-  src.start();
-  src.stop(t + 0.5);
-}
-
-function tick(now) {
-  const dt = (now - last) / 1000;
-  last = now;
-  const e = engine;
-  // the pedal moves progressively, so short taps only open the throttle a little
-  throttle = gas && state === 'running' ? Math.min(1, throttle + dt / PEDAL_IN) : Math.max(0, throttle - dt / PEDAL_OUT);
-  if (state === 'cranking') {
-    rpm = 250 + 80 * Math.sin(now / 40); // starter motor chugging
-    if (now > crankUntil) { state = 'running'; rpm = e.idle + 1000; } // catches, flares, settles to idle
-  } else if (state === 'running') {
-    // rpm chases where the pedal points: quick when far away, easing in as it gets close
-    const aim = e.idle + throttle * (e.redline + 1000 - e.idle);
-    let pull = 1; // how hard the engine can accelerate at this rpm
-    if (e.turbo) pull = 0.35 + 0.85 * boost;
-    if (e.torqueDip) pull *= 1 - 0.4 * Math.exp(-(((rpm - e.torqueDip) / 500) ** 2));
-    hang = Math.max(0, hang - dt);
-    const slow = e.revHang ? 1 + 3 * hang / e.revHang : 1; // rev hang: the drop starts 4x slower, eases back
-    rpm += (aim - rpm) * Math.min(1, aim > rpm ? dt * pull / e.tauUp : dt / (e.tauDown * slow));
-    if (rpm > e.redline) rpm = e.redline - 400; // rev limiter bounce
-    rpm = Math.max(e.idle, rpm);
-  } else {
-    rpm = Math.max(0, rpm - 2000 * dt); // spin down
-  }
-  // boost follows the throttle above 3000 rpm: spools up slowly (lag), dumps fast through the blow-off valve
-  const boostAim = state === 'running' && rpm > 3000 ? throttle : 0;
-  boost += (boostAim - boost) * Math.min(1, dt / (boostAim > boost ? 0.7 : 0.15));
-  // big-cam lope: the idle hunts unevenly, fading out as the revs rise (sound and readout only)
-  const shown = rpm + (e.lope && state === 'running' ?
-    e.lope * Math.sin(now / 90) * Math.sin(now / 410) * Math.max(0, 1 - (rpm - e.idle) / 600) : 0);
-
-  const t = ctx.currentTime;
-  const level = (0.45 + 0.35 * throttle) * (0.5 + 0.5 * rpm / e.redline); // louder on throttle and with revs
-  const overrun = state === 'running' && throttle < 0.1 && rpm > e.idle * 1.5;
-  loopGains(shown).forEach((g, i) => {
-    players[i].gain.gain.setTargetAtTime(g, t, 0.03);
-    players[i].src.playbackRate.setTargetAtTime(Math.max(0.05, shown / players[i].rpm), t, 0.03);
-  });
-  filter.frequency.setTargetAtTime(overrun ? 2000 : 12000, t, 0.1);
-  starterGain.gain.setTargetAtTime(state === 'cranking' ? 0.35 : 0, t, 0.03); // cut as soon as the engine catches
-  master.gain.setTargetAtTime(state === 'off' ? level * Math.min(1, rpm / e.idle) : level, t, 0.1);
-
-  document.getElementById('ignition').dataset.state = state;
-  document.getElementById('rpm').textContent = Math.round(shown);
-  document.getElementById('fill').style.width = Math.min(100, rpm / e.redline * 100) + '%';
-
-  const onTarget = game.on && state === 'running' && rpm >= game.lo && rpm <= game.hi;
-  if (game.on && state === 'running') { // the game clock only runs while the engine does
-    game.left -= dt;
-    if (game.left <= 0) nextTarget();
-    game.gauge = Math.min(1, Math.max(0, game.gauge + (onTarget ? dt : -dt) / GAUGE_SECONDS));
-    if (onTarget) game.points += LEVELS[game.level][1] * dt;
-    if (game.gauge >= 1 && game.level < LEVELS.length - 1) changeLevel(1);
-    else if (game.gauge <= 0 && game.level > 0) changeLevel(-1);
-  }
-  document.body.classList.toggle('hit', onTarget);
-  const band = document.getElementById('target');
-  band.style.left = game.lo / e.redline * 100 + '%';
-  band.style.width = (game.hi - game.lo) / e.redline * 100 + '%';
-  renderScore();
-  requestAnimationFrame(tick);
-}
-
-async function ignite() {
-  loading ??= start(); // browsers only allow audio after a user gesture
-  await loading;
-  state = 'cranking';
-  crankUntil = performance.now() + 900;
-  const starter = ctx.createBufferSource(); // looping starter motor, faded out by tick()
-  starter.buffer = starterBuffer;
-  starter.loop = true;
-  starter.connect(starterGain);
-  starter.start();
-  starter.stop(ctx.currentTime + 1.2);
-}
-document.getElementById('ignition').onclick = () => state === 'off' ? ignite() : (state = 'off');
-
-addEventListener('keydown', e => {
-  const n = Number(e.key);
-  if (e.code === 'Space') {
-    e.preventDefault();
-    setGas(true);
-  } else if (n >= 1 && n <= ENGINES.length) {
-    selectEngine(n - 1);
-  } else if (e.key.toLowerCase() === 'g') {
-    toggleGame();
-  } else if (e.key === 'Enter' && state === 'off') {
-    ignite();
-  } else if (e.key === 'Escape') {
-    state = 'off';
-  }
-});
-addEventListener('keyup', e => { if (e.code === 'Space') setGas(false); });
-addEventListener('blur', () => setGas(false)); // don't get stuck revving if focus is lost
-
-// on-screen gas pedal: same as Space; pointer capture keeps the release even if it happens off the pedal
-const pedal = document.getElementById('pedal');
-pedal.onpointerdown = e => { pedal.setPointerCapture(e.pointerId); setGas(true); };
-pedal.onpointerup = pedal.onpointercancel = () => setGas(false);
-pedal.oncontextmenu = e => e.preventDefault(); // long-press on touch screens
-
-function setGas(on) {
-  if (!on && gas && engine.turbo && boost > 0.5) blowOff();
-  if (!on && gas && engine.revHang) hang = engine.revHang;
-  gas = on;
-  pedal.classList.toggle('down', on);
-}
-</script>
+<script src="engine.js"></script>
+<script src="car.js"></script>
+<script src="game.js"></script>
+<script src="main.js"></script>
 </body>
 </html>
