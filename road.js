@@ -95,6 +95,7 @@ function spawnCar(car, d) {
     z: odo + d, dir: oncoming ? -1 : 1, look: CARS[Math.floor(rand() * CARS.length)],
     x: oncoming ? LANES.oncoming[rand() < 0.5 ? 0 : 1] : LANES.passing,
     v: (oncoming ? 70 + rand() * 40 : 80 + rand() * 30) / 3.6,
+    d: NaN, // distance last frame: unknown for a fresh car, so it can't trigger a pass-by sound
   });
 }
 for (let i = 0; i < 12; i++) { const c = {}; spawnCar(c, 80 + i * 120); traffic.push(c); }
@@ -103,6 +104,8 @@ function updateTraffic(dt) {
   for (const c of traffic) {
     c.z += c.dir * c.v * dt;
     const d = c.z - odo;
+    if (c.d > 0 && d <= 0) whoosh(Math.abs(speed - c.dir * c.v) * 3.6); // just went past the driver
+    c.d = d;
     if (d < -15) spawnCar(c, 900 + rand() * 600); // passed: send it back to the horizon
     else if (d > ROAD.draw * ROAD.segment + 100) spawnCar(c, -12); // pulled away: a new one comes up from behind
     if (c.dir > 0 && c.z - odo < 0 && c.v < speed) spawnCar(c, 900 + rand() * 600); // can't come from behind slower

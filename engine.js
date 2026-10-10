@@ -21,7 +21,7 @@ const ENGINES = [
 const PEDAL_IN = 0.4, PEDAL_OUT = 0.25; // seconds to fully press / release the throttle
 const LIMITER_DROP = 250; // fuel cut at the redline until the rpm falls this far
 
-let engine, ctx, loading, players = [], filter, master, noise, starterBuffer, starterGain;
+let engine, ctx, loading, players = [], filter, master, noise, starterBuffer, starterGain, wind;
 // state: 'off' | 'cranking' | 'running'; cut: rev limiter has cut the fuel
 let rpm = 0, throttle = 0, boost = 0, hang = 0, cut = false, gas = false, state = 'off', crankUntil = 0;
 
@@ -43,6 +43,15 @@ async function start() {
   starterGain = ctx.createGain(); // starter motor has its own level, independent of rpm
   starterGain.gain.value = 0;
   starterGain.connect(ctx.destination);
+
+  const roar = ctx.createBufferSource(); // wind and tyre roar: looping noise, louder and brighter with speed
+  roar.buffer = noise;
+  roar.loop = true;
+  wind = { filter: ctx.createBiquadFilter(), gain: ctx.createGain() };
+  wind.filter.type = 'lowpass';
+  wind.gain.gain.value = 0;
+  roar.connect(wind.filter).connect(wind.gain).connect(ctx.destination);
+  roar.start();
 
   const decode = wav => ctx.decodeAudioData(Uint8Array.from(atob(wav), c => c.charCodeAt(0)).buffer);
   starterBuffer = await decode(SOUNDS.starter);
@@ -88,6 +97,23 @@ function blowOff() { // turbo blow-off valve "pssh"
   src.connect(bp).connect(g).connect(master);
   src.start();
   src.stop(t + 0.5);
+}
+
+function whoosh(relSpeed) { // a car passing on the left; louder the faster you pass each other
+  if (!ctx) return;
+  const src = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g = ctx.createGain(), pan = ctx.createStereoPanner();
+  const t = ctx.currentTime, level = Math.min(0.5, Math.max(0.001, relSpeed / 120)); // ramps can't reach 0
+  src.buffer = noise;
+  bp.type = 'bandpass';
+  bp.frequency.setValueAtTime(1800, t);
+  bp.frequency.exponentialRampToValueAtTime(350, t + 0.6); // pitch drops as it goes by
+  g.gain.setValueAtTime(0.001, t);
+  g.gain.exponentialRampToValueAtTime(level, t + 0.08);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+  pan.pan.value = -0.7;
+  src.connect(bp).connect(g).connect(pan).connect(ctx.destination);
+  src.start();
+  src.stop(t + 0.6);
 }
 
 function grind() { // gears clashing: shifting without the clutch
@@ -170,4 +196,6 @@ function updateAudio(shown) {
   filter.frequency.setTargetAtTime(overrun ? 2000 : 12000, t, 0.1);
   starterGain.gain.setTargetAtTime(state === 'cranking' ? 0.35 : 0, t, 0.03); // cut as soon as the engine catches
   master.gain.setTargetAtTime(state === 'off' ? level * Math.min(1, rpm / e.idle) : level, t, 0.1);
+  wind.gain.gain.setTargetAtTime(Math.min(0.4, 0.3 * (speed / 40) ** 2), t, 0.2);
+  wind.filter.frequency.setTargetAtTime(250 + speed * 25, t, 0.2);
 }
