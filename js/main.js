@@ -194,9 +194,8 @@ function tick(now) {
   if (players.length) updateAudio(shown);
 
   drawRoad(g2d, canvas.width, canvas.height, dt);
-  const curve = segments[Math.floor(odo % (ROAD.count * ROAD.segment) / ROAD.segment)].curve;
-  if (wheel.held) steer = wheel.angle; // in your hands; let go, it eases back to following the road
-  else steer += (curve * 9000 + slide * 12 - steer) * Math.min(1, dt * 3); // the bends and lane changes turn it
+  if (wheel.held) steer = wheel.angle; // only your hands turn it
+  else steer -= steer * Math.min(1, dt * 8); // let go: straight back to the middle
   $('wheel-rim').setAttribute('transform', `rotate(${steer} 500 560)`);
 
   needle('tach', 140, shown, tachMax);

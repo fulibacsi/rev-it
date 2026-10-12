@@ -64,10 +64,11 @@
 
 <svg id="wheel" viewBox="0 0 1000 300">
   <g id="wheel-rim">
-    <circle id="wheel-grip" cx="500" cy="560" r="500" fill="none" stroke="#24242c" stroke-width="70"/>
+    <circle cx="500" cy="560" r="500" fill="none" stroke="#24242c" stroke-width="70"/>
     <circle cx="500" cy="560" r="518" fill="none" stroke="#3a3a46" stroke-width="5"/>
-    <rect x="490" y="25" width="20" height="70" fill="#a33"/>
+    <rect x="462" y="12" width="76" height="96" rx="10" fill="#c33"/>
   </g>
+  <circle id="wheel-grip" cx="500" cy="560" r="500" fill="none" stroke="transparent" stroke-width="200"/>
 </svg>
 
 <svg id="ignition" data-state="off" viewBox="0 0 150 110"><title>drag to START and hold; drag to OFF to stop</title>
@@ -120,6 +121,7 @@
 
 <button id="menu-button" title="menu (Esc)">☰</button>
 <button id="nos" title="nitro: hold (or hold N)"><i id="nos-fill"></i><span>NOS</span></button>
+<button id="flash" title="flash your headlights (or press F)">FLASH</button>
 <div id="rotate">Turn your phone sideways to drive.</div>
 <div id="menu"><div id="menu-panel">
   <h1>REV <span>IT</span></h1>

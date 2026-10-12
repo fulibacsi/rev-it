@@ -183,18 +183,35 @@ function leader(car) { // the nearest thing ahead in its lane: a car, or you
   if (sameLane(carX, car.x) && me > car.z && (!lead || me < lead.z)) lead = { z: me, v: speed };
   return lead;
 }
+const LANE_GAP = { racer: 5, car: 2 }; // seconds a car waits between lane changes: racers don't weave to block you
 function driveCar(c, dt) { // follow at a safe distance, or pull out and pass
   const lead = leader(c), gap = lead ? lead.z - c.z - CAR_LEN : Infinity, safe = 8 + 1.2 * c.v;
   let aim = c.want;
+  c.cool = Math.max(0, (c.cool ?? 0) - dt);
   if (lead && gap < 2 * safe && lead.v < c.want) {
     const other = 1 - c.lane;
-    if (Math.abs(c.x - MY_LANES[c.lane]) < 0.2 && roomAt(c, MY_LANES[other], 20, 30)) c.lane = other; // settled first
-    else aim = Math.min(aim, lead.v * (gap < safe ? 0.9 : 1));
+    if (!c.cool && Math.abs(c.x - MY_LANES[c.lane]) < 0.2 && roomAt(c, MY_LANES[other], 20, 30)) { // settled first
+      c.lane = other;
+      c.cool = c.racer ? LANE_GAP.racer : LANE_GAP.car;
+    } else aim = Math.min(aim, lead.v * (gap < safe ? 0.9 : 1));
   }
   c.v += clamp(aim - c.v, -6 * dt, 2 * dt);
-  c.x += clamp(MY_LANES[c.lane] - c.x, -1.6 * dt, 1.6 * dt);
+  const lat = c.yielding ? 3.5 : 1.6; // m/s sideways; briskly when getting out of your way
+  c.x += clamp(MY_LANES[c.lane] - c.x, -lat * dt, lat * dt);
+  if (Math.abs(c.x - MY_LANES[c.lane]) < 0.05) c.yielding = false;
   c.z += c.v * dt;
   if (lead && c.z > lead.z - CAR_LEN - 0.5) { c.z = lead.z - CAR_LEN - 0.5; c.v = Math.min(c.v, lead.v); } // never into it
+}
+
+// flashed: an ordinary car ahead of you in your lane (within 250 m) moves over to your other lane if there is room.
+// Racers don't care.
+function flashAhead() {
+  if (lane > 1) return; // over there they are coming at you
+  const to = 1 - lane;
+  for (const c of traffic) {
+    if (c.racer || c.dir < 0 || !sameLane(c.x, carX) || c.z < odo || c.z - odo > 250) continue;
+    if (roomAt(c, MY_LANES[to], 12, 25)) Object.assign(c, { lane: to, yielding: true, cool: LANE_GAP.car + 2 });
+  }
 }
 
 function updateTraffic(dt, clock) {

@@ -8,6 +8,7 @@ function updateAids(dt) {
   if (aid('gas')) autoGas(dt);
   if (aid('cruise')) autocruise(); // after the gas: it brakes behind traffic it can't pass
   else if (aid('steer')) laneAssist();
+  if (aid('autoflash')) autoFlash();
 }
 
 const launchRpm = () => 0.6 * engine.redline; // revs to set off at: well into the pull, clear of the limiter
@@ -27,6 +28,7 @@ function autoClutch(dt) {
 // while the clutch is out). Once the clutch has caught up it is traction control: no more gas than the tyres can
 // take (worked out from the torque the engine makes at these revs), and well under that if they spin anyway.
 function autoGas() {
+  if (pushing()) return; // your own foot on the gas: it's yours
   if (speed < 1 && (!gear || clutch < 0.05)) gasPedal = clamp(0.5 + (launchRpm() - rpm) / 800, 0, 1);
   else if (!locked && !spinning) gasPedal = 1;
   else {
@@ -34,13 +36,14 @@ function autoGas() {
     const most = (gripTorque() / engine.inertia / RAD - a0) / (a1 - a0);
     gasPedal = clamp(spinning ? 0.3 * most : 0.97 * most, 0, 1);
   }
-  if (!nitro && heat > HOT - 0.1 && rpm > engine.stock.redline - 100) gasPedal = Math.min(gasPedal, 0.3); // hot: spare it
+  // an ECU tune: on its own the car stays under the factory redline (no heat); push the gas yourself to use the rest
+  if (!nitro && tuned()) gasPedal = Math.min(gasPedal, clamp((engine.stock.redline - rpm) / 400, 0, 1)); // fade out
 }
 
 // auto shift: up just short of the limiter, down when a hill drags the revs low. The lever travels the gate.
 function autoShift() {
   if (lever.held || lever.path) return; // the player's hand is on it, or it is already moving
-  const r = heat > 0.6 && !nitro ? Math.min(engine.redline, engine.stock.redline) : engine.redline; // hot: easy on it
+  const r = tuned() && !pushing() && !nitro ? Math.min(engine.redline, engine.stock.redline) : engine.redline; // see autoGas
   const next = step => { let g = gear + step; while (brokenGears.includes(g)) g += step; return g; }; // past broken ones
   const at = g => speed * CAR.gears[g] * engine.final / CAR.wheel / RAD; // the revs this road speed gives in gear g
   const up = next(1), down = next(-1);
@@ -87,6 +90,7 @@ function autocruise() {
   const roomBeside = laneClear(MY_LANES[1 - lane], MY_FRONT + 6) && reach(theirs) > 2.5; // can move over now, safely
   const escape = roomBeside && reach(theirs) > reach(mine) + 0.5; // the other lane goes further
   if (settled() && (escape && reach(mine) < 8 || lane === 1 && roomBeside && reach(mine) > 6 && reach(theirs) > 8)) moveOver();
+  if (pushing()) { if (cruiseBrake) { brakePedal = 0; cruiseBrake = false; } return; } // your foot on the gas: no braking
   const hardest = CAR.brake / engine.mass; // m/s² the brakes can do
   const keep = 8 + 0.4 * speed; // following distance, m
   const closing = mine ? mine.closing : 0, room = mine ? mine.gap - keep : Infinity;
@@ -99,4 +103,12 @@ function autocruise() {
     if (cruiseBrake) { brakePedal = 0; cruiseBrake = false; }
     if (!escape && room < 0) gasPedal = 0; // inside the gap but not closing: coast
   }
+}
+
+// auto flash: flashes an ordinary car that's slower than you and under 4 s ahead in your lane
+function autoFlash() {
+  if (lane > 1) return;
+  const slow = traffic.some(c => !c.racer && c.dir > 0 && sameLane(c.x, carX) && c.z > odo && c.v < speed - 2 &&
+    (c.z - odo) / (speed - c.v) < 4);
+  if (slow) flashLights();
 }

@@ -49,7 +49,7 @@ function racer(n, z) {
 // before the reveal #100 is one quick car up the road. Its head start shrinks as the car gets built, so it can only be
 // caught once the car is nearly done (around run 20 for a perfect player, just before the bell): [share of the car
 // upgrades bought, metres ahead], straight lines in between
-const HEAD_START = [[0, 1300], [0.6, 1300], [0.8, 1050], [1, 400]];
+const HEAD_START = [[0, 1300], [0.55, 1300], [0.78, 980], [1, 400]];
 function headStart() {
   let have = 0, all = 0;
   for (const [id, u] of Object.entries(UPGRADES)) if (!u.tab) { have += lvl(id); all += maxOf(u); }

@@ -21,12 +21,13 @@ let spinning = false;
 // openLanes; carX: the car's centre, m from the centre line, gliding over to its lane at slide m/s; crashed: ran
 // into a car this step, impact: how ({ kmh, headOn }); brokenGears: gears that won't go in (Distance's damage)
 let lane = 0, fromLane = 0, carX = 0, slide = 0, crashed = false, impact = null, openLanes = 2, brokenGears = [];
+let steering = 1; // how quickly the car moves over (Distance's steering upgrade)
 
 // the car as it left the factory (only the Distance garage tunes it)
 const STOCK_GRIP = CAR.grip;
 function stockCar() {
   for (const e of ENGINES) Object.assign(e, e.stock);
-  CAR.grip = STOCK_GRIP; openLanes = 2; brokenGears = [];
+  CAR.grip = STOCK_GRIP; openLanes = 2; brokenGears = []; steering = 1;
 }
 function resetCar() { // standing in the right lane, in neutral, feet off the pedals
   speed = odo = 0; gear = 0; locked = spinning = false;
@@ -41,8 +42,8 @@ function changeLane(dir) {
   if (to !== lane) { fromLane = lane; lane = to; }
 }
 function stepLane(dt) {
-  const most = Math.min(3.5, speed * 0.15), want = clamp((ROAD_LANES[lane] - carX) * 2, -most, most);
-  slide += clamp(want - slide, -6 * dt, 6 * dt); // steering in and out: an S-curve, not a jump
+  const most = Math.min(3.5, speed * 0.15) * steering, want = clamp((ROAD_LANES[lane] - carX) * 2 * steering, -most, most);
+  slide += clamp(want - slide, -6 * steering * dt, 6 * steering * dt); // steering in and out: an S-curve, not a jump
   carX += slide * dt;
 }
 // ran into car c: you lose most of your speed, down to well under its speed so it pulls away instead of being hit

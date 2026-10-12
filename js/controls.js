@@ -41,10 +41,11 @@ const PEDALS = {
 };
 const FINGER_OFF = 0.15; // seconds for a pedal to spring up when a finger lets go
 for (const [id, p] of Object.entries(PEDALS)) {
-  Object.assign(p, { hold: null, back: 0 });
+  Object.assign(p, { hold: null, back: 0, down: false }); // down: a finger or the mouse button is on it right now
   const el = $(id);
   let from;
   drag(el, (e, first) => {
+    if (first) p.down = true;
     // full travel = the pedal box's height (the pedal itself looks shorter as it tilts, so it can't be the ruler).
     // A finger floors it and slides up to ease off (a phone's edge is right below the pedals, so never down);
     // the mouse drags it down from where it was.
@@ -52,7 +53,7 @@ for (const [id, p] of Object.entries(PEDALS)) {
     if (first) from = { y: e.clientY, v: byHand(e) ? 1 : p.get() };
     p.set(clamp(from.v + (e.clientY - from.y) / travel, 0, 1));
     p.back = 0;
-  }, e => { if (byHand(e)) p.back = FINGER_OFF; });
+  }, e => { p.down = false; if (byHand(e)) p.back = FINGER_OFF; });
   el.ondblclick = () => p.set(0);
 }
 function updatePedals(dt) {
@@ -62,6 +63,7 @@ function updatePedals(dt) {
     else if (p.back) { p.set(Math.max(0, v - dt / p.back)); if (!p.get()) p.back = 0; }
   }
 }
+const pushing = () => PEDALS.gas.hold !== null || PEDALS.gas.down; // your own foot on the gas: it overrides the aids
 function holdPedal(id, down) { const p = PEDALS[id]; p.hold = down ? 1 : null; if (!down) p.back = p.release; }
 
 // ---- gear lever in an H gate: slide along the neutral rail, push up or down into a slot when lined up with it.
@@ -141,19 +143,32 @@ drag($('shifter'), (e, first) => {
   Object.assign(lever, gear ? { y: Math.sign(lever.y) } : { x: 0, y: 0 }, { held: false, grinding: false });
 });
 
-// ---- steering wheel: grab the rim and turn it; past TURN degrees the car changes lanes that way. It has to come
-// back near the middle before it can change again, and springs back to following the road when let go.
-const WHEEL = { cx: 500, cy: 560, turn: 30 }; // the rim's centre in the wheel's SVG units
+// ---- steering wheel: grab it anywhere near the rim and drag sideways; past TURN degrees the car changes lanes that
+// way. It has to come back near the middle before it can change again, and springs back to the middle when let go.
+const WHEEL = { turn: 20, gain: 0.35 }; // degrees that change lanes; degrees per wheel unit dragged sideways
 const wheel = { held: false, angle: 0, from: 0, dir: 0 }; // angle: degrees turned, + clockwise; dir: last change
 function steerLane(dir) { if (!game.parked) changeLane(dir); }
 drag($('wheel-grip'), (e, first) => {
-  const [x, y] = svgPoint($('wheel'), e), at = Math.atan2(x - WHEEL.cx, WHEEL.cy - y) * 180 / Math.PI;
-  if (first) Object.assign(wheel, { held: true, from: at, angle: 0, dir: 0 });
-  wheel.angle = clamp(at - wheel.from, -120, 120);
+  const [x] = svgPoint($('wheel'), e);
+  if (first) Object.assign(wheel, { held: true, from: x, angle: 0, dir: 0 });
+  wheel.angle = clamp((x - wheel.from) * WHEEL.gain, -120, 120);
   const side = Math.abs(wheel.angle) >= WHEEL.turn ? Math.sign(wheel.angle) : 0;
   if (side && side !== wheel.dir) { steerLane(side); wheel.dir = side; }
   else if (Math.abs(wheel.angle) < WHEEL.turn / 3) wheel.dir = 0;
 }, () => { wheel.held = false; });
+
+// ---- headlight flash (Distance): press F or the FLASH button; the car ahead in your lane moves over ----
+let flashedAt = -Infinity;
+function flashLights() {
+  const now = performance.now();
+  if (!game.canFlash?.() || now - flashedAt < 800) return;
+  flashedAt = now;
+  flashAhead();
+  document.body.classList.add('flashing');
+  setTimeout(() => document.body.classList.remove('flashing'), 150);
+  beep(2400, 0.03); // the stalk's click
+}
+$('flash').onpointerdown = e => { e.preventDefault(); flashLights(); };
 
 // ---- nitro (Distance): hold N, or hold the NOS button with the mouse or a finger ----
 let nitroHeld = false;
@@ -173,6 +188,7 @@ addEventListener('keydown', e => {
   else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); if (!e.repeat) steerLane(e.key === 'ArrowLeft' ? -1 : 1); }
   else if (e.key === 'Enter' && !e.repeat) state === 'off' ? startEngine() : stopEngine();
   else if (e.key === 'n' || e.key === 'N') nitroHeld = true;
+  else if ((e.key === 'f' || e.key === 'F') && !e.repeat) flashLights();
   else if (n >= 1 && n <= ENGINES.length) pickEngine(n - 1);
 });
 addEventListener('keyup', e => {

@@ -12,6 +12,9 @@ const UPGRADES = {
   gears:  { name: 'Gearbox', max: 3, base: 250, growth: 2.5, info: l => `${3 + l} gears` },
   tyres:  { name: 'Tyres', max: 4, base: 400, growth: 1.8, info: l => `${tyreGrip(l).toFixed(1)} g grip` },
   time:   { name: 'Time', max: 6, base: 200, growth: 1.9, info: l => `${runTime(l)} s a run` },
+  steering: { name: 'Steering', max: 3, base: 300, growth: 2, info: l => l ? `lane changes ${40 * l}% quicker` : 'stock rack' },
+  flash:  { name: 'Headlight flash', max: 1, base: 600, info: () => 'F or FLASH: the car ahead in your lane moves over (racers won\'t)' },
+  autoflash: { name: 'Auto flash', max: 1, base: 2000, needs: ['flash'], info: () => 'flashes slower cars ahead for you' },
   clutch: { name: 'Auto clutch', max: 1, base: 700, info: () => 'works the clutch: no stalls' },
   gas:    { name: 'Auto gas', max: 1, base: 800, info: () => 'launch and traction control' },
   shift:  { name: 'Auto shift', max: 1, base: 2500, needs: ['clutch'], info: () => 'changes gear at the limiter' },
@@ -35,6 +38,7 @@ function applyUpgrades() { // the garage's work on the engines and the car, and 
   }
   CAR.grip = tyreGrip();
   openLanes = lvl('reckless') ? ROAD_LANES.length : MY_LANES.length;
+  steering = 1 + 0.4 * lvl('steering');
   brokenGears = damageOn() ? progress.broken : [];
 }
 
@@ -235,6 +239,7 @@ function renderRun() {
   $('run-dist').textContent = dist;
   $('run-info').textContent = info;
   document.body.classList.toggle('low', run.phase === 'run' && run.left < 5);
+  document.body.classList.toggle('has-flash', DISTANCE.canFlash());
 }
 
 function gaps() { // the racers just ahead and just behind you
@@ -249,11 +254,12 @@ const DISTANCE = {
   engine: () => progress.engine, // the garage's engines, not the menu's
   tune: applyUpgrades,
   start() { Object.assign(run, { phase: 'garage', best: progress.best }); shownPhase = null; },
-  stop() { run.phase = 'garage'; document.body.classList.remove('garage', 'low'); clearDamageView(); }, // earns nothing
+  stop() { run.phase = 'garage'; document.body.classList.remove('garage', 'low', 'has-flash'); clearDamageView(); }, // earns nothing
   update: updateRun,
   render() { renderRun(); renderDamage(); },
   crash: i => onCollision(i),
   marks: roadMarks,
+  canFlash: () => lvl('flash') > 0 && !progress.off.flash,
   speedo: () => lvl('gear7') ? 540 : 360,
   field: () => raceField(), // race.js loads after this file
   key(k) { if (k === 'Enter' && run.phase === 'garage') { drive(); return true; } }, // Enter in the garage: DRIVE
