@@ -7,7 +7,7 @@ const fmt = n => Math.round(n).toLocaleString('en-US');
 
 // settings kept between visits: the engine for the games that let you choose, best scores
 const SETTINGS_KEY = 'car-rev-settings';
-const settings = Object.assign({ engine: 0, best: {} }, (() => {
+const settings = Object.assign({ engine: 0, best: {}, layout: 'auto' }, (() => {
   try { return JSON.parse(localStorage.getItem(SETTINGS_KEY)) ?? {}; } catch { return {}; }
 })());
 function saveSettings() { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch { /* not saved */ } }
@@ -32,6 +32,18 @@ function pickEngine(i) { // menu or keys 1-3; Distance drives what its garage gi
   if (!game.engine) selectEngine(i);
   renderMenu();
 }
+// touch layout (shifter left, pedals right, bigger): a multi-touch screen whose main pointer is a finger, i.e. a
+// phone or tablet, not a laptop with a touchscreen. The menu can force either layout.
+const LAYOUTS = ['auto', 'touch', 'desktop'];
+const touchDevice = matchMedia('(pointer: coarse)').matches && navigator.maxTouchPoints > 1;
+const touchLayout = () => settings.layout === 'touch' || settings.layout === 'auto' && touchDevice;
+function applyLayout() { document.body.classList.toggle('touch', touchLayout()); }
+function goFullscreen() { // phones: the whole screen, held sideways (where the browser allows it)
+  if (!touchLayout() || document.fullscreenElement) return;
+  document.documentElement.requestFullscreen?.({ navigationUI: 'hide' })
+    .then(() => screen.orientation?.lock?.('landscape')).catch(() => { /* not allowed here: fine */ });
+}
+
 function resetScene() { resetCar(); resetLever(); resetTraffic(); if (game.parked) carX = SHOULDER; }
 
 function play(g) {
@@ -48,6 +60,7 @@ function play(g) {
   g.start?.();
   refreshCar();
   closeMenu();
+  goFullscreen();
 }
 function leaveGame() { // keep the best score, let the game tidy up
   const lv = game.levels, best = settings.best[game.id];
@@ -64,6 +77,7 @@ function renderMenu() {
     `<button data-play="${g.id}"${g === game && playing ? ' class="on"' : ''}><b>${g.name}</b><small>${g.blurb}</small><i>${best(g)}</i></button>`).join('');
   $('engine-pick').innerHTML = ENGINES.map((e, i) => `<button data-engine="${i}"${i === settings.engine ? ' class="on"' : ''}>${e.name}</button>`).join('');
   $('resume').hidden = !playing;
+  $('layout').textContent = `Layout: ${settings.layout}` + (settings.layout === 'auto' ? ` (${touchDevice ? 'touch' : 'mouse and keys'})` : '');
 }
 function openMenu() {
   menuOpen = true;
@@ -83,7 +97,11 @@ $('menu').onclick = e => {
   loading ??= start(); // any click is a user gesture: audio can start
   if (b.dataset.play) play(GAMES.find(g => g.id === b.dataset.play));
   if (b.dataset.engine) pickEngine(+b.dataset.engine);
-  if (b.id === 'resume') closeMenu();
+  if (b.id === 'resume') { closeMenu(); goFullscreen(); }
+  if (b.id === 'layout') {
+    settings.layout = LAYOUTS[(LAYOUTS.indexOf(settings.layout) + 1) % LAYOUTS.length];
+    saveSettings(); applyLayout(); renderMenu();
+  }
 };
 $('menu-button').onclick = openMenu;
 addEventListener('click', e => e.target.closest('button')?.blur()); // keys stay with the car, not a focused button
@@ -202,6 +220,7 @@ function tick(now) {
 
   game.render?.();
 }
+applyLayout();
 refreshCar();
 openMenu();
 drawRoad(g2d, canvas.width, canvas.height, 0); // the view behind the menu

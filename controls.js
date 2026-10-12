@@ -1,6 +1,7 @@
 // Input. Keyboard, mouse and touch all work at once, on the same key, pedals and gear lever.
 // Mouse: drag them like the real thing. One pointer can't hold two pedals, so a pedal stays where the mouse leaves
-// it (double-click lets it go). Keyboard and touch hold a pedal only while the key or finger is down.
+// it (double-click lets it go). Keyboard and fingers hold a pedal only while the key or finger is down; several
+// fingers can hold several controls.
 const $ = id => document.getElementById(id);
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 const svgPoint = (svg, e) => { const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(svg.getScreenCTM().inverse()); return [p.x, p.y]; };
@@ -44,9 +45,13 @@ for (const [id, p] of Object.entries(PEDALS)) {
   const el = $(id);
   let from;
   drag(el, (e, first) => {
-    if (first) from = { y: e.clientY, v: p.get() };
-    // full travel = the pedal box's height (the pedal itself looks shorter as it tilts, so it can't be the ruler)
-    p.set(clamp(from.v + (e.clientY - from.y) / el.parentNode.getBoundingClientRect().height, 0, 1));
+    // the ruler is the pedal's box (the pedal itself looks shorter as it tilts); its label takes the bottom 14 px
+    const box = el.parentNode.getBoundingClientRect();
+    if (byHand(e)) p.set(clamp((e.clientY - box.top) / (box.height - 14), 0, 1)); // a finger: the lower, the deeper
+    else { // the mouse: drag down from where it was
+      if (first) from = { y: e.clientY, v: p.get() };
+      p.set(clamp(from.v + (e.clientY - from.y) / box.height, 0, 1));
+    }
     p.back = 0;
   }, e => { if (byHand(e)) p.back = FINGER_OFF; });
   el.ondblclick = () => p.set(0);
@@ -114,7 +119,7 @@ function stepLever(dt) {
 drag($('shifter'), (e, first) => {
   const [px, py] = svgPoint($('shifter'), e);
   if (first) {
-    lever.held = Math.hypot(px - lever.x, py - lever.y) <= 0.6; // grab the knob, not the gate
+    lever.held = Math.hypot(px - lever.x, py - lever.y) <= (byHand(e) ? 0.9 : 0.6); // the knob, not the gate
     if (lever.held) lever.path = null;
     if (lever.held && aid('clutch')) { clutchPedal = 1; clutch = 0; } // a hand on the lever: the auto clutch is out
   }
