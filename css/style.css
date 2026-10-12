@@ -80,6 +80,10 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 #garage button:disabled { cursor: default; color: #667; border-color: #2a2a33; }
 #garage button.on { border-color: var(--accent); color: var(--accent); }
 #engine-row { display: flex; gap: 6px; margin-bottom: 10px; }
+#engine-row[hidden] { display: none; }
+#tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+#tabs:empty { display: none; }
+#tabs button { flex: 1; padding: 5px 8px; font-weight: 600; }
 #engine-row button { flex: 1; }
 #cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
 .card { display: flex; flex-direction: column; gap: 3px; padding: 7px 9px; border: 1px solid #262a36;

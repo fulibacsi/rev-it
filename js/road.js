@@ -84,6 +84,19 @@ function carSprite(color, front) { // rear view (same direction) or front view (
   });
 }
 const CARS = CAR_COLORS.map(c => ({ rear: carSprite(c, false), front: carSprite(c, true) }));
+const RACERS = new Map(); // racers' rear views by number: a racing stripe, and the number once the race is revealed
+function racerSprite(n, numbered) {
+  const key = numbered ? n : 0;
+  if (!RACERS.has(key)) RACERS.set(key, sprite(180, 140, (g, w, h) => {
+    g.drawImage(carSprite('#f4f4f4', false), 0, 0);
+    g.fillStyle = '#c62828'; g.fillRect(w * 0.38, h * 0.06, w * 0.1, h * 0.78); g.fillRect(w * 0.52, h * 0.06, w * 0.1, h * 0.78);
+    if (!numbered) return;
+    g.fillStyle = '#fff'; g.beginPath(); g.arc(w / 2, h * 0.62, h * 0.2, 0, 2 * Math.PI); g.fill(); // number roundel
+    g.strokeStyle = '#111'; g.lineWidth = 3; g.stroke();
+    g.fillStyle = '#111'; g.textAlign = 'center'; g.font = `bold ${n > 99 ? 22 : 30}px sans-serif`; g.fillText(n, w / 2, h * 0.62 + 10);
+  }));
+  return { rear: RACERS.get(key) };
+}
 const SPEED_SIGNS = new Map(); // Speed signs game, by value; drawn 1.5 m wide (oversized so they read from afar)
 function signSprite(value) {
   if (!SPEED_SIGNS.has(value)) SPEED_SIGNS.set(value, sprite(120, 330, (g, w, h) => {
@@ -149,8 +162,9 @@ function spawnAhead(car, d = 900 + rand() * 600) { // over the horizon, with roo
     if (car.dir < 0 || MY_LANES.every(x => roomAt(car, x, 60, 60))) return;
   }
 }
-function resetTraffic() { // a fresh set of cars, spread out ahead
+function resetTraffic(fixed = []) { // a fresh set of cars spread out ahead, around any the game places itself
   traffic.length = 0;
+  traffic.push(...fixed);
   for (let i = 0; i < 14; i++) { const c = {}; traffic.push(c); spawnAhead(c, 80 + i * 110); }
 }
 resetTraffic();
@@ -182,7 +196,8 @@ function updateTraffic(dt, clock) {
     const d = c.z - odo;
     if (c.d > 0 && d <= 0) whoosh(Math.abs(speed - c.dir * c.v) * 3.6, c.x < carX ? -0.7 : 0.7); // went past the driver
     c.d = d;
-    if (d < -40 || c.dir > 0 && d < -8 && c.v < speed - 1) spawnAhead(c); // left behind: back to the horizon
+    if (c.racer) { /* racers stay where they are, however far: their places are the race */ }
+    else if (d < -40 || c.dir > 0 && d < -8 && c.v < speed - 1) spawnAhead(c); // left behind: back to the horizon
     else if (d > ROAD.draw * ROAD.segment + 100) { // pulled away: comes up from behind instead, in a lane you're not in
       spawnCar(c, -30);
       Object.assign(c, { dir: 1, lane: sameLane(carX, MY_LANES[0]) ? 1 : 0, want: Math.max(c.want, speed + 4), v: Math.max(c.want, speed + 4) });

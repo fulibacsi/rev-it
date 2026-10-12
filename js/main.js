@@ -2,7 +2,8 @@
 // signs.js, distance.js, and Free drive below); controls.js handles the input.
 // A game: { id, name, blurb, hud: 'levels' | 'run' | undefined, gears(): gears in the gate, parked?, and optionally
 //   start(), stop(), update(dt), render(), marks() for the roadside, readout() for the big HUD number,
-//   engine() / tune() when it chooses and tunes the car itself, key(k) to take a key press }
+//   engine() / tune() when it chooses and tunes the car itself, key(k) to take a key press, field() for
+//   cars it places on the road itself (racers) }
 const fmt = n => Math.round(n).toLocaleString('en-US');
 
 // settings kept between visits: the engine for the games that let you choose, best scores
@@ -44,7 +45,7 @@ function goFullscreen() { // phones: the whole screen, held sideways (where the 
     .then(() => screen.orientation?.lock?.('landscape')).catch(() => { /* not allowed here: fine */ });
 }
 
-function resetScene() { resetCar(); resetLever(); resetTraffic(); if (game.parked) carX = SHOULDER; }
+function resetScene() { resetCar(); resetLever(); resetTraffic(game.field?.()); if (game.parked) carX = SHOULDER; }
 
 function play(g) {
   leaveGame();
