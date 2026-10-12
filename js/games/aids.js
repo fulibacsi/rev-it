@@ -45,8 +45,7 @@ function autoShift() {
   if (lever.held || lever.path) return; // the player's hand is on it, or it is already moving
   const r = tuned() && !pushing() && !nitro ? Math.min(engine.redline, engine.stock.redline) : engine.redline; // see autoGas
   const next = step => { let g = gear + step; while (brokenGears.includes(g)) g += step; return g; }; // past broken ones
-  const at = g => speed * CAR.gears[g] * engine.final / CAR.wheel / RAD; // the revs this road speed gives in gear g
-  const up = next(1), down = next(-1);
+  const at = revsIn, up = next(1), down = next(-1);
   // up near the limiter, unless that gear would lug the engine; down by road speed (after a crash the clutch may be
   // slipping in far too high a gear), unless the lower gear would be straight back at the limiter: with a broken
   // gear in between, the two neighbours are far apart, and this keeps it from hunting between them

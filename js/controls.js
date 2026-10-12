@@ -71,7 +71,7 @@ function holdPedal(id, down) { const p = PEDALS[id]; p.hold = down ? 1 : null; i
 // game gives you are cut into the gate. path: points it is being moved through (keyboard, auto shift).
 const SLOTS = { '-1,-1': 1, '-1,1': 2, '0,-1': 3, '0,1': 4, '1,-1': 5, '1,1': 6, '2,-1': 7 }; // 7th: a fourth column
 const LEVER_SPEED = 8; // gate units per second when moved for you: about 0.3 s a shift
-const lever = { x: 0, y: 0, grinding: false, held: false, path: null };
+const lever = { x: 0, y: 0, grinding: false, held: false, path: null, from: 0, out: false }; // from, out: see slotFor
 const slotOf = g => [Math.floor((g - 1) / 2) - 1, g % 2 ? -1 : 1];
 const gateGears = () => game.gears();
 const hasSlot = (x, side) => { const g = SLOTS[`${x},${side}`] ?? Infinity; return g <= gateGears() && !brokenGears.includes(g); };
@@ -122,14 +122,41 @@ function stepLever(dt) {
   }
   if (!lever.path.length) lever.path = null;
 }
+// a finger on a small screen rarely follows the H exactly: it cuts corners, or ends up between two columns. So once a
+// finger has taken the lever out through neutral, wherever it is in the top or bottom row (as deep as a gear engages)
+// the lever sits in the slot of the nearest column, as deep as the finger, and follows it if it drifts to another
+// column. Between two columns the revs tip it: near the limiter towards the next gear up, with the revs sagging the
+// next one down (2nd at the limiter, pushed up halfway between 1st and 3rd: 3rd). You still take it there yourself,
+// with the clutch down, and the gear is the one the lever is in when you let go: it forgives the route, it does not
+// shift for you.
+const HINT = 0.4; // columns the gear the revs suggest is favoured by
+function hintGear(from) { // the gear the road speed suggests after gear from, if any
+  const top = gateGears(), r = engine.redline, next = step => { let g = from + step; while (brokenGears.includes(g)) g += step; return g; };
+  if (!from) { let g = 1; while (g < top && (brokenGears.includes(g) || revsIn(g) > 0.75 * r)) g++; return g; } // the lowest that won't over-rev
+  if (revsIn(from) > 0.75 * r && next(1) <= top) return next(1);
+  if (revsIn(from) < 0.4 * r && next(-1) >= 1) return next(-1);
+  return 0;
+}
+function slotFor(px, py) { // the gear a finger this deep into a row means, if any
+  if (Math.abs(py) < 0.45) return 0;
+  const hint = hintGear(lever.from), off = g => Math.abs(px - slotOf(g)[0]) - (g === hint ? HINT : 0);
+  let best = 0;
+  for (let g = 1; g <= gateGears(); g++)
+    if (slotOf(g)[1] === Math.sign(py) && !brokenGears.includes(g) && (!best || off(g) < off(best))) best = g;
+  return best;
+}
 drag($('shifter'), (e, first) => {
   const [px, py] = svgPoint($('shifter'), e);
   if (first) {
     lever.held = Math.hypot(px - lever.x, py - lever.y) <= (byHand(e) ? 0.9 : 0.6); // the knob, not the gate
     if (lever.held) lever.path = null;
     if (lever.held && aid('clutch')) { clutchPedal = 1; clutch = 0; } // a hand on the lever: the auto clutch is out
+    Object.assign(lever, { from: gear, out: false });
   }
   if (!lever.held) return;
+  if (byHand(e) && Math.abs(py) < 0.45) lever.out = true; // a finger: see slotFor. It has to come out through neutral first
+  const g = byHand(e) && lever.out && slotFor(px, py);
+  if (g) { placeLever(slotOf(g)[0], clamp(py, -1, 1)); return; }
   let { x, y } = lever;
   if (Math.abs(y) < 0.05) { // on the rail: slide sideways, drop into a slot only when lined up with it
     x = clamp(px, -1, gateGears() ? slotOf(gateGears())[0] : 0);

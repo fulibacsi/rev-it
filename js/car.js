@@ -63,6 +63,7 @@ function headOn(c) {
 
 function ratio() { return CAR.gears[gear] * engine.final; }
 function wheelRpm() { return speed * ratio() / CAR.wheel / RAD; } // engine rpm that matches the road speed
+const revsIn = g => speed * CAR.gears[g] * engine.final / CAR.wheel / RAD; // ... and what it would be in gear g
 
 // torque the clutch holds before slipping: a margin over the engine's strongest pull
 function clutchCapacity(e) { return 1.3 * e.inertia * e.drive * RAD * (e.turbo ? 1.2 : 1) * (nitro ? NITRO : 1); }
