@@ -132,7 +132,7 @@ function buildDial(g, cx, max, step, major, labelEvery, label, format, redFrom) 
   g.innerHTML = s;
 }
 function buildDials() { // the tach is scaled for the stock engine: a lower rev limit shows as a longer red zone
-  tachMax = Math.ceil((engine.stock.redline + 1000) / 1000) * 1000;
+  tachMax = Math.ceil((Math.max(engine.stock.redline, engine.redline) + 1000) / 1000) * 1000; // room for an ECU tune
   buildDial($('tach'), 140, tachMax, 250, 1000, 1000, '×1000 rpm', v => v / 1000, engine.redline);
   buildDial($('speedo'), 420, SPEEDO_MAX, 10, 30, 60, 'km/h', v => v);
 }

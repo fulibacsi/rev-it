@@ -102,6 +102,7 @@ function loopGains(r) {
 }
 
 function blowOff() { // turbo blow-off valve "pssh"
+  if (!ctx) return;
   const src = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g = ctx.createGain(), t = ctx.currentTime;
   src.buffer = noise;
   bp.type = 'bandpass';

@@ -30,8 +30,8 @@ const topGear = () => 3 + lvl('gears');
 
 function applyUpgrades() { // the garage's work on the engines and the car, and the damage the car has taken
   for (const e of ENGINES) {
-    e.drive = e.stock.drive * (1 + 0.12 * lvl('power'));
-    e.redline = limiter(e) - revLoss();
+    e.drive = e.stock.drive * (1 + 0.12 * lvl('power') + 0.08 * lvl('ecuPower')); // the ECU tune on top
+    e.redline = limiter(e) + 300 * lvl('ecuRev') - revLoss();
   }
   CAR.grip = tyreGrip();
   openLanes = lvl('reckless') ? ROAD_LANES.length : MY_LANES.length;
@@ -91,6 +91,7 @@ function startRun() { // back to the start line, engine running, in neutral, hel
                        slot: progress.racing ? startSlot() : null, race: null, revealed: false });
   resetScene();
   brakePedal = 1;
+  coolDown();
 }
 
 function finishRun(dnf) { // dnf: why the run ended early (a crash), if it did
