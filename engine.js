@@ -19,6 +19,7 @@ const ENGINES = [ // weakest first: the garage unlocks them in this order
   { name: 'JDM Turbo I6', loops: SOUNDS.supra, idle: 1000, redline: 8000, drive: 7000, tauDown: 0.9, turbo: true,
     inertia: 0.57, mass: 1500, final: 3.27 },
 ];
+ENGINES.forEach(e => { e.stock = { drive: e.drive, redline: e.redline }; }); // as built; the Distance garage tunes them
 const PEDAL_IN = 0.4, PEDAL_OUT = 0.25; // fastest the throttle follows the pedal: seconds for full travel
 const CRANK = 0.9; // seconds the key has to be held in START before the engine catches
 const LIMITER_CUT = 0.06; // seconds the rev limiter cuts the fuel each time the redline is hit (stutters in any gear)

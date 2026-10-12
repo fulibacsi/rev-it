@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Rev It: Distance</title>
+<title>Rev It</title>
 <style>
   :root { --hud: #8fffd8; --accent: #ec4; }
   html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color: #eee;
@@ -19,11 +19,52 @@
   #hud-gear { font-size: 30px; font-weight: 600; border: 2px solid var(--hud); border-radius: 6px; padding: 0 8px; }
   #hud-rpm { height: 7px; margin: 6px 30px 0; border: 1px solid var(--hud); border-radius: 4px; }
   #fill { height: 100%; width: 0; background: var(--hud); }
-  #run-dist { display: block; margin-top: 8px; font-size: 30px; font-weight: 600; }
+  .hit #hud-speed { color: #5f5; }
+  /* per game: level pips and score (Rev, Speed signs), distance and clock (Distance) */
+  #pips { display: none; justify-content: center; align-items: center; gap: 5px; margin-top: 8px; font-size: 11px; }
+  #pips i { width: 22px; height: 7px; border-radius: 3px; border: 1px solid var(--hud);
+            background: linear-gradient(90deg, var(--c, var(--hud)) var(--f, 0%), transparent 0); }
+  #score { display: none; margin-top: 6px; white-space: pre-line; font-size: 13px; }
+  #score::first-line { font-size: 22px; font-weight: 600; }
+  [data-hud="levels"] #pips { display: flex; }
+  [data-hud="levels"] #score { display: block; }
+  #run-dist, #run-info { display: none; }
+  [data-hud="run"] #run-dist { display: block; }
+  [data-hud="run"] #run-info { display: inline; }
+  #run-dist { margin-top: 8px; font-size: 30px; font-weight: 600; }
   #run-info { font-size: 14px; }
   .low #run-info { color: #f66; }
   #flash { position: absolute; left: 50%; top: -10px; opacity: 0; white-space: nowrap; font-size: 30px; font-weight: bold; }
   .garage #hud { display: none; }
+
+  /* menu: pick a game */
+  #menu { display: none; position: fixed; inset: 0; z-index: 10; overflow: auto; background: #07081099;
+          backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+  .menu #menu { display: flex; }
+  #menu-panel { margin: auto; width: min(760px, 92vw); box-sizing: border-box; padding: 18px 20px; border-radius: 14px;
+                background: #0b0d16f2; border: 1px solid #2c3140; color: #bbb; font-size: 13px; }
+  #menu h1 { margin: 0; font-size: 30px; letter-spacing: 6px; color: #eee; }
+  #menu h1 span { color: var(--accent); }
+  #menu p { margin: 2px 0 12px; color: #9ab; }
+  #menu h2 { margin: 14px 0 6px; font-size: 11px; letter-spacing: 2px; color: #778; font-weight: 600; }
+  #menu button { background: #12141e; color: #ccc; border: 1px solid #2c3140; border-radius: 8px; cursor: pointer; font: inherit; }
+  #menu button.on { border-color: var(--accent); }
+  #game-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+  #game-list button { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; text-align: left; }
+  #game-list b { font-size: 16px; color: #eee; letter-spacing: 1px; }
+  #game-list small { color: #9ab; line-height: 1.35; }
+  #game-list i { font-style: normal; font-size: 11px; color: var(--accent); }
+  #game-list button:hover { border-color: #556; }
+  #engine-pick { display: flex; gap: 6px; }
+  #engine-pick button { flex: 1; padding: 5px 8px; }
+  #engine-pick button.on { color: var(--accent); }
+  #menu-help { margin-top: 12px; line-height: 1.7; color: #889; }
+  #menu-help b { color: #ccc; }
+  #menu small.credits { display: block; margin-top: 8px; color: #556; }
+  #menu-foot { display: flex; justify-content: flex-end; margin-top: 12px; }
+  #resume { padding: 6px 24px; font-size: 16px; font-weight: 600; color: #111 !important; background: var(--accent) !important; }
+  #menu-button { position: fixed; left: 9vw; top: 52px; z-index: 5; width: 38px; height: 34px; border-radius: 8px;
+                 background: #0b0d16cc; color: #ccc; border: 1px solid #2c3140; font-size: 18px; cursor: pointer; }
 
   /* garage between runs, over the windscreen */
   #garage { display: none; position: fixed; left: 50%; top: 5vh; transform: translateX(-50%); width: min(780px, 66vw);
@@ -101,8 +142,10 @@
 
 <div id="hud">
   <div id="flash"></div>
-  <div id="hud-main"><span id="hud-speed">0</span><small>km/h</small><span id="hud-gear">N</span></div>
+  <div id="hud-main"><span id="hud-speed">0</span><small id="hud-unit">km/h</small><span id="hud-gear">N</span></div>
   <div id="hud-rpm"><div id="fill"></div></div>
+  <div id="pips"><span id="lvl">LEVEL</span></div>
+  <div id="score"></div>
   <b id="run-dist"></b><span id="run-info"></span>
 </div>
 
@@ -176,19 +219,37 @@
 </svg>
 
 <div id="help">
-  get as far as you can before the clock runs out · every metre is money for the garage<br>
-  everything is done with the mouse: drag it like the real thing<br>
-  <b>KEY</b> drag to START and hold it until the engine fires · drag to OFF to stop<br>
-  <b>PEDALS</b> drag down to press · they stay where you leave them · double-click to let go<br>
-  <b>SHIFTER</b> clutch down first, then drag the knob through the H<br>
+  <b>KEYS</b> Enter engine · Space gas · Shift clutch · B brake · ↑ ↓ gears · 1–3 engine · Esc menu<br>
+  <b>MOUSE</b> drag the key, pedals and gear knob · a pedal stays where you leave it, double-click lets go<br>
   <small>Sounds from Freesound: Ears68, Angel_soto, editboy23, dezoris, t33kno (CC0), iainmccurdy (CC BY 4.0)</small>
 </div>
+
+<button id="menu-button" title="menu (Esc)">☰</button>
+<div id="menu"><div id="menu-panel">
+  <h1>REV <span>IT</span></h1>
+  <p>A driving toy on the California coast. Pick a game.</p>
+  <div id="game-list"></div>
+  <h2>ENGINE <small>(Distance builds its own in the garage)</small></h2>
+  <div id="engine-pick"></div>
+  <div id="menu-help">
+    <b>Keyboard</b> Enter engine on/off · Space gas · Shift clutch · B brake · ↑ ↓ gears · 1–3 engine · Esc menu<br>
+    <b>Mouse</b> drag the ignition key to START and hold it · drag the pedals down · drag the gear knob through the H
+    with the clutch down
+  </div>
+  <small class="credits">Sounds from Freesound: Ears68, Angel_soto, editboy23, dezoris, t33kno (CC0), iainmccurdy (CC BY 4.0)</small>
+  <div id="menu-foot"><button id="resume" hidden>RESUME ▶</button></div>
+</div></div>
+
 
 <script src="sounds.js"></script>
 <script src="engine.js"></script>
 <script src="car.js"></script>
 <script src="road.js"></script>
-<script src="game.js"></script>
+<script src="controls.js"></script>
+<script src="levels.js"></script>
+<script src="rev.js"></script>
+<script src="signs.js"></script>
+<script src="distance.js"></script>
 <script src="aids.js"></script>
 <script src="main.js"></script>
 </body>

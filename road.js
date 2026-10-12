@@ -82,6 +82,19 @@ function carSprite(color, front) { // rear view (same direction) or front view (
   });
 }
 const CARS = CAR_COLORS.map(c => ({ rear: carSprite(c, false), front: carSprite(c, true) }));
+const SPEED_SIGNS = new Map(); // Speed signs game, by value; drawn 1.5 m wide (oversized so they read from afar)
+function signSprite(value) {
+  if (!SPEED_SIGNS.has(value)) SPEED_SIGNS.set(value, sprite(120, 330, (g, w, h) => {
+    g.fillStyle = '#888'; g.fillRect(w * 0.45, h * 0.45, w * 0.1, h * 0.55); // post
+    g.fillStyle = '#111'; g.fillRect(0, 0, w, h * 0.47);
+    g.fillStyle = '#f4f4f4'; g.fillRect(6, 6, w - 12, h * 0.47 - 12);
+    g.fillStyle = '#111'; g.textAlign = 'center';
+    g.font = 'bold 20px sans-serif'; g.fillText('SPEED', w / 2, 34);
+    g.font = 'bold 60px sans-serif'; g.fillText(value, w / 2, 100);
+    g.font = 'bold 16px sans-serif'; g.fillText('km/h', w / 2, 132);
+  }));
+  return SPEED_SIGNS.get(value);
+}
 const BOARDS = new Map(); // distance boards by value, drawn 1.6 m wide (oversized so they read from afar)
 function boardSprite(value) {
   if (!BOARDS.has(value)) BOARDS.set(value, sprite(160, 300, (g, w, h) => {
@@ -200,9 +213,11 @@ function drawRoad(g, w, h, dt) {
   };
 
   // sprites, far to near: palms, traffic and the game's marks (x: metres from the centre line, w/h: metres)
-  const marks = roadMarks().map(m => m.kind === 'best'
-    ? { z: m.z, x: 0, w: 2 * (ROAD.half + ROAD.rumble), h: 5.6, img: bannerSprite(m.value) }
-    : { z: m.z, x: ROAD.half + 2, w: 1.6, h: 3, img: boardSprite(m.value) });
+  const marks = (game.marks?.() ?? []).map(m => ({
+    best: { z: m.z, x: 0, w: 2 * (ROAD.half + ROAD.rumble), h: 5.6, img: bannerSprite(m.value) },
+    board: { z: m.z, x: ROAD.half + 2, w: 1.6, h: 3, img: boardSprite(m.value) },
+    sign: { z: m.z, x: ROAD.half + 2, w: 1.5, h: 4.1, img: signSprite(m.value) },
+  })[m.kind]);
   const ahead = [...traffic.map(c => ({ z: c.z, x: c.x, w: 1.8, h: 1.4, img: c.dir > 0 ? c.look.rear : c.look.front })), ...marks]
     .map(o => ({ ...o, d: o.z - odo })).filter(o => o.d > 2 && o.d < (ROAD.draw - 2) * ROAD.segment).sort((p, q) => q.d - p.d);
   let t = 0;

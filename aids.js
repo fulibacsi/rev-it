@@ -3,7 +3,7 @@
 
 function updateAids(dt) {
   if (state !== 'running') return;
-  if (aid('shift')) autoShift(dt);
+  if (aid('shift')) autoShift();
   if (aid('clutch')) autoClutch(dt);
   if (aid('gas')) autoGas(dt);
 }
@@ -35,22 +35,10 @@ function autoGas() {
 }
 
 // auto shift: up just short of the limiter, down when a hill drags the revs low. The lever travels the gate.
-const SHIFT_SPEED = 8; // gate units per second: about 0.3 s a shift
-const slotOf = g => [Math.floor((g - 1) / 2) - 1, g % 2 ? -1 : 1];
-function autoShift(dt) {
-  if (lever.held) { lever.path = null; return; } // the player's hand is on it
-  if (!lever.path) {
-    const r = engine.redline;
-    const want = !gear ? 1 : rpm > r - 200 && gear < topGear() && locked ? gear + 1
-      : locked && gear > 1 && rpm < 0.45 * r ? gear - 1 : gear;
-    if (want === gear) return;
-    const [x, y] = slotOf(want); // out to the rail, along it, into the slot
-    lever.path = [[lever.x, 0], [x, 0], [x, y]];
-  }
-  for (let step = SHIFT_SPEED * dt; step > 0 && lever.path.length;) {
-    const [tx, ty] = lever.path[0], d = Math.hypot(tx - lever.x, ty - lever.y);
-    if (d <= step) { placeLever(tx, ty); lever.path.shift(); step -= d; }
-    else { placeLever(lever.x + (tx - lever.x) * step / d, lever.y + (ty - lever.y) * step / d); step = 0; }
-  }
-  if (!lever.path.length) lever.path = null;
+function autoShift() {
+  if (lever.held || lever.path) return; // the player's hand is on it, or it is already moving
+  const r = engine.redline;
+  const want = !gear ? 1 : rpm > r - 200 && gear < topGear() && locked ? gear + 1
+    : locked && gear > 1 && rpm < 0.45 * r ? gear - 1 : gear;
+  if (want !== gear) moveLever(want);
 }

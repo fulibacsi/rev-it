@@ -18,6 +18,14 @@ const RAD = 2 * Math.PI / 60; // rpm -> rad/s
 let gear = 0, clutch = 1, clutchPedal = 0, brakePedal = 0, speed = 0, odo = 0, locked = false, stalled = false;
 let spinning = false;
 
+// the car as it left the factory (only the Distance garage tunes it)
+const STOCK_GRIP = CAR.grip;
+function stockCar() { for (const e of ENGINES) Object.assign(e, e.stock); CAR.grip = STOCK_GRIP; }
+function resetCar() { // standing, in neutral, feet off the pedals
+  speed = odo = 0; gear = 0; locked = spinning = false;
+  clutchPedal = brakePedal = gasPedal = 0;
+}
+
 function ratio() { return CAR.gears[gear] * engine.final; }
 function wheelRpm() { return speed * ratio() / CAR.wheel / RAD; } // engine rpm that matches the road speed
 
