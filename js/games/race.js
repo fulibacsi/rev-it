@@ -3,7 +3,8 @@
 // it reveals the race. From then on every run is a race from your grid slot, and your result is your position when
 // the clock runs out. Race points, spent on the garage's Racing tab, come from two places: every position is worth
 // points once, the first time you finish there (1 for 100th, 2 for 99th ... 100 for 1st: 5,050 in all), and every
-// race pays a point for each place you gain, so a stuck player can always earn a little.
+// race pays a tenth of that for where you finish (P61: 4, P20: 9, P1: 10), so you always earn a little. It goes by
+// where you finish, not how many you passed: starting at the back on purpose, or swapping places, pays nothing extra.
 const FIELD = 100;      // racers
 const RACER_GAP = 120;  // m between racers on the grid
 // m/s racer n cruises at: #100 140 km/h, 2 km/h more a place to #20 at 300 km/h, then 8 more a place to #1 at
@@ -86,10 +87,10 @@ function raceFinish(dnf) {
   if (!progress.racing) return null;
   const start = run.slot ?? FIELD + 1; // before the reveal you started behind them all
   if (dnf) return { start, p: null, dnf, points: 0 };
-  const p = position(), gained = Math.max(0, start - p), fresh = firstTime(progress.finish, p);
-  progress.points += gained + fresh;
+  const p = position(), finish = Math.ceil(Math.max(0, FIELD + 1 - p) / 10), fresh = firstTime(progress.finish, p);
+  progress.points += finish + fresh;
   progress.finish = Math.min(progress.finish, p);
-  return { start, p, points: gained + fresh, gained, fresh };
+  return { start, p, points: finish + fresh, finish, fresh };
 }
 
 // the racers either side of you, for the head-up display
