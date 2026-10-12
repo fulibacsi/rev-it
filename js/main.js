@@ -73,10 +73,12 @@ function leaveGame() { // keep the best score, let the game tidy up
 
 // ---- menu ----
 function renderMenu() {
-  const best = g => g === DISTANCE ? (progress.best ? `best ${fmt(progress.best)} m` : '')
+  const best = g => g === DISTANCE ? (progress.racing ? `best P${progress.finish}` : progress.best ? `best ${fmt(progress.best)} m` : '')
     : settings.best[g.id] ? `best ${fmt(settings.best[g.id].points)} pts · level ${settings.best[g.id].level + 1}` : '';
-  $('game-list').innerHTML = GAMES.map(g =>
-    `<button data-play="${g.id}"${g === game && playing ? ' class="on"' : ''}><b>${g.name}</b><small>${g.blurb}</small><i>${best(g)}</i></button>`).join('');
+  const saved = g => g === DISTANCE && progress.runs > 0; // a Distance save: continue it, or start over
+  $('game-list').innerHTML = GAMES.map(g => `<div class="game-item"><button data-play="${g.id}"${g === game && playing ? ' class="on"' : ''}>` +
+    `<b>${g.name}</b><small>${g.blurb}</small><i>${saved(g) ? 'continue · ' : ''}${best(g)}</i></button>` +
+    (saved(g) ? '<button class="new-game" data-newgame>new game</button>' : '') + '</div>').join('');
   $('engine-pick').innerHTML = ENGINES.map((e, i) => `<button data-engine="${i}"${i === settings.engine ? ' class="on"' : ''}>${e.name}</button>`).join('');
   $('resume').hidden = !playing;
   $('layout').textContent = `Layout: ${settings.layout}` + (settings.layout === 'auto' ? ` (${touchDevice ? 'touch' : 'mouse and keys'})` : '');
@@ -98,6 +100,7 @@ $('menu').onclick = e => {
   if (!b) return;
   loading ??= start(); // any click is a user gesture: audio can start
   if (b.dataset.play) play(GAMES.find(g => g.id === b.dataset.play));
+  if ('newgame' in b.dataset && confirm('Start Distance over? This clears every metre, point and upgrade.')) { resetProgress(); play(DISTANCE); }
   if (b.dataset.engine) pickEngine(+b.dataset.engine);
   if (b.id === 'resume') { closeMenu(); goFullscreen(); }
   if (b.id === 'layout') {
@@ -107,6 +110,15 @@ $('menu').onclick = e => {
 };
 $('menu-button').onclick = openMenu;
 addEventListener('click', e => e.target.closest('button')?.blur()); // keys stay with the car, not a focused button
+
+// leaving the page (another app, another tab) pauses the game; phones suspend its sound meanwhile, and only a tap
+// can bring it back: the RESUME tap does, and so does any tap while playing, should the sound still be stopped
+document.addEventListener('visibilitychange', () => { if (document.hidden && playing && !menuOpen) openMenu(); });
+addEventListener('pointerdown', () => { if (ctx && ctx.state !== 'running' && !menuOpen) ctx.resume(); }, true);
+// iPhone Safari can't go full screen, but the game can from the home screen: say so there (not when already on it)
+const iosBrowser = (/iP(hone|od|ad)/.test(navigator.userAgent) || navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) &&
+  !navigator.standalone;
+document.body.classList.toggle('ios', iosBrowser);
 
 // ---- instrument cluster: analogue dials drawn as SVG ----
 const DIAL = { cy: 105, r: 86, sweep: 135 }; // needles sweep ±135° from straight up

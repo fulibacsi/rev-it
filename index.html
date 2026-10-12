@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rev It">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/icon-180.png">
 <meta name="theme-color" content="#000">
 <title>Rev It</title>
 <link rel="stylesheet" href="css/style.css">
@@ -43,7 +47,7 @@
   <nav id="tabs"></nav>
   <div id="engine-row"></div>
   <div id="cards"></div>
-  <footer><button id="reset">reset progress</button><button id="drive">DRIVE ▶</button></footer>
+  <footer><button id="drive">DRIVE ▶</button></footer>
 </div>
 
 <svg id="cluster" viewBox="0 0 560 200">
@@ -121,7 +125,7 @@
 
 <button id="menu-button" title="menu (Esc)">☰</button>
 <button id="nos" title="nitro: hold (or hold N)"><i id="nos-fill"></i><span>NOS</span></button>
-<button id="flash" title="flash your headlights (or press F)">FLASH</button>
+<button id="headlights" title="flash your headlights (or press F)">FLASH</button>
 <div id="rotate">Turn your phone sideways to drive.</div>
 <div id="menu"><div id="menu-panel">
   <h1>REV <span>IT</span></h1>
@@ -134,6 +138,7 @@
     <b>Gears</b> drag the knob through the H with the clutch held down · <b>Lanes</b> grab the steering wheel and turn it ·
     <b>Key</b> turn it to START and hold it until the engine runs. Slower cars use your lane: overtake them, a crash
     costs most of your speed.
+    <span id="ios-tip"><br><b>Full screen</b> on an iPhone: Share → Add to Home Screen, then start it from there.</span>
   </div>
   <div class="menu-help desk-only">
     <b>Keyboard</b> Enter engine on/off · Space gas · Shift clutch · B brake · ↑ ↓ gears · ← → change lanes ·

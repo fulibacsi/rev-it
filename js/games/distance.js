@@ -51,7 +51,11 @@ const FRESH = () => ({ bank: 0, best: 0, runs: 0, levels: {}, off: {}, engine: 0
 const progress = Object.assign(FRESH(), load());
 function load() { try { return JSON.parse(localStorage.getItem(SAVE_KEY)) ?? {}; } catch { return {}; } }
 function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(progress)); } catch { /* not saved */ } }
-function resetProgress() { Object.assign(progress, FRESH()); save(); }
+function resetProgress() { // a new game: the menu's "new game"
+  Object.assign(progress, FRESH());
+  save();
+  Object.assign(run, { gain: 0, race: null, revealed: false, newBest: false, best: 0 });
+}
 
 const racing = u => u.tab === 'racing';
 const wallet = u => racing(u) ? 'points' : 'bank';       // which of progress's currencies it costs
@@ -194,7 +198,6 @@ $('garage').onclick = e => {
   if ('repair' in b.dataset && repair()) { beep(1320, 0.1); refreshCar(); }
   if (i) { progress.engine = +i; save(); refreshCar(); }
   if (toggle) { progress.off[toggle] = !progress.off[toggle]; save(); }
-  if (b.id === 'reset' && confirm('Start over? This clears every metre and upgrade.')) { resetProgress(); refreshCar(); }
   if (b.id === 'drive') return drive();
   renderGarage(id ?? max);
 };

@@ -73,15 +73,15 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 .has-nos #nos { display: block; }
 .nitro #nos { box-shadow: 0 0 18px #f44; }
 .nitro #world { filter: saturate(1.5) brightness(1.08); }
-#flash { display: none; position: fixed; left: calc(24vw - 76px); top: 70vh; width: 64px; height: 64px; border-radius: 50%;
+#headlights { display: none; position: fixed; left: calc(24vw - 76px); top: 70vh; width: 64px; height: 64px; border-radius: 50%;
          border: 2px solid #ec4; background: #2a2510; color: #fe8; font: bold 12px system-ui, sans-serif; cursor: pointer;
          touch-action: none; }
-.has-flash #flash { display: block; }
+.has-flash #headlights { display: block; }
 .flashing #world { filter: brightness(1.4); }
-.flashing #flash { background: #ec4; color: #111; }
+.flashing #headlights { background: #ec4; color: #111; }
 .nitro #hud { color: #9cf; }
-.touch #nos { left: calc(2vw + env(safe-area-inset-left) + var(--shifter-h) * var(--gate-w) / 3.5 + 8px); top: 41vh; top: 41dvh; }
-.touch #flash { left: calc(2vw + env(safe-area-inset-left) + var(--shifter-h) * var(--gate-w) / 3.5 + 80px); top: 41vh; top: 41dvh; }
+.touch #nos { left: calc(var(--edge-l) + var(--shifter-h) * 3.2 / 3.5 + 8px); top: 41vh; top: 41dvh; }
+.touch #headlights { left: calc(var(--edge-l) + var(--shifter-h) * 3.2 / 3.5 + 8px); top: calc(41vh - 72px); top: calc(41dvh - 72px); } /* above NOS */
 #menu-button { position: fixed; left: 9vw; top: 52px; z-index: 5; width: 38px; height: 34px; border-radius: 8px;
                background: #0b0d16cc; color: #ccc; border: 1px solid #2c3140; font-size: 18px; cursor: pointer; }
 
@@ -114,11 +114,10 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 .card.bought { animation: bought 0.6s ease-out; }
 .card.repair { border-color: #a33; }
 @keyframes bought { from { background: #3a3410; } }
-#garage footer { display: flex; justify-content: space-between; align-items: center; position: sticky; bottom: -14px;
+#garage footer { display: flex; justify-content: flex-end; align-items: center; position: sticky; bottom: -14px;
                  margin: 0 -16px -14px; padding: 10px 16px 14px; background: #0b0d16; } /* DRIVE stays in view */
 #garage #drive { font-size: 18px; font-weight: 600; padding: 6px 28px; color: #111; background: var(--accent);
                  border-color: var(--accent); }
-#garage #reset { border: none; background: none; color: #556; }
 
 /* instrument cluster behind the wheel, the wheel itself, and the controls around it */
 #cluster { position: fixed; left: 50%; top: 64vh; transform: translateX(-50%); width: 34vw; pointer-events: none; }
@@ -130,7 +129,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 #ignition text { font: bold 10px system-ui, sans-serif; fill: #777; text-anchor: middle; }
 #key { transform-origin: 65px 70px; }
 #ignition[data-state="off"] .off, #ignition[data-state="on"] .on, #ignition[data-state="start"] .start { fill: var(--accent); }
-#shifter { position: fixed; left: calc(67.5vw - (var(--gate-w) - 3.2) / 3.5 * 19vh); /* wider: grows left */ top: 78vh; height: 19vh; cursor: grab; touch-action: none; }
+#shifter { position: fixed; left: 67.5vw; top: 78vh; height: calc(19vh * 3.2 / var(--gate-w)); /* 7 gears: shorter, same width */ cursor: grab; touch-action: none; }
 #shifter text { font: bold 0.32px system-ui, sans-serif; fill: #889; text-anchor: middle; }
 #shifter text.locked { fill: #2a2a33; }
 #shifter text.broken { fill: #c33; }
@@ -150,16 +149,19 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 
 /* touch layout (phones and tablets held sideways): gear lever on the left, pedals on the right, all bigger.
    dvh: the height actually visible between the browser's bars; env(): clear of the notch */
-.touch { --hud-scale: 1; --shifter-h: min(52vh, 300px); }
+.touch { --hud-scale: 1; --shifter-h: min(52vh, 300px);
+          /* clear of the screen's swipe zones (home bar: app switcher; left edge: back) and the notch or island */
+          --edge-l: max(24px, calc(env(safe-area-inset-left) + 12px)); --edge-r: max(24px, calc(env(safe-area-inset-right) + 12px));
+          --edge-b: max(20px, calc(env(safe-area-inset-bottom) + 16px)); }
 @supports (height: 1dvh) { .touch { --shifter-h: min(52dvh, 300px); } }
 .touch #help { display: none; }
 .touch #wheel { top: 80vh; top: 80dvh; } /* the rim is a control here: up off the screen's edge, under the cluster */
 .touch #hud { top: 38vh; top: 38dvh; transform: translateX(-50%) scale(var(--hud-scale)); transform-origin: top center; }
 .touch #cluster { top: 60vh; top: 60dvh; width: 28vw; }
-.touch #shifter { left: calc(2vw + env(safe-area-inset-left)); top: auto; bottom: 3vh; bottom: 3dvh; height: var(--shifter-h); }
-.touch #ignition { left: calc(2vw + env(safe-area-inset-left) + var(--shifter-h) * var(--gate-w) / 3.5 + 8px); /* right of the shifter */
+.touch #shifter { left: var(--edge-l); top: auto; bottom: var(--edge-b); height: calc(var(--shifter-h) * 3.2 / var(--gate-w)); }
+.touch #ignition { left: calc(var(--edge-l) + var(--shifter-h) * 3.2 / 3.5 + 8px); /* right of the shifter */
                    top: 62vh; top: 62dvh; width: min(10vw, 90px); }
-.touch #pedals { right: calc(2vw + env(safe-area-inset-right)); bottom: 2vh; bottom: 2dvh; gap: 2vw; }
+.touch #pedals { right: var(--edge-r); bottom: var(--edge-b); gap: 2vw; }
 .touch .pedal { width: 8.5vw; }
 .touch #brake { width: 10vw; }
 .touch .depth { height: calc(100% - 16px); }
@@ -167,9 +169,16 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 .touch #garage header { padding-left: 46px; } /* clear of the menu button */
 .touch .card { padding: 5px 7px; gap: 2px; }
 .touch .card small { min-height: 0; } /* phones: tighter cards, so more fit without scrolling */
-.touch #menu-button { left: calc(2vw + env(safe-area-inset-left)); top: 8px; }
+.touch #menu-button { left: var(--edge-l); top: max(8px, env(safe-area-inset-top)); }
 .touch #menu-panel { width: 94vw; }
 @media (max-height: 560px) { .touch { --hud-scale: 0.62; } }
 #rotate { display: none; position: fixed; inset: 0; z-index: 20; background: #000; color: #ccc; font-size: 20px;
           align-items: center; justify-content: center; text-align: center; padding: 20px; }
 @media (orientation: portrait) { .touch #rotate { display: flex; } } /* the cockpit needs the phone sideways */
+
+/* the menu: a game per card; Distance with progress: the card continues, a small button starts over */
+.game-item { position: relative; display: flex; }
+.game-item > button[data-play] { flex: 1; }
+#menu .new-game { position: absolute; right: 8px; bottom: 8px; padding: 2px 8px; font-size: 11px; color: #889; border-color: #2c3140; }
+#ios-tip { display: none; }
+.ios #ios-tip { display: inline; }

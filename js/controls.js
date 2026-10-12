@@ -168,7 +168,7 @@ function flashLights() {
   setTimeout(() => document.body.classList.remove('flashing'), 150);
   beep(2400, 0.03); // the stalk's click
 }
-$('flash').onpointerdown = e => { e.preventDefault(); flashLights(); };
+$('headlights').onpointerdown = e => { e.preventDefault(); flashLights(); };
 
 // ---- nitro (Distance): hold N, or hold the NOS button with the mouse or a finger ----
 let nitroHeld = false;
