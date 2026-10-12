@@ -189,7 +189,7 @@ drag($('wheel-grip'), (e, first) => {
   else if (Math.abs(wheel.angle) < WHEEL.turn / 3) wheel.dir = 0;
 }, () => { wheel.held = false; });
 
-// ---- headlight flash (Distance): press F or the FLASH button; the car ahead in your lane moves over ----
+// ---- headlight flash (Distance): press F or pull the light stalk left of the wheel; the car ahead in your lane moves over
 let flashedAt = -Infinity;
 function flashLights() {
   const now = performance.now();
@@ -200,7 +200,7 @@ function flashLights() {
   setTimeout(() => document.body.classList.remove('flashing'), 150);
   beep(2400, 0.03); // the stalk's click
 }
-$('headlights').onpointerdown = e => { e.preventDefault(); flashLights(); };
+$('stalk-hit').onpointerdown = e => { e.preventDefault(); flashLights(); };
 
 // ---- nitro (Distance): hold N, or hold the NOS button with the mouse or a finger ----
 let nitroHeld = false;

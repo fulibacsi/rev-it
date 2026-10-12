@@ -30,7 +30,28 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 [data-hud="run"] #run-info { display: inline; }
 #run-dist { margin-top: 8px; font-size: 30px; font-weight: 600; }
 #run-info { font-size: 14px; }
-.low #run-info { color: #f66; }
+#hud-beam { display: none; align-items: center; gap: 3px; align-self: center; color: #7ab8ff; text-shadow: 0 0 8px #48f8; }
+#hud-beam svg { width: 26px; height: 18px; fill: currentColor; stroke: currentColor; filter: drop-shadow(0 0 4px #48f8); }
+#hud-beam b { font-size: 24px; font-weight: 600; }
+.has-flash #hud-beam { display: inline-flex; }
+#hud-beam.empty { opacity: 0.3; }
+.flashing #hud-beam { color: #d8ebff; } /* the high-beam telltale lights up */
+/* the run's time left, a bar draining across the rear-view mirror's glass (the frame's mirror: x 570-1030, y 42-88
+   of 1600 x 900, stretched to the window like the frame) */
+#timer { display: none; position: fixed; left: 35.625%; top: 4.667%; width: 28.75%; height: 5.111%; border-radius: 0.6vh;
+         overflow: hidden; pointer-events: none; }
+.timing #timer { display: block; }
+#timer-fill { position: absolute; inset: 22% 1.5%; width: 0; border-radius: 0.4vh; max-width: 97%;
+              background: linear-gradient(#f6d77a, #d9a531); box-shadow: 0 0 10px #ec48; }
+#timer-left { position: absolute; right: 3%; top: 50%; transform: translateY(-50%); color: #fff;
+              font: 600 clamp(10px, 2.8vh, 20px) system-ui, sans-serif; text-shadow: 0 0 3px #000, 0 0 6px #000; }
+.low #timer-fill { background: linear-gradient(#ff8a7a, #d33); box-shadow: 0 0 10px #f448; animation: blink 0.5s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0.45; } }
+#stalk, #stalk-hit { display: none; }
+.has-flash #stalk, .has-flash #stalk-hit { display: inline; }
+#stalk-hit { pointer-events: stroke; cursor: pointer; touch-action: none; }
+#stalk { transition: transform 0.06s; }
+.flashing #stalk { transform: translate(-3px, 9px); } /* pulled towards you */
 #flash { position: absolute; left: 50%; top: -10px; opacity: 0; white-space: nowrap; font-size: 30px; font-weight: bold; }
 .garage #hud { display: none; }
 
@@ -73,16 +94,9 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 .has-nos #nos { display: block; }
 .nitro #nos { box-shadow: 0 0 18px #f44; }
 .nitro #world { filter: saturate(1.5) brightness(1.08); }
-#headlights { display: none; position: fixed; left: calc(24vw - 76px); top: 70vh; width: 64px; height: 64px; border-radius: 50%;
-         border: 2px solid #ec4; background: #2a2510; color: #fe8; font: bold 12px system-ui, sans-serif; cursor: pointer;
-         touch-action: none; white-space: pre-line; line-height: 1.3; }
-.has-flash #headlights { display: block; }
-#headlights.empty { opacity: 0.35; }
 .flashing #world { filter: brightness(1.4); }
-.flashing #headlights { background: #ec4; color: #111; }
 .nitro #hud { color: #9cf; }
 .touch #nos { left: calc(var(--edge-l) + var(--shifter-h) * 3.2 / 3.5 + 8px); top: 41vh; top: 41dvh; }
-.touch #headlights { left: calc(var(--edge-l) + var(--shifter-h) * 3.2 / 3.5 + 8px); top: calc(41vh - 72px); top: calc(41dvh - 72px); } /* above NOS */
 #menu-button { position: fixed; left: 9vw; top: 52px; z-index: 5; width: 38px; height: 34px; border-radius: 8px;
                background: #0b0d16cc; color: #ccc; border: 1px solid #2c3140; font-size: 18px; cursor: pointer; }
 

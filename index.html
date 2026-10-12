@@ -26,15 +26,18 @@
   <path d="M0,0 H1600 V36 Q800,60 0,36 Z" fill="#121218"/>
   <path d="M0,0 L120,0 L38,600 L0,650 Z" fill="#121218"/>
   <path d="M1600,0 L1480,0 L1562,600 L1600,650 Z" fill="#121218"/>
-  <rect x="690" y="34" width="220" height="62" rx="14" fill="#17171d" stroke="#2a2a33" stroke-width="4"/>
-  <rect x="700" y="42" width="200" height="46" rx="10" fill="#3a3352"/>
+  <rect x="560" y="34" width="480" height="62" rx="14" fill="#17171d" stroke="#2a2a33" stroke-width="4"/>
+  <rect x="570" y="42" width="460" height="46" rx="10" fill="#3a3352"/>
   <path d="M0,650 Q240,578 800,572 Q1360,578 1600,650 V900 H0 Z" fill="url(#dash)"/>
   <path d="M0,650 Q240,578 800,572 Q1360,578 1600,650" fill="none" stroke="#33333d" stroke-width="3"/>
 </svg>
+<div id="timer"><i id="timer-fill"></i><b id="timer-left"></b></div> <!-- in the mirror's glass: the run's time left -->
 
 <div id="hud">
   <div id="flash"></div>
-  <div id="hud-main"><span id="hud-speed">0</span><small id="hud-unit">km/h</small><span id="hud-gear">N</span></div>
+  <div id="hud-main"><span id="hud-speed">0</span><small id="hud-unit">km/h</small><span id="hud-gear">N</span>
+    <span id="hud-beam" title="headlight flashes left"><svg viewBox="0 0 24 16"><path d="M12,2 C19,2 22,5 22,8 C22,11 19,14 12,14 Z"/>
+      <path d="M2,3 H9 M2,5.5 H9 M2,8 H9 M2,10.5 H9 M2,13 H9" fill="none" stroke-width="1.6"/></svg><b id="hud-flashes"></b></span></div>
   <div id="hud-rpm"><div id="fill"></div></div>
   <div id="pips"><span id="lvl">LEVEL</span></div>
   <div id="score"></div>
@@ -67,12 +70,19 @@
 </svg>
 
 <svg id="wheel" viewBox="0 0 1000 300">
+  <g id="stalk"> <!-- the light stalk on the steering column, behind the rim: pull it to flash the high beams -->
+    <path d="M250,130 L78,52" stroke="#1d1d24" stroke-width="22" stroke-linecap="round"/>
+    <path d="M250,130 L78,52" stroke="#34343f" stroke-width="12" stroke-linecap="round"/>
+    <path d="M118,70 L70,48" stroke="#4a4a57" stroke-width="26" stroke-linecap="round"/>
+    <path d="M104,64 L84,55" stroke="#7ab8ff" stroke-width="5" stroke-linecap="round" opacity="0.6"/>
+  </g>
   <g id="wheel-rim">
     <circle cx="500" cy="560" r="500" fill="none" stroke="#24242c" stroke-width="70"/>
     <circle cx="500" cy="560" r="518" fill="none" stroke="#3a3a46" stroke-width="5"/>
     <rect x="462" y="12" width="76" height="96" rx="10" fill="#c33"/>
   </g>
   <circle id="wheel-grip" cx="500" cy="560" r="500" fill="none" stroke="transparent" stroke-width="200"/>
+  <path id="stalk-hit" d="M170,82 L45,30" stroke="transparent" stroke-width="90" stroke-linecap="round"><title>pull to flash the high beams (or press F)</title></path>
 </svg>
 
 <svg id="ignition" data-state="off" viewBox="0 0 150 110"><title>drag to START and hold; drag to OFF to stop</title>
@@ -125,7 +135,6 @@
 
 <button id="menu-button" title="menu (Esc)">☰</button>
 <button id="nos" title="nitro: hold (or hold N)"><i id="nos-fill"></i><span>NOS</span></button>
-<button id="headlights" title="flash your headlights (or press F)">FLASH</button>
 <div id="rotate">Turn your phone sideways to drive.</div>
 <div id="menu"><div id="menu-panel">
   <h1>REV <span>IT</span></h1>

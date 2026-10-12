@@ -15,7 +15,7 @@ const UPGRADES = {
   time:   { name: 'Time', max: 6, base: 200, growth: 1.9, info: l => `${runTime(l)} s a run` },
   steering: { name: 'Steering', max: 3, base: 300, growth: 2, info: l => l ? `lane changes ${40 * l}% quicker` : 'stock rack' },
   flash:  { name: 'Headlight flash', max: 10, base: 300, growth: 1.25, built: 1,
-            info: l => `${l} flash${l === 1 ? '' : 'es'} a run. F or FLASH: the car ahead in your lane moves over (racers won't)` },
+            info: l => `${l} flash${l === 1 ? '' : 'es'} a run. F or the stalk left of the wheel: the car ahead in your lane moves over (racers won't)` },
   autoflash: { name: 'Auto flash', max: 1, base: 2000, needs: ['flash'], gate: () => lvl('flash') >= 5 || 'needs 5 flashes',
                info: () => 'flashes slower cars ahead for you, and changes lanes round racers instead' },
   clutch: { name: 'Auto clutch', max: 1, base: 700, info: () => 'works the clutch: no stalls' },
@@ -236,19 +236,22 @@ function renderRun() {
     starting: ['', 'starting the engine…'],
     countdown: ['GET READY', [!aid('clutch') && 'clutch down', !aid('shift') && '1st gear', !aid('gas') && 'gas']
       .filter(Boolean).join(' · ') || 'sit back: the car does it all'],
-    run: run.limp ? ['LIMP MODE', `${run.left.toFixed(1)} s · ${Math.floor(odo)} of ${LIMP} m`]
-      : progress.racing ? [`P${position()}`, `${run.left.toFixed(1)} s · ${fmt(odo)} m` + gaps()]
-      : [`${fmt(odo)} m`, `${run.left.toFixed(1)} s` + (run.best ? ` · best ${fmt(run.best)} m` : '')],
+    run: run.limp ? ['LIMP MODE', `${Math.floor(odo)} of ${LIMP} m`] // the time left is in the mirror
+      : progress.racing ? [`P${position()}`, `${fmt(odo)} m` + gaps()]
+      : [`${fmt(odo)} m`, run.best ? `best ${fmt(run.best)} m` : ''],
     finish: run.race?.dnf ? ['DNF', run.race.dnf]
       : run.race ? [`P${run.race.p}`, `+${run.race.points} pts · ${fmt(run.gain)} m`]
       : [`${fmt(run.gain)} m`, run.newBest ? 'new best!' : 'time'],
   }[run.phase] ?? ['', ''];
   $('run-dist').textContent = dist;
   $('run-info').textContent = info;
+  document.body.classList.toggle('timing', run.phase !== 'garage');
+  $('timer-fill').style.width = `${97 * run.left / runTime()}%`;
+  $('timer-left').textContent = run.left.toFixed(1);
   document.body.classList.toggle('low', run.phase === 'run' && run.left < 5);
   document.body.classList.toggle('has-flash', lvl('flash') > 0 && !progress.off.flash);
-  $('headlights').textContent = `FLASH\n${run.phase === 'garage' ? lvl('flash') : run.flashes}`;
-  $('headlights').classList.toggle('empty', run.phase !== 'garage' && !run.flashes);
+  $('hud-flashes').textContent = run.phase === 'garage' ? lvl('flash') : run.flashes;
+  $('hud-beam').classList.toggle('empty', run.phase !== 'garage' && !run.flashes);
 }
 
 function gaps() { // the racers just ahead and just behind you
@@ -263,7 +266,7 @@ const DISTANCE = {
   engine: () => progress.engine, // the garage's engines, not the menu's
   tune: applyUpgrades,
   start() { Object.assign(run, { phase: 'garage', best: progress.best }); shownPhase = null; },
-  stop() { run.phase = 'garage'; document.body.classList.remove('garage', 'low', 'has-flash'); clearDamageView(); }, // earns nothing
+  stop() { run.phase = 'garage'; document.body.classList.remove('garage', 'low', 'has-flash', 'timing'); clearDamageView(); }, // earns nothing
   update: updateRun,
   render() { renderRun(); renderDamage(); },
   crash: i => onCollision(i),
