@@ -1,0 +1,144 @@
+:root { --hud: #8fffd8; --accent: #ec4; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color: #eee;
+             font-family: system-ui, sans-serif; user-select: none; -webkit-user-select: none;
+             touch-action: none; overscroll-behavior: none; -webkit-touch-callout: none; } /* no zoom, no pull-to-refresh */
+#world, #frame { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+#frame { pointer-events: none; }
+
+/* head-up display, projected on the windscreen */
+#hud { position: fixed; left: 50%; top: 45vh; transform: translateX(-50%); width: 360px; text-align: center;
+       color: var(--hud); text-shadow: 0 0 8px #0f8a, 0 0 2px #000; opacity: 0.92;
+       font-variant-numeric: tabular-nums; pointer-events: none; }
+#hud-main { display: flex; justify-content: center; align-items: baseline; gap: 10px; letter-spacing: 1px; }
+#hud-speed { font-size: 46px; font-weight: 600; min-width: 2.2em; text-align: right; }
+#hud-gear { font-size: 30px; font-weight: 600; border: 2px solid var(--hud); border-radius: 6px; padding: 0 8px; }
+#hud-rpm { height: 7px; margin: 6px 30px 0; border: 1px solid var(--hud); border-radius: 4px; }
+#fill { height: 100%; width: 0; background: var(--hud); }
+.hit #hud-speed { color: #5f5; }
+/* per game: level pips and score (Rev, Speed signs), distance and clock (Distance) */
+#pips { display: none; justify-content: center; align-items: center; gap: 5px; margin-top: 8px; font-size: 11px; }
+#pips i { width: 22px; height: 7px; border-radius: 3px; border: 1px solid var(--hud);
+          background: linear-gradient(90deg, var(--c, var(--hud)) var(--f, 0%), transparent 0); }
+#score { display: none; margin-top: 6px; white-space: pre-line; font-size: 13px; }
+#score::first-line { font-size: 22px; font-weight: 600; }
+[data-hud="levels"] #pips { display: flex; }
+[data-hud="levels"] #score { display: block; }
+#run-dist, #run-info { display: none; }
+[data-hud="run"] #run-dist { display: block; }
+[data-hud="run"] #run-info { display: inline; }
+#run-dist { margin-top: 8px; font-size: 30px; font-weight: 600; }
+#run-info { font-size: 14px; }
+.low #run-info { color: #f66; }
+#flash { position: absolute; left: 50%; top: -10px; opacity: 0; white-space: nowrap; font-size: 30px; font-weight: bold; }
+.garage #hud { display: none; }
+
+/* menu: pick a game */
+#menu { display: none; position: fixed; inset: 0; z-index: 10; overflow: auto; background: #07081099;
+        backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+.menu #menu { display: flex; }
+#menu-panel { margin: auto; width: min(760px, 92vw); box-sizing: border-box; padding: 18px 20px; border-radius: 14px;
+              background: #0b0d16f2; border: 1px solid #2c3140; color: #bbb; font-size: 13px; }
+#menu h1 { margin: 0; font-size: 30px; letter-spacing: 6px; color: #eee; }
+#menu h1 span { color: var(--accent); }
+#menu p { margin: 2px 0 12px; color: #9ab; }
+#menu h2 { margin: 14px 0 6px; font-size: 11px; letter-spacing: 2px; color: #778; font-weight: 600; }
+#menu button { background: #12141e; color: #ccc; border: 1px solid #2c3140; border-radius: 8px; cursor: pointer; font: inherit; }
+#menu button.on { border-color: var(--accent); }
+#game-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+#game-list button { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; text-align: left; }
+#game-list b { font-size: 16px; color: #eee; letter-spacing: 1px; }
+#game-list small { color: #9ab; line-height: 1.35; }
+#game-list i { font-style: normal; font-size: 11px; color: var(--accent); }
+#game-list button:hover { border-color: #556; }
+#engine-pick { display: flex; gap: 6px; }
+#engine-pick button { flex: 1; padding: 5px 8px; }
+#engine-pick button.on { color: var(--accent); }
+.menu-help { margin-top: 12px; line-height: 1.7; color: #889; }
+.menu-help b { color: #ccc; }
+#menu small.credits { display: block; margin-top: 8px; color: #556; }
+#menu-foot { display: flex; justify-content: flex-end; margin-top: 12px; }
+#resume { padding: 6px 24px; font-size: 16px; font-weight: 600; color: #111 !important; background: var(--accent) !important; }
+#menu-foot { gap: 8px; }
+#menu #layout { margin-right: auto; padding: 4px 10px; color: #889; }
+#menu, #garage { touch-action: pan-y; } /* these two scroll on small screens */
+.touch .desk-only, body:not(.touch) .touch-only { display: none; }
+#menu-button { position: fixed; left: 9vw; top: 52px; z-index: 5; width: 38px; height: 34px; border-radius: 8px;
+               background: #0b0d16cc; color: #ccc; border: 1px solid #2c3140; font-size: 18px; cursor: pointer; }
+
+/* garage between runs, over the windscreen */
+#garage { display: none; position: fixed; z-index: 4; /* over the controls on small screens */ left: 50%; top: 5vh; transform: translateX(-50%); width: min(780px, 66vw);
+          max-height: 57vh; overflow: auto; box-sizing: border-box; padding: 14px 16px; border-radius: 12px;
+          background: #0b0d16ee; border: 1px solid #2c3140; font-size: 13px; color: #bbb; }
+.garage #garage { display: block; }
+#garage header { display: flex; justify-content: space-between; align-items: baseline; }
+#garage header b { font-size: 20px; letter-spacing: 3px; color: #eee; }
+#bank { font-size: 20px; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
+#report { margin: 4px 0 10px; color: #9ab; }
+#report b { color: #5f5; }
+#garage button { background: #1c1c22; color: #ccc; border: 1px solid #444; border-radius: 5px; cursor: pointer;
+                 font: inherit; padding: 3px 10px; }
+#garage button:disabled { cursor: default; color: #667; border-color: #2a2a33; }
+#garage button.on { border-color: var(--accent); color: var(--accent); }
+#engine-row { display: flex; gap: 6px; margin-bottom: 10px; }
+#engine-row button { flex: 1; }
+#cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.card { display: flex; flex-direction: column; gap: 3px; padding: 7px 9px; border: 1px solid #262a36;
+        border-radius: 8px; background: #12141e; }
+.card b { color: #eee; letter-spacing: 1px; }
+.card i { font-style: normal; color: var(--accent); letter-spacing: 1px; font-size: 11px; }
+.card small { min-height: 2.6em; color: #9ab; }
+.card.bought { animation: bought 0.6s ease-out; }
+@keyframes bought { from { background: #3a3410; } }
+#garage footer { display: flex; justify-content: space-between; align-items: center; position: sticky; bottom: -14px;
+                 margin: 0 -16px -14px; padding: 10px 16px 14px; background: #0b0d16; } /* DRIVE stays in view */
+#garage #drive { font-size: 18px; font-weight: 600; padding: 6px 28px; color: #111; background: var(--accent);
+                 border-color: var(--accent); }
+#garage #reset { border: none; background: none; color: #556; }
+
+/* instrument cluster behind the wheel, the wheel itself, and the controls around it */
+#cluster { position: fixed; left: 50%; top: 64vh; transform: translateX(-50%); width: 34vw; pointer-events: none; }
+#cluster text { font-family: system-ui, sans-serif; fill: #ccc; text-anchor: middle; }
+#wheel { position: fixed; left: 50%; top: 83vh; transform: translateX(-50%); width: 54vw; pointer-events: none; }
+/* kinetic controls: dragged with the mouse */
+#ignition { position: fixed; left: 67vw; top: 65vh; width: 11vw; cursor: grab; touch-action: none; }
+#ignition text { font: bold 10px system-ui, sans-serif; fill: #777; text-anchor: middle; }
+#key { transform-origin: 65px 70px; }
+#ignition[data-state="off"] .off, #ignition[data-state="on"] .on, #ignition[data-state="start"] .start { fill: var(--accent); }
+#shifter { position: fixed; left: 67.5vw; top: 78vh; height: 19vh; cursor: grab; touch-action: none; }
+#shifter text { font: bold 0.32px system-ui, sans-serif; fill: #889; text-anchor: middle; }
+#shifter text.locked { fill: #2a2a33; }
+#pedals { position: fixed; right: 1.5vw; bottom: 1vh; display: flex; gap: 2vh; align-items: flex-end; }
+.pedal-box { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px;
+             font-size: 10px; color: #889; letter-spacing: 1px; }
+.pedal { width: 6vh; cursor: grab; touch-action: none; transform-origin: 50% 100%; }
+#brake { width: 7.5vh; }
+.depth { position: absolute; left: -7px; bottom: 16px; width: 4px; height: 10vh; background: #222; border-radius: 2px; }
+.depth::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; border-radius: 2px;
+                height: calc(var(--depth, 0) * 100%); background: var(--accent); } /* how far the pedal is pressed */
+#help { position: fixed; left: 1.5vw; bottom: 1.5vh; white-space: nowrap; font-size: clamp(10px, 1.4vh, 12px);
+        line-height: 1.6; color: #888; }
+#help small { color: #556; }
+#help b { color: #ccc; }
+
+/* touch layout (phones and tablets held sideways): gear lever on the left, pedals on the right, all bigger.
+   dvh: the height actually visible between the browser's bars; env(): clear of the notch */
+.touch { --hud-scale: 1; --shifter-h: min(52vh, 300px); }
+@supports (height: 1dvh) { .touch { --shifter-h: min(52dvh, 300px); } }
+.touch #help { display: none; }
+.touch #hud { top: 38vh; top: 38dvh; transform: translateX(-50%) scale(var(--hud-scale)); transform-origin: top center; }
+.touch #cluster { top: 60vh; top: 60dvh; width: 28vw; }
+.touch #shifter { left: calc(2vw + env(safe-area-inset-left)); top: auto; bottom: 3vh; bottom: 3dvh; height: var(--shifter-h); }
+.touch #ignition { left: calc(2vw + env(safe-area-inset-left) + var(--shifter-h) * 0.92 + 8px); /* right of the shifter */
+                   top: 62vh; top: 62dvh; width: min(10vw, 90px); }
+.touch #pedals { right: calc(2vw + env(safe-area-inset-right)); bottom: 2vh; bottom: 2dvh; gap: 2vw; }
+.touch .pedal { width: 8.5vw; }
+.touch #brake { width: 10vw; }
+.touch .depth { height: calc(100% - 16px); }
+.touch #garage { top: 2vh; width: 94vw; max-height: 96vh; max-height: 96dvh; font-size: 12px; }
+.touch #garage header { padding-left: 46px; } /* clear of the menu button */
+.touch #menu-button { left: calc(2vw + env(safe-area-inset-left)); top: 8px; }
+.touch #menu-panel { width: 94vw; }
+@media (max-height: 560px) { .touch { --hud-scale: 0.62; } }
+#rotate { display: none; position: fixed; inset: 0; z-index: 20; background: #000; color: #ccc; font-size: 20px;
+          align-items: center; justify-content: center; text-align: center; padding: 20px; }
+@media (orientation: portrait) { .touch #rotate { display: flex; } } /* the cockpit needs the phone sideways */

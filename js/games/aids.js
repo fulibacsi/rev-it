@@ -1,5 +1,5 @@
 // Driver aids from the garage: robot feet and a robot hand working the same pedals and lever as the player, so you
-// can watch them do it. Each one only works while bought, switched on and a run is under way (aid() in game.js).
+// can watch them do it. Each one only works while bought, switched on and a run is under way (aid() in distance.js).
 
 function updateAids(dt) {
   if (state !== 'running') return;

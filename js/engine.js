@@ -1,7 +1,7 @@
 // Engine: recorded sound loops, starter motor, blow-off valve and the rpm model.
-// Classic script: shares globals with car.js, game.js and main.js.
+// Classic script: shares globals with the other scripts index.html loads, in that order.
 
-// loops: [rpm, base64 WAV] recorded at a steady rpm, built by make_sounds.py
+// loops: [rpm, base64 WAV] recorded at a steady rpm, built by tools/make_sounds.py into assets/sounds.js
 // drive: free-revving acceleration at full throttle, rpm/s (a flat torque curve, so power peaks near the redline)
 // tauDown: engine braking: seconds for the revs to close ~63% of the gap to idle with the throttle shut
 // lope: rpm the idle hunts by (big cam); turbo: pulls weakly until boost builds; torqueDip: rpm where the
