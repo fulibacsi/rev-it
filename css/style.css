@@ -99,6 +99,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 #cluster { position: fixed; left: 50%; top: 64vh; transform: translateX(-50%); width: 34vw; pointer-events: none; }
 #cluster text { font-family: system-ui, sans-serif; fill: #ccc; text-anchor: middle; }
 #wheel { position: fixed; left: 50%; top: 83vh; transform: translateX(-50%); width: 54vw; pointer-events: none; }
+#wheel-grip { pointer-events: visibleStroke; cursor: grab; touch-action: none; } /* only the rim takes hold */
 /* kinetic controls: dragged with the mouse */
 #ignition { position: fixed; left: 67vw; top: 65vh; width: 11vw; cursor: grab; touch-action: none; }
 #ignition text { font: bold 10px system-ui, sans-serif; fill: #777; text-anchor: middle; }
@@ -126,6 +127,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 .touch { --hud-scale: 1; --shifter-h: min(52vh, 300px); }
 @supports (height: 1dvh) { .touch { --shifter-h: min(52dvh, 300px); } }
 .touch #help { display: none; }
+.touch #wheel { top: 80vh; top: 80dvh; } /* the rim is a control here: up off the screen's edge, under the cluster */
 .touch #hud { top: 38vh; top: 38dvh; transform: translateX(-50%) scale(var(--hud-scale)); transform-origin: top center; }
 .touch #cluster { top: 60vh; top: 60dvh; width: 28vw; }
 .touch #shifter { left: calc(2vw + env(safe-area-inset-left)); top: auto; bottom: 3vh; bottom: 3dvh; height: var(--shifter-h); }

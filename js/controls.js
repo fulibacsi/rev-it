@@ -1,4 +1,4 @@
-// Input. Keyboard, mouse and touch all work at once, on the same key, pedals and gear lever.
+// Input. Keyboard, mouse and touch all work at once, on the same key, pedals, gear lever and steering wheel.
 // Mouse: drag them like the real thing. One pointer can't hold two pedals, so a pedal stays where the mouse leaves
 // it (double-click lets it go). Keyboard and fingers hold a pedal only while the key or finger is down; several
 // fingers can hold several controls.
@@ -45,13 +45,12 @@ for (const [id, p] of Object.entries(PEDALS)) {
   const el = $(id);
   let from;
   drag(el, (e, first) => {
-    // the ruler is the pedal's box (the pedal itself looks shorter as it tilts); its label takes the bottom 14 px
-    const box = el.parentNode.getBoundingClientRect();
-    if (byHand(e)) p.set(clamp((e.clientY - box.top) / (box.height - 14), 0, 1)); // a finger: the lower, the deeper
-    else { // the mouse: drag down from where it was
-      if (first) from = { y: e.clientY, v: p.get() };
-      p.set(clamp(from.v + (e.clientY - from.y) / box.height, 0, 1));
-    }
+    // full travel = the pedal box's height (the pedal itself looks shorter as it tilts, so it can't be the ruler).
+    // A finger floors it and slides up to ease off (a phone's edge is right below the pedals, so never down);
+    // the mouse drags it down from where it was.
+    const travel = el.parentNode.getBoundingClientRect().height;
+    if (first) from = { y: e.clientY, v: byHand(e) ? 1 : p.get() };
+    p.set(clamp(from.v + (e.clientY - from.y) / travel, 0, 1));
     p.back = 0;
   }, e => { if (byHand(e)) p.back = FINGER_OFF; });
   el.ondblclick = () => p.set(0);
@@ -137,15 +136,19 @@ drag($('shifter'), (e, first) => {
   Object.assign(lever, gear ? { y: Math.sign(lever.y) } : { x: 0, y: 0 }, { held: false, grinding: false });
 });
 
-// ---- lane changes: swipe or drag sideways across the road (each finger or the mouse on its own) ----
-const swipes = new Map(); // pointer id -> where it went down, and whether it already changed lanes
+// ---- steering wheel: grab the rim and turn it; past TURN degrees the car changes lanes that way. It has to come
+// back near the middle before it can change again, and springs back to following the road when let go.
+const WHEEL = { cx: 500, cy: 560, turn: 30 }; // the rim's centre in the wheel's SVG units
+const wheel = { held: false, angle: 0, from: 0, dir: 0 }; // angle: degrees turned, + clockwise; dir: last change
 function steerLane(dir) { if (!game.parked) changeLane(dir); }
-$('world').onpointerdown = e => swipes.set(e.pointerId, { x: e.clientX, done: false });
-$('world').onpointermove = e => {
-  const s = swipes.get(e.pointerId);
-  if (s && !s.done && Math.abs(e.clientX - s.x) > 40) { s.done = true; steerLane(Math.sign(e.clientX - s.x)); }
-};
-$('world').onpointerup = $('world').onpointercancel = e => swipes.delete(e.pointerId);
+drag($('wheel-grip'), (e, first) => {
+  const [x, y] = svgPoint($('wheel'), e), at = Math.atan2(x - WHEEL.cx, WHEEL.cy - y) * 180 / Math.PI;
+  if (first) Object.assign(wheel, { held: true, from: at, angle: 0, dir: 0 });
+  wheel.angle = clamp(at - wheel.from, -120, 120);
+  const side = Math.abs(wheel.angle) >= WHEEL.turn ? Math.sign(wheel.angle) : 0;
+  if (side && side !== wheel.dir) { steerLane(side); wheel.dir = side; }
+  else if (Math.abs(wheel.angle) < WHEEL.turn / 3) wheel.dir = 0;
+}, () => { wheel.held = false; });
 
 // ---- keyboard ----
 const HELD_KEYS = { ' ': 'gas', Shift: 'clutch', b: 'brake', B: 'brake' };
