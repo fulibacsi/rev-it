@@ -48,11 +48,15 @@ function racer(n, z) {
 }
 // before the reveal #100 is one quick car up the road. Its head start shrinks as the car gets built, so it can only be
 // caught once the car is nearly done (around run 20 for a perfect player, just before the bell): [share of the car
-// upgrades bought, metres ahead], straight lines in between
+// upgrades bought, metres ahead], straight lines in between. An upgrade's `built` levels are all that count towards
+// it (the flashes past the first are extras)
 const HEAD_START = [[0, 1300], [0.55, 1300], [0.78, 980], [1, 400]];
 function headStart() {
   let have = 0, all = 0;
-  for (const [id, u] of Object.entries(UPGRADES)) if (!u.tab) { have += lvl(id); all += maxOf(u); }
+  for (const [id, u] of Object.entries(UPGRADES)) if (!u.tab) {
+    const n = u.built ?? maxOf(u);
+    have += Math.min(lvl(id), n); all += n;
+  }
   const c = have / all, i = HEAD_START.findIndex(([at]) => at >= c), [c1, h1] = HEAD_START[i], [c0, h0] = HEAD_START[Math.max(0, i - 1)];
   return c1 === c0 ? h1 : h0 + (h1 - h0) * (c - c0) / (c1 - c0);
 }

@@ -40,11 +40,12 @@ function damageTick(dt) {
   popped = Math.max(0, popped - dt);
   // a worn gearbox under load jumps out of gear: once in ~15 s at 80%, every ~5 s at 100%
   if (progress.damage >= 80 && gear && locked && throttle > 0.5 && Math.random() < dt * (progress.damage - 70) / 150) popOut();
-  // the tune's heat: revving past the factory redline heats fast (held there, the red in ~6 s), the extra power under
-  // throttle slowly (floored, ~40 s); easing off cools. In the red it damages the engine, up to 2% a second.
+  // the tune's heat: revving past the factory redline heats fast (held there, the red in ~6 s), the extra power while
+  // it burns fuel slowly (floored, ~40 s; not while the limiter cuts it); easing off cools. In the red it damages the
+  // engine, up to 2% a second.
   nitroTick(dt);
   if (!tuned()) { heat = 0; return; }
-  const over = Math.max(0, rpm - engine.stock.redline) / 1000, push = throttle * lvl('ecuPower') / UPGRADES.ecuPower.max;
+  const over = Math.max(0, rpm - engine.stock.redline) / 1000, push = (cut ? 0 : throttle) * lvl('ecuPower') / UPGRADES.ecuPower.max;
   const was = heat, cooling = 1 - 0.15 * lvl('cooling'); // a bigger radiator: the heat rises slower
   heat = clamp(heat + dt * ((0.15 * over + 0.07 * push) * cooling - 0.05), 0, 1);
   if (heat >= HOT) addDamage(dt * (0.3 + 1.7 * (heat - HOT) / (1 - HOT)));

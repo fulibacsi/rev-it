@@ -205,13 +205,12 @@ function driveCar(c, dt) { // follow at a safe distance, or pull out and pass
 
 // flashed: an ordinary car ahead of you in your lane (within 250 m) moves over to your other lane if there is room.
 // Racers don't care.
+// yields: whether car c would move over into lane `to` for a flash now (racers never do)
+const yields = (c, to) => !c.racer && !c.yielding && c.dir > 0 && c.z > odo && c.z - odo <= 250 && roomAt(c, MY_LANES[to], 12, 25);
 function flashAhead() {
   if (lane > 1) return; // over there they are coming at you
   const to = 1 - lane;
-  for (const c of traffic) {
-    if (c.racer || c.dir < 0 || !sameLane(c.x, carX) || c.z < odo || c.z - odo > 250) continue;
-    if (roomAt(c, MY_LANES[to], 12, 25)) Object.assign(c, { lane: to, yielding: true, cool: LANE_GAP.car + 2 });
-  }
+  for (const c of traffic) if (sameLane(c.x, carX) && yields(c, to)) Object.assign(c, { lane: to, yielding: true, cool: LANE_GAP.car + 2 });
 }
 
 function updateTraffic(dt, clock) {

@@ -5,11 +5,16 @@
 const $ = id => document.getElementById(id);
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 const svgPoint = (svg, e) => { const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(svg.getScreenCTM().inverse()); return [p.x, p.y]; };
-function drag(el, onMove, onUp) { // one pointer per control; capture keeps the drag going off the control
+function drag(el, onMove, onUp) { // one pointer per control, the latest to touch it; capture keeps the drag going off it
   let id = null;
-  el.onpointerdown = e => { if (id !== null) return; id = e.pointerId; el.setPointerCapture(id); onMove(e, true); };
+  const end = e => { if (e.pointerId === id) { id = null; onUp?.(e); } };
+  el.onpointerdown = e => {
+    if (id !== null) { id = null; onUp?.(e); } // the last one never reported letting go: it must not lock the control
+    try { el.setPointerCapture(e.pointerId); } catch { return; } // already lifted (a quick tap on a busy frame)
+    id = e.pointerId; onMove(e, true);
+  };
   el.onpointermove = e => { if (e.pointerId === id) onMove(e, false); };
-  el.onpointerup = el.onpointercancel = e => { if (e.pointerId === id) { id = null; onUp?.(e); } };
+  el.onpointerup = el.onpointercancel = el.onlostpointercapture = end; // lost capture: the browser took the pointer
   el.oncontextmenu = e => e.preventDefault(); // long-press on touch screens
 }
 const byHand = e => e.pointerType !== 'mouse'; // a finger or pen: it holds, and lets go
@@ -188,7 +193,7 @@ drag($('wheel-grip'), (e, first) => {
 let flashedAt = -Infinity;
 function flashLights() {
   const now = performance.now();
-  if (!game.canFlash?.() || now - flashedAt < 800) return;
+  if (now - flashedAt < 800 || !game.useFlash?.()) return;
   flashedAt = now;
   flashAhead();
   document.body.classList.add('flashing');
@@ -200,7 +205,7 @@ $('headlights').onpointerdown = e => { e.preventDefault(); flashLights(); };
 // ---- nitro (Distance): hold N, or hold the NOS button with the mouse or a finger ----
 let nitroHeld = false;
 $('nos').onpointerdown = e => { $('nos').setPointerCapture(e.pointerId); nitroHeld = true; };
-$('nos').onpointerup = $('nos').onpointercancel = () => { nitroHeld = false; };
+$('nos').onpointerup = $('nos').onpointercancel = $('nos').onlostpointercapture = () => { nitroHeld = false; };
 $('nos').oncontextmenu = e => e.preventDefault();
 
 // ---- keyboard ----

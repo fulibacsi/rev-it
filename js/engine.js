@@ -30,6 +30,7 @@ let engine, ctx, loading, players = [], filter, master, noise, starterBuffer, st
 let rpm = 0, throttle = 0, boost = 0, hang = 0, cut = false, cutLeft = 0, gasPedal = 0, lifted = true;
 const NITRO = 1.6; // torque while nitro burns (Distance)
 let nitro = false;
+let revCap = Infinity; // a limiter below the redline: the Distance aids keep a tuned engine on its factory map
 let state = 'off', crankUntil = 0, crankWanted = false;
 
 async function start() {
@@ -256,7 +257,7 @@ function updateEngine(dt, now) {
   const boostAim = state === 'running' && rpm > 3000 ? throttle : 0;
   boost += (boostAim - boost) * Math.min(1, dt / (boostAim > boost ? 0.7 : 0.15));
   cutLeft = Math.max(0, cutLeft - dt); // rev limiter: a short fuel cut each time the redline is reached
-  if (!cutLeft && rpm >= e.redline) cutLeft = LIMITER_CUT;
+  if (!cutLeft && rpm >= Math.min(e.redline, revCap)) cutLeft = LIMITER_CUT;
   cut = cutLeft > 0;
   return state === 'running' ? engineAccel(e, rpm, cut ? 0 : throttle) : 0;
 }

@@ -5,7 +5,8 @@
 // upgrade costs follow the usual incremental-game curve (Cookie Clicker, Hill Climb Racing): level n costs
 // base · growth^n. info(level) describes what the car has at that level; needs: upgrades it builds on.
 // tab: 'car' (paid in metres, the default) or 'racing' (paid in race points, race.js adds those); max can depend on
-// progress (then locked says why there is no more yet); gate(level) can hold the next level back with a reason.
+// progress (then locked says why there is no more yet); gate(level) can hold the next level back with a reason;
+// built: how many levels count towards the car being built (headStart in race.js), when not all of them.
 const UPGRADES = {
   power:  { name: 'Power', max: 10, base: 80, growth: 1.55, info: l => `+${12 * l}% torque` },
   rev:    { name: 'Rev limit', max: 4, base: 150, growth: 2, info: l => `${limiter(engine, l)} rpm` },
@@ -13,8 +14,10 @@ const UPGRADES = {
   tyres:  { name: 'Tyres', max: 4, base: 400, growth: 1.8, info: l => `${tyreGrip(l).toFixed(1)} g grip` },
   time:   { name: 'Time', max: 6, base: 200, growth: 1.9, info: l => `${runTime(l)} s a run` },
   steering: { name: 'Steering', max: 3, base: 300, growth: 2, info: l => l ? `lane changes ${40 * l}% quicker` : 'stock rack' },
-  flash:  { name: 'Headlight flash', max: 1, base: 600, info: () => 'F or FLASH: the car ahead in your lane moves over (racers won\'t)' },
-  autoflash: { name: 'Auto flash', max: 1, base: 2000, needs: ['flash'], info: () => 'flashes slower cars ahead for you' },
+  flash:  { name: 'Headlight flash', max: 10, base: 300, growth: 1.25, built: 1,
+            info: l => `${l} flash${l === 1 ? '' : 'es'} a run. F or FLASH: the car ahead in your lane moves over (racers won't)` },
+  autoflash: { name: 'Auto flash', max: 1, base: 2000, needs: ['flash'], gate: () => lvl('flash') >= 5 || 'needs 5 flashes',
+               info: () => 'flashes slower cars ahead for you, and changes lanes round racers instead' },
   clutch: { name: 'Auto clutch', max: 1, base: 700, info: () => 'works the clutch: no stalls' },
   gas:    { name: 'Auto gas', max: 1, base: 800, info: () => 'launch and traction control' },
   shift:  { name: 'Auto shift', max: 1, base: 2500, needs: ['clutch'], info: () => 'changes gear at the limiter' },
@@ -96,7 +99,8 @@ const run = { phase: 'garage', count: 0, left: 0, best: progress.best, gain: 0, 
 
 function startRun() { // back to the start line, engine running, in neutral, held on the brake
   Object.assign(run, { phase: 'starting', count: COUNTDOWN, left: runTime(), best: progress.best, gain: 0, newBest: false,
-                       slot: progress.racing ? startSlot() : null, race: null, revealed: false, limp: wrecked() });
+                       slot: progress.racing ? startSlot() : null, race: null, revealed: false, limp: wrecked(),
+                       flashes: lvl('flash') });
   resetScene();
   brakePedal = 1;
   coolDown();
@@ -242,7 +246,9 @@ function renderRun() {
   $('run-dist').textContent = dist;
   $('run-info').textContent = info;
   document.body.classList.toggle('low', run.phase === 'run' && run.left < 5);
-  document.body.classList.toggle('has-flash', DISTANCE.canFlash());
+  document.body.classList.toggle('has-flash', lvl('flash') > 0 && !progress.off.flash);
+  $('headlights').textContent = `FLASH\n${run.phase === 'garage' ? lvl('flash') : run.flashes}`;
+  $('headlights').classList.toggle('empty', run.phase !== 'garage' && !run.flashes);
 }
 
 function gaps() { // the racers just ahead and just behind you
@@ -262,7 +268,11 @@ const DISTANCE = {
   render() { renderRun(); renderDamage(); },
   crash: i => onCollision(i),
   marks: roadMarks,
-  canFlash: () => lvl('flash') > 0 && !progress.off.flash,
+  useFlash() { // a charge from this run's flashes
+    if (run.phase !== 'run' || progress.off.flash || !run.flashes) return false;
+    run.flashes--;
+    return true;
+  },
   speedo: () => lvl('gear7') ? 540 : 360,
   field: () => raceField(), // race.js loads after this file
   key(k) { if (k === 'Enter' && run.phase === 'garage') { drive(); return true; } }, // Enter in the garage: DRIVE

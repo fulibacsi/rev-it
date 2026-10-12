@@ -2,6 +2,9 @@
 // can watch them do it. Each one only works while bought, switched on and a run is under way (aid() in distance.js).
 
 function updateAids(dt) {
+  // an ECU tune: driving on its own the car keeps to the factory map, limiter at the factory redline (no heat from the
+  // revs); your own foot on the gas, or nitro, switches to the tuned map for the rest
+  revCap = aid('gas') && tuned() && !pushing() && !nitro ? engine.stock.redline : Infinity;
   if (state !== 'running') return;
   if (aid('shift')) autoShift();
   if (aid('clutch')) autoClutch(dt);
@@ -36,14 +39,12 @@ function autoGas() {
     const most = (gripTorque() / engine.inertia / RAD - a0) / (a1 - a0);
     gasPedal = clamp(spinning ? 0.3 * most : 0.97 * most, 0, 1);
   }
-  // an ECU tune: on its own the car stays under the factory redline (no heat); push the gas yourself to use the rest
-  if (!nitro && tuned()) gasPedal = Math.min(gasPedal, clamp((engine.stock.redline - rpm) / 400, 0, 1)); // fade out
 }
 
 // auto shift: up just short of the limiter, down when a hill drags the revs low. The lever travels the gate.
 function autoShift() {
   if (lever.held || lever.path) return; // the player's hand is on it, or it is already moving
-  const r = tuned() && !pushing() && !nitro ? Math.min(engine.redline, engine.stock.redline) : engine.redline; // see autoGas
+  const r = Math.min(engine.redline, revCap); // see updateAids
   const next = step => { let g = gear + step; while (brokenGears.includes(g)) g += step; return g; }; // past broken ones
   const at = revsIn, up = next(1), down = next(-1);
   // up near the limiter, unless that gear would lug the engine; down by road speed (after a crash the clutch may be
@@ -56,10 +57,15 @@ function autoShift() {
 }
 
 // ---- steering: a robot hand on the wheel (it turns by itself as the car moves over) ----
-// the nearest car going your way ahead in lane x: how far its back is from your front, and how fast you close on it
-function carAhead(x) {
+// the nearest car going your way ahead in lane x, leaving out any that past(c, x) says won't be in your way there
+function nextCar(x, past = () => false) {
   let near = null;
-  for (const c of traffic) if (c.dir > 0 && sameLane(c.x, x) && c.z > odo && (!near || c.z < near.z)) near = c;
+  for (const c of traffic) if (c.dir > 0 && sameLane(c.x, x) && c.z > odo && !past(c, x) && (!near || c.z < near.z)) near = c;
+  return near;
+}
+// ... how far its back is from your front, and how fast you close on it
+function carAhead(x, past) {
+  const near = nextCar(x, past);
   return near && { gap: near.z - odo - MY_FRONT, closing: speed - near.v };
 }
 // room in lane x to move over into: nobody alongside, and nobody slower within `ahead` metres
@@ -87,7 +93,12 @@ function autocruise() {
   const reach = a => a && a.closing > 0 ? a.gap / a.closing : Infinity; // s until you'd hit it
   const mine = carAhead(MY_LANES[lane]), theirs = carAhead(MY_LANES[1 - lane]);
   const roomBeside = laneClear(MY_LANES[1 - lane], MY_FRONT + 6) && reach(theirs) > 2.5; // can move over now, safely
-  const escape = roomBeside && reach(theirs) > reach(mine) + 0.5; // the other lane goes further
+  // which lane goes further: with auto flash and a flash left, an ordinary car is no obstacle (it will be flashed out
+  // of the way), nor is one already moving out of the lane for a flash; a racer in front, which won't move over, is
+  // overtaken in the other lane
+  const leaving = (c, x) => c.yielding ? !sameLane(MY_LANES[c.lane], x) : aid('autoflash') && run.flashes > 0 && yields(c, 1 - c.lane);
+  const further = x => reach(carAhead(x, leaving));
+  const escape = roomBeside && further(MY_LANES[1 - lane]) > further(MY_LANES[lane]) + 0.5;
   if (settled() && (escape && reach(mine) < 8 || lane === 1 && roomBeside && reach(mine) > 6 && reach(theirs) > 8)) moveOver();
   if (pushing()) { if (cruiseBrake) { brakePedal = 0; cruiseBrake = false; } return; } // your foot on the gas: no braking
   const hardest = CAR.brake / engine.mass; // m/s² the brakes can do
@@ -104,10 +115,10 @@ function autocruise() {
   }
 }
 
-// auto flash: flashes an ordinary car that's slower than you and under 4 s ahead in your lane
+// auto flash: flashes the car ahead in your lane when it is slower than you, under 4 s away and would move over: an
+// ordinary car with room in your other lane. Never a racer, so no flash is wasted (autocruise overtakes those)
 function autoFlash() {
-  if (lane > 1) return;
-  const slow = traffic.some(c => !c.racer && c.dir > 0 && sameLane(c.x, carX) && c.z > odo && c.v < speed - 2 &&
-    (c.z - odo) / (speed - c.v) < 4);
-  if (slow) flashLights();
+  if (lane > 1 || !run.flashes) return;
+  const c = nextCar(carX);
+  if (c && c.v < speed - 2 && (c.z - odo) / (speed - c.v) < 4 && yields(c, 1 - lane)) flashLights();
 }
