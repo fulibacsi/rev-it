@@ -144,7 +144,8 @@ function renderGarage(bought) {
     ? `You get ${runTime()} seconds. Drive as far as you can: every metre is money for upgrades.`
     : (r?.dnf ? `<b>DNF</b>: ${{ 'head-on': 'head-on with oncoming traffic', wrecked: 'the car is wrecked',
         limped: `limped ${LIMP} m in the wreck` }[r.dnf]} · no points · ` : '') +
-      (r && !r.dnf ? `Started ${r.start > FIELD ? 'at the back' : 'P' + r.start}, finished <b>P${r.p}</b> · <b>+${r.points} pts</b> · best P${progress.finish} · ` : '') +
+      (r && !r.dnf ? `Started ${r.start > FIELD ? 'at the back' : 'P' + r.start}, finished <b>P${r.p}</b> · <b>+${r.points} pts</b>` +
+        (r.fresh ? ` (${r.fresh} for new positions, ${r.gained} for places gained)` : '') + ` · best P${progress.finish} · ` : '') +
       `Last run <b>+${fmt(run.gain)} m</b>${run.newBest ? ' · <b>new best!</b>' : ''} · best ${fmt(progress.best)} m · ` +
       `${progress.runs} run${progress.runs > 1 ? 's' : ''} · ${runTime()} s a run` + (done ? ' · fully built' : '') +
       (run.refill ? ` · nitro refill −${fmt(run.refill)} m` : '') +
