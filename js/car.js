@@ -38,10 +38,10 @@ function stepLane(dt) {
   slide += clamp(want - slide, -6 * dt, 6 * dt); // steering in and out: an S-curve, not a jump
   carX += slide * dt;
 }
-// ran into car c: most of the speed is gone, and a half-done lane change swerves back to where it came from
+// ran into car c: you lose most of your speed, down to well under its speed so it pulls away instead of being hit
+// again, and a half-done lane change swerves back to where it came from
 function bump(c) {
-  speed *= 0.35;
-  c.v = Math.max(c.v, speed + 3); // shoved ahead and away
+  speed = Math.min(speed * 0.35, c.v * 0.4);
   if (Math.abs(MY_LANES[lane] - carX) > 0.5) lane = 1 - lane; // was pulling over into it: back to the other lane
   crashed = true;
 }

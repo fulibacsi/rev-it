@@ -183,7 +183,7 @@ function tick(now) {
   if (stalled) { stalled = false; flash('STALL', '#f55', false); }
   game.update?.(dt);
   updateTraffic(dt, now / 1000);
-  if (crashed) { crashed = false; crashSound(); flash('CRASH', '#f55', false); shake = 0.4; }
+  if (crashed) { crashed = false; crashSound(); flash('CRASH', '#f55', false); shake = 0.7; }
   shake = Math.max(0, shake - dt); // the view jolts after a crash
   canvas.style.transform = shake ? `translate(${(Math.random() - 0.5) * 30 * shake}px, ${(Math.random() - 0.5) * 30 * shake}px)` : '';
   const shown = shownRpm(now), kmh = speed * 3.6;
