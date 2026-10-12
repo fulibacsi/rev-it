@@ -2,7 +2,7 @@
 // signs.js, distance.js, and Free drive below); controls.js handles the input.
 // A game: { id, name, blurb, hud: 'levels' | 'run' | undefined, gears(): gears in the gate, parked?, and optionally
 //   start(), stop(), update(dt), render(), marks() for the roadside, readout() for the big HUD number,
-//   engine() / tune() when it chooses and tunes the car itself, key(k) to take a key press, field() for
+//   engine() / tune() when it chooses and tunes the car itself, key(k) to take a key press, crash(impact) to hear of a collision, field() for
 //   cars it places on the road itself (racers) }
 const fmt = n => Math.round(n).toLocaleString('en-US');
 
@@ -184,7 +184,7 @@ function tick(now) {
   if (stalled) { stalled = false; flash('STALL', '#f55', false); }
   game.update?.(dt);
   updateTraffic(dt, now / 1000);
-  if (crashed) { crashed = false; crashSound(); flash('CRASH', '#f55', false); shake = 0.7; }
+  if (crashed) { crashed = false; crashSound(); flash('CRASH', '#f55', false); shake = 0.7; game.crash?.(impact); }
   shake = Math.max(0, shake - dt); // the view jolts after a crash
   canvas.style.transform = shake ? `translate(${(Math.random() - 0.5) * 30 * shake}px, ${(Math.random() - 0.5) * 30 * shake}px)` : '';
   const shown = shownRpm(now), kmh = speed * 3.6;

@@ -40,8 +40,9 @@ function autoGas() {
 function autoShift() {
   if (lever.held || lever.path) return; // the player's hand is on it, or it is already moving
   const r = engine.redline;
-  const want = !gear ? 1 : rpm > r - 200 && gear < topGear() && locked ? gear + 1
-    : locked && gear > 1 && rpm < 0.45 * r ? gear - 1 : gear;
+  const next = step => { let g = gear + step; while (brokenGears.includes(g)) g += step; return g; }; // past broken ones
+  const want = !gear ? next(1) : rpm > r - 200 && next(1) <= topGear() && locked ? next(1)
+    : locked && next(-1) >= 1 && rpm < 0.45 * r ? next(-1) : gear;
   if (want !== gear) moveLever(want);
 }
 
@@ -62,7 +63,7 @@ const moveOver = () => changeLane(lane ? 1 : -1); // to the other lane
 // lane assist: at the last moment (under 1.8 s from hitting a slower car) it swerves into the other lane if that is
 // clear. It doesn't brake: boxed in, you still have to.
 function laneAssist() {
-  if (wheel.held || !settled()) return;
+  if (wheel.held || lane > 1 || !settled()) return; // on the wrong side of the road you are on your own
   const a = carAhead(MY_LANES[lane]);
   if (a && a.closing > 0 && a.gap / a.closing < 1.8 && laneClear(MY_LANES[1 - lane], a.gap + 20)) moveOver();
 }
@@ -73,7 +74,7 @@ function laneAssist() {
 // (from 300 km/h that still takes a couple of hundred metres), then follows until there is a way past.
 let cruiseBrake = false; // it has its foot on the brake (so it knows to take it off again)
 function autocruise() {
-  if (wheel.held) return;
+  if (wheel.held || lane > 1) return; // it keeps to its side of the road; over there you are on your own
   const reach = a => a && a.closing > 0 ? a.gap / a.closing : Infinity; // s until you'd hit it
   const mine = carAhead(MY_LANES[lane]), theirs = carAhead(MY_LANES[1 - lane]);
   const roomBeside = laneClear(MY_LANES[1 - lane], MY_FRONT + 6) && reach(theirs) > 2.5; // can move over now, safely

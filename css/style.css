@@ -4,6 +4,8 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
              touch-action: none; overscroll-behavior: none; -webkit-touch-callout: none; } /* no zoom, no pull-to-refresh */
 #world, #frame { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
 #frame { pointer-events: none; }
+#cracks { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; fill: none;
+          stroke: #f4f6ffcc; stroke-width: 1.6; stroke-linejoin: round; filter: drop-shadow(0 0 1px #000a); }
 
 /* head-up display, projected on the windscreen */
 #hud { position: fixed; left: 50%; top: 45vh; transform: translateX(-50%); width: 360px; text-align: center;
@@ -92,6 +94,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 .card i { font-style: normal; color: var(--accent); letter-spacing: 1px; font-size: 11px; }
 .card small { min-height: 2.6em; color: #9ab; }
 .card.bought { animation: bought 0.6s ease-out; }
+.card.repair { border-color: #a33; }
 @keyframes bought { from { background: #3a3410; } }
 #garage footer { display: flex; justify-content: space-between; align-items: center; position: sticky; bottom: -14px;
                  margin: 0 -16px -14px; padding: 10px 16px 14px; background: #0b0d16; } /* DRIVE stays in view */
@@ -112,6 +115,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 #shifter { position: fixed; left: 67.5vw; top: 78vh; height: 19vh; cursor: grab; touch-action: none; }
 #shifter text { font: bold 0.32px system-ui, sans-serif; fill: #889; text-anchor: middle; }
 #shifter text.locked { fill: #2a2a33; }
+#shifter text.broken { fill: #c33; }
 #pedals { position: fixed; right: 1.5vw; bottom: 1vh; display: flex; gap: 2vh; align-items: flex-end; }
 .pedal-box { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px;
              font-size: 10px; color: #889; letter-spacing: 1px; }

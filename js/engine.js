@@ -167,6 +167,21 @@ function crashSound() { // a thump and a crunch of metal
   thump.stop(t + 0.3);
 }
 
+function horn() { // an oncoming driver leaning on the horn: two flat tones
+  if (!ctx) return;
+  const t = ctx.currentTime, g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.12, t + 0.03);
+  g.gain.setValueAtTime(0.12, t + 0.7);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.8);
+  g.connect(ctx.destination);
+  for (const f of [415, 523]) {
+    const o = ctx.createOscillator();
+    o.type = 'square'; o.frequency.value = f;
+    o.connect(g); o.start(t); o.stop(t + 0.85);
+  }
+}
+
 function beep(freq, seconds) { // countdown and finish tones
   if (!ctx) return;
   const o = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime;

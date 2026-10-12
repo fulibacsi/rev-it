@@ -28,18 +28,22 @@ const tyreGrip = (l = lvl('tyres')) => 0.8 + 0.1 * l;
 const runTime = (l = lvl('time')) => 20 + 5 * l;
 const topGear = () => 3 + lvl('gears');
 
-function applyUpgrades() { // the garage's work on the engines and the car
+function applyUpgrades() { // the garage's work on the engines and the car, and the damage the car has taken
   for (const e of ENGINES) {
     e.drive = e.stock.drive * (1 + 0.12 * lvl('power'));
-    e.redline = limiter(e);
+    e.redline = limiter(e) - revLoss();
   }
   CAR.grip = tyreGrip();
+  openLanes = lvl('reckless') ? ROAD_LANES.length : MY_LANES.length;
+  brokenGears = damageOn() ? progress.broken : [];
 }
 
 // ---- saved progress (localStorage; the game still works without it, it just won't remember) ----
 const SAVE_KEY = 'car-rev-incremental';
-// off: aids switched off; racing: the race has been revealed; points: race points; finish: best finishing position
-const FRESH = () => ({ bank: 0, best: 0, runs: 0, levels: {}, off: {}, engine: 0, racing: false, points: 0, finish: 101 });
+// off: aids switched off; racing: the race has been revealed; points: race points; finish: best finishing position;
+// damage: % (damage.js), broken: gears it broke
+const FRESH = () => ({ bank: 0, best: 0, runs: 0, levels: {}, off: {}, engine: 0, racing: false, points: 0, finish: 101,
+                       damage: 0, broken: [] });
 const progress = Object.assign(FRESH(), load());
 function load() { try { return JSON.parse(localStorage.getItem(SAVE_KEY)) ?? {}; } catch { return {}; } }
 function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(progress)); } catch { /* not saved */ } }
@@ -89,13 +93,13 @@ function startRun() { // back to the start line, engine running, in neutral, hel
   brakePedal = 1;
 }
 
-function finishRun() {
+function finishRun(dnf) { // dnf: why the run ended early (a crash), if it did
   run.gain = Math.floor(odo);
   run.newBest = run.gain > progress.best;
   progress.bank += run.gain;
   progress.best = Math.max(progress.best, run.gain);
   progress.runs++;
-  run.race = raceFinish();
+  run.race = raceFinish(dnf);
   save();
   Object.assign(run, { phase: 'finish', count: FINISH });
   gasPedal = 0; clutchPedal = 1; brakePedal = 1;
@@ -108,6 +112,14 @@ function updateRun(dt) {
   else if (run.phase === 'run' && (run.left -= dt) <= 0) { run.left = 0; finishRun(); }
   else if (run.phase === 'finish' && (run.count -= dt) <= 0) run.phase = 'garage';
   if (run.phase === 'run' && raceTick()) run.revealed = true;
+  if (run.phase === 'run' && damageOn()) damageTick(dt);
+}
+
+// a collision (once you drive recklessly): damage; a head-on, or the damage that wrecks the car, ends the run
+function onCollision(i) {
+  if (run.phase !== 'run' || !damageOn()) return;
+  hurt(i.kmh, i.headOn);
+  if (i.headOn) finishRun('head-on'); else if (progress.damage >= 100) finishRun('wrecked');
 }
 
 // things beside the road: a board every 100 m and a banner at the best distance so far
@@ -126,7 +138,8 @@ function renderGarage(bought) {
   const done = Object.keys(UPGRADES).every(id => racing(UPGRADES[id]) || whyNot(id) === 'max'), r = run.race;
   $('report').innerHTML = !progress.runs
     ? `You get ${runTime()} seconds. Drive as far as you can: every metre is money for upgrades.`
-    : (r ? `Started ${r.start > FIELD ? 'at the back' : 'P' + r.start}, finished <b>P${r.p}</b> · <b>+${r.points} pts</b> · best P${progress.finish} · ` : '') +
+    : (r?.dnf ? `<b>DNF</b>: ${r.dnf === 'head-on' ? 'head-on with oncoming traffic' : 'the car is wrecked'} · no points · ` : '') +
+      (r && !r.dnf ? `Started ${r.start > FIELD ? 'at the back' : 'P' + r.start}, finished <b>P${r.p}</b> · <b>+${r.points} pts</b> · best P${progress.finish} · ` : '') +
       `Last run <b>+${fmt(run.gain)} m</b>${run.newBest ? ' · <b>new best!</b>' : ''} · best ${fmt(progress.best)} m · ` +
       `${progress.runs} run${progress.runs > 1 ? 's' : ''} · ${runTime()} s a run` + (done ? ' · fully built' : '') +
       (run.revealed ? '<br><b>That quick car was racer #100. You are in a race: the Racing tab is open.</b>' : '');
@@ -139,7 +152,14 @@ function renderGarage(bought) {
       ? `<button data-buy="engine"${whyNot('engine') ? ' disabled' : ''}>${e.name} · ${fmt(cost('engine'))} m</button>`
       : `<button disabled>${e.name} · locked</button>`).join('');
   const onTab = ([id, u]) => id !== 'engine' && (u.tab ?? 'car') === garageTab;
-  $('cards').innerHTML = Object.entries(UPGRADES).filter(onTab).map(([id, u]) => {
+  const d = progress.damage, wrecked = d >= 100;
+  $('drive').disabled = wrecked;
+  $('drive').textContent = wrecked ? 'WRECKED: REPAIR FIRST' : 'DRIVE ▶';
+  const repairCard = garageTab === 'car' && d > 0 ? `<div class="card repair"><b>Repair</b><small>${Math.round(d)}% damage · ` +
+    `rev limit −${fmt(revLoss())} rpm${progress.broken.length ? ` · broken: ${progress.broken.map(ordinal).join(', ')}` : ''}</small>` +
+    `<button data-repair${progress.bank >= REPAIR ? '' : ' disabled'}>${progress.bank >= repairCost() ? 'Repair all' : 'Repair what I can'}` +
+    ` · ${fmt(Math.min(repairCost(), Math.floor(progress.bank / REPAIR) * REPAIR))} m</button></div>` : '';
+  $('cards').innerHTML = repairCard + Object.entries(UPGRADES).filter(onTab).map(([id, u]) => {
     const l = lvl(id), why = whyNot(id), max = maxOf(u), steps = typeof u.max === 'function' ? 0 : max;
     const pips = steps > 1 ? `<i>${'■'.repeat(l)}${'□'.repeat(steps - l)}</i>` : '';
     const info = max > 1 || steps === 0 ? u.info(l) + (why !== 'max' && !why.startsWith('finish') ? ` → ${u.info(l + 1)}` : '') : u.info();
@@ -161,6 +181,7 @@ $('garage').onclick = e => {
   if (id && buy(id)) { beep(1760, 0.08); refreshCar(); }
   if (max) { while (buy(max)); beep(1760, 0.08); }
   if (tab) garageTab = tab;
+  if ('repair' in b.dataset && repair()) { beep(1320, 0.1); refreshCar(); }
   if (i) { progress.engine = +i; save(); refreshCar(); }
   if (toggle) { progress.off[toggle] = !progress.off[toggle]; save(); }
   if (b.id === 'reset' && confirm('Start over? This clears every metre and upgrade.')) { resetProgress(); refreshCar(); }
@@ -169,6 +190,7 @@ $('garage').onclick = e => {
 };
 
 function drive() {
+  if (progress.damage >= 100) return; // wrecked: repair first
   startRun();
   passedBest = shownReveal = false;
   startEngine(); // the key turns itself
@@ -200,7 +222,8 @@ function renderRun() {
       .filter(Boolean).join(' · ') || 'sit back: the car does it all'],
     run: progress.racing ? [`P${position()}`, `${run.left.toFixed(1)} s · ${fmt(odo)} m` + gaps()]
       : [`${fmt(odo)} m`, `${run.left.toFixed(1)} s` + (run.best ? ` · best ${fmt(run.best)} m` : '')],
-    finish: run.race ? [`P${run.race.p}`, `+${run.race.points} pts · ${fmt(run.gain)} m`]
+    finish: run.race?.dnf ? ['DNF', run.race.dnf === 'head-on' ? 'head-on' : 'wrecked']
+      : run.race ? [`P${run.race.p}`, `+${run.race.points} pts · ${fmt(run.gain)} m`]
       : [`${fmt(run.gain)} m`, run.newBest ? 'new best!' : 'time'],
   }[run.phase] ?? ['', ''];
   $('run-dist').textContent = dist;
@@ -220,9 +243,10 @@ const DISTANCE = {
   engine: () => progress.engine, // the garage's engines, not the menu's
   tune: applyUpgrades,
   start() { Object.assign(run, { phase: 'garage', best: progress.best }); shownPhase = null; },
-  stop() { run.phase = 'garage'; document.body.classList.remove('garage', 'low'); }, // a run left half way earns nothing
+  stop() { run.phase = 'garage'; document.body.classList.remove('garage', 'low'); clearDamageView(); }, // earns nothing
   update: updateRun,
-  render: renderRun,
+  render() { renderRun(); renderDamage(); },
+  crash: i => onCollision(i),
   marks: roadMarks,
   field: () => raceField(), // race.js loads after this file
   key(k) { if (k === 'Enter' && run.phase === 'garage') { drive(); return true; } }, // Enter in the garage: DRIVE

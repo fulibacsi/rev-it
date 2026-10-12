@@ -16,6 +16,7 @@ const ROAD = {
 };
 const LANES = { mine: 5.25, passing: 1.75, oncoming: [-1.75, -5.25] }; // lane centres, m from the centre line
 const MY_LANES = [LANES.mine, LANES.passing]; // your side of the double yellow: 0 the right lane, 1 the passing lane
+const ROAD_LANES = [...MY_LANES, ...LANES.oncoming]; // and, driving recklessly, the two oncoming lanes
 const SHOULDER = ROAD.half + ROAD.rumble + 1.4; // parked: off the road, right of the kerb
 
 let rng = 7; // small seeded random so the course is the same every time
@@ -69,7 +70,7 @@ const PALM = sprite(160, 320, (g, w, h) => { // dark sunset silhouette
   }
 });
 const CAR_COLORS = ['#d33', '#36c', '#eee', '#222', '#e8b', '#2a8', '#fa3', '#88a'];
-function carSprite(color, front) { // rear view (same direction) or front view (oncoming), 1.8 m x 1.4 m
+function carSprite(color, front, beams) { // rear view (same direction) or front view (oncoming), 1.8 m x 1.4 m
   return sprite(180, 140, (g, w, h) => {
     g.fillStyle = '#111'; g.fillRect(w * 0.08, h * 0.78, w * 0.16, h * 0.22); g.fillRect(w * 0.76, h * 0.78, w * 0.16, h * 0.22);
     g.fillStyle = color; g.beginPath(); g.roundRect(0, h * 0.42, w, h * 0.42, 14); g.fill(); // body
@@ -81,9 +82,14 @@ function carSprite(color, front) { // rear view (same direction) or front view (
     g.fillStyle = front ? '#fff6c8' : '#ff2a2a'; // headlights or tail lights
     g.fillRect(w * 0.05, h * 0.52, w * 0.2, h * 0.1); g.fillRect(w * 0.75, h * 0.52, w * 0.2, h * 0.1);
     g.fillStyle = '#0006'; g.fillRect(w * 0.3, h * 0.66, w * 0.4, h * 0.1); // plate / grille
+    if (beams) for (const x of [0.15, 0.85]) { // high beams: flashed at you when you're in its lane
+      const glow = g.createRadialGradient(w * x, h * 0.57, 2, w * x, h * 0.57, w * 0.3);
+      glow.addColorStop(0, '#ffffff'); glow.addColorStop(1, '#fff6c800');
+      g.fillStyle = glow; g.fillRect(0, 0, w, h);
+    }
   });
 }
-const CARS = CAR_COLORS.map(c => ({ rear: carSprite(c, false), front: carSprite(c, true) }));
+const CARS = CAR_COLORS.map(c => ({ rear: carSprite(c, false), front: carSprite(c, true), beams: carSprite(c, true, true) }));
 const RACERS = new Map(); // racers' rear views by number: a racing stripe, and the number once the race is revealed
 function racerSprite(n, numbered) {
   const key = numbered ? n : 0;
@@ -149,6 +155,7 @@ function spawnCar(car, d) {
     v: kmh / 3.6, want: kmh / 3.6, // m/s now, and what it cruises at
     d: NaN, // distance last frame: unknown for a fresh car, so it can't trigger a pass-by sound
     hit: -Infinity, // when you last ran into it (s on the clock): one crash per bump
+    warned: false, beams: 0, // an oncoming car: has it flashed and honked at you yet, and for how much longer
   });
 }
 const sameLane = (a, x) => Math.abs(a - x) < CAR_W; // two lateral positions close enough to touch
@@ -203,11 +210,12 @@ function updateTraffic(dt, clock) {
       Object.assign(c, { dir: 1, lane: sameLane(carX, MY_LANES[0]) ? 1 : 0, want: Math.max(c.want, speed + 4), v: Math.max(c.want, speed + 4) });
       c.x = MY_LANES[c.lane];
     }
-    // you ran into it: your front into its back, or sideways into it while changing lanes
-    if (c.dir > 0 && sameLane(c.x, carX) && c.z < odo + MY_FRONT && c.z + CAR_LEN > odo - MY_REAR && clock - c.hit > 1.5) {
-      c.hit = clock;
-      bump(c);
-    }
+    // you ran into it: your front into its back, sideways into it while changing lanes, or head-on
+    const touching = sameLane(c.x, carX) && c.z < odo + MY_FRONT && c.z + CAR_LEN > odo - MY_REAR && clock - c.hit > 1.5;
+    if (touching) { c.hit = clock; c.dir > 0 ? bump(c) : headOn(c); }
+    // an oncoming car with you in its lane: flashes its lights and sounds its horn, once, about 3 s out
+    c.beams = Math.max(0, (c.beams ?? 0) - dt);
+    if (c.dir < 0 && !c.warned && sameLane(c.x, carX) && c.d > 0 && c.d < 3 * (speed + c.v)) { c.warned = true; c.beams = 2; horn(); }
   }
 }
 
@@ -284,7 +292,7 @@ function drawRoad(g, w, h, dt) {
     board: { z: m.z, x: ROAD.half + 2, w: 1.6, h: 3, img: boardSprite(m.value) },
     sign: { z: m.z, x: ROAD.half + 2, w: 1.5, h: 4.1, img: signSprite(m.value) },
   })[m.kind]);
-  const ahead = [...traffic.map(c => ({ z: c.z, x: c.x, w: 1.8, h: 1.4, img: c.dir > 0 ? c.look.rear : c.look.front })), ...marks]
+  const ahead = [...traffic.map(c => ({ z: c.z, x: c.x, w: 1.8, h: 1.4, img: c.dir > 0 ? c.look.rear : c.beams ? c.look.beams : c.look.front })), ...marks]
     .map(o => ({ ...o, d: o.z - odo })).filter(o => o.d > 2 && o.d < (ROAD.draw - 2) * ROAD.segment).sort((p, q) => q.d - p.d);
   let t = 0;
   for (let n = ROAD.draw - 1; n > 0; n--) {

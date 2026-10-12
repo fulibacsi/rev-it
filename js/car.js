@@ -17,32 +17,46 @@ const RAD = 2 * Math.PI / 60; // rpm -> rad/s
 // speed: m/s; odo: metres driven; locked: clutch and tyres not slipping; spinning: the tyres are (wheelspin)
 let gear = 0, clutch = 1, clutchPedal = 0, brakePedal = 0, speed = 0, odo = 0, locked = false, stalled = false;
 let spinning = false;
-// lane: 0 the right lane, 1 the passing lane (MY_LANES in road.js); carX: the car's centre, m from the centre line,
-// gliding over to its lane at slide m/s; crashed: ran into a car this step (for the sound and the flash)
-let lane = 0, carX = 0, slide = 0, crashed = false;
+// lane: 0 the right lane, 1 the passing lane, 2 and 3 the oncoming lanes (ROAD_LANES in road.js), open up to
+// openLanes; carX: the car's centre, m from the centre line, gliding over to its lane at slide m/s; crashed: ran
+// into a car this step, impact: how ({ kmh, headOn }); brokenGears: gears that won't go in (Distance's damage)
+let lane = 0, fromLane = 0, carX = 0, slide = 0, crashed = false, impact = null, openLanes = 2, brokenGears = [];
 
 // the car as it left the factory (only the Distance garage tunes it)
 const STOCK_GRIP = CAR.grip;
-function stockCar() { for (const e of ENGINES) Object.assign(e, e.stock); CAR.grip = STOCK_GRIP; }
+function stockCar() {
+  for (const e of ENGINES) Object.assign(e, e.stock);
+  CAR.grip = STOCK_GRIP; openLanes = 2; brokenGears = [];
+}
 function resetCar() { // standing in the right lane, in neutral, feet off the pedals
   speed = odo = 0; gear = 0; locked = spinning = false;
   clutchPedal = brakePedal = gasPedal = 0;
-  lane = 0; carX = MY_LANES[0]; slide = 0;
+  lane = fromLane = 0; carX = ROAD_LANES[0]; slide = 0;
 }
 
-// lane changes: dir -1 to the left (the passing lane), +1 back to the right. You stay on your side of the double
-// yellow, and the car only moves over while it rolls, quicker the faster it goes.
-function changeLane(dir) { lane = clamp(lane - dir, 0, MY_LANES.length - 1); }
+// lane changes: dir -1 to the left, +1 to the right. You stay on your side of the double yellow unless the oncoming
+// lanes are open (reckless driving), and the car only moves over while it rolls, quicker the faster it goes.
+function changeLane(dir) {
+  const to = clamp(lane - dir, 0, openLanes - 1);
+  if (to !== lane) { fromLane = lane; lane = to; }
+}
 function stepLane(dt) {
-  const most = Math.min(3.5, speed * 0.15), want = clamp((MY_LANES[lane] - carX) * 2, -most, most);
+  const most = Math.min(3.5, speed * 0.15), want = clamp((ROAD_LANES[lane] - carX) * 2, -most, most);
   slide += clamp(want - slide, -6 * dt, 6 * dt); // steering in and out: an S-curve, not a jump
   carX += slide * dt;
 }
 // ran into car c: you lose most of your speed, down to well under its speed so it pulls away instead of being hit
 // again, and a half-done lane change swerves back to where it came from
 function bump(c) {
+  impact = { kmh: Math.abs(speed - c.v) * 3.6, headOn: false };
   speed = Math.min(speed * 0.35, c.v * 0.4);
-  if (Math.abs(MY_LANES[lane] - carX) > 0.5) lane = 1 - lane; // was pulling over into it: back to the other lane
+  if (Math.abs(ROAD_LANES[lane] - carX) > 0.5) [lane, fromLane] = [fromLane, lane]; // was pulling over into it: back
+  crashed = true;
+}
+// ran head-on into an oncoming car: both speeds add up, and the car stops dead
+function headOn(c) {
+  impact = { kmh: (speed + c.v) * 3.6, headOn: true };
+  speed = 0;
   crashed = true;
 }
 
@@ -55,6 +69,7 @@ function clutchCapacity(e) { return 1.3 * e.inertia * e.drive * RAD * (e.turbo ?
 // the gear lever moving into gear g (0 = neutral). Out of gear is always possible; into a gear with the engine
 // running needs the clutch down, otherwise the gears grind and it won't go in.
 function engage(g) {
+  if (brokenGears.includes(g)) return false; // the gate has no slot for it any more
   if (g && g !== gear && state === 'running' && clutch > 0.3) return false;
   if (g !== gear) { gear = g; locked = false; }
   return true;

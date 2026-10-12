@@ -12,6 +12,7 @@
 <body>
 <canvas id="world"></canvas>
 
+<svg id="cracks" viewBox="0 0 1600 900" preserveAspectRatio="none"></svg>
 <svg id="frame" viewBox="0 0 1600 900" preserveAspectRatio="none">
   <defs>
     <linearGradient id="dash" x1="0" y1="0" x2="0" y2="1">
@@ -50,10 +51,11 @@
   <g id="tach"></g><g id="speedo"></g>
   <circle id="shift-light" cx="280" cy="40" r="9" fill="#330"/>
   <text id="cluster-gear" x="280" y="112" font-size="54" font-weight="bold">N</text>
+  <text id="cluster-dmg" x="280" y="132" font-size="12" font-weight="bold" style="fill: #f55"></text>
   <g id="lamps" font-size="11" font-weight="bold">
     <text id="lamp-batt" x="250" y="150">BATT</text><text id="lamp-oil" x="310" y="150">OIL</text>
     <text id="lamp-brake" x="250" y="168">BRAKE</text><text id="lamp-clutch" x="310" y="168">CLUTCH</text>
-    <text id="lamp-slip" x="280" y="186">SLIP</text>
+    <text id="lamp-slip" x="250" y="186">SLIP</text><text id="lamp-gear" x="310" y="186">GEAR</text>
   </g>
 </svg>
 
@@ -149,6 +151,7 @@
 <script src="js/games/signs.js"></script>
 <script src="js/games/distance.js"></script>
 <script src="js/games/race.js"></script>
+<script src="js/games/damage.js"></script>
 <script src="js/games/aids.js"></script>
 <script src="js/main.js"></script>
 </body>

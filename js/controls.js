@@ -72,14 +72,15 @@ const LEVER_SPEED = 8; // gate units per second when moved for you: about 0.3 s 
 const lever = { x: 0, y: 0, grinding: false, held: false, path: null };
 const slotOf = g => [Math.floor((g - 1) / 2) - 1, g % 2 ? -1 : 1];
 const gateGears = () => game.gears();
-const hasSlot = (x, side) => (SLOTS[`${x},${side}`] ?? Infinity) <= gateGears();
+const hasSlot = (x, side) => { const g = SLOTS[`${x},${side}`] ?? Infinity; return g <= gateGears() && !brokenGears.includes(g); };
 function buildGate() {
   const top = gateGears();
   let d = `M-1,0 H${top ? slotOf(top)[0] : 0}`, labels = '';
   for (let g = 1; g <= 6; g++) {
     const [x, y] = slotOf(g);
-    if (g <= top) d += ` M${x},0 V${y}`;
-    labels += `<text x="${x}" y="${y < 0 ? -1.3 : 1.53}"${g <= top ? '' : ' class="locked"'}>${g}</text>`;
+    const broken = brokenGears.includes(g); // damage: no slot, a red cross
+    if (g <= top && !broken) d += ` M${x},0 V${y}`;
+    labels += `<text x="${x}" y="${y < 0 ? -1.3 : 1.53}"${broken ? ' class="broken"' : g <= top ? '' : ' class="locked"'}>${broken ? '✕' : g}</text>`;
   }
   $('gate').setAttribute('d', d);
   $('gate-labels').innerHTML = labels;
@@ -101,8 +102,9 @@ function moveLever(g) { // through the gate to gear g (0: neutral, back to the m
   if (g === 0) lever.path = [[lever.x, 0], [0, 0]];
   else { const [x, y] = slotOf(g); lever.path = [[lever.x, 0], [x, 0], [x, y]]; } // out to the rail, along, in
 }
-function shiftBy(step) { // keyboard: next gear up or down, through neutral
-  const g = gear + step;
+function shiftBy(step) { // keyboard: next gear up or down, through neutral, past any broken one
+  let g = gear + step;
+  while (brokenGears.includes(g)) g += step;
   if (!lever.held && g >= 0 && g <= gateGears()) moveLever(g);
 }
 function stepLever(dt) {

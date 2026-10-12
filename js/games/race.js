@@ -11,6 +11,8 @@ const ordinal = n => n + (['st', 'nd', 'rd'][n - 1] ?? 'th');
 Object.assign(UPGRADES, { // the Racing tab, paid in race points
   grid: { name: 'Grid', tab: 'racing', base: 1, growth: 1.035, max: () => FIELD + 1 - progress.finish,
           info: l => l ? `start P${FIELD + 1 - l}` : 'start at the back', locked: 'finish higher to unlock' },
+  reckless: { name: 'Reckless driving', tab: 'racing', max: 1, base: 100,
+              info: () => 'the oncoming lanes are yours too. From now on, collisions damage the car' },
   rolling: { name: 'Rolling start', tab: 'racing', max: ROLLING.length, base: 5, growth: 2.3,
              gate: l => ROLLING[l][0] <= topGear() || 'needs Gearbox',
              info: l => l ? `${ROLLING[l - 1][1]} km/h in ${ordinal(ROLLING[l - 1][0])}` : 'standing start' },
@@ -56,9 +58,11 @@ function raceTick() {
   return true;
 }
 
-// at the bell: your position is your result; it pays race points and unlocks grid slots
-function raceFinish() {
+// at the bell: your position is your result; it pays race points and unlocks grid slots. A run ended by a crash
+// (dnf: why) did not finish: no points.
+function raceFinish(dnf) {
   if (!progress.racing) return null;
+  if (dnf) return { start: run.slot ?? FIELD + 1, p: null, dnf, points: 0 };
   const p = position(), points = Math.max(0, FIELD + 1 - p);
   progress.points += points;
   progress.finish = Math.min(progress.finish, p);
