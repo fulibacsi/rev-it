@@ -7,6 +7,8 @@ const RACER_GAP = 120;  // m between racers on the grid
 const pace = n => (140 + (FIELD - n) * 1.9) / 3.6; // m/s racer n cruises at: #100 140 km/h ... #1 328 km/h
 const ROLLING = [[1, 50], [2, 90], [3, 130], [4, 170], [5, 210], [6, 250]]; // rolling start levels: [gear, km/h]
 const ordinal = n => n + (['st', 'nd', 'rd'][n - 1] ?? 'th');
+const nitroTank = (l = lvl('nitro')) => 2 * l; // seconds of nitro the tank holds
+const NITRO_REFILL = 100; // metres per second of nitro, refilled before each run
 
 Object.assign(UPGRADES, { // the Racing tab, paid in race points
   grid: { name: 'Grid', tab: 'racing', base: 1, growth: 1.035, max: () => FIELD + 1 - progress.finish,
@@ -17,11 +19,19 @@ Object.assign(UPGRADES, { // the Racing tab, paid in race points
             info: l => `+${300 * l} rpm past the factory redline` },
   ecuPower: { name: 'ECU: power', tab: 'racing', max: 4, base: 80, growth: 1.8, needs: ['reckless'],
               info: l => `+${8 * l}% torque on top` },
+  nitro: { name: 'Nitro', tab: 'racing', max: 5, base: 150, growth: 1.8, needs: ['ecuPower'],
+           info: l => `${nitroTank(l)} s tank: +${Math.round((NITRO - 1) * 100)}% torque, heat in the red. Hold N or NOS; ` +
+             `refills cost ${NITRO_REFILL} m a second` },
+  gear7: { name: '7th gear', tab: 'racing', max: 1, base: 2500, needs: ['nitro'], gate: () => lvl('gears') < 3 ? 'needs 6 gears' : true,
+           info: () => 'a tall overdrive: hundreds more km/h, if nitro gets you there' },
+  daredevil: { name: 'Daredevil', tab: 'racing', max: 1, base: 5000, gate: () => everythingElse() || 'max everything else first',
+               info: () => 'every second in the oncoming lanes puts 0.5 s back in the nitro tank' },
   rolling: { name: 'Rolling start', tab: 'racing', max: ROLLING.length, base: 5, growth: 2.3,
              gate: l => ROLLING[l][0] <= topGear() || 'needs Gearbox',
              info: l => l ? `${ROLLING[l - 1][1]} km/h in ${ordinal(ROLLING[l - 1][0])}` : 'standing start' },
 });
 
+const everythingElse = () => Object.keys(UPGRADES).every(id => id === 'daredevil' || id === 'grid' || lvl(id) >= maxOf(UPGRADES[id]));
 const startSlot = () => FIELD + 1 - lvl('grid'); // the position you start in; 101 is behind #100
 
 function racer(n, z) {

@@ -26,7 +26,7 @@ const lvl = id => progress.levels[id] ?? 0;
 const limiter = (e, l = lvl('rev')) => e.stock.redline - 600 * (UPGRADES.rev.max - l); // fully upgraded: stock
 const tyreGrip = (l = lvl('tyres')) => 0.8 + 0.1 * l;
 const runTime = (l = lvl('time')) => 20 + 5 * l;
-const topGear = () => 3 + lvl('gears');
+const topGear = () => 3 + lvl('gears') + lvl('gear7');
 
 function applyUpgrades() { // the garage's work on the engines and the car, and the damage the car has taken
   for (const e of ENGINES) {
@@ -41,9 +41,9 @@ function applyUpgrades() { // the garage's work on the engines and the car, and 
 // ---- saved progress (localStorage; the game still works without it, it just won't remember) ----
 const SAVE_KEY = 'car-rev-incremental';
 // off: aids switched off; racing: the race has been revealed; points: race points; finish: best finishing position;
-// damage: % (damage.js), broken: gears it broke
+// damage: % (damage.js), broken: gears it broke; nitro: seconds in the tank
 const FRESH = () => ({ bank: 0, best: 0, runs: 0, levels: {}, off: {}, engine: 0, racing: false, points: 0, finish: 101,
-                       damage: 0, broken: [] });
+                       damage: 0, broken: [], nitro: 0 });
 const progress = Object.assign(FRESH(), load());
 function load() { try { return JSON.parse(localStorage.getItem(SAVE_KEY)) ?? {}; } catch { return {}; } }
 function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(progress)); } catch { /* not saved */ } }
@@ -92,6 +92,7 @@ function startRun() { // back to the start line, engine running, in neutral, hel
   resetScene();
   brakePedal = 1;
   coolDown();
+  run.refill = refillNitro();
 }
 
 function finishRun(dnf) { // dnf: why the run ended early (a crash), if it did
@@ -103,6 +104,7 @@ function finishRun(dnf) { // dnf: why the run ended early (a crash), if it did
   run.race = raceFinish(dnf);
   save();
   Object.assign(run, { phase: 'finish', count: FINISH });
+  nitro = false;
   gasPedal = 0; clutchPedal = 1; brakePedal = 1;
 }
 
@@ -143,6 +145,7 @@ function renderGarage(bought) {
       (r && !r.dnf ? `Started ${r.start > FIELD ? 'at the back' : 'P' + r.start}, finished <b>P${r.p}</b> · <b>+${r.points} pts</b> · best P${progress.finish} · ` : '') +
       `Last run <b>+${fmt(run.gain)} m</b>${run.newBest ? ' · <b>new best!</b>' : ''} · best ${fmt(progress.best)} m · ` +
       `${progress.runs} run${progress.runs > 1 ? 's' : ''} · ${runTime()} s a run` + (done ? ' · fully built' : '') +
+      (run.refill ? ` · nitro refill −${fmt(run.refill)} m` : '') +
       (run.revealed ? '<br><b>That quick car was racer #100. You are in a race: the Racing tab is open.</b>' : '');
   $('tabs').innerHTML = progress.racing ? [['car', 'Car', `${fmt(progress.bank)} m`], ['racing', 'Racing', `${fmt(progress.points)} pts`]]
     .map(([id, name, money]) => `<button data-tab="${id}"${id === garageTab ? ' class="on"' : ''}>${name} · ${money}</button>`).join('') : '';
@@ -249,6 +252,7 @@ const DISTANCE = {
   render() { renderRun(); renderDamage(); },
   crash: i => onCollision(i),
   marks: roadMarks,
+  speedo: () => lvl('gear7') ? 540 : 360,
   field: () => raceField(), // race.js loads after this file
   key(k) { if (k === 'Enter' && run.phase === 'garage') { drive(); return true; } }, // Enter in the garage: DRIVE
 };

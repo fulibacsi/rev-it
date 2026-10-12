@@ -1,4 +1,4 @@
-:root { --hud: #8fffd8; --accent: #ec4; }
+:root { --hud: #8fffd8; --accent: #ec4; --gate-w: 3.2; } /* gate-w: the gear gate's width in gate units */
 html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color: #eee;
              font-family: system-ui, sans-serif; user-select: none; -webkit-user-select: none;
              touch-action: none; overscroll-behavior: none; -webkit-touch-callout: none; } /* no zoom, no pull-to-refresh */
@@ -64,6 +64,17 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 #menu #layout { margin-right: auto; padding: 4px 10px; color: #889; }
 #menu, #garage { touch-action: pan-y; } /* these two scroll on small screens */
 .touch .desk-only, body:not(.touch) .touch-only { display: none; }
+/* nitro: a round button that drains as it burns; while it burns the view runs hot */
+#nos { display: none; position: fixed; left: 24vw; top: 70vh; width: 64px; height: 64px; border-radius: 50%;
+       overflow: hidden; border: 2px solid #f66; background: #301014; color: #fdd; font: bold 14px system-ui, sans-serif;
+       letter-spacing: 1px; cursor: pointer; touch-action: none; }
+#nos span { position: relative; }
+#nos-fill { position: absolute; left: 0; right: 0; bottom: 0; background: #d33; }
+.has-nos #nos { display: block; }
+.nitro #nos { box-shadow: 0 0 18px #f44; }
+.nitro #world { filter: saturate(1.5) brightness(1.08); }
+.nitro #hud { color: #9cf; }
+.touch #nos { left: calc(2vw + env(safe-area-inset-left) + var(--shifter-h) * var(--gate-w) / 3.5 + 8px); top: 41vh; top: 41dvh; }
 #menu-button { position: fixed; left: 9vw; top: 52px; z-index: 5; width: 38px; height: 34px; border-radius: 8px;
                background: #0b0d16cc; color: #ccc; border: 1px solid #2c3140; font-size: 18px; cursor: pointer; }
 
@@ -112,7 +123,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 #ignition text { font: bold 10px system-ui, sans-serif; fill: #777; text-anchor: middle; }
 #key { transform-origin: 65px 70px; }
 #ignition[data-state="off"] .off, #ignition[data-state="on"] .on, #ignition[data-state="start"] .start { fill: var(--accent); }
-#shifter { position: fixed; left: 67.5vw; top: 78vh; height: 19vh; cursor: grab; touch-action: none; }
+#shifter { position: fixed; left: calc(67.5vw - (var(--gate-w) - 3.2) / 3.5 * 19vh); /* wider: grows left */ top: 78vh; height: 19vh; cursor: grab; touch-action: none; }
 #shifter text { font: bold 0.32px system-ui, sans-serif; fill: #889; text-anchor: middle; }
 #shifter text.locked { fill: #2a2a33; }
 #shifter text.broken { fill: #c33; }
@@ -139,7 +150,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 .touch #hud { top: 38vh; top: 38dvh; transform: translateX(-50%) scale(var(--hud-scale)); transform-origin: top center; }
 .touch #cluster { top: 60vh; top: 60dvh; width: 28vw; }
 .touch #shifter { left: calc(2vw + env(safe-area-inset-left)); top: auto; bottom: 3vh; bottom: 3dvh; height: var(--shifter-h); }
-.touch #ignition { left: calc(2vw + env(safe-area-inset-left) + var(--shifter-h) * 0.92 + 8px); /* right of the shifter */
+.touch #ignition { left: calc(2vw + env(safe-area-inset-left) + var(--shifter-h) * var(--gate-w) / 3.5 + 8px); /* right of the shifter */
                    top: 62vh; top: 62dvh; width: min(10vw, 90px); }
 .touch #pedals { right: calc(2vw + env(safe-area-inset-right)); bottom: 2vh; bottom: 2dvh; gap: 2vw; }
 .touch .pedal { width: 8.5vw; }

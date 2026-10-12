@@ -34,13 +34,13 @@ function autoGas() {
     const most = (gripTorque() / engine.inertia / RAD - a0) / (a1 - a0);
     gasPedal = clamp(spinning ? 0.3 * most : 0.97 * most, 0, 1);
   }
-  if (heat > HOT - 0.1 && rpm > engine.stock.redline - 100) gasPedal = Math.min(gasPedal, 0.3); // running hot: spare it
+  if (!nitro && heat > HOT - 0.1 && rpm > engine.stock.redline - 100) gasPedal = Math.min(gasPedal, 0.3); // hot: spare it
 }
 
 // auto shift: up just short of the limiter, down when a hill drags the revs low. The lever travels the gate.
 function autoShift() {
   if (lever.held || lever.path) return; // the player's hand is on it, or it is already moving
-  const r = heat > 0.6 ? Math.min(engine.redline, engine.stock.redline) : engine.redline; // running hot: easy on it
+  const r = heat > 0.6 && !nitro ? Math.min(engine.redline, engine.stock.redline) : engine.redline; // hot: easy on it
   const next = step => { let g = gear + step; while (brokenGears.includes(g)) g += step; return g; }; // past broken ones
   const want = !gear ? next(1) : rpm > r - 200 && next(1) <= topGear() && locked ? next(1)
     : locked && next(-1) >= 1 && rpm < 0.45 * r ? next(-1) : gear;

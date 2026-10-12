@@ -2,7 +2,7 @@
 // "Car Physics for Games": engine torque through the gear ratios against drag, rolling resistance and brakes).
 const CAR = {
   wheel: 0.32,                                  // tyre radius, m
-  gears: [0, 3.5, 2.1, 1.45, 1.1, 0.9, 0.75],   // gearbox ratios; index 0 is neutral
+  gears: [0, 3.5, 2.1, 1.45, 1.1, 0.9, 0.75, 0.62], // gearbox ratios; index 0 is neutral; 7th: Distance's overdrive
   drag: 0.42,                                   // air drag, N per (m/s)²  (½ · air density · Cd · frontal area)
   roll: 200,                                    // rolling resistance, N
   brake: 11000,                                 // brake force, N
@@ -64,7 +64,7 @@ function ratio() { return CAR.gears[gear] * engine.final; }
 function wheelRpm() { return speed * ratio() / CAR.wheel / RAD; } // engine rpm that matches the road speed
 
 // torque the clutch holds before slipping: a margin over the engine's strongest pull
-function clutchCapacity(e) { return 1.3 * e.inertia * e.drive * RAD * (e.turbo ? 1.2 : 1); }
+function clutchCapacity(e) { return 1.3 * e.inertia * e.drive * RAD * (e.turbo ? 1.2 : 1) * (nitro ? NITRO : 1); }
 
 // the gear lever moving into gear g (0 = neutral). Out of gear is always possible; into a gear with the engine
 // running needs the clutch down, otherwise the gears grind and it won't go in.

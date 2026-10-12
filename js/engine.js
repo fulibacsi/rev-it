@@ -24,10 +24,12 @@ const PEDAL_IN = 0.4, PEDAL_OUT = 0.25; // fastest the throttle follows the peda
 const CRANK = 0.9; // seconds the key has to be held in START before the engine catches
 const LIMITER_CUT = 0.06; // seconds the rev limiter cuts the fuel each time the redline is hit (stutters in any gear)
 
-let engine, ctx, loading, players = [], filter, master, noise, starterBuffer, starterGain, wind, squeal;
+let engine, ctx, loading, players = [], filter, master, noise, starterBuffer, starterGain, wind, squeal, nos;
 // state: 'off' | 'cranking' | 'running'; cut: rev limiter has cut the fuel, for cutLeft more seconds
 // gasPedal: 0..1 how far the gas pedal is pressed; lifted: the pedal has come up since the last lift-off
 let rpm = 0, throttle = 0, boost = 0, hang = 0, cut = false, cutLeft = 0, gasPedal = 0, lifted = true;
+const NITRO = 1.6; // torque while nitro burns (Distance)
+let nitro = false;
 let state = 'off', crankUntil = 0, crankWanted = false;
 
 async function start() {
@@ -67,6 +69,15 @@ async function start() {
   squeal.gain.gain.value = 0;
   scrub.connect(squeal.filter).connect(squeal.gain).connect(ctx.destination);
   scrub.start();
+  const hiss = ctx.createBufferSource(); // nitro: a high hiss while it burns
+  hiss.buffer = noise;
+  hiss.loop = true;
+  nos = { filter: ctx.createBiquadFilter(), gain: ctx.createGain() };
+  nos.filter.type = 'highpass';
+  nos.filter.frequency.value = 3000;
+  nos.gain.gain.value = 0;
+  hiss.connect(nos.filter).connect(nos.gain).connect(ctx.destination);
+  hiss.start();
 
   const decode = wav => ctx.decodeAudioData(Uint8Array.from(atob(wav), c => c.charCodeAt(0)).buffer);
   starterBuffer = await decode(SOUNDS.starter);
@@ -221,7 +232,7 @@ function engineAccel(e, r, thr) {
   if (e.turbo) pull = 0.35 + 0.85 * boost;
   if (e.torqueDip) pull *= 1 - 0.4 * Math.exp(-(((r - e.torqueDip) / 500) ** 2));
   const slow = e.revHang ? 1 + 3 * hang / e.revHang : 1; // rev hang: the drop after lift-off starts slower
-  return thr * e.drive * pull - (r - e.idle) / (e.tauDown * slow) * (1 - 0.8 * thr);
+  return thr * e.drive * pull * (nitro ? NITRO : 1) - (r - e.idle) / (e.tauDown * slow) * (1 - 0.8 * thr);
 }
 
 // throttle pedal, starter, turbo and limiter; returns the engine's free-rev acceleration (rpm/s) for this step
@@ -272,5 +283,6 @@ function updateAudio(shown) {
   wind.gain.gain.setTargetAtTime(Math.min(0.4, 0.3 * (speed / 40) ** 2), t, 0.2);
   wind.filter.frequency.setTargetAtTime(250 + speed * 25, t, 0.2);
   squeal.gain.gain.setTargetAtTime(spinning ? 2.5 : 0, t, 0.05);
+  nos.gain.gain.setTargetAtTime(nitro ? 0.25 : 0, t, 0.08);
   squeal.filter.frequency.setTargetAtTime(1000 + 250 * Math.random(), t, 0.03); // a wavering screech
 }

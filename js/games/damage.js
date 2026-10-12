@@ -1,5 +1,6 @@
 // Damage, from the moment you buy reckless driving. Every collision adds to one meter, 0-100%, harder hits more and
-// a head-on most (and it ends the run). An ECU tune heats the engine; run it in the red and that damages it too. The car drives worse at once: the rev limit drops by 30 rpm per percent (up to
+// a head-on most (and it ends the run). An ECU tune heats the engine; run it in the red and that damages it too.
+// Nitro is the extreme of that: while it burns, the heat goes straight into the red. The car drives worse at once: the rev limit drops by 30 rpm per percent (up to
 // 1,500 rpm at 50%), a random gear breaks at 50% and another at 70%, past 80% the gear pops out now and then under
 // load, and at 100% the car is wrecked. Repairs cost metres. The windscreen shows it all, cracks growing with damage.
 const REPAIR = 40; // metres per percent of damage
@@ -37,6 +38,7 @@ function damageTick(dt) {
   if (progress.damage >= 80 && gear && locked && throttle > 0.5 && Math.random() < dt * (progress.damage - 70) / 150) popOut();
   // the tune's heat: revving past the factory redline heats fast (held there, the red in ~6 s), the extra power under
   // throttle slowly (floored, ~40 s); easing off cools. In the red it damages the engine, up to 2% a second.
+  nitroTick(dt);
   if (!tuned()) { heat = 0; return; }
   const over = Math.max(0, rpm - engine.stock.redline) / 1000, push = throttle * lvl('ecuPower') / UPGRADES.ecuPower.max;
   const was = heat;
@@ -44,7 +46,23 @@ function damageTick(dt) {
   if (heat >= HOT) addDamage(dt * (0.3 + 1.7 * (heat - HOT) / (1 - HOT)));
   if (was < HOT && heat >= HOT) { flash('OVERHEATING', '#f55', false); beep(220, 0.3); }
 }
-function coolDown() { heat = 0; } // a fresh run starts with a cold engine
+function coolDown() { heat = 0; nitro = false; } // a fresh run starts with a cold engine
+// before a run the tank is topped up, paid in metres (as much as they cover); returns what it cost
+function refillNitro() {
+  const s = Math.min(nitroTank() - progress.nitro, progress.bank / NITRO_REFILL);
+  if (s <= 0) return 0;
+  progress.nitro += s;
+  progress.bank -= Math.ceil(s * NITRO_REFILL);
+  return Math.ceil(s * NITRO_REFILL);
+}
+function nitroTick(dt) { // burns while held, the engine running in gear; the heat jumps into the red
+  if (lvl('daredevil') && lane > 1 && Math.abs(carX - ROAD_LANES[lane]) < 1 && speed > 10) // against the traffic
+    progress.nitro = Math.min(nitroTank(), progress.nitro + 0.5 * dt);
+  nitro = nitroHeld && progress.nitro > 0 && state === 'running' && gear > 0 && run.phase === 'run';
+  if (!nitro) return;
+  progress.nitro = Math.max(0, progress.nitro - dt);
+  heat = Math.max(heat, HOT + 0.1);
+}
 
 const repairCost = () => Math.ceil(progress.damage * REPAIR);
 function repair() { // as much as the metres allow; gears come back once below the damage that broke them
@@ -64,11 +82,15 @@ function renderDamage() {
   $('cluster-dmg').textContent = d ? `DMG ${d}%` : '';
   $('lamp-gear').style.fill = popped && performance.now() % 400 < 250 ? '#fb3' : '#333';
   $('heat').style.display = tuned() ? '' : 'none'; // the TEMP bar, with a tune
+  const tank = nitroTank();
+  document.body.classList.toggle('has-nos', tank > 0); // the NOS button, draining as it burns
+  document.body.classList.toggle('nitro', nitro);
+  $('nos-fill').style.height = tank ? `${100 * progress.nitro / tank}%` : '0';
   $('heat-fill').setAttribute('width', 64 * heat);
   $('heat-fill').style.fill = heat >= HOT ? (performance.now() % 300 < 180 ? '#f33' : '#a11') : heat > 0.5 ? '#fb3' : '#5bf';
   if (d !== shownCracks) { shownCracks = d; $('cracks').innerHTML = cracks(d); }
 }
-function clearDamageView() { $('cluster-dmg').textContent = ''; $('cracks').innerHTML = ''; shownCracks = -1; $('heat').style.display = 'none'; }
+function clearDamageView() { nitro = false; document.body.classList.remove('has-nos', 'nitro'); $('cluster-dmg').textContent = ''; $('cracks').innerHTML = ''; shownCracks = -1; $('heat').style.display = 'none'; }
 
 // a crack star for every 10% (the same places every time), spokes longer with more damage
 function cracks(d) {

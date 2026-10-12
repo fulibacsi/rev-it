@@ -67,16 +67,19 @@ function holdPedal(id, down) { const p = PEDALS[id]; p.hold = down ? 1 : null; i
 // ---- gear lever in an H gate: slide along the neutral rail, push up or down into a slot when lined up with it.
 // Gate units: x -1..1 across the three slots, y -1 (towards the dash: 1, 3, 5) .. 1 (2, 4, 6). Only the gears the
 // game gives you are cut into the gate. path: points it is being moved through (keyboard, auto shift).
-const SLOTS = { '-1,-1': 1, '-1,1': 2, '0,-1': 3, '0,1': 4, '1,-1': 5, '1,1': 6 };
+const SLOTS = { '-1,-1': 1, '-1,1': 2, '0,-1': 3, '0,1': 4, '1,-1': 5, '1,1': 6, '2,-1': 7 }; // 7th: a fourth column
 const LEVER_SPEED = 8; // gate units per second when moved for you: about 0.3 s a shift
 const lever = { x: 0, y: 0, grinding: false, held: false, path: null };
 const slotOf = g => [Math.floor((g - 1) / 2) - 1, g % 2 ? -1 : 1];
 const gateGears = () => game.gears();
 const hasSlot = (x, side) => { const g = SLOTS[`${x},${side}`] ?? Infinity; return g <= gateGears() && !brokenGears.includes(g); };
 function buildGate() {
-  const top = gateGears();
+  const top = gateGears(), wide = top >= 7; // a 7th gear widens the gate by a column
+  $('shifter').setAttribute('viewBox', `-1.6 -1.75 ${wide ? 4.2 : 3.2} 3.5`);
+  $('gate-bg').setAttribute('width', wide ? 4.1 : 3.1);
+  document.documentElement.style.setProperty('--gate-w', wide ? 4.2 : 3.2); // the layout makes room for it
   let d = `M-1,0 H${top ? slotOf(top)[0] : 0}`, labels = '';
-  for (let g = 1; g <= 6; g++) {
+  for (let g = 1; g <= (wide ? 7 : 6); g++) {
     const [x, y] = slotOf(g);
     const broken = brokenGears.includes(g); // damage: no slot, a red cross
     if (g <= top && !broken) d += ` M${x},0 V${y}`;
@@ -152,6 +155,12 @@ drag($('wheel-grip'), (e, first) => {
   else if (Math.abs(wheel.angle) < WHEEL.turn / 3) wheel.dir = 0;
 }, () => { wheel.held = false; });
 
+// ---- nitro (Distance): hold N, or hold the NOS button with the mouse or a finger ----
+let nitroHeld = false;
+$('nos').onpointerdown = e => { $('nos').setPointerCapture(e.pointerId); nitroHeld = true; };
+$('nos').onpointerup = $('nos').onpointercancel = () => { nitroHeld = false; };
+$('nos').oncontextmenu = e => e.preventDefault();
+
 // ---- keyboard ----
 const HELD_KEYS = { ' ': 'gas', Shift: 'clutch', b: 'brake', B: 'brake' };
 addEventListener('keydown', e => {
@@ -163,10 +172,17 @@ addEventListener('keydown', e => {
   else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); if (!e.repeat) shiftBy(e.key === 'ArrowUp' ? 1 : -1); }
   else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); if (!e.repeat) steerLane(e.key === 'ArrowLeft' ? -1 : 1); }
   else if (e.key === 'Enter' && !e.repeat) state === 'off' ? startEngine() : stopEngine();
+  else if (e.key === 'n' || e.key === 'N') nitroHeld = true;
   else if (n >= 1 && n <= ENGINES.length) pickEngine(n - 1);
 });
-addEventListener('keyup', e => { if (HELD_KEYS[e.key]) holdPedal(HELD_KEYS[e.key], false); });
-addEventListener('blur', () => { for (const id of Object.keys(PEDALS)) if (PEDALS[id].hold !== null) holdPedal(id, false); });
+addEventListener('keyup', e => {
+  if (HELD_KEYS[e.key]) holdPedal(HELD_KEYS[e.key], false);
+  if (e.key === 'n' || e.key === 'N') nitroHeld = false;
+});
+addEventListener('blur', () => {
+  for (const id of Object.keys(PEDALS)) if (PEDALS[id].hold !== null) holdPedal(id, false);
+  nitroHeld = false;
+});
 
 function updateControls(dt) { // once a frame, before the aids and the physics
   updatePedals(dt);

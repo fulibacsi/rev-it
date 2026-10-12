@@ -2,7 +2,8 @@
 // signs.js, distance.js, and Free drive below); controls.js handles the input.
 // A game: { id, name, blurb, hud: 'levels' | 'run' | undefined, gears(): gears in the gate, parked?, and optionally
 //   start(), stop(), update(dt), render(), marks() for the roadside, readout() for the big HUD number,
-//   engine() / tune() when it chooses and tunes the car itself, key(k) to take a key press, crash(impact) to hear of a collision, field() for
+//   engine() / tune() when it chooses and tunes the car itself, key(k) to take a key press, crash(impact) to hear of a collision, speedo() for the
+//   speedometer's top (km/h), field() for
 //   cars it places on the road itself (racers) }
 const fmt = n => Math.round(n).toLocaleString('en-US');
 
@@ -108,7 +109,8 @@ $('menu-button').onclick = openMenu;
 addEventListener('click', e => e.target.closest('button')?.blur()); // keys stay with the car, not a focused button
 
 // ---- instrument cluster: analogue dials drawn as SVG ----
-const DIAL = { cy: 105, r: 86, sweep: 135 }, SPEEDO_MAX = 360; // needles sweep ±135° from straight up
+const DIAL = { cy: 105, r: 86, sweep: 135 }; // needles sweep ±135° from straight up
+let SPEEDO_MAX = 360;
 let tachMax = 8000;
 const polar = (cx, a, r) => [cx + r * Math.sin(a * Math.PI / 180), DIAL.cy - r * Math.cos(a * Math.PI / 180)];
 const dialAngle = (v, max) => -DIAL.sweep + 2 * DIAL.sweep * Math.min(1, Math.max(0, v / max));
@@ -134,6 +136,7 @@ function buildDial(g, cx, max, step, major, labelEvery, label, format, redFrom) 
 function buildDials() { // the tach is scaled for the stock engine: a lower rev limit shows as a longer red zone
   tachMax = Math.ceil((Math.max(engine.stock.redline, engine.redline) + 1000) / 1000) * 1000; // room for an ECU tune
   buildDial($('tach'), 140, tachMax, 250, 1000, 1000, '×1000 rpm', v => v / 1000, engine.redline);
+  SPEEDO_MAX = game.speedo?.() ?? 360;
   buildDial($('speedo'), 420, SPEEDO_MAX, 10, 30, 60, 'km/h', v => v);
 }
 const needle = (id, cx, v, max) => $(id).querySelector('.needle').setAttribute('transform', `rotate(${dialAngle(v, max)} ${cx} ${DIAL.cy})`);
