@@ -119,6 +119,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
         line-height: 1.6; color: #888; }
 #help small { color: #556; }
 #help b { color: #ccc; }
+#help a, #menu .credits a { color: inherit; } /* the credits link */
 
 /* touch layout (phones and tablets held sideways): gear lever on the left, pedals on the right, all bigger.
    dvh: the height actually visible between the browser's bars; env(): clear of the notch */
