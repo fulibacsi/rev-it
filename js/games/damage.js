@@ -1,11 +1,15 @@
 // Damage, from the moment you buy reckless driving. Every collision adds to one meter, 0-100%, harder hits more and
 // a head-on most (and it ends the run). An ECU tune heats the engine; run it in the red and that damages it too.
-// Nitro is the extreme of that: while it burns, the heat goes straight into the red. The car drives worse at once: the rev limit drops by 30 rpm per percent (up to
-// 1,500 rpm at 50%), a random gear breaks at 50% and another at 70%, past 80% the gear pops out now and then under
-// load, and at 100% the car is wrecked. Repairs cost metres. The windscreen shows it all, cracks growing with damage.
+// Nitro is the extreme of that: while it burns, the heat goes straight into the red. The car drives worse at once:
+// the rev limit drops by 30 rpm per percent (3,000 rpm at 100%), a random gear breaks at 50% and another at 70%,
+// past 80% the gear pops out now and then under load, and at 100% the car is wrecked: a run ends there, and the next
+// one is limp mode, crawling on 30% power for 40 m, which pays for the first 1% of repairs (no dead end). Repairs
+// cost metres. The windscreen shows it all, cracks growing with damage.
 const REPAIR = 40; // metres per percent of damage
 const damageOn = () => lvl('reckless') > 0;
-const revLoss = () => damageOn() ? Math.min(1500, 30 * progress.damage) : 0;
+const revLoss = () => damageOn() ? 30 * progress.damage : 0;
+const LIMP = 40; // metres a wrecked car can limp in a run: one percent of repairs
+const wrecked = () => progress.damage >= 100;
 let popped = 0; // seconds the GEAR lamp stays lit after the gear jumped out
 let heat = 0;   // engine temperature with an ECU tune, 0 cold .. 1 the top of the red zone
 const HOT = 0.8; // the red zone: from here on the heat damages the engine
@@ -41,8 +45,8 @@ function damageTick(dt) {
   nitroTick(dt);
   if (!tuned()) { heat = 0; return; }
   const over = Math.max(0, rpm - engine.stock.redline) / 1000, push = throttle * lvl('ecuPower') / UPGRADES.ecuPower.max;
-  const was = heat;
-  heat = clamp(heat + dt * (0.15 * over + 0.07 * push - 0.05), 0, 1);
+  const was = heat, cooling = 1 - 0.15 * lvl('cooling'); // a bigger radiator: the heat rises slower
+  heat = clamp(heat + dt * ((0.15 * over + 0.07 * push) * cooling - 0.05), 0, 1);
   if (heat >= HOT) addDamage(dt * (0.3 + 1.7 * (heat - HOT) / (1 - HOT)));
   if (was < HOT && heat >= HOT) { flash('OVERHEATING', '#f55', false); beep(220, 0.3); }
 }
