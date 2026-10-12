@@ -46,9 +46,19 @@ function racer(n, z) {
   return { z, dir: 1, lane: n % 2, x: MY_LANES[n % 2], v: 0, want: pace(n), racer: n, look: racerSprite(n, progress.racing),
            d: NaN, hit: -Infinity };
 }
-// the racers for a run, placed around your start: before the reveal just #100, 400 m up the road
+// before the reveal #100 is one quick car up the road. Its head start shrinks as the car gets built, so it can only be
+// caught once the car is nearly done (around run 20 for a perfect player, just before the bell): [share of the car
+// upgrades bought, metres ahead], straight lines in between
+const HEAD_START = [[0, 1300], [0.6, 1300], [0.8, 1050], [1, 400]];
+function headStart() {
+  let have = 0, all = 0;
+  for (const [id, u] of Object.entries(UPGRADES)) if (!u.tab) { have += lvl(id); all += maxOf(u); }
+  const c = have / all, i = HEAD_START.findIndex(([at]) => at >= c), [c1, h1] = HEAD_START[i], [c0, h0] = HEAD_START[Math.max(0, i - 1)];
+  return c1 === c0 ? h1 : h0 + (h1 - h0) * (c - c0) / (c1 - c0);
+}
+// the racers for a run, placed around your start: before the reveal just #100, some way up the road
 function raceField() {
-  if (!progress.racing) return [racer(FIELD, 400)];
+  if (!progress.racing) return [racer(FIELD, headStart())];
   const s = startSlot(), cars = [];
   for (let n = 1; n <= FIELD; n++) cars.push(racer(n, n < s ? (s - n) * RACER_GAP : -(n - s + 1) * RACER_GAP));
   return cars;
