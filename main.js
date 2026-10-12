@@ -32,7 +32,7 @@ function pickEngine(i) { // menu or keys 1-3; Distance drives what its garage gi
   if (!game.engine) selectEngine(i);
   renderMenu();
 }
-function resetScene() { resetCar(); resetLever(); resetTraffic(); }
+function resetScene() { resetCar(); resetLever(); resetTraffic(); if (game.parked) carX = SHOULDER; }
 
 function play(g) {
   leaveGame();
@@ -153,7 +153,7 @@ function resize() { const s = Math.min(devicePixelRatio, 1.5); canvas.width = in
 addEventListener('resize', resize);
 resize();
 
-let last = performance.now(), steer = 0;
+let last = performance.now(), steer = 0, shake = 0;
 function tick(now) {
   const dt = Math.min(0.05, (now - last) / 1000); // a background tab can stall the loop: don't jump
   last = now;
@@ -164,13 +164,16 @@ function tick(now) {
   stepCar(dt, updateEngine(dt, now));
   if (stalled) { stalled = false; flash('STALL', '#f55', false); }
   game.update?.(dt);
-  updateTraffic(dt);
+  updateTraffic(dt, now / 1000);
+  if (crashed) { crashed = false; crashSound(); flash('CRASH', '#f55', false); shake = 0.4; }
+  shake = Math.max(0, shake - dt); // the view jolts after a crash
+  canvas.style.transform = shake ? `translate(${(Math.random() - 0.5) * 30 * shake}px, ${(Math.random() - 0.5) * 30 * shake}px)` : '';
   const shown = shownRpm(now), kmh = speed * 3.6;
   if (players.length) updateAudio(shown);
 
   drawRoad(g2d, canvas.width, canvas.height, dt);
   const curve = segments[Math.floor(odo % (ROAD.count * ROAD.segment) / ROAD.segment)].curve;
-  steer += (curve * 9000 - steer) * Math.min(1, dt * 3); // the wheel follows the bends
+  steer += (curve * 9000 + slide * 12 - steer) * Math.min(1, dt * 3); // the wheel follows the bends and lane changes
   $('wheel-rim').setAttribute('transform', `rotate(${steer} 500 560)`);
 
   needle('tach', 140, shown, tachMax);

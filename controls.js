@@ -132,6 +132,16 @@ drag($('shifter'), (e, first) => {
   Object.assign(lever, gear ? { y: Math.sign(lever.y) } : { x: 0, y: 0 }, { held: false, grinding: false });
 });
 
+// ---- lane changes: swipe or drag sideways across the road (each finger or the mouse on its own) ----
+const swipes = new Map(); // pointer id -> where it went down, and whether it already changed lanes
+function steerLane(dir) { if (!game.parked) changeLane(dir); }
+$('world').onpointerdown = e => swipes.set(e.pointerId, { x: e.clientX, done: false });
+$('world').onpointermove = e => {
+  const s = swipes.get(e.pointerId);
+  if (s && !s.done && Math.abs(e.clientX - s.x) > 40) { s.done = true; steerLane(Math.sign(e.clientX - s.x)); }
+};
+$('world').onpointerup = $('world').onpointercancel = e => swipes.delete(e.pointerId);
+
 // ---- keyboard ----
 const HELD_KEYS = { ' ': 'gas', Shift: 'clutch', b: 'brake', B: 'brake' };
 addEventListener('keydown', e => {
@@ -141,6 +151,7 @@ addEventListener('keydown', e => {
   const n = Number(e.key);
   if (HELD_KEYS[e.key]) { e.preventDefault(); holdPedal(HELD_KEYS[e.key], true); }
   else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); if (!e.repeat) shiftBy(e.key === 'ArrowUp' ? 1 : -1); }
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); if (!e.repeat) steerLane(e.key === 'ArrowLeft' ? -1 : 1); }
   else if (e.key === 'Enter' && !e.repeat) state === 'off' ? startEngine() : stopEngine();
   else if (n >= 1 && n <= ENGINES.length) pickEngine(n - 1);
 });

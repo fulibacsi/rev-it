@@ -9,12 +9,14 @@ const ROAD = {
   rumble: 0.6,     // kerb width, m
   shore: 16,       // ocean starts this far left of the centre line, m
   eye: 1.15,       // driver's eye height, m
-  seat: 4.9,       // driver's sideways position from the centre line, m (right lane, sitting left in the car)
+  seat: 0.35,      // the driver sits this far left of the car's centre, m
   fov: 75,         // horizontal field of view, degrees
   horizon: 0.40,   // horizon height as a share of the screen
   grade: 0.07,     // steepest slope of the hills (7%, like a highway)
 };
 const LANES = { mine: 5.25, passing: 1.75, oncoming: [-1.75, -5.25] }; // lane centres, m from the centre line
+const MY_LANES = [LANES.mine, LANES.passing]; // your side of the double yellow: 0 the right lane, 1 the passing lane
+const SHOULDER = ROAD.half + ROAD.rumble + 1.4; // parked: off the road, right of the kerb
 
 let rng = 7; // small seeded random so the course is the same every time
 const rand = () => ((rng = (rng * 16807) % 2147483647) - 1) / 2147483646;
@@ -119,29 +121,72 @@ function bannerSprite(value) {
   return bestBanner.img;
 }
 
-// ---- traffic: oncoming cars on the left, cars in the passing lane that you overtake or that overtake you ----
-const traffic = Array.from({ length: 12 }, () => ({}));
+// ---- traffic: oncoming cars keep to the far side of the double yellow. Cars going your way use both your lanes,
+// slower ones on the right. They keep a safe distance, pull out to pass when the other lane is clear and never run
+// into you; you can run into them. z: a car's back end (the end you see) as a course position.
+const CAR_LEN = 4.5, CAR_W = 1.8;           // m
+const MY_FRONT = 1.8, MY_REAR = 2.7;         // m from the driver's eye to your front and back bumpers
+const traffic = Array.from({ length: 14 }, () => ({}));
 function spawnCar(car, d) {
-  const oncoming = rand() < 0.55;
+  const oncoming = rand() < 0.45, lane = rand() < 0.6 ? 0 : 1;
+  const kmh = oncoming ? 70 + rand() * 40 : lane ? 90 + rand() * 30 : 60 + rand() * 35;
   Object.assign(car, {
-    z: odo + d, dir: oncoming ? -1 : 1, look: CARS[Math.floor(rand() * CARS.length)],
-    x: oncoming ? LANES.oncoming[rand() < 0.5 ? 0 : 1] : LANES.passing,
-    v: (oncoming ? 70 + rand() * 40 : 80 + rand() * 30) / 3.6,
+    z: odo + d, dir: oncoming ? -1 : 1, lane, look: CARS[Math.floor(rand() * CARS.length)],
+    x: oncoming ? LANES.oncoming[rand() < 0.5 ? 0 : 1] : MY_LANES[lane],
+    v: kmh / 3.6, want: kmh / 3.6, // m/s now, and what it cruises at
     d: NaN, // distance last frame: unknown for a fresh car, so it can't trigger a pass-by sound
+    hit: -Infinity, // when you last ran into it (s on the clock): one crash per bump
   });
 }
-function resetTraffic() { traffic.forEach((c, i) => spawnCar(c, 80 + i * 120)); } // spread out ahead
+const sameLane = (a, x) => Math.abs(a - x) < CAR_W; // two lateral positions close enough to touch
+function roomAt(car, x, back, front) { // nobody going this way, you included, within back..front metres of car in x
+  for (const o of traffic) if (o !== car && o.dir > 0 && sameLane(o.x, x) && o.z > car.z - back && o.z < car.z + front) return false;
+  return !(sameLane(carX, x) && odo + MY_FRONT > car.z - back && odo - MY_REAR < car.z + front);
+}
+function spawnAhead(car, d = 900 + rand() * 600) { // over the horizon, with room for it in its lane
+  for (let tries = 0; tries < 6; tries++, d += 60) { spawnCar(car, d); if (car.dir < 0 || roomAt(car, car.x, 40, 40)) return; }
+}
+function resetTraffic() { traffic.forEach((c, i) => spawnAhead(c, 80 + i * 110)); } // spread out ahead
 resetTraffic();
 
-function updateTraffic(dt) {
+function leader(car) { // the nearest thing ahead in its lane: a car, or you
+  let lead = null;
+  for (const o of traffic) if (o.dir > 0 && o !== car && sameLane(o.x, car.x) && o.z > car.z && (!lead || o.z < lead.z)) lead = o;
+  const me = odo - MY_REAR;
+  if (sameLane(carX, car.x) && me > car.z && (!lead || me < lead.z)) lead = { z: me, v: speed };
+  return lead;
+}
+function driveCar(c, dt) { // follow at a safe distance, or pull out and pass
+  const lead = leader(c), gap = lead ? lead.z - c.z - CAR_LEN : Infinity, safe = 8 + 1.2 * c.v;
+  let aim = c.want;
+  if (lead && gap < 2 * safe && lead.v < c.want) {
+    const other = 1 - c.lane;
+    if (sameLane(c.x, MY_LANES[c.lane]) && roomAt(c, MY_LANES[other], 20, 30)) c.lane = other;
+    else aim = Math.min(aim, lead.v * (gap < safe ? 0.9 : 1));
+  }
+  c.v += clamp(aim - c.v, -6 * dt, 2 * dt);
+  c.x += clamp(MY_LANES[c.lane] - c.x, -1.6 * dt, 1.6 * dt);
+  c.z += c.v * dt;
+  if (lead && c.z > lead.z - CAR_LEN - 0.5) { c.z = lead.z - CAR_LEN - 0.5; c.v = Math.min(c.v, lead.v); } // never into it
+}
+
+function updateTraffic(dt, clock) {
   for (const c of traffic) {
-    c.z += c.dir * c.v * dt;
+    if (c.dir > 0) driveCar(c, dt); else c.z -= c.v * dt;
     const d = c.z - odo;
-    if (c.d > 0 && d <= 0) whoosh(Math.abs(speed - c.dir * c.v) * 3.6); // just went past the driver
+    if (c.d > 0 && d <= 0) whoosh(Math.abs(speed - c.dir * c.v) * 3.6, c.x < carX ? -0.7 : 0.7); // went past the driver
     c.d = d;
-    if (d < -15) spawnCar(c, 900 + rand() * 600); // passed: send it back to the horizon
-    else if (d > ROAD.draw * ROAD.segment + 100) spawnCar(c, -12); // pulled away: a new one comes up from behind
-    if (c.dir > 0 && c.z - odo < 0 && c.v < speed) spawnCar(c, 900 + rand() * 600); // can't come from behind slower
+    if (d < -40 || c.dir > 0 && d < -8 && c.v < speed - 1) spawnAhead(c); // left behind: back to the horizon
+    else if (d > ROAD.draw * ROAD.segment + 100) { // pulled away: comes up from behind instead, in a lane you're not in
+      spawnCar(c, -30);
+      Object.assign(c, { dir: 1, lane: sameLane(carX, MY_LANES[0]) ? 1 : 0, want: Math.max(c.want, speed + 4), v: Math.max(c.want, speed + 4) });
+      c.x = MY_LANES[c.lane];
+    }
+    // you ran into it: your front into its back, or sideways into it while changing lanes
+    if (c.dir > 0 && sameLane(c.x, carX) && c.z < odo + MY_FRONT && c.z + CAR_LEN > odo - MY_REAR && clock - c.hit > 1.5) {
+      c.hit = clock;
+      bump(c);
+    }
   }
 }
 
@@ -167,7 +212,7 @@ function drawRoad(g, w, h, dt) {
   let x = 0, dx = -here.curve * frac;
   for (let n = 0; n <= ROAD.draw; n++) {
     const s = segments[(base + n) % ROAD.count], z = Math.max(0.3, (n - frac) * ROAD.segment), scale = depth / z * k0;
-    proj.push({ x: w / 2 + (-ROAD.seat - x) * scale, y: horizon + (eyeY - s.y) * scale, k: scale, z });
+    proj.push({ x: w / 2 + (-(carX - ROAD.seat) - x) * scale, y: horizon + (eyeY - s.y) * scale, k: scale, z });
     x += dx; dx += s.curve;
   }
   // below the horizon, beyond the drawn road (seen when it dips away): the sea on the left, the land on the right

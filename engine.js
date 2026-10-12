@@ -114,7 +114,7 @@ function blowOff() { // turbo blow-off valve "pssh"
   src.stop(t + 0.5);
 }
 
-function whoosh(relSpeed) { // a car passing on the left; louder the faster you pass each other
+function whoosh(relSpeed, side) { // a car passing (side -1 left, 1 right); louder the faster you pass each other
   if (!ctx || !Number.isFinite(relSpeed)) return;
   const src = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g = ctx.createGain(), pan = ctx.createStereoPanner();
   const t = ctx.currentTime, level = Math.min(0.5, Math.max(0.001, relSpeed / 120)); // ramps can't reach 0
@@ -125,7 +125,7 @@ function whoosh(relSpeed) { // a car passing on the left; louder the faster you 
   g.gain.setValueAtTime(0.001, t);
   g.gain.exponentialRampToValueAtTime(level, t + 0.08);
   g.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
-  pan.pan.value = -0.7;
+  pan.pan.value = side;
   src.connect(bp).connect(g).connect(pan).connect(ctx.destination);
   src.start();
   src.stop(t + 0.6);
@@ -143,6 +143,28 @@ function grind() { // gears clashing: shifting without the clutch
   src.connect(bp).connect(g).connect(ctx.destination);
   src.start();
   src.stop(t + 0.35);
+}
+
+function crashSound() { // a thump and a crunch of metal
+  if (!ctx) return;
+  const t = ctx.currentTime, src = ctx.createBufferSource(), lp = ctx.createBiquadFilter(), g = ctx.createGain();
+  src.buffer = noise;
+  lp.type = 'lowpass';
+  lp.frequency.setValueAtTime(3000, t);
+  lp.frequency.exponentialRampToValueAtTime(300, t + 0.5);
+  g.gain.setValueAtTime(0.9, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+  src.connect(lp).connect(g).connect(ctx.destination);
+  src.start(t);
+  src.stop(t + 0.6);
+  const thump = ctx.createOscillator(), tg = ctx.createGain();
+  thump.frequency.setValueAtTime(90, t);
+  thump.frequency.exponentialRampToValueAtTime(40, t + 0.25);
+  tg.gain.setValueAtTime(0.8, t);
+  tg.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+  thump.connect(tg).connect(ctx.destination);
+  thump.start(t);
+  thump.stop(t + 0.3);
 }
 
 function beep(freq, seconds) { // countdown and finish tones

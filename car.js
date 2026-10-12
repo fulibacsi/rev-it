@@ -17,13 +17,33 @@ const RAD = 2 * Math.PI / 60; // rpm -> rad/s
 // speed: m/s; odo: metres driven; locked: clutch and tyres not slipping; spinning: the tyres are (wheelspin)
 let gear = 0, clutch = 1, clutchPedal = 0, brakePedal = 0, speed = 0, odo = 0, locked = false, stalled = false;
 let spinning = false;
+// lane: 0 the right lane, 1 the passing lane (MY_LANES in road.js); carX: the car's centre, m from the centre line,
+// gliding over to its lane at slide m/s; crashed: ran into a car this step (for the sound and the flash)
+let lane = 0, carX = 0, slide = 0, crashed = false;
 
 // the car as it left the factory (only the Distance garage tunes it)
 const STOCK_GRIP = CAR.grip;
 function stockCar() { for (const e of ENGINES) Object.assign(e, e.stock); CAR.grip = STOCK_GRIP; }
-function resetCar() { // standing, in neutral, feet off the pedals
+function resetCar() { // standing in the right lane, in neutral, feet off the pedals
   speed = odo = 0; gear = 0; locked = spinning = false;
   clutchPedal = brakePedal = gasPedal = 0;
+  lane = 0; carX = MY_LANES[0]; slide = 0;
+}
+
+// lane changes: dir -1 to the left (the passing lane), +1 back to the right. You stay on your side of the double
+// yellow, and the car only moves over while it rolls, quicker the faster it goes.
+function changeLane(dir) { lane = clamp(lane - dir, 0, MY_LANES.length - 1); }
+function stepLane(dt) {
+  const most = Math.min(3.5, speed * 0.15), want = clamp((MY_LANES[lane] - carX) * 2, -most, most);
+  slide += clamp(want - slide, -6 * dt, 6 * dt); // steering in and out: an S-curve, not a jump
+  carX += slide * dt;
+}
+// ran into car c: most of the speed is gone, and a half-done lane change swerves back to where it came from
+function bump(c) {
+  speed *= 0.35;
+  c.v = Math.max(c.v, speed + 3); // shoved ahead and away
+  if (Math.abs(MY_LANES[lane] - carX) > 0.5) lane = 1 - lane; // was pulling over into it: back to the other lane
+  crashed = true;
 }
 
 function ratio() { return CAR.gears[gear] * engine.final; }
@@ -51,6 +71,7 @@ function gripTorque() {
 // one physics step; alpha: the engine's free-rev acceleration (rpm/s) from updateEngine()
 function stepCar(dt, alpha) {
   const e = engine, G = ratio(), running = state === 'running';
+  stepLane(dt);
   const [bite0, bite1] = CAR.bite; // the clutch bites in the middle of the pedal's travel
   clutch = Math.min(1, Math.max(0, (bite1 - clutchPedal) / (bite1 - bite0)));
   const resist = resistance();
