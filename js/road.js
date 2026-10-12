@@ -126,7 +126,7 @@ function bannerSprite(value) {
 // into you; you can run into them. z: a car's back end (the end you see) as a course position.
 const CAR_LEN = 4.5, CAR_W = 1.8;           // m
 const MY_FRONT = 1.8, MY_REAR = 2.7;         // m from the driver's eye to your front and back bumpers
-const traffic = Array.from({ length: 14 }, () => ({}));
+const traffic = [];
 function spawnCar(car, d) {
   const oncoming = rand() < 0.45, lane = rand() < 0.6 ? 0 : 1;
   const kmh = oncoming ? 70 + rand() * 40 : lane ? 90 + rand() * 30 : 60 + rand() * 35;
@@ -143,10 +143,16 @@ function roomAt(car, x, back, front) { // nobody going this way, you included, w
   for (const o of traffic) if (o !== car && o.dir > 0 && sameLane(o.x, x) && o.z > car.z - back && o.z < car.z + front) return false;
   return !(sameLane(carX, x) && odo + MY_FRONT > car.z - back && odo - MY_REAR < car.z + front);
 }
-function spawnAhead(car, d = 900 + rand() * 600) { // over the horizon, with room for it in its lane
-  for (let tries = 0; tries < 6; tries++, d += 60) { spawnCar(car, d); if (car.dir < 0 || roomAt(car, car.x, 40, 40)) return; }
+function spawnAhead(car, d = 900 + rand() * 600) { // over the horizon, with room around it in both your lanes, so
+  for (let tries = 0; tries < 6; tries++, d += 60) { // it never appears beside another car as a wall nobody can pass
+    spawnCar(car, d);
+    if (car.dir < 0 || MY_LANES.every(x => roomAt(car, x, 60, 60))) return;
+  }
 }
-function resetTraffic() { traffic.forEach((c, i) => spawnAhead(c, 80 + i * 110)); } // spread out ahead
+function resetTraffic() { // a fresh set of cars, spread out ahead
+  traffic.length = 0;
+  for (let i = 0; i < 14; i++) { const c = {}; traffic.push(c); spawnAhead(c, 80 + i * 110); }
+}
 resetTraffic();
 
 function leader(car) { // the nearest thing ahead in its lane: a car, or you
@@ -161,7 +167,7 @@ function driveCar(c, dt) { // follow at a safe distance, or pull out and pass
   let aim = c.want;
   if (lead && gap < 2 * safe && lead.v < c.want) {
     const other = 1 - c.lane;
-    if (sameLane(c.x, MY_LANES[c.lane]) && roomAt(c, MY_LANES[other], 20, 30)) c.lane = other;
+    if (Math.abs(c.x - MY_LANES[c.lane]) < 0.2 && roomAt(c, MY_LANES[other], 20, 30)) c.lane = other; // settled first
     else aim = Math.min(aim, lead.v * (gap < safe ? 0.9 : 1));
   }
   c.v += clamp(aim - c.v, -6 * dt, 2 * dt);

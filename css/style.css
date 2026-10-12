@@ -67,7 +67,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 
 /* garage between runs, over the windscreen */
 #garage { display: none; position: fixed; z-index: 4; /* over the controls on small screens */ left: 50%; top: 5vh; transform: translateX(-50%); width: min(780px, 66vw);
-          max-height: 57vh; overflow: auto; box-sizing: border-box; padding: 14px 16px; border-radius: 12px;
+          max-height: 80vh; overflow: auto; /* over the cluster too: nothing to read there in the garage */ box-sizing: border-box; padding: 14px 16px; border-radius: 12px;
           background: #0b0d16ee; border: 1px solid #2c3140; font-size: 13px; color: #bbb; }
 .garage #garage { display: block; }
 #garage header { display: flex; justify-content: space-between; align-items: baseline; }

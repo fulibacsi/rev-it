@@ -3,7 +3,7 @@
 // screens: the garage and the run read-out on the head-up display.
 
 // upgrade costs follow the usual incremental-game curve (Cookie Clicker, Hill Climb Racing): level n costs
-// base · growth^n. info(level) describes what the car has at that level.
+// base · growth^n. info(level) describes what the car has at that level; needs: upgrades it builds on.
 const UPGRADES = {
   power:  { name: 'Power', max: 10, base: 80, growth: 1.55, info: l => `+${12 * l}% torque` },
   rev:    { name: 'Rev limit', max: 4, base: 150, growth: 2, info: l => `${limiter(engine, l)} rpm` },
@@ -12,7 +12,10 @@ const UPGRADES = {
   time:   { name: 'Time', max: 6, base: 200, growth: 1.9, info: l => `${runTime(l)} s a run` },
   clutch: { name: 'Auto clutch', max: 1, base: 700, info: () => 'works the clutch: no stalls' },
   gas:    { name: 'Auto gas', max: 1, base: 800, info: () => 'launch and traction control' },
-  shift:  { name: 'Auto shift', max: 1, base: 2500, needs: 'clutch', info: () => 'changes gear at the limiter' },
+  shift:  { name: 'Auto shift', max: 1, base: 2500, needs: ['clutch'], info: () => 'changes gear at the limiter' },
+  steer:  { name: 'Lane assist', max: 1, base: 1500, info: () => 'swerves round a car you are about to hit' },
+  cruise: { name: 'Autocruise', max: 1, base: 6000, needs: ['steer', 'gas', 'shift'],
+            info: () => 'drives the whole run: passes, keeps right, brakes when boxed in' },
   engine: { name: 'Engine swap', max: ENGINES.length - 1, base: 4000, growth: 2.5, info: l => ENGINES[l].name },
 };
 const COUNTDOWN = 3, FINISH = 2; // seconds of countdown before a run, and of braking after it
@@ -43,7 +46,8 @@ const cost = id => { const u = UPGRADES[id]; return Math.round(u.base * (u.growt
 function whyNot(id) { // reason an upgrade can't be bought now, or '' if it can
   const u = UPGRADES[id];
   if (lvl(id) >= u.max) return 'max';
-  if (u.needs && !lvl(u.needs)) return `needs ${UPGRADES[u.needs].name}`;
+  const missing = u.needs?.find(n => !lvl(n));
+  if (missing) return `needs ${UPGRADES[missing].name}`;
   return progress.bank < cost(id) ? 'short' : '';
 }
 function buy(id) {
@@ -55,10 +59,10 @@ function buy(id) {
   return true;
 }
 
-// a driver aid works while bought, switched on and a run is under way; auto shift needs the auto clutch working
+// a driver aid works while bought, switched on and a run is under way, and only with the aids it builds on working
 function aid(id) {
   if (!lvl(id) || progress.off[id] || (run.phase !== 'countdown' && run.phase !== 'run')) return false;
-  return !UPGRADES[id].needs || aid(UPGRADES[id].needs);
+  return (UPGRADES[id].needs ?? []).every(aid);
 }
 
 // ---- a run ----
@@ -117,7 +121,7 @@ function renderGarage(bought) {
     const pips = u.max > 1 ? `<i>${'■'.repeat(l)}${'□'.repeat(u.max - l)}</i>` : '';
     const info = u.max > 1 ? u.info(l) + (l < u.max ? ` → ${u.info(l + 1)}` : '') : u.info();
     const button = why === 'max' ? (u.max > 1 ? '<button disabled>MAX</button>'
-        : u.needs && progress.off[u.needs] ? `<button disabled>needs ${UPGRADES[u.needs].name} on</button>`
+        : u.needs?.some(n => progress.off[n]) ? `<button disabled>needs ${UPGRADES[u.needs.find(n => progress.off[n])].name} on</button>`
         : `<button data-toggle="${id}"${progress.off[id] ? '' : ' class="on"'}>${progress.off[id] ? 'OFF' : 'ON'}</button>`)
       : why.startsWith('needs') ? `<button disabled>${why}</button>`
       : `<button data-buy="${id}"${why ? ' disabled' : ''}>${fmt(cost(id))} m</button>`;
