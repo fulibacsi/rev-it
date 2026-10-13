@@ -11,7 +11,8 @@ with sync_playwright() as p:
         pg.evaluate("localStorage.clear(); Object.assign(progress, { racing: true, finish: 1, bank: 9000, levels: { flash: 1, reckless: 1, ecuPower: 1, nitro: 2, gears: 3, gear7: 1 } })")
         pg.click('[data-play="distance"]'); pg.wait_for_timeout(200); pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000); pg.wait_for_timeout(300)
         boxes = {s: rect(pg, s) for s in ["#stalk-hit", "#timer", "#nos", "#ignition", "#shifter", "#cluster", "#pedals", "#menu-button", "#hud-main"]}
-        clashes = [f"{a}/{c}" for i, a in enumerate(boxes) for c in list(boxes)[i + 1:] if hit(boxes[a], boxes[c])]
+        part = {"#nos", "#pedals"}  # the nitro pedal rides on the gas pedal
+        clashes = [f"{a}/{c}" for i, a in enumerate(boxes) for c in list(boxes)[i + 1:] if hit(boxes[a], boxes[c]) and {a, c} != part]
         print(f"{w}x{h}: overlaps:", clashes or "none")
         pg.screenshot(path=f"{OUT}/buttons_{w}.png"); ctx.close()
     b.close(); print("ERRORS:", errs or "none")

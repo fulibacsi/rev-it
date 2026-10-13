@@ -12,11 +12,14 @@ Design decisions, balance targets, the playtest history and the open questions a
 
 - **`main` is live.** Never push to `main` or merge into it. Locally, commit and let the owner push; in a cloud session,
   work on the session's branch for the owner to review. Ask before any push.
+- **Branch names** describe the change, one branch per change: `feature/<change>` for features, `fix/<change>` for
+  bug fixes (`feature/nos-pedal`, `fix/stalk-behind-shifter`). In a cloud session this replaces the branch name the
+  session was given: create the named branch, and work and push there.
 - The owner designs the game. Ideas they throw out are proposals to discuss, not orders. When feedback can be read
   two ways that lead to different work, say which reading you took, or ask.
 - They playtest on an iPhone 14 Pro held sideways (Safari, added to the home screen). Phone feel matters most.
 - Keep the game **diegetic**: controls and readouts belong to the car (the light stalk, the mirror's timer, the
-  windscreen head-up display, the cluster's lamps). A floating button was called out; the red NOS button is accepted.
+  windscreen head-up display, the cluster's lamps). A floating button was called out; nitro is a pedal on the gas pedal.
 - Never hint at the hidden race before it is revealed: no garage text about the white car ("a clear giveaway").
 - Report what you verified and how. Balance claims come from the simulations in `tests/balance/`, not guesses.
 

@@ -51,7 +51,7 @@ function damageTick(dt) {
   if (heat >= HOT) addDamage(dt * (0.3 + 1.7 * (heat - HOT) / (1 - HOT)));
   if (was < HOT && heat >= HOT) { flash('OVERHEATING', '#f55', false); beep(220, 0.3); }
 }
-function coolDown() { heat = 0; nitro = false; } // a fresh run starts with a cold engine
+function coolDown() { heat = 0; nitro = nitroByAid = false; } // a fresh run starts with a cold engine
 // before a run the tank is topped up, paid in metres (as much as they cover); returns what it cost
 function refillNitro() {
   const s = Math.min(nitroTank() - progress.nitro, progress.bank / NITRO_REFILL);
@@ -63,7 +63,7 @@ function refillNitro() {
 function nitroTick(dt) { // burns while held, the engine running in gear; the heat jumps into the red
   if (lvl('daredevil') && lane > 1 && Math.abs(carX - ROAD_LANES[lane]) < 1 && speed > 10) // against the traffic
     progress.nitro = Math.min(nitroTank(), progress.nitro + 0.5 * dt);
-  nitro = nitroHeld && progress.nitro > 0 && state === 'running' && gear > 0 && run.phase === 'run';
+  nitro = (nitroHeld || nitroByAid) && progress.nitro > 0 && state === 'running' && gear > 0 && run.phase === 'run';
   if (!nitro) return;
   progress.nitro = Math.max(0, progress.nitro - dt);
   heat = Math.max(heat, HOT + 0.1);
@@ -88,9 +88,9 @@ function renderDamage() {
   $('lamp-gear').style.fill = popped && performance.now() % 400 < 250 ? '#fb3' : '#333';
   $('heat').style.display = tuned() ? '' : 'none'; // the TEMP bar, with a tune
   const tank = nitroTank();
-  document.body.classList.toggle('has-nos', tank > 0); // the NOS button, draining as it burns
+  document.body.classList.toggle('has-nos', tank > 0); // the nitro pedal, and the cluster's gauge draining as it burns
   document.body.classList.toggle('nitro', nitro);
-  $('nos-fill').style.height = tank ? `${100 * progress.nitro / tank}%` : '0';
+  $('nos-fill').setAttribute('width', tank ? 64 * progress.nitro / tank : 0);
   $('heat-fill').setAttribute('width', 64 * heat);
   $('heat-fill').style.fill = heat >= HOT ? (performance.now() % 300 < 180 ? '#f33' : '#a11') : heat > 0.5 ? '#fb3' : '#5bf';
   if (d !== shownCracks) { shownCracks = d; $('cracks').innerHTML = cracks(d); }

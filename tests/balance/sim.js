@@ -72,19 +72,12 @@ window.simRun = (levels, engineIdx = 0, skill = 1, off = {}, withTraffic = false
   return { crashes, m: Math.round(odo), kmh: Math.round(speed * 3.6), gear, spin: +spinT.toFixed(1), stalls };
 };
 
-// a racer's habits on top of the aids: nitro when a racer is close ahead; the oncoming lanes when boxed in
+// a racer's habits on top of the aids: those of reckless auto-drive (aids.js) before the car has it (the oncoming lanes
+// when boxed in, chicken, nitro when a racer is close ahead), but not its ECU revs. flashLights' 800 ms wait is in
+// real time, so it is reset: simulated time runs much faster.
 window.racerHabits = () => {
-  const front = nearestRacers().front;
-  nitroHeld = !!(lvl('nitro') && front && front.z - odo < 500 && progress.nitro > 0);
-  if (!lvl('reckless')) return;
-  const reach = a => a && a.closing > 0 ? a.gap / a.closing : Infinity;
-  const oncoming = x => { let t = Infinity; for (const c of traffic) if (c.dir < 0 && sameLane(c.x, x) && c.z > odo - 5) t = Math.min(t, (c.z - odo) / Math.max(1, speed + c.v)); return t; };
-  const settledHere = Math.abs(carX - ROAD_LANES[lane]) < 0.3;
-  if (!settledHere) return;
-  if (lane <= 1) { // boxed in on your side, the next lane over the line clear for a good while: go
-    const mine = reach(carAhead(MY_LANES[lane])), other = reach(carAhead(MY_LANES[1 - lane]));
-    if (mine < 3 && other < 3 && speed > 15 && oncoming(ROAD_LANES[2]) > 6 && lane === 1) changeLane(-1);
-  } else if (oncoming(ROAD_LANES[lane]) < 3.5 || reach(carAhead(MY_LANES[1])) > 4 && laneClear(MY_LANES[1], MY_FRONT + 6)) {
-    changeLane(1); // back home: something is coming, or your side is open again
-  }
+  flashedAt = -Infinity;
+  if (aid('recklessCruise') || state !== 'running') return; // the car drives itself like this now
+  recklessNitro();
+  if (aid('cruise')) recklessLanes();
 };

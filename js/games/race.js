@@ -21,6 +21,11 @@ Object.assign(UPGRADES, { // the Racing tab, paid in race points
           info: l => l ? `start P${FIELD + 1 - l}` : 'start at the back', locked: 'finish higher to unlock' },
   reckless: { name: 'Reckless driving', tab: 'racing', max: 1, base: 100,
               info: () => 'the oncoming lanes are yours too. From now on, collisions damage the car' },
+  chicken: { name: 'Game of chicken', tab: 'racing', max: 1, base: 150, needs: ['reckless', 'flash'],
+             info: () => 'flash now works on oncoming traffic: it swerves into its other lane, if there is room' },
+  recklessCruise: { name: 'Reckless auto-drive', tab: 'racing', max: 1, base: 300, needs: ['cruise', 'reckless'],
+                    info: () => 'autocruise without manners: the oncoming lanes, chicken, the ECU tune and nitro, ' +
+                      'as far as the car has them' },
   cooling: { name: 'Cooling', tab: 'racing', max: 3, base: 60, growth: 2, needs: ['reckless'],
              info: l => l ? `the engine heats up ${15 * l}% slower` : 'factory radiator' },
   ecuRev: { name: 'ECU: rev limit', tab: 'racing', max: 4, base: 50, growth: 1.6, needs: ['reckless'],
@@ -28,8 +33,8 @@ Object.assign(UPGRADES, { // the Racing tab, paid in race points
   ecuPower: { name: 'ECU: power', tab: 'racing', max: 4, base: 60, growth: 1.6, needs: ['reckless'],
               info: l => `+${8 * l}% torque on top` },
   nitro: { name: 'Nitro', tab: 'racing', max: 5, base: 100, growth: 1.5, needs: ['ecuPower'],
-           info: l => `${nitroTank(l)} s tank: +${Math.round((NITRO - 1) * 100)}% torque, heat in the red. Hold N or NOS; ` +
-             `refills cost ${NITRO_REFILL} m a second` },
+           info: l => `${nitroTank(l)} s tank: +${Math.round((NITRO - 1) * 100)}% torque, heat in the red. ` +
+             `The NOS pedal (or N) floors the gas; refills cost ${NITRO_REFILL} m a second` },
   gear7: { name: '7th gear', tab: 'racing', max: 1, base: 600, needs: ['nitro'], gate: () => lvl('gears') < 3 ? 'needs 6 gears' : true,
            info: () => 'a tall overdrive: hundreds more km/h, if nitro gets you there' },
   daredevil: { name: 'Daredevil', tab: 'racing', max: 1, base: 200, gate: () => everythingElse() || 'max everything else first',
