@@ -41,6 +41,7 @@ function applyUpgrades() { // the garage's work on the engines and the car, and 
   }
   CAR.grip = tyreGrip();
   openLanes = lvl('reckless') ? ROAD_LANES.length : MY_LANES.length;
+  chicken = lvl('chicken') > 0; // a flash moves oncoming cars too
   steering = 1 + 0.4 * lvl('steering');
   brokenGears = damageOn() ? progress.broken : [];
 }

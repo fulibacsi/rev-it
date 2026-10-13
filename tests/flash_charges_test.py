@@ -1,5 +1,6 @@
 """Headlight flash charges: 1-10 a run, auto flash from 5, no flash wasted on racers, autocruise overtakes a racer by
-moving over behind an ordinary car it can flash away. Extra flashes don't change the reveal's head start."""
+moving over behind an ordinary car it can flash away, a game of chicken moves oncoming cars. Extra flashes don't
+change the reveal's head start."""
 from playwright.sync_api import sync_playwright
 from common import URL, launch
 CAR = "power: 10, rev: 4, gears: 3, tyres: 4, time: 6, clutch: 1, gas: 1, shift: 1, engine: 2, steering: 3"
@@ -58,6 +59,26 @@ with sync_playwright() as p:
         if want == "overtakes": check("with a flash: moves over, flashes the car away, passes the racer", moved and not back and trace[-1][2] == 0 and passed_r and js("crashes") == 0,
                                       f"moved {moved}, back behind {back}, car lane {trace[-1][2]}, racer {trace[-1][4]} m, crashes {js('crashes')}")
         else: check("no flash left: stays behind the racer while the car is ahead (as before)", not moved and js("crashes") == 0, f"moved {moved}, crashes {js('crashes')}")
+    # 6. a game of chicken: in an oncoming lane a flash spends a charge and moves nobody, unless you have the upgrade;
+    #    then the oncoming car in your lane swerves into its other lane, and there is no head-on
+    js("Object.assign(progress, { levels: { flash: 3 } })")
+    check("Game of chicken needs Reckless driving", js("whyNot('chicken')") == "needs Reckless driving", js("whyNot('chicken')"))
+    js("Object.assign(progress, { levels: { reckless: 1 } })")
+    check("Game of chicken needs Headlight flash", js("whyNot('chicken')") == "needs Headlight flash", js("whyNot('chicken')"))
+    for chicken in [0, 1]:
+        start(CAR + f", reckless: 1, flash: 3, chicken: {chicken}")
+        js("traffic.forEach(c => { if (!c.racer) c.z = odo + 4000; }); lane = fromLane = 2; carX = ROAD_LANES[2]; "
+           "window.ch = traffic.find(c => !c.racer); Object.assign(ch, { dir: -1, x: LANES.oncoming[0], z: odo + 150, v: 25, swerve: null, warned: false })")
+        n0 = js("run.flashes"); kb.press("f"); pg.wait_for_timeout(1500)
+        got = js("({ flashes: run.flashes, x: ch.x, ahead: Math.round(ch.z - odo) })")
+        if not chicken:
+            js("lane = fromLane = 0; carX = ROAD_LANES[0]")  # out of its way before it arrives
+            check("no chicken: the flash is spent, the oncoming car stays in your lane", got["flashes"] == n0 - 1 and got["x"] == -1.75, got)
+        else:
+            pg.wait_for_function("ch.z < odo - 10", timeout=15000)
+            check("chicken: the oncoming car swerves into its other lane and passes, no head-on",
+                  got["flashes"] == n0 - 1 and got["x"] == -5.25 and js("crashes") == 0 and js("run.phase") == "run",
+                  {**got, "crashes": js("crashes"), "phase": js("run.phase")})
     # 5. the reveal's head start counts the first flash only
     hs = js("""[0, 1, 10].map(f => { progress.levels = { power: 10, rev: 4, gears: 3, tyres: 4, time: 6, steering: 3, clutch: 1, gas: 1, shift: 1,
                steer: 1, cruise: 1, engine: 2, autoflash: 1, flash: f }; return Math.round(headStart()); })""")

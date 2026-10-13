@@ -72,7 +72,7 @@ window.simRun = (levels, engineIdx = 0, skill = 1, off = {}, withTraffic = false
   return { crashes, m: Math.round(odo), kmh: Math.round(speed * 3.6), gear, spin: +spinT.toFixed(1), stalls };
 };
 
-// a racer's habits on top of the aids: nitro when a racer is close ahead; the oncoming lanes when boxed in
+// a racer's habits on top of the aids: nitro when a racer is close ahead; the oncoming lanes when boxed in, and chicken
 window.racerHabits = () => {
   const front = nearestRacers().front;
   nitroHeld = !!(lvl('nitro') && front && front.z - odo < 500 && progress.nitro > 0);
@@ -83,8 +83,14 @@ window.racerHabits = () => {
   if (!settledHere) return;
   if (lane <= 1) { // boxed in on your side, the next lane over the line clear for a good while: go
     const mine = reach(carAhead(MY_LANES[lane])), other = reach(carAhead(MY_LANES[1 - lane]));
-    if (mine < 3 && other < 3 && speed > 15 && oncoming(ROAD_LANES[2]) > 6 && lane === 1) changeLane(-1);
-  } else if (oncoming(ROAD_LANES[lane]) < 3.5 || reach(carAhead(MY_LANES[1])) > 4 && laneClear(MY_LANES[1], MY_FRONT + 6)) {
-    changeLane(1); // back home: something is coming, or your side is open again
+    const brave = lvl('chicken') && run.flashes > 0; // playing chicken: whatever comes can be flashed out of the way
+    if (mine < 3 && other < 3 && speed > 15 && (oncoming(ROAD_LANES[2]) > 6 || brave) && lane === 1) changeLane(-1);
+  } else {
+    // a game of chicken: flash an oncoming car that can swerve out of the lane (flashLights' 800 ms wait is in real
+    // time, so it is reset: simulated time runs much faster)
+    const facing = traffic.find(c => sameLane(c.x, carX) && swerves(c) && (c.z - odo) / Math.max(1, speed + c.v) < 4.5);
+    if (lvl('chicken') && run.flashes && facing) { flashedAt = -Infinity; flashLights(); }
+    if (oncoming(ROAD_LANES[lane]) < 3.5 || reach(carAhead(MY_LANES[1])) > 4 && laneClear(MY_LANES[1], MY_FRONT + 6))
+      changeLane(1); // back home: something is coming, or your side is open again
   }
 };

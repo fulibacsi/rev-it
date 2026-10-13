@@ -156,6 +156,7 @@ function spawnCar(car, d) {
     d: NaN, // distance last frame: unknown for a fresh car, so it can't trigger a pass-by sound
     hit: -Infinity, // when you last ran into it (s on the clock): one crash per bump
     warned: false, beams: 0, // an oncoming car: has it flashed and honked at you yet, and for how much longer
+    swerve: null, // an oncoming car flashed out of your way (a game of chicken): the lane it is moving to
   });
 }
 const sameLane = (a, x) => Math.abs(a - x) < CAR_W; // two lateral positions close enough to touch
@@ -207,15 +208,25 @@ function driveCar(c, dt) { // follow at a safe distance, or pull out and pass
 // Racers don't care.
 // yields: whether car c would move over into lane `to` for a flash now (racers never do)
 const yields = (c, to) => !c.racer && !c.yielding && c.dir > 0 && c.z > odo && c.z - odo <= 250 && roomAt(c, MY_LANES[to], 12, 25);
+// Playing chicken (Distance's upgrade), an oncoming car in your lane within 250 m swerves into its other lane, if
+// nobody is there within 25 m of it
+let chicken = false;
+const across = x => sameLane(x, LANES.oncoming[0]) ? LANES.oncoming[1] : LANES.oncoming[0];
+const swerves = c => c.dir < 0 && c.swerve == null && c.z > odo && c.z - odo <= 250 && !(sameLane(carX, across(c.x)) ||
+  traffic.some(o => o !== c && sameLane(o.swerve ?? o.x, across(c.x)) && Math.abs(o.z - c.z) < 25));
 function flashAhead() {
-  if (lane > 1) return; // over there they are coming at you
+  if (lane > 1) { // over there they are coming at you: only a game of chicken moves them
+    if (chicken) for (const c of traffic) if (sameLane(c.x, carX) && swerves(c)) c.swerve = across(c.x);
+    return;
+  }
   const to = 1 - lane;
   for (const c of traffic) if (sameLane(c.x, carX) && yields(c, to)) Object.assign(c, { lane: to, yielding: true, cool: LANE_GAP.car + 2 });
 }
 
 function updateTraffic(dt, clock) {
   for (const c of traffic) {
-    if (c.dir > 0) driveCar(c, dt); else c.z -= c.v * dt;
+    if (c.dir > 0) driveCar(c, dt);
+    else { c.z -= c.v * dt; if (c.swerve != null) c.x += clamp(c.swerve - c.x, -3.5 * dt, 3.5 * dt); } // as brisk as yielding
     const d = c.z - odo;
     if (c.d > 0 && d <= 0) whoosh(Math.abs(speed - c.dir * c.v) * 3.6, c.x < carX ? -0.7 : 0.7); // went past the driver
     c.d = d;
