@@ -191,6 +191,13 @@ runs. A hidden race is the second act.
 before each run at 100 m per second of nitro. The NOS pedal floors the gas, but the aids stay on while it is pushed:
 Auto gas's traction control trims it, and autocruise still brakes.
 
+### Act 3: the fleet
+
+**The Fleet** opens with your first win (P1), and never shows before it. The garage says so after that race: "the
+racers you beat are open to offers". It is a garage page paid in **miles**.
+- **The Exchange** card turns metres into miles, one way, a mile for 1,609 m: a slider for how many, an "all
+  available" button, and the miles you have. Miles show in the garage's header too. The speedometer stays in km/h.
+
 ### Balance targets and results
 
 - **First playtest (act 1 into act 2):** "fun, relatively quick", no excess currency, P76 after about 30 min.
@@ -214,9 +221,8 @@ Auto gas's traction control trims it, and autocruise still brakes.
 The owner's answers of 13 Oct. Where a detail is still open, Claude decides while building and notes it here. The
 order of work is in [phase-3-build-plan.md](phase-3-build-plan.md).
 
-**The fleet** unlocks once you reach P1: a garage page, **Fleet**, paid in miles.
-- **Miles:** an Exchange card on the Fleet page turns metres into miles, one way, a mile for 1,609 m, with a slider, an
-  "all available" button and the miles you have shown. The speedometer stays in km/h. No frequent-driver tiers.
+**The fleet** unlocks once you reach P1: a garage page, **Fleet**, paid in miles (built: see Act 3). No
+frequent-driver tiers.
 - **Fleet cars:** you pay racers off to join your team. Each one takes its racer's place in the 100-car field, and
   each costs more than the last.
 - **In a race** they give way to you, use their upgrades for you (a flash to move traffic out of your way, for one)

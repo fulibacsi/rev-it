@@ -1,5 +1,5 @@
-"""Debug mode: 5 taps on the menu's title (then OK) switch Distance to a save of its own with unlimited metres and
-points. The real save is never touched and comes back when it is switched off; fewer taps do nothing."""
+"""Debug mode: 5 taps on the menu's title (then OK) switch Distance to a save of its own with unlimited metres,
+points and miles. The real save is never touched and comes back when it is switched off; fewer taps do nothing."""
 import json
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -14,14 +14,14 @@ with sync_playwright() as p:
     pg.on("pageerror", lambda e: errors.append(str(e))); pg.on("dialog", lambda d: d.accept())
     pg.goto(URL); js(f"localStorage.clear(); localStorage.setItem('car-rev-incremental', '{json.dumps(REAL)}')"); pg.reload(); pg.wait_for_timeout(300)
     real = lambda: json.loads(js("localStorage.getItem('car-rev-incremental')"))
-    state = lambda: js("({ debug: document.body.classList.contains('debug'), bank: progress.bank, points: progress.points, power: progress.levels.power ?? 0 })")
+    state = lambda: js("({ debug: document.body.classList.contains('debug'), bank: progress.bank, points: progress.points, miles: progress.miles, power: progress.levels.power ?? 0 })")
     def taps(n):
         for _ in range(n): pg.tap("#menu h1"); pg.wait_for_timeout(80)
     taps(4); pg.wait_for_timeout(200)
     check("4 taps on the title: nothing", not state()["debug"], state())
     pg.wait_for_timeout(3100)  # those taps go stale
     taps(5); pg.wait_for_timeout(200); s = state()
-    check("5 taps: debug mode, the game copied over, wallets full", s == {"debug": True, "bank": 1e9, "points": 1e9, "power": 2}, s)
+    check("5 taps: debug mode, the game copied over, wallets full", s == {"debug": True, "bank": 1e9, "points": 1e9, "miles": 1e9, "power": 2}, s)
     pg.tap('[data-play="distance"]'); pg.wait_for_timeout(300)
     check("the garage shows bottomless wallets", js("$('bank').textContent").startswith("∞ m"), js("$('bank').textContent"))
     for _ in range(3): pg.tap('[data-buy="power"]'); pg.wait_for_timeout(100)
@@ -30,9 +30,9 @@ with sync_playwright() as p:
     check("the real save is untouched", real() == REAL, real())
     pg.screenshot(path=f"{OUT}/debug_garage.png")
     pg.reload(); pg.wait_for_timeout(300); s = state()
-    check("after a reload: still debug mode, on the debug save", s == {"debug": True, "bank": 1e9, "points": 1e9, "power": 5}, s)
+    check("after a reload: still debug mode, on the debug save", s == {"debug": True, "bank": 1e9, "points": 1e9, "miles": 1e9, "power": 5}, s)
     taps(5); pg.wait_for_timeout(200); s = state()
-    check("5 taps again: the real game is back as it was", s == {"debug": False, "bank": 1234, "points": 0, "power": 2} and real() == REAL, s)
+    check("5 taps again: the real game is back as it was", s == {"debug": False, "bank": 1234, "points": 0, "miles": 0, "power": 2} and real() == REAL, s)
     pg.wait_for_timeout(3100); taps(5); pg.wait_for_timeout(200); s = state()
     check("and on again: the debug save carries on (not a fresh copy)", s["debug"] and s["power"] == 5, s)
     b.close()
