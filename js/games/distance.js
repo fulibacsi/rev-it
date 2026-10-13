@@ -52,14 +52,31 @@ const SAVE_KEY = 'car-rev-incremental';
 // damage: % (damage.js), broken: gears it broke; nitro: seconds in the tank
 const FRESH = () => ({ bank: 0, best: 0, runs: 0, levels: {}, off: {}, engine: 0, racing: false, points: 0, finish: 101,
                        damage: 0, broken: [], nitro: 0 });
+// debug mode (main.js) plays a save of its own, with wallets that never run out, so testing never touches the game
+const FUNDS = 1e9;
+let debugSave = false;
+const saveKey = () => debugSave ? SAVE_KEY + '-debug' : SAVE_KEY;
 const progress = Object.assign(FRESH(), load());
-function load() { try { return JSON.parse(localStorage.getItem(SAVE_KEY)) ?? {}; } catch { return {}; } }
-function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(progress)); } catch { /* not saved */ } }
+function load() { try { return JSON.parse(localStorage.getItem(saveKey())) ?? {}; } catch { return {}; } }
+function save() {
+  if (debugSave) progress.bank = progress.points = FUNDS; // spent or earned, back to full
+  try { localStorage.setItem(saveKey(), JSON.stringify(progress)); } catch { /* not saved */ }
+}
+const forgetRun = () => Object.assign(run, { gain: 0, race: null, revealed: false, newBest: false, best: 0 });
 function resetProgress() { // a new game: the menu's "new game"
   Object.assign(progress, FRESH());
   save();
-  Object.assign(run, { gain: 0, race: null, revealed: false, newBest: false, best: 0 });
+  forgetRun();
 }
+function useDebugSave(on) { // switch saves; the first debug save starts as a copy of the game
+  debugSave = on;
+  let kept = null;
+  try { kept = localStorage.getItem(saveKey()); } catch { /* none */ }
+  if (kept !== null || !on) Object.assign(progress, FRESH(), load());
+  if (on) save(); // the wallets filled; switched off, the game's own save is left as it is
+  forgetRun();
+}
+const money = n => debugSave ? '∞' : fmt(n); // a debug wallet shows as bottomless
 
 const racing = u => u.tab === 'racing';
 const wallet = u => racing(u) ? 'points' : 'bank';       // which of progress's currencies it costs
@@ -151,7 +168,7 @@ function roadMarks() {
 let garageTab = 'car';
 function renderGarage(bought) {
   if (!progress.racing) garageTab = 'car';
-  $('bank').textContent = `${fmt(progress.bank)} m` + (progress.racing ? ` · ${fmt(progress.points)} pts` : '') + ' to spend';
+  $('bank').textContent = `${money(progress.bank)} m` + (progress.racing ? ` · ${money(progress.points)} pts` : '') + ' to spend';
   const done = Object.keys(UPGRADES).every(id => racing(UPGRADES[id]) || whyNot(id) === 'max'), r = run.race;
   $('report').innerHTML = !progress.runs
     ? `You get ${runTime()} seconds. Drive as far as you can: every metre is money for upgrades.`
@@ -163,7 +180,7 @@ function renderGarage(bought) {
       `${progress.runs} run${progress.runs > 1 ? 's' : ''} · ${runTime()} s a run` + (done ? ' · fully built' : '') +
       (run.refill ? ` · nitro refill −${fmt(run.refill)} m` : '') +
       (run.revealed ? '<br><b>That quick car was racer #100. You are in a race: the Racing tab is open.</b>' : '');
-  $('tabs').innerHTML = progress.racing ? [['car', 'Car', `${fmt(progress.bank)} m`], ['racing', 'Racing', `${fmt(progress.points)} pts`]]
+  $('tabs').innerHTML = progress.racing ? [['car', 'Car', `${money(progress.bank)} m`], ['racing', 'Racing', `${money(progress.points)} pts`]]
     .map(([id, name, money]) => `<button data-tab="${id}"${id === garageTab ? ' class="on"' : ''}>${name} · ${money}</button>`).join('') : '';
   $('engine-row').hidden = garageTab !== 'car';
   $('engine-row').innerHTML = ENGINES.map((e, i) => i <= lvl('engine')
