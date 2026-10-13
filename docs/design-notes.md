@@ -226,6 +226,27 @@ racers you beat are open to offers". It is a garage page paid in **miles**.
 - **Simulated** (`act3.py`, seed 11, from P1 with act 2's car and 57k m): 51 fleet cars after 26 races buying dues
   first, 71 buying the cheapest first (dues came only at race 46).
 
+### Act 4: Mad Max
+
+**The gang:** once 51 of the 100 race for you, your fleet is a gang. The garage gives its first job: total a car. The
+windscreen gains an **AR layer** (red, like a gunsight): a reticle round the nearest car ahead going your way, its
+health bar above it, and "TOTAL IT" until the first job is done (a racer's number after). It stays on that car until
+you pass it or total it, then moves to the next.
+- **Damage:** a bump takes 0.4 of the speed you hit at (km/h) off the car's health: 100 for traffic, 150 for a racer,
+  so two or three rams, or three or four. A head-on is still your DNF, not a total. Your fleet cars can't be hurt.
+- **Totalled** at 0 health, a car skids onto the right shoulder, tipped and smoking, and stops; you collect its parts
+  (10 from traffic, 25 from a racer). A totalled rival is out of the race and you move up; results still pay by
+  finishing position only, so wrecking can't be farmed for points.
+- **The Mad Max page** opens with the first total, paid in parts. It is to the Fleet what the Black market is to the
+  Workshop.
+
+  | Upgrade | Levels | Base | Growth | Notes |
+  |---|---|---|---|---|
+  | Bull bar | 3 | 10 | 2.5 | bumps hurt them 50% more a level; you keep more speed (at 3, you carry on at the car's speed) |
+
+- Claude's calls: the AR look, the target rule, 0.4 per km/h, the health and parts numbers, and the Mad Max page
+  opening with the first total (the job is the way in). All first guesses for the balancing pass.
+
 ### Balance targets and results
 
 - **First playtest (act 1 into act 2):** "fun, relatively quick", no excess currency, P76 after about 30 min.
@@ -254,14 +275,9 @@ order of work is in [phase-3-build-plan.md](phase-3-build-plan.md).
 frequent-driver tiers.
 - **Fleet cars** and their upgrades: built, see Act 3.
 
-**The gang** unlocks once a race has more of your fleet cars than other racers (51 of the 100): a garage page, **Mad
-Max**, paid in parts. It is to the fleet what the Black market is to the Workshop.
-- **It starts with a task:** total a car. The windscreen gains an AR layer: a target reticle, and a health bar on the
-  target car. Once you pass the target, the next car is targeted.
-- **Damage:** bumps damage the car you hit; a bull bar means you lose less speed and they take more. At 0 health a car
-  spins off the road and its parts are collected. Any car can be totalled, traffic or racer. A wrecked racer is out of
-  the race and you move up; results pay by finishing position only, so wrecking can't be farmed for points.
-- **Upgrades:** bull bars, illegal parts and, last, guns. With guns fitted, the red marker at the top of the steering
+**The gang** unlocks once a race has more of your fleet cars than other racers (51 of the 100): its first job, the AR
+layer, damage, totals, parts and the Mad Max page with bull bars are built (see Act 4).
+- **Upgrades:** illegal parts and, last, guns. With guns fitted, the red marker at the top of the steering
   wheel becomes the trigger, with FIRE written on it (by then you are mostly auto-cruising).
 - **The gang** (your fleet cars) uses whatever offensive upgrades it has. No CB radio, no orders.
 - **Police heat,** on a police scanner on the dash: it rises slowly with totalled cars and shots fired, so you have to

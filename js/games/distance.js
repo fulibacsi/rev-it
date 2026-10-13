@@ -47,15 +47,17 @@ function applyUpgrades() { // the garage's work on the engines and the car, and 
   openLanes = lvl('reckless') ? ROAD_LANES.length : MY_LANES.length;
   chicken = lvl('chicken') > 0; // a flash moves oncoming cars too
   steering = 1 + 0.4 * lvl('steering');
+  bullBar = lvl('bullbar');
   brokenGears = damageOn() ? progress.broken : [];
 }
 
 // ---- saved progress (localStorage; the game still works without it, it just won't remember) ----
 const SAVE_KEY = 'car-rev-incremental';
 // off: aids switched off; racing: the race has been revealed; points: race points; finish: best finishing position;
-// damage: % (damage.js), broken: gears it broke; nitro: seconds in the tank; miles: the Fleet's money
+// damage: % (damage.js), broken: gears it broke; nitro: seconds in the tank; miles: the Fleet's money; parts: Mad
+// Max's, from totals: cars totalled (gang.js)
 const FRESH = () => ({ bank: 0, best: 0, runs: 0, levels: {}, off: {}, engine: 0, racing: false, points: 0, finish: 101,
-                       damage: 0, broken: [], nitro: 0, miles: 0 });
+                       damage: 0, broken: [], nitro: 0, miles: 0, parts: 0, totals: 0 });
 // debug mode (main.js) plays a save of its own, with wallets that never run out, so testing never touches the game
 const FUNDS = 1e9;
 let debugSave = false;
@@ -63,10 +65,11 @@ const saveKey = () => debugSave ? SAVE_KEY + '-debug' : SAVE_KEY;
 const progress = Object.assign(FRESH(), load());
 function load() { try { return JSON.parse(localStorage.getItem(saveKey())) ?? {}; } catch { return {}; } }
 function save() {
-  if (debugSave) progress.bank = progress.points = progress.miles = FUNDS; // spent or earned, back to full
+  if (debugSave) progress.bank = progress.points = progress.miles = progress.parts = FUNDS; // spent or earned, back to full
   try { localStorage.setItem(saveKey(), JSON.stringify(progress)); } catch { /* not saved */ }
 }
-const forgetRun = () => Object.assign(run, { gain: 0, race: null, revealed: false, won: false, dues: 0, newBest: false, best: 0 });
+const forgetRun = () => Object.assign(run, { gain: 0, race: null, revealed: false, won: false, dues: 0, parts: 0, totals: 0,
+                                             firstTotal: false, newBest: false, best: 0 });
 function resetProgress() { // a new game: the menu's "new game"
   Object.assign(progress, FRESH());
   save();
@@ -83,12 +86,14 @@ function useDebugSave(on) { // switch saves; the first debug save starts as a co
 const money = n => debugSave ? '∞' : fmt(n); // a debug wallet shows as bottomless
 
 // the garage's pages: the car itself and the robot driver, paid in metres; the illegal and forbidden, paid in race
-// points, open once the race is revealed (race.js fills it); the Fleet, paid in miles, open once you have won a race.
-// Each page's currency: the key in progress, and its unit
-const PAGES = [['workshop', 'Workshop'], ['autopilot', 'Autopilot'], ['black', 'Black market'], ['fleet', 'Fleet']];
-const WALLETS = { workshop: 'bank', autopilot: 'bank', black: 'points', fleet: 'miles' };
-const UNITS = { bank: 'm', points: 'pts', miles: 'mi' };
-const pageOpen = id => id === 'black' ? progress.racing : id === 'fleet' ? fleetOpen() : true;
+// points, open once the race is revealed (race.js fills it); the Fleet, paid in miles, open once you have won a race
+// (fleet.js); Mad Max, paid in parts, open once you have totalled a car (gang.js). Each page's currency: the key in
+// progress, and its unit
+const PAGES = [['workshop', 'Workshop'], ['autopilot', 'Autopilot'], ['black', 'Black market'], ['fleet', 'Fleet'],
+               ['madmax', 'Mad Max']];
+const WALLETS = { workshop: 'bank', autopilot: 'bank', black: 'points', fleet: 'miles', madmax: 'parts' };
+const UNITS = { bank: 'm', points: 'pts', miles: 'mi', parts: 'parts' };
+const pageOpen = id => id === 'black' ? progress.racing : id === 'fleet' ? fleetOpen() : id === 'madmax' ? gangOpen() : true;
 const fleetOpen = () => progress.finish === 1;
 const pageOf = u => u.tab ?? 'workshop';
 const wallet = u => WALLETS[pageOf(u)];     // which of progress's currencies it costs
@@ -130,7 +135,8 @@ const run = { phase: 'garage', count: 0, left: 0, best: progress.best, gain: 0, 
 
 function startRun() { // back to the start line, engine running, in neutral, held on the brake
   Object.assign(run, { phase: 'starting', count: COUNTDOWN, left: runTime(), best: progress.best, gain: 0, newBest: false,
-                       slot: progress.racing ? startSlot() : null, race: null, revealed: false, won: false, limp: wrecked(),
+                       slot: progress.racing ? startSlot() : null, race: null, revealed: false, won: false, parts: 0, totals: 0,
+                       firstTotal: false, limp: wrecked(),
                        flashes: lvl('flash'), recharge: 0 });
   resetScene();
   brakePedal = 1;
@@ -162,7 +168,7 @@ function updateRun(dt) {
   else if (run.phase === 'run' && (run.left -= dt) <= 0) { run.left = 0; finishRun(); }
   else if (run.phase === 'finish' && (run.count -= dt) <= 0) run.phase = 'garage';
   if (run.phase === 'run' && raceTick()) run.revealed = true;
-  if (run.phase === 'run') rechargeFlash(dt);
+  if (run.phase === 'run') { rechargeFlash(dt); updateGang(); }
   if (run.phase === 'run' && damageOn()) damageTick(dt);
   if (run.phase === 'run' && run.limp && odo >= LIMP) finishRun('limped'); // as far as a wreck gets
 }
@@ -175,7 +181,9 @@ function rechargeFlash(dt) {
 
 // a collision (once you drive recklessly): damage; a head-on, or the damage that wrecks the car, ends the run
 function onCollision(i) {
-  if (run.phase !== 'run' || !damageOn()) return;
+  if (run.phase !== 'run') return;
+  if (arOn()) ram(i); // gang.js: the car you hit takes it too
+  if (!damageOn()) return;
   hurt(i.kmh, i.headOn);
   if (i.headOn) finishRun('head-on'); else if (wrecked() && !run.limp) finishRun('wrecked');
 }
@@ -216,7 +224,7 @@ let garageTab = 'workshop';
 function renderGarage(bought) {
   if (!pageOpen(garageTab)) garageTab = 'workshop';
   $('bank').textContent = `${money(progress.bank)} m` + (progress.racing ? ` · ${money(progress.points)} pts` : '') +
-    (fleetOpen() ? ` · ${money(progress.miles)} mi` : '') + ' to spend';
+    (fleetOpen() ? ` · ${money(progress.miles)} mi` : '') + (gangOpen() ? ` · ${money(progress.parts)} parts` : '') + ' to spend';
   const done = Object.keys(UPGRADES).every(id => !inMetres(UPGRADES[id]) || whyNot(id) === 'max'), r = run.race;
   $('report').innerHTML = !progress.runs
     ? `You get ${runTime()} seconds. Drive as far as you can: every metre is money for upgrades.`
@@ -228,7 +236,11 @@ function renderGarage(bought) {
       `${progress.runs} run${progress.runs > 1 ? 's' : ''} · ${runTime()} s a run` + (done ? ' · fully built' : '') +
       (run.dues ? ` · fleet dues +${fmt(run.dues)} m` : '') + (run.refill ? ` · nitro refill −${fmt(run.refill)} m` : '') +
       (run.revealed ? '<br><b>That quick car was racer #100. You are in a race: the Black market is open.</b>' : '') +
-      (run.won ? '<br><b>P1! The racers you beat are open to offers: the Fleet is open, paid in miles.</b>' : '');
+      (run.totals ? ` · totalled ${run.totals}, +${fmt(run.parts)} parts` : '') +
+      (run.won ? '<br><b>P1! The racers you beat are open to offers: the Fleet is open, paid in miles.</b>' : '') +
+      (arOn() && !gangOpen() ? `<br><b>${GANG} of the field race for you: your fleet is a gang now. Its first job for ` +
+        'you: total a car.</b> Ram the car in the reticle until its health bar is empty.' : '') +
+      (run.firstTotal ? '<br><b>Totalled! The gang is yours: the Mad Max page is open, paid in parts.</b>' : '');
   $('tabs').innerHTML = PAGES.filter(([id]) => pageOpen(id))
     .map(([id, name]) => `<button data-tab="${id}"${id === garageTab ? ' class="on"' : ''}>${name}</button>`).join('');
   $('engine-row').hidden = garageTab !== 'workshop';
@@ -343,9 +355,9 @@ const DISTANCE = {
   engine: () => progress.engine, // the garage's engines, not the menu's
   tune: applyUpgrades,
   start() { Object.assign(run, { phase: 'garage', best: progress.best }); shownPhase = null; },
-  stop() { run.phase = 'garage'; document.body.classList.remove('garage', 'low', 'has-flash', 'timing', 'has-fleet'); clearDamageView(); }, // earns nothing
+  stop() { run.phase = 'garage'; document.body.classList.remove('garage', 'low', 'has-flash', 'timing', 'has-fleet', 'ar-on'); clearDamageView(); }, // earns nothing
   update: updateRun,
-  render() { renderRun(); renderDamage(); renderSonar(); },
+  render() { renderRun(); renderDamage(); renderSonar(); renderGang(); },
   crash: i => onCollision(i),
   marks: roadMarks,
   useFlash() { // a charge from this run's flashes

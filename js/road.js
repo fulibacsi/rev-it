@@ -90,6 +90,18 @@ function carSprite(color, front, beams) { // rear view (same direction) or front
   });
 }
 const CARS = CAR_COLORS.map(c => ({ rear: carSprite(c, false), front: carSprite(c, true), beams: carSprite(c, true, true) }));
+const WRECKS = new Map(); // a totalled car's rear view (Distance's Mad Max): tipped over, burnt, smoking
+function wreckSprite(img) {
+  if (!WRECKS.has(img)) WRECKS.set(img, sprite(180, 140, (g, w, h) => {
+    g.save(); g.translate(w / 2, h * 0.6); g.rotate(-0.35); g.drawImage(img, -w / 2, -h * 0.6, w, h); g.restore();
+    g.globalCompositeOperation = 'source-atop'; g.fillStyle = '#1a1210b0'; g.fillRect(0, 0, w, h); // scorched
+    g.globalCompositeOperation = 'source-over';
+    for (const [x, y, r] of [[0.35, 0.25, 0.16], [0.55, 0.12, 0.2], [0.7, 0.3, 0.14]]) { // smoke
+      g.fillStyle = '#5a5a60aa'; g.beginPath(); g.arc(w * x, h * y, w * r, 0, 2 * Math.PI); g.fill();
+    }
+  }));
+  return WRECKS.get(img);
+}
 const RACERS = new Map(); // racers' rear views by number: a racing stripe, and the number once the race is revealed
 function racerSprite(n, numbered, team) { // team: one of your fleet, black with gold stripes
   const key = numbered ? (team ? -n : n) : 0;
@@ -157,6 +169,7 @@ function spawnCar(car, d) {
     hit: -Infinity, // when you last ran into it (s on the clock): one crash per bump
     warned: false, beams: 0, // an oncoming car: has it flashed and honked at you yet, and for how much longer
     swerve: null, // an oncoming car flashed out of your way (a game of chicken): the lane it is moving to
+    wreck: false, hp: null, // totalled (Distance's Mad Max), and its health when hurt (null: unhurt)
   });
 }
 const sameLane = (a, x) => Math.abs(a - x) < CAR_W; // two lateral positions close enough to touch
@@ -224,9 +237,17 @@ function flashAhead() {
   for (const c of traffic) if (sameLane(c.x, carX) && yields(c, to)) Object.assign(c, { lane: to, yielding: true, cool: LANE_GAP.car + 2 });
 }
 
+// a totalled car (Distance's Mad Max) skids off onto the right shoulder and stops there
+function skid(c, dt) {
+  c.v = Math.max(0, c.v - 14 * dt);
+  c.z += c.v * dt;
+  c.x += clamp(SHOULDER - c.x, -4 * dt, 4 * dt);
+}
+
 function updateTraffic(dt, clock) {
   for (const c of traffic) {
-    if (c.dir > 0) driveCar(c, dt);
+    if (c.wreck) skid(c, dt);
+    else if (c.dir > 0) driveCar(c, dt);
     else { c.z -= c.v * dt; if (c.swerve != null) c.x += clamp(c.swerve - c.x, -3.5 * dt, 3.5 * dt); } // as brisk as yielding
     const d = c.z - odo;
     if (c.d > 0 && d <= 0) whoosh(Math.abs(speed - c.dir * c.v) * 3.6, c.x < carX ? -0.7 : 0.7); // went past the driver
@@ -239,7 +260,7 @@ function updateTraffic(dt, clock) {
       c.x = MY_LANES[c.lane];
     }
     // you ran into it: your front into its back, sideways into it while changing lanes, or head-on
-    const touching = sameLane(c.x, carX) && c.z < odo + MY_FRONT && c.z + CAR_LEN > odo - MY_REAR && clock - c.hit > 1.5;
+    const touching = !c.wreck && sameLane(c.x, carX) && c.z < odo + MY_FRONT && c.z + CAR_LEN > odo - MY_REAR && clock - c.hit > 1.5;
     if (touching) { c.hit = clock; c.dir > 0 ? bump(c) : headOn(c); }
     // an oncoming car with you in its lane: flashes its lights and sounds its horn, once, about 3 s out
     c.beams = Math.max(0, (c.beams ?? 0) - dt);
@@ -320,8 +341,10 @@ function drawRoad(g, w, h, dt) {
     board: { z: m.z, x: ROAD.half + 2, w: 1.6, h: 3, img: boardSprite(m.value) },
     sign: { z: m.z, x: ROAD.half + 2, w: 1.5, h: 4.1, img: signSprite(m.value) },
   })[m.kind]);
-  const ahead = [...traffic.map(c => ({ z: c.z, x: c.x, w: 1.8, h: 1.4, img: c.dir > 0 ? c.look.rear : c.beams ? c.look.beams : c.look.front })), ...marks]
+  const look = c => c.wreck ? wreckSprite(c.look.rear) : c.dir > 0 ? c.look.rear : c.beams ? c.look.beams : c.look.front;
+  const ahead = [...traffic.map(c => ({ z: c.z, x: c.x, w: 1.8, h: 1.4, img: look(c), car: c })), ...marks]
     .map(o => ({ ...o, d: o.z - odo })).filter(o => o.d > 2 && o.d < (ROAD.draw - 2) * ROAD.segment).sort((p, q) => q.d - p.d);
+  for (const c of traffic) c.seen = null; // where each car is on the screen (canvas px), when it is to be seen
   let t = 0;
   for (let n = ROAD.draw - 1; n > 0; n--) {
     const a = proj[n], s = segments[(base + n) % ROAD.count], fog = Math.min(1, 1.6 - n / ROAD.draw * 1.6);
@@ -334,6 +357,7 @@ function drawRoad(g, w, h, dt) {
       const o = ahead[t++], f = (o.d - a.z) / ROAD.segment, b = proj[n + 1] || a;
       const k = a.k + (b.k - a.k) * f, cx = a.x + (b.x - a.x) * f, cy = a.y + (b.y - a.y) * f;
       drawClipped(o.img, cx + (o.x - o.w / 2) * k, cy - o.h * k, o.w * k, o.h * k, clip[n]);
+      if (o.car && cy - o.h * k < clip[n]) o.car.seen = [cx + (o.x - o.w / 2) * k, cy - o.h * k, o.w * k, o.h * k];
     }
   }
   g.globalAlpha = 1;
