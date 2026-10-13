@@ -51,7 +51,7 @@ const startSlot = () => FIELD + 1 - lvl('grid'); // the position you start in; 1
 
 function racer(n, z) {
   const fleet = inFleet(n); // fleet.js
-  return { z, dir: 1, lane: n % 2, x: MY_LANES[n % 2], v: 0, want: pace(n), racer: n, fleet,
+  return { z, dir: 1, lane: n % 2, x: MY_LANES[n % 2], v: 0, want: pace(n) * (fleet ? fleetPace() : 1), racer: n, fleet,
            look: racerSprite(n, progress.racing, fleet), d: NaN, hit: -Infinity };
 }
 // before the reveal #100 is one quick car up the road. Its head start shrinks as the car gets built, so it can only be

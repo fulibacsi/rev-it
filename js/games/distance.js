@@ -66,7 +66,7 @@ function save() {
   if (debugSave) progress.bank = progress.points = progress.miles = FUNDS; // spent or earned, back to full
   try { localStorage.setItem(saveKey(), JSON.stringify(progress)); } catch { /* not saved */ }
 }
-const forgetRun = () => Object.assign(run, { gain: 0, race: null, revealed: false, won: false, newBest: false, best: 0 });
+const forgetRun = () => Object.assign(run, { gain: 0, race: null, revealed: false, won: false, dues: 0, newBest: false, best: 0 });
 function resetProgress() { // a new game: the menu's "new game"
   Object.assign(progress, FRESH());
   save();
@@ -146,6 +146,8 @@ function finishRun(dnf) { // dnf: why the run ended early (a crash), if it did
   progress.runs++;
   const was = progress.finish;
   run.race = raceFinish(dnf);
+  run.dues = fleetDues(); // fleet.js
+  progress.bank += run.dues;
   run.won = was > 1 && progress.finish === 1; // the first win opens the Fleet
   save();
   Object.assign(run, { phase: 'finish', count: FINISH });
@@ -224,7 +226,7 @@ function renderGarage(bought) {
         (r.fresh ? ` (${r.fresh} for new positions, ${r.finish} for the finish)` : '') + ` · best P${progress.finish} · ` : '') +
       `Last run <b>+${fmt(run.gain)} m</b>${run.newBest ? ' · <b>new best!</b>' : ''} · best ${fmt(progress.best)} m · ` +
       `${progress.runs} run${progress.runs > 1 ? 's' : ''} · ${runTime()} s a run` + (done ? ' · fully built' : '') +
-      (run.refill ? ` · nitro refill −${fmt(run.refill)} m` : '') +
+      (run.dues ? ` · fleet dues +${fmt(run.dues)} m` : '') + (run.refill ? ` · nitro refill −${fmt(run.refill)} m` : '') +
       (run.revealed ? '<br><b>That quick car was racer #100. You are in a race: the Black market is open.</b>' : '') +
       (run.won ? '<br><b>P1! The racers you beat are open to offers: the Fleet is open, paid in miles.</b>' : '');
   $('tabs').innerHTML = PAGES.filter(([id]) => pageOpen(id))

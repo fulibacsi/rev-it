@@ -1,7 +1,8 @@
 """The Fleet: never shown before your first win; winning a race opens it (the garage says so), with miles in the
 header and the Exchange card: metres for miles, one way, 1,609 m a mile, a slider (dragged with a finger on the
 phone) and "all available". Racers paid off (the slowest first, each dearer, #1 never) race for you in your colours:
-they don't count against your position, give way when you come up behind them and block a rival closing on them."""
+they don't count against your position, give way when you come up behind them and block a rival closing on them.
+The fleet-wide upgrades: dues (a share of the fleet's metres at the finish), tuning (pace) and Fleet flash."""
 import re
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -54,6 +55,7 @@ with sync_playwright() as p:
     for _ in range(3): pg.tap('[data-buy="fleet"]'); pg.wait_for_timeout(80)
     check("three racers paid off, a mile each", js("[lvl('fleet'), progress.miles]") == [3, 97], js("[lvl('fleet'), progress.miles]"))
     check("the card names them", "#98 to #100 race for you" in js("$('cards').innerText"), js("$('cards').innerText")[-160:])
+    pg.screenshot(path=f"{OUT}/fleet_page.png")
     prices = js("(() => { const l0 = lvl('fleet'), p = Array.from({ length: 99 }, (_, l) => { progress.levels.fleet = l; return cost('fleet'); }); progress.levels.fleet = l0; return p; })()")
     print(f"   prices: the 1st {prices[0]} mi, the 51st {prices[50]}, the 99th {prices[98]}; the first 51 together {sum(prices[:51])} mi")
     check("each costs at least as much as the last, and more over time", all(a <= b for a, b in zip(prices, prices[1:])) and prices[50] > prices[0], prices[::10])
@@ -85,5 +87,24 @@ with sync_playwright() as p:
     print("   [s, fleet car's lane, rival's lane, rival m ahead of it, fleet car m ahead of you]:", trace)
     check("the fleet car moves across in front of the rival", any(t[1] == 1 for t in trace[:3]), trace[:3])
     check("and holds it up for 5 s (it would have passed in 3)", all(t[3] < 0 for t in trace), [t[3] for t in trace])
+    # 8. Fleet flash: a slow ordinary car in your lane just ahead of a fleet car moves over; none of your flashes spent
+    for owned in [0, 1]:
+        js(f"progress.levels.fleetFlash = {owned}; progress.levels.flash = 3; run.flashes = 3")
+        js("""Object.assign(f, { lane: 1, x: MY_LANES[1], z: odo + 60, v: speed, want: speed, cool: 9, flashed: 0 }); window.t = traffic.find(c => !c.racer);
+            Object.assign(t, { dir: 1, lane, x: MY_LANES[lane], z: odo + 130, v: 12, want: 12, cool: 9, yielding: false })""")
+        pg.wait_for_timeout(600); got = js("({ its: t.lane, yours: lane, flashes: run.flashes })")
+        if owned: check("Fleet flash: the slow car ahead moves out of your lane, your flashes kept", got["its"] != got["yours"] and got["flashes"] == 3, got)
+        else: check("without it: the slow car stays in your lane", got["its"] == got["yours"], got)
+        js("t.z = odo + 4000; t.dir = -1; t.x = LANES.oncoming[0]")
+    # 9. dues: 20% of the metres the fleet drove, into the bank at the finish, and in the report
+    js("progress.levels.dues = 2; racers().filter(c => c.fleet).forEach(c => c.grid = c.z - 1000); window.bank0 = progress.bank")
+    js("run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
+    got = js("({ dues: run.dues, gain: run.gain, banked: progress.bank - bank0, report: $('report').textContent })")
+    check("dues: 20% of the fleet's metres (3 cars, 1 km and more each)", got["dues"] >= 600 and got["banked"] == got["gain"] + got["dues"], {k: v for k, v in got.items() if k != "report"})
+    check("the report shows them", f"fleet dues +{got['dues']:,} m" in got["report"], got["report"][-90:])
+    # 10. tuning: fleet cars 25% quicker at level 5; rivals as before
+    js("progress.levels.fleetPace = 5; refreshCar()"); pg.tap("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
+    got = js("[racers().find(c => c.racer === 99).want / pace(99), racers().find(c => c.racer === 40).want / pace(40)].map(x => +x.toFixed(2))")
+    check("Fleet tuning 5: fleet cars 25% quicker, rivals as before", got == [1.25, 1], got)
     b.close()
 print("ERRORS:", errors or "none", "| FAILS:", fails or "none")
