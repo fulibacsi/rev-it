@@ -24,6 +24,7 @@ const launchRpm = () => 0.6 * engine.redline; // revs to set off at: well into t
 // it follows the revs, like a centrifugal clutch, so it can neither stall nor bog the engine; once the car has
 // caught up it stays in. It knows nothing about grip: with a lot of power it will spin the tyres.
 function autoClutch(dt) {
+  if (touching('clutch')) return; // your foot on the clutch: it's yours
   if (lever.held || lever.path || run.phase === 'countdown') { clutchPedal = 1; return; }
   const e = engine, [b0, b1] = CAR.bite, from = 1.2 * e.idle;
   const bite = clamp((rpm - from) / (launchRpm() - from), 0, 1);
@@ -35,7 +36,7 @@ function autoClutch(dt) {
 // while the clutch is out). Once the clutch has caught up it is traction control: no more gas than the tyres can
 // take (worked out from the torque the engine makes at these revs), and well under that if they spin anyway.
 function autoGas() {
-  if (pushing() || nitroByAid) return; // your own foot on the gas: it's yours; its foot on the nitro pedal floors it
+  if (pushing()) return; // your own foot on the gas: it's yours (the nitro pedal only floors it, then this trims it)
   if (speed < 1 && (!gear || clutch < 0.05)) gasPedal = clamp(0.5 + (launchRpm() - rpm) / 800, 0, 1);
   else if (!locked && !spinning) gasPedal = 1;
   else {
@@ -105,6 +106,7 @@ function autocruise() {
   const escape = roomBeside && further(MY_LANES[1 - lane]) > further(MY_LANES[lane]) + 0.5;
   if (settled() && (escape && reach(mine) < 8 || lane === 1 && roomBeside && reach(mine) > 6 && reach(theirs) > 8)) moveOver();
   if (pushing()) { if (cruiseBrake) { brakePedal = 0; cruiseBrake = false; } return; } // your foot on the gas: no braking
+  if (touching('brake')) { cruiseBrake = false; return; } // your foot on the brake: it's yours
   const hardest = CAR.brake / engine.mass; // m/s² the brakes can do
   const keep = 8 + 0.4 * speed; // following distance, m
   const closing = mine ? mine.closing : 0, room = mine ? mine.gap - keep : Infinity;

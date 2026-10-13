@@ -22,12 +22,13 @@ with sync_playwright() as p:
     v0 = js("speed"); pg.wait_for_timeout(1000); plain = (js("speed") - v0) * 3.6
     kb.down("n"); v0 = js("speed"); pg.wait_for_timeout(1000); boosted = (js("speed") - v0) * 3.6
     print(f"km/h gained in 1 s: plain {plain:.1f}, with nitro {boosted:.1f} | burning:", js("({ nitro, left: +progress.nitro.toFixed(1), heat: +heat.toFixed(2), dmg: +progress.damage.toFixed(1) })"))
-    print(f"{'ok ' if js('gasPedal') == 1 else 'FAIL'} N floors the gas:", js("gasPedal"))
+    print(f"{'ok ' if not js('pushing()') else 'FAIL'} N: the aids stay on (it isn't the gas pedal):", js("({ pushing: pushing(), gas: +gasPedal.toFixed(2) })"))
+    print(f"{'ok ' if boosted > plain + 5 else 'FAIL'} with Auto gas, nitro adds pace (traction control trims the floored gas)")
     pg.screenshot(path=f"{OUT}/nitro_on.png")
     pg.wait_for_timeout(5500); print("held past empty:", js("({ nitro, left: progress.nitro, dmg: +progress.damage.toFixed(1) })")); kb.up("n")
     js("progress.nitro = 3"); bb = pg.locator("#nos").bounding_box(); pg.mouse.move(bb["x"] + bb["width"] / 2, bb["y"] + bb["height"] / 2); pg.mouse.down(); pg.wait_for_timeout(500)
-    held = js("({ nitro, gas: gasPedal, left: +progress.nitro.toFixed(1) })")
-    print(f"{'ok ' if held['nitro'] and held['gas'] == 1 else 'FAIL'} nitro pedal held with the mouse: burns, gas floored:", held)
+    held = js("({ nitro, pushing: pushing(), left: +progress.nitro.toFixed(1) })")
+    print(f"{'ok ' if held['nitro'] and not held['pushing'] else 'FAIL'} nitro pedal held with the mouse: burns, the aids stay on:", held)
     pg.mouse.up(); pg.wait_for_timeout(100); print(f"{'ok ' if not js('nitro') else 'FAIL'} released: nitro stops")
     js("progress.damage = 0; applyUpgrades(); buildDials(); progress.nitro = 8"); kb.down("n")
     pg.wait_for_function("gear === 7", timeout=40000); kb.up("n"); print("with nitro, auto shift reached 7th:", js("({ gear, kmh: Math.round(speed * 3.6), rpm: Math.round(rpm) })"))
