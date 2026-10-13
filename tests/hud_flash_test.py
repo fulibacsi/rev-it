@@ -1,5 +1,5 @@
-"""The HUD's messages (GO!, CRASH) show again, the mirror's timer drains (hidden in the garage), and a tap on the light
-stalk flashes: the car ahead moves over, the HUD counts the flash."""
+"""The HUD's messages (GO!, CRASH) show again, at full strength over see-through readouts; the mirror's timer drains
+(hidden in the garage), and a tap on the light stalk flashes: the car ahead moves over, the HUD counts the flash."""
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
 errors = []
@@ -12,6 +12,10 @@ with sync_playwright() as p:
     pg.tap("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000); pg.wait_for_timeout(120)
     print("GO! message:", js("(() => { const f = document.getElementById('flash'), s = getComputedStyle(f), r = f.getBoundingClientRect(); return { text: f.textContent, display: s.display, position: s.position, opacity: +(+s.opacity).toFixed(2), w: Math.round(r.width), h: Math.round(r.height) }; })()"))
     pg.screenshot(path=f"{OUT}/go_message.png")
+    # the traffic shows through the readouts; a message isn't faded with them
+    seen = js("""(() => { const o = e => { let a = 1; for (; e; e = e.parentElement) a *= +getComputedStyle(e).opacity; return +a.toFixed(2); };
+      return { speed: o($('hud-speed')), info: o($('run-info')), message: o($('hud')) }; })()""")
+    print(f"{'ok ' if seen['speed'] <= 0.7 and seen['info'] <= 0.7 and seen['message'] == 1 else 'FAIL'} the readouts see-through, the messages at full strength:", seen)
     timer = "({ shown: getComputedStyle($('timer')).display, left: $('timer-left').textContent, fill: Math.round($('timer-fill').getBoundingClientRect().width) })"
     t0 = js(timer); pg.wait_for_timeout(2500); t1 = js(timer)
     print("mirror timer:", t0, "->", t1, "| drains:", t0["shown"] == "block" and float(t1["left"]) < float(t0["left"]) and t1["fill"] < t0["fill"])
