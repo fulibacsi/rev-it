@@ -197,25 +197,57 @@ while it is pushed: no auto brake, and no traction control (the tyres can spin).
   - `accel.py`: stock acceleration;
   - `sim.js`: the in-page bot they share.
 
-### Phase 3: the fleet, then Mad Max (decided 13 Oct, not built yet)
+### Phase 3: the fleet, then Mad Max (decided 13 Oct, being built)
 
-- **Two more garage pages.** **Fleet**: cars, and upgrades for them. **Mad Max**: to the fleet what the Black market is
-  to the Workshop, the illegal side: illegal parts, bull bars and, as the last upgrades, guns.
-- **Currencies:** more of them is fine. Miles pay for the fleet, parts for Mad Max.
-  - Miles: metres exchanged like frequent-flyer miles (a mile is 1,609 m). The speedometer stays in km/h.
-  - Parts: from any car you total, traffic or racer.
-- **The fleet** unlocks once you reach P1. Fleet cars race in your races, behind you. The mirror shows the timer, so
-  there is no rear view: a sonar shows where they are.
-- **The gang (Mad Max)** unlocks once a race has more of your fleet cars than other racers. You get a task, total a car,
-  and a health bar for the car appears.
-  - Parts pay for bars, illegal parts and guns. Firing guns from your car is an upgrade.
-  - Police heat rises. Past a threshold a tank boss appears, and the gang has to defeat it.
-- **Proposed, not decided:** frequent-driver status (Silver, Gold, Platinum, from lifetime miles) with perks such as
-  free nitro refills or cheaper repairs; a bull bar first (you lose less speed, they take the damage), then a PIT
-  manoeuvre; gang orders over a CB radio on the dash; heat cooling between runs, or bribed down with miles.
-- **Open:** where the sonar sits (cluster, head-up display?); the miles rate; the fleet's upgrades; how much a car
-  takes to total, by kind; the tank fight; what police heat does below the threshold; how race results pay when
-  racers are wrecked (by finishing position only, so wrecking can't be farmed for points).
+The owner's answers of 13 Oct. Where a detail is still open, Claude decides while building and notes it here. The
+order of work is in [phase-3-build-plan.md](phase-3-build-plan.md).
+
+**The fleet** unlocks once you reach P1: a garage page, **Fleet**, paid in miles.
+- **Miles:** an Exchange card on the Fleet page turns metres into miles, one way, a mile for 1,609 m, with a slider, an
+  "all available" button and the miles you have shown. The speedometer stays in km/h. No frequent-driver tiers.
+- **Fleet cars:** you pay racers off to join your team. Each one takes its racer's place in the 100-car field, and
+  each costs more than the last.
+- **In a race** they give way to you, use their upgrades for you (a flash to move traffic out of your way, for one)
+  and block racers.
+- **Upgrades** are fleet-wide, not per car.
+- **Sonar:** the mirror is the timer, so there is no rear view. A mechanical device fixed to the A-pillar, in the top
+  left corner of the windscreen, shows where your fleet cars are behind you.
+
+**The gang** unlocks once a race has more of your fleet cars than other racers (51 of the 100): a garage page, **Mad
+Max**, paid in parts. It is to the fleet what the Black market is to the Workshop.
+- **It starts with a task:** total a car. The windscreen gains an AR layer: a target reticle, and a health bar on the
+  target car. Once you pass the target, the next car is targeted.
+- **Damage:** bumps damage the car you hit; a bull bar means you lose less speed and they take more. At 0 health a car
+  spins off the road and its parts are collected. Any car can be totalled, traffic or racer. A wrecked racer is out of
+  the race and you move up; results pay by finishing position only, so wrecking can't be farmed for points.
+- **Upgrades:** bull bars, illegal parts and, last, guns. With guns fitted, the red marker at the top of the steering
+  wheel becomes the trigger, with FIRE written on it (by then you are mostly auto-cruising).
+- **The gang** (your fleet cars) uses whatever offensive upgrades it has. No CB radio, no orders.
+- **Police heat,** on a police scanner on the dash: it rises slowly with totalled cars and shots fired, so you have to
+  push for the threshold. It stays between races and can't be bribed down. Police never come from behind (there is no
+  rear view): they overtake you, then brake; in the oncoming lanes they floor it to hit you head-on.
+- **The final boss:** past the threshold a tank appears (or a more fitting armoured opponent). It shoots at you, and
+  you and the gang have to outgun it. Losing is a DNF, and the heat drops.
+
+**Also decided (13 Oct), to build:**
+- Every automation keeps working unless you are touching that control yourself. Pushing the nitro pedal no longer
+  switches the other aids off: traction control and autocruise's braking carry on.
+- The ECU tune works in every gear, with the aids driving too ("ECU only works in 6th gear" was a bug report).
+- Auto flash plays chicken once Game of chicken is bought. Reckless auto-drive uses everything you have, Auto flash
+  included.
+- **Flash recharge,** a new upgrade after Headlight flash: flashes come back over time, up to one every 2 s. The number
+  of flashes stays a separate upgrade.
+- The head-up display gets a bit more transparent, so traffic shows through; it stays where it is.
+- Autocruise aims for top speed: it brakes a lot at 300+ km/h when both lanes are blocked.
+- Bugs: on the iPhone, the ignition key overlaps the rev counter and the menu button covers the G of GARAGE.
+- Dropped: reverse gear and a handbrake (we go fast and forward; there is no room left on the dash). Kept: the V8
+  creeping off in 1st without gas.
+- Balancing waits until everything is built and the bugs are fixed. Then the prices come from simulations that follow
+  incremental-game practice. The Rev curve is right; Speed signs is too easy, but leave it for now.
+
+**Open, for Claude to decide while building:** the tank or a more fitting opponent; what follows beating it (an
+ending, then play on); how the sonar and the scanner look; the fleet's upgrades; the miles rate, car health, parts per
+car and heat rates (first guesses, tuned in the balancing pass).
 
 ## Playtest log
 
@@ -261,19 +293,10 @@ All dates are 2026.
 
 Waiting for the owner. Don't build these on a guess: ask.
 
-- Should Auto gas's traction control keep working while the NOS pedal is pushed? Without it, nitro spins the tyres
-  in the middle gears: in `nitro_test`, 4th at about 170 km/h, nitro now adds 25 km/h in a second instead of 34.
-- "ECU updates only works on 6th gear" was read as a bug report and fixed. Confirm it wasn't a request to restrict
-  the ECU to 6th gear.
-- The flash prices moved the simulated reveal about 2 runs later. Make flashes cheaper if the reveal should stay
-  where it was.
-- **Older questions, never answered:**
-  - Is the V8 creeping off in 1st without gas fun?
-  - A live rear view in the mirror (it now shows the timer)?
-  - Reverse gear and a handbrake?
-  - Are the Rev and Speed signs difficulty curves right?
-- **Low priority:** retune autocruise for four lanes. It is crash-free but brakes a lot at 300+ km/h when both lanes
-  are blocked.
+- None right now: the answers of 13 Oct settled them (phase 3, above).
+- **For the balancing pass, after the build:** the flash prices moved the simulated reveal about 2 runs later; the
+  prices of Game of chicken and Reckless auto-drive; the miles rate, car health, parts per car and heat rates; Speed
+  signs is too easy.
 
 ## Brainstorm waiting for the owner's picks
 
