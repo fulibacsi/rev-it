@@ -231,6 +231,10 @@ function tick(now) {
     $(id).style.transform = `perspective(300px) rotateX(${get() * 35}deg)`;
     $(id).parentNode.style.setProperty('--depth', get());
   }
+  // the nitro pedal rides on the gas pedal's top edge, which comes down as the gas pedal tilts away (35°, seen
+  // through a 300px perspective)
+  const h = $('gas').clientHeight, a = gasPedal * 35 * Math.PI / 180, drop = h - h * Math.cos(a) * 300 / (300 + h * Math.sin(a));
+  $('nos').style.transform = `translateY(${drop}px) perspective(300px) rotateX(${nitroHeld ? 25 : 0}deg)`;
   $('knob').setAttribute('transform', `translate(${lever.x} ${lever.y})`);
   $('knob-gear').textContent = gear || 'N';
 

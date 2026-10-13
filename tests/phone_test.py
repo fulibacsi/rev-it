@@ -20,7 +20,7 @@ with sync_playwright() as p:
     except Exception as e: print("safe-area insets can't be emulated here:", str(e)[:60])
     pg.goto(URL); pg.wait_for_timeout(400); js = pg.evaluate
     print("iPhone tip shown:", js("getComputedStyle(document.getElementById('ios-tip')).display"))
-    js("localStorage.clear(); progress.bank = 5000; progress.levels = { flash: 1 }"); pg.tap('[data-play="distance"]'); pg.wait_for_timeout(200)
+    js("localStorage.clear(); progress.bank = 5000; progress.levels = { flash: 1, nitro: 1 }"); pg.tap('[data-play="distance"]'); pg.wait_for_timeout(200)
     pg.tap("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000); pg.wait_for_timeout(300)
     W, H = 852, 393
     for sel in ["#shifter", "#pedals", "#ignition", "#stalk-hit", "#timer", "#menu-button"]:
@@ -30,6 +30,15 @@ with sync_playwright() as p:
     on = js("""(() => { const k = document.querySelector('#stalk path:nth-of-type(3)'), m = k.getScreenCTM(), n = k.getTotalLength();
       return Array.from({ length: 9 }, (_, i) => { const p = k.getPointAtLength(n * i / 8).matrixTransform(m); return document.elementFromPoint(p.x, p.y)?.id; }); })()""")
     print(f"{'ok ' if all(i == 'stalk-hit' for i in on) else 'FAIL'} the light stalk's knob is uncovered:", on)
+    # the nitro pedal rides on the gas pedal: a finger on it floors the gas and holds nitro, lifting lets both go
+    x, y = js("(() => { const r = $('nos').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; })()")
+    on = js(f"document.elementFromPoint({x}, {y})?.closest('svg')?.id")
+    cdp.send("Input.dispatchTouchEvent", {"type": "touchStart", "touchPoints": [{"x": x, "y": y, "id": 7}]}); pg.wait_for_timeout(200)
+    held = js("({ nitroHeld, gas: gasPedal })")
+    cdp.send("Input.dispatchTouchEvent", {"type": "touchEnd", "touchPoints": [{"x": x, "y": y, "id": 7}]}); pg.wait_for_timeout(200)
+    after = js("({ nitroHeld, gas: gasPedal })")
+    ok = on == "nos" and held == {"nitroHeld": True, "gas": 1} and after == {"nitroHeld": False, "gas": 0}
+    print(f"{'ok ' if ok else 'FAIL'} a finger on the nitro pedal floors the gas; lifted, both let go: under the finger {on}, held {held}, after {after}")
     # the page goes to the background mid-run (switching apps)
     js("Object.defineProperty(document, 'hidden', { configurable: true, get: () => true }); document.dispatchEvent(new Event('visibilitychange'))")
     pg.wait_for_timeout(300); print("hidden mid-run:", js("({ menu: menuOpen, sound: ctx && ctx.state, phase: run.phase, left: +run.left.toFixed(1) })"))

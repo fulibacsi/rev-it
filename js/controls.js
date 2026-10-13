@@ -67,8 +67,10 @@ function updatePedals(dt) {
     if (p.hold !== null) p.set(p.hold > v ? Math.min(p.hold, v + dt / p.press) : Math.max(p.hold, v - dt / p.press));
     else if (p.back) { p.set(Math.max(0, v - dt / p.back)); if (!p.get()) p.back = 0; }
   }
+  if (nitroHeld) PEDALS.gas.set(1); // the nitro pedal sits on the gas pedal: pushing it floors the gas
 }
-const pushing = () => PEDALS.gas.hold !== null || PEDALS.gas.down; // your own foot on the gas: it overrides the aids
+// your own foot on the gas (or on the nitro pedal): it overrides the aids
+const pushing = () => PEDALS.gas.hold !== null || PEDALS.gas.down || nitroHeld;
 function holdPedal(id, down) { const p = PEDALS[id]; p.hold = down ? 1 : null; if (!down) p.back = p.release; }
 
 // ---- gear lever in an H gate: slide along the neutral rail, push up or down into a slot when lined up with it.
@@ -202,11 +204,15 @@ function flashLights() {
 }
 $('stalk-hit').onpointerdown = e => { e.preventDefault(); flashLights(); };
 
-// ---- nitro (Distance): hold N, or hold the NOS button with the mouse or a finger ----
-let nitroHeld = false;
-$('nos').onpointerdown = e => { $('nos').setPointerCapture(e.pointerId); nitroHeld = true; };
-$('nos').onpointerup = $('nos').onpointercancel = $('nos').onlostpointercapture = () => { nitroHeld = false; };
-$('nos').oncontextmenu = e => e.preventDefault();
+// ---- nitro (Distance): push the nitro pedal on top of the gas pedal (mouse or finger), or hold N. It floors the gas,
+// and letting it go puts the gas back where it was (where the mouse left it, or a finger or key still holds it)
+let nitroHeld = false, gasBeforeNitro = 0;
+function pushNitro(down) {
+  if (down === nitroHeld) return;
+  if (down) gasBeforeNitro = PEDALS.gas.get(); else PEDALS.gas.set(gasBeforeNitro);
+  nitroHeld = down;
+}
+drag($('nos'), (e, first) => { if (first) pushNitro(true); }, () => pushNitro(false));
 
 // ---- keyboard ----
 const HELD_KEYS = { ' ': 'gas', Shift: 'clutch', b: 'brake', B: 'brake' };
@@ -219,17 +225,17 @@ addEventListener('keydown', e => {
   else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); if (!e.repeat) shiftBy(e.key === 'ArrowUp' ? 1 : -1); }
   else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); if (!e.repeat) steerLane(e.key === 'ArrowLeft' ? -1 : 1); }
   else if (e.key === 'Enter' && !e.repeat) state === 'off' ? startEngine() : stopEngine();
-  else if (e.key === 'n' || e.key === 'N') nitroHeld = true;
+  else if (e.key === 'n' || e.key === 'N') pushNitro(true);
   else if ((e.key === 'f' || e.key === 'F') && !e.repeat) flashLights();
   else if (n >= 1 && n <= ENGINES.length) pickEngine(n - 1);
 });
 addEventListener('keyup', e => {
   if (HELD_KEYS[e.key]) holdPedal(HELD_KEYS[e.key], false);
-  if (e.key === 'n' || e.key === 'N') nitroHeld = false;
+  if (e.key === 'n' || e.key === 'N') pushNitro(false);
 });
 addEventListener('blur', () => {
   for (const id of Object.keys(PEDALS)) if (PEDALS[id].hold !== null) holdPedal(id, false);
-  nitroHeld = false;
+  pushNitro(false);
 });
 
 function updateControls(dt) { // once a frame, before the aids and the physics

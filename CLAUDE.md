@@ -16,7 +16,7 @@ Design decisions, balance targets, the playtest history and the open questions a
   two ways that lead to different work, say which reading you took, or ask.
 - They playtest on an iPhone 14 Pro held sideways (Safari, added to the home screen). Phone feel matters most.
 - Keep the game **diegetic**: controls and readouts belong to the car (the light stalk, the mirror's timer, the
-  windscreen head-up display, the cluster's lamps). A floating button was called out; the red NOS button is accepted.
+  windscreen head-up display, the cluster's lamps). A floating button was called out; nitro is a pedal on the gas pedal.
 - Never hint at the hidden race before it is revealed: no garage text about the white car ("a clear giveaway").
 - Report what you verified and how. Balance claims come from the simulations in `tests/balance/`, not guesses.
 

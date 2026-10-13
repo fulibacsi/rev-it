@@ -85,18 +85,16 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 #menu #layout { margin-right: auto; padding: 4px 10px; color: #889; }
 #menu, #garage { touch-action: pan-y; } /* these two scroll on small screens */
 .touch .desk-only, body:not(.touch) .touch-only { display: none; }
-/* nitro: a round button that drains as it burns; while it burns the view runs hot */
-#nos { display: none; position: fixed; left: 24vw; top: 70vh; width: 64px; height: 64px; border-radius: 50%;
-       overflow: hidden; border: 2px solid #f66; background: #301014; color: #fdd; font: bold 14px system-ui, sans-serif;
-       letter-spacing: 1px; cursor: pointer; touch-action: none; }
-#nos span { position: relative; }
-#nos-fill { position: absolute; left: 0; right: 0; bottom: 0; background: #d33; }
+/* nitro: a smaller red pedal riding on the gas pedal's top edge (centred with a margin: its transform places and
+   tilts it), and a gauge on the cluster; while it burns the view runs hot */
+#nos, #nos-gauge { display: none; }
 .has-nos #nos { display: block; }
-.nitro #nos { box-shadow: 0 0 18px #f44; }
+.has-nos #nos-gauge { display: inline; }
+#nos { position: absolute; bottom: 100%; left: 50%; width: 60%; margin: 0 0 4px -30%; }
+.nitro #nos { filter: drop-shadow(0 0 8px #f44); }
 .nitro #world { filter: saturate(1.5) brightness(1.08); }
 .flashing #world { filter: brightness(1.4); }
 .nitro #hud { color: #9cf; }
-.touch #nos { left: calc(var(--edge-l) + var(--shifter-h) * 3.2 / 3.5 + 8px); top: 41vh; top: 41dvh; }
 #menu-button { position: fixed; left: 9vw; top: 52px; z-index: 5; width: 38px; height: 34px; border-radius: 8px;
                background: #0b0d16cc; color: #ccc; border: 1px solid #2c3140; font-size: 18px; cursor: pointer; }
 

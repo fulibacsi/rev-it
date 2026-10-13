@@ -60,7 +60,9 @@ machine or session. Keep it current: update a section when a decision changes, a
     hid it.
 - The flashes left show on the head-up display as the blue high-beam telltale and a count.
 - The run's time left is a bar draining across the widened rear-view mirror. It turns red and blinks under 5 s.
-- The red NOS button is accepted as a dashboard button.
+- Nitro is a smaller red NOS pedal riding on top of the gas pedal (the owner's design), and pushing it floors the
+  gas. N does the same. The tank shows as a NOS bar under TEMP on the cluster. It replaced a red NOS button, which
+  floated over the oncoming lanes on phones.
 
 ## Distance
 
@@ -160,12 +162,13 @@ runs. A hidden race is the second act.
 - In the red it damages the engine, up to 2% a second.
 
 **Nitro** pushes the heat into the red, so it does direct damage, but the top places need it. Tanks are refilled
-before each run at 100 m per second of nitro.
+before each run at 100 m per second of nitro. The NOS pedal counts as your own foot on the gas, so the aids step aside
+while it is pushed: no auto brake, and no traction control (the tyres can spin).
 
 ### Balance targets and results
 
 - **First playtest (act 1 into act 2):** "fun, relatively quick", no excess currency, P76 after about 30 min.
-- **Act 2, simulated:** P1 after about 29 races, which needs max nitro and 7th gear for the top 10. After P1 a race
+- **Act 2, simulated:** P1 after 22 races (13 Oct; 23 with the old NOS button, which left the aids driving), which needs max nitro and 7th gear for the top 10. After P1 a race
   still pays 10.
 - **Metres:** they pile up in act 2 (about 65–70k unspent by P1). Metre sinks and the fleet (below) are meant to soak
   them up.
@@ -207,13 +210,17 @@ All dates are 2026.
   - Flash charges.
   - Auto flash leaves racers alone.
 - **12 Oct, diegetic pass:** the light stalk replaced the FLASH button, and the timer moved into the mirror.
-- **13 Oct, phone:** the light stalk was partly hidden behind the gear shifter. It now comes out further up the rim.
+- **13 Oct, phone:**
+  - The light stalk was partly hidden behind the gear shifter. It now comes out further up the rim.
+  - The NOS button became a NOS pedal on the gas pedal, with a gauge on the cluster.
 
 ## Open questions
 
 Waiting for the owner. Don't build these on a guess: ask.
 
 - What happens when you reach P1 / pass #1?
+- Should Auto gas's traction control keep working while the NOS pedal is pushed? Without it, nitro spins the tyres
+  in the middle gears: in `nitro_test`, 4th at about 170 km/h, nitro now adds 25 km/h in a second instead of 34.
 - Should autocruise ever drive in the oncoming lanes?
 - "ECU updates only works on 6th gear" was read as a bug report and fixed. Confirm it wasn't a request to restrict
   the ECU to 6th gear.

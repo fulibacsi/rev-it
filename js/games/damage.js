@@ -88,9 +88,9 @@ function renderDamage() {
   $('lamp-gear').style.fill = popped && performance.now() % 400 < 250 ? '#fb3' : '#333';
   $('heat').style.display = tuned() ? '' : 'none'; // the TEMP bar, with a tune
   const tank = nitroTank();
-  document.body.classList.toggle('has-nos', tank > 0); // the NOS button, draining as it burns
+  document.body.classList.toggle('has-nos', tank > 0); // the nitro pedal, and the cluster's gauge draining as it burns
   document.body.classList.toggle('nitro', nitro);
-  $('nos-fill').style.height = tank ? `${100 * progress.nitro / tank}%` : '0';
+  $('nos-fill').setAttribute('width', tank ? 64 * progress.nitro / tank : 0);
   $('heat-fill').setAttribute('width', 64 * heat);
   $('heat-fill').style.fill = heat >= HOT ? (performance.now() % 300 < 180 ? '#f33' : '#a11') : heat > 0.5 ? '#fb3' : '#5bf';
   if (d !== shownCracks) { shownCracks = d; $('cracks').innerHTML = cracks(d); }

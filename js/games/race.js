@@ -28,8 +28,8 @@ Object.assign(UPGRADES, { // the Racing tab, paid in race points
   ecuPower: { name: 'ECU: power', tab: 'racing', max: 4, base: 60, growth: 1.6, needs: ['reckless'],
               info: l => `+${8 * l}% torque on top` },
   nitro: { name: 'Nitro', tab: 'racing', max: 5, base: 100, growth: 1.5, needs: ['ecuPower'],
-           info: l => `${nitroTank(l)} s tank: +${Math.round((NITRO - 1) * 100)}% torque, heat in the red. Hold N or NOS; ` +
-             `refills cost ${NITRO_REFILL} m a second` },
+           info: l => `${nitroTank(l)} s tank: +${Math.round((NITRO - 1) * 100)}% torque, heat in the red. ` +
+             `The NOS pedal (or N) floors the gas; refills cost ${NITRO_REFILL} m a second` },
   gear7: { name: '7th gear', tab: 'racing', max: 1, base: 600, needs: ['nitro'], gate: () => lvl('gears') < 3 ? 'needs 6 gears' : true,
            info: () => 'a tall overdrive: hundreds more km/h, if nitro gets you there' },
   daredevil: { name: 'Daredevil', tab: 'racing', max: 1, base: 200, gate: () => everythingElse() || 'max everything else first',
