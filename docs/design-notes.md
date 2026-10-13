@@ -74,24 +74,26 @@ runs. A hidden race is the second act.
 ### Act 1: build the car
 
 - **Runs:** 20 s, plus 5 s per Time level (50 s at most).
-- **Car tab** (paid in metres; the price is `base × growth^level`, rounded to tens):
+- **The garage's pages:** **Workshop** (the car itself) and **Autopilot** (the robot driver), paid in metres; the
+  **Black market** (the illegal and forbidden, paid in race points) opens with the reveal. The price is
+  `base × growth^level`, rounded to tens of metres.
 
-  | Upgrade | Levels | Base | Growth | Notes |
-  |---|---|---|---|---|
-  | Power | 10 | 80 | 1.55 | +12% torque a level |
-  | Rev limit | 4 | 150 | 2 | 600 rpm a level, up to the factory redline |
-  | Gearbox | 3 | 250 | 2.5 | 3 to 6 gears |
-  | Tyres | 4 | 400 | 1.8 | grip |
-  | Time | 6 | 200 | 1.9 | +5 s a run |
-  | Steering | 3 | 300 | 2 | lane changes 40% quicker a level |
-  | Headlight flash | 10 | 300 | 1.25 | 1–10 flashes a run, refilled free; racers never yield |
-  | Auto flash | 1 | 2000 | | needs 5 flashes |
-  | Auto clutch | 1 | 700 | | centrifugal: can't stall or bog |
-  | Auto gas | 1 | 800 | | launch revs, traction control |
-  | Auto shift | 1 | 2500 | | needs Auto clutch |
-  | Lane assist | 1 | 1500 | | last-moment swerve |
-  | Autocruise | 1 | 6000 | | needs Lane assist, Auto gas, Auto shift |
-  | Engine swap | 2 | 4000 | 2.5 | Boxer → V8 → Turbo I6 |
+  | Upgrade | Page | Levels | Base | Growth | Notes |
+  |---|---|---|---|---|---|
+  | Power | Workshop | 10 | 80 | 1.55 | +12% torque a level |
+  | Rev limit | Workshop | 4 | 150 | 2 | 600 rpm a level, up to the factory redline |
+  | Gearbox | Workshop | 3 | 250 | 2.5 | 3 to 6 gears |
+  | Tyres | Workshop | 4 | 400 | 1.8 | grip |
+  | Time | Workshop | 6 | 200 | 1.9 | +5 s a run |
+  | Steering | Workshop | 3 | 300 | 2 | lane changes 40% quicker a level |
+  | Headlight flash | Workshop | 10 | 300 | 1.25 | 1–10 flashes a run, refilled free; racers never yield |
+  | Auto flash | Autopilot | 1 | 2000 | | needs 5 flashes |
+  | Auto clutch | Autopilot | 1 | 700 | | centrifugal: can't stall or bog |
+  | Auto gas | Autopilot | 1 | 800 | | launch revs, traction control |
+  | Auto shift | Autopilot | 1 | 2500 | | needs Auto clutch |
+  | Lane assist | Autopilot | 1 | 1500 | | last-moment swerve |
+  | Autocruise | Autopilot | 1 | 6000 | | needs Lane assist, Auto gas, Auto shift |
+  | Engine swap | Workshop | 2 | 4000 | 2.5 | Boxer → V8 → Turbo I6 |
 
 - **The aids** work the same pedals and lever as the player, so you can watch them.
   - Your own foot on the gas overrides them: no auto brake and no lift.
@@ -102,7 +104,7 @@ runs. A hidden race is the second act.
     - brakes behind traffic it can't pass;
     - overtakes a racer by moving over behind an ordinary car that Auto flash can move out of the way;
     - never drives in the oncoming lanes (Reckless auto-drive does).
-  - Reckless auto-drive (Racing tab) is autocruise without manners:
+  - Reckless auto-drive (Black market) is autocruise without manners:
     - boxed in on your side, it takes the near oncoming lane when nothing is coming for 6 s, or when whatever comes
       can be flashed away (Game of chicken and a flash left);
     - it goes home when something it can't flash away comes within 3.5 s, or when your side opens again. It cuts in
@@ -131,9 +133,9 @@ runs. A hidden race is the second act.
 - Racers can overtake you, and your result is your position when the clock runs out.
 - Racer pace: #100 cruises at 140 km/h, +2 km/h a place to #20 at 300, then +8 a place to #1 at 452. The top 20 need
   the reckless kit; #1 is beyond 6th gear's reach.
-- Grid: you start behind the field unless you buy grid slots. Slot N opens once you've finished a race ahead of
+- Grid: you start behind the field unless you buy grid slots (Bribe the starter). Slot N opens once you've finished a race ahead of
   racer N.
-- Rolling start: an upgrade (50 km/h in 1st, 90 in 2nd ... 250 in 6th). Without it, races start standing.
+- Rolling start: an upgrade, Jump the start (50 km/h in 1st, 90 in 2nd ... 250 in 6th). Without it, races start standing.
 
 **Scoring** (race points):
 - Each finishing position pays once, the first time you reach it: 1 for 100th, 2 for 99th ... 100 for 1st, 5,050 in
@@ -143,11 +145,11 @@ runs. A hidden race is the second act.
 - Payment goes by finishing position, never by places gained. An earlier "points per place gained" rule was farmable:
   starting at the back on purpose, or swapping places with a racer, paid extra.
 
-**Racing tab** (paid in race points, 5,536 in all):
+**Black market** (paid in race points, 5,536 in all):
 
 | Upgrade | Levels | Base | Growth | Notes |
 |---|---|---|---|---|
-| Grid | up to 100 | 1 | 1.035 | slot N needs a finish ahead of #N |
+| Bribe the starter (grid) | up to 100 | 1 | 1.035 | slot N needs a finish ahead of #N |
 | Reckless driving | 1 | 100 | | oncoming lanes; from now on collisions damage the car |
 | Game of chicken | 1 | 150 | | flashes work on oncoming cars: they swerve, room permitting; needs Headlight flash |
 | Reckless auto-drive | 1 | 300 | | autocruise in the oncoming lanes too, with chicken, the tune and nitro; needs Autocruise |
@@ -157,7 +159,7 @@ runs. A hidden race is the second act.
 | Nitro | 5 | 100 | 1.5 | tank of 2 s a level (to 10 s), +60% torque; needs ECU power |
 | 7th gear | 1 | 600 | | needs nitro and 6 gears |
 | Daredevil | 1 | 200 | | the oncoming lanes refill nitro, 0.5 s a second; needs everything else maxed |
-| Rolling start | 6 | 5 | 2.3 | each level needs the gear it starts in |
+| Jump the start (rolling start) | 6 | 5 | 2.3 | each level needs the gear it starts in |
 
 **Damage.** It starts with Reckless driving, and any collision causes it from then on. It is never cosmetic only.
 - **Rev limit:** −30 rpm per % of damage from the first hit (3,000 rpm lost at 100%), but never below idle + 1,500.
@@ -231,6 +233,9 @@ All dates are 2026.
     pedal's corner, as it seemed to hover.
   - Game of chicken (the owner's idea): a Racing upgrade that makes a flash work on oncoming traffic.
   - Reckless auto-drive (the owner's idea): autocruise that uses the oncoming lanes, chicken, the tune and nitro.
+  - The garage split into pages: Workshop, Autopilot and the Black market (the owner's picks of the proposed names),
+    with the illegal automation (Reckless auto-drive) on the Black market. Grid and Rolling start became Bribe the
+    starter and Jump the start. Time keeps its name: a fuel tank would have to burn more in a faster car.
 
 ## Open questions
 

@@ -127,7 +127,7 @@ function autoFlash() {
   if (c && c.v < speed - 2 && (c.z - odo) / (speed - c.v) < 4 && yields(c, 1 - lane)) flashLights();
 }
 
-// reckless auto-drive (Racing tab): autocruise without manners. Boxed in on your side it takes the near oncoming lane
+// reckless auto-drive (Black market): autocruise without manners. Boxed in on your side it takes the near oncoming lane
 // when nothing is coming for 6 s, or when whatever comes can be flashed out of the way (Game of chicken and a flash
 // left). It goes home when something it can't flash away comes within 3.5 s (cutting in beside a car only to escape a
 // head-on under 2 s away), or once your side is open again. It revs into the ECU tune while the engine is cool, and

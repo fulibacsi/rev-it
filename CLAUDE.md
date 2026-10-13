@@ -33,7 +33,7 @@ Design decisions, balance targets, the playtest history and the open questions a
   lever, wheel, light stalk, nitro) · `js/main.js` menu, cluster, head-up display, main loop. **The interface a game
   implements is documented at the top of `main.js`.**
 - `js/games/`: `levels.js` (adaptive levels for Rev and Speed signs), `rev.js`, `signs.js`, `distance.js` (garage,
-  upgrades, runs, save), `race.js` (the hidden race, Racing tab, scoring), `damage.js` (damage, heat, nitro),
+  upgrades, runs, save), `race.js` (the hidden race, the Black market's upgrades, scoring), `damage.js` (damage, heat, nitro),
   `aids.js` (Distance's driver aids: robot feet and hands working the same pedals and lever as the player).
 - Saves: `localStorage` keys `car-rev-settings` and `car-rev-incremental` (Distance progress). Keep these names so
   players keep their saves. Debug mode plays `car-rev-incremental-debug` and never writes the real save.

@@ -4,7 +4,7 @@
 
 // upgrade costs follow the usual incremental-game curve (Cookie Clicker, Hill Climb Racing): level n costs
 // base · growth^n. info(level) describes what the car has at that level; needs: upgrades it builds on.
-// tab: 'car' (paid in metres, the default) or 'racing' (paid in race points, race.js adds those); max can depend on
+// tab: the garage page it is on, see PAGES; max can depend on
 // progress (then locked says why there is no more yet); gate(level) can hold the next level back with a reason;
 // built: how many levels count towards the car being built (headStart in race.js), when not all of them.
 const UPGRADES = {
@@ -16,13 +16,13 @@ const UPGRADES = {
   steering: { name: 'Steering', max: 3, base: 300, growth: 2, info: l => l ? `lane changes ${40 * l}% quicker` : 'stock rack' },
   flash:  { name: 'Headlight flash', max: 10, base: 300, growth: 1.25, built: 1,
             info: l => `${l} flash${l === 1 ? '' : 'es'} a run. F or the stalk left of the wheel: the car ahead in your lane moves over (racers won't)` },
-  autoflash: { name: 'Auto flash', max: 1, base: 2000, needs: ['flash'], gate: () => lvl('flash') >= 5 || 'needs 5 flashes',
+  autoflash: { name: 'Auto flash', tab: 'autopilot', max: 1, base: 2000, needs: ['flash'], gate: () => lvl('flash') >= 5 || 'needs 5 flashes',
                info: () => 'flashes slower cars ahead for you, and changes lanes round racers instead' },
-  clutch: { name: 'Auto clutch', max: 1, base: 700, info: () => 'works the clutch: no stalls' },
-  gas:    { name: 'Auto gas', max: 1, base: 800, info: () => 'launch and traction control' },
-  shift:  { name: 'Auto shift', max: 1, base: 2500, needs: ['clutch'], info: () => 'changes gear at the limiter' },
-  steer:  { name: 'Lane assist', max: 1, base: 1500, info: () => 'swerves round a car you are about to hit' },
-  cruise: { name: 'Autocruise', max: 1, base: 6000, needs: ['steer', 'gas', 'shift'],
+  clutch: { name: 'Auto clutch', tab: 'autopilot', max: 1, base: 700, info: () => 'works the clutch: no stalls' },
+  gas:    { name: 'Auto gas', tab: 'autopilot', max: 1, base: 800, info: () => 'launch and traction control' },
+  shift:  { name: 'Auto shift', tab: 'autopilot', max: 1, base: 2500, needs: ['clutch'], info: () => 'changes gear at the limiter' },
+  steer:  { name: 'Lane assist', tab: 'autopilot', max: 1, base: 1500, info: () => 'swerves round a car you are about to hit' },
+  cruise: { name: 'Autocruise', tab: 'autopilot', max: 1, base: 6000, needs: ['steer', 'gas', 'shift'],
             info: () => 'drives the whole run: passes, keeps right, brakes when boxed in' },
   engine: { name: 'Engine swap', max: ENGINES.length - 1, base: 4000, growth: 2.5, info: l => ENGINES[l].name },
 };
@@ -78,12 +78,16 @@ function useDebugSave(on) { // switch saves; the first debug save starts as a co
 }
 const money = n => debugSave ? '∞' : fmt(n); // a debug wallet shows as bottomless
 
-const racing = u => u.tab === 'racing';
-const wallet = u => racing(u) ? 'points' : 'bank';       // which of progress's currencies it costs
-const price = (id, n) => fmt(n) + (racing(UPGRADES[id]) ? ' pts' : ' m');
+// the garage's pages: the car itself and the robot driver, paid in metres; the illegal and forbidden, paid in race
+// points, open once the race is revealed (race.js fills it)
+const PAGES = [['workshop', 'Workshop'], ['autopilot', 'Autopilot'], ['black', 'Black market']];
+const pageOf = u => u.tab ?? 'workshop';
+const inPoints = u => pageOf(u) === 'black';
+const wallet = u => inPoints(u) ? 'points' : 'bank';     // which of progress's currencies it costs
+const price = (id, n) => fmt(n) + (inPoints(UPGRADES[id]) ? ' pts' : ' m');
 const maxOf = u => typeof u.max === 'function' ? u.max() : u.max;
 function cost(id) {
-  const u = UPGRADES[id], step = racing(u) ? 1 : 10; // metres in round tens, points one by one
+  const u = UPGRADES[id], step = inPoints(u) ? 1 : 10; // metres in round tens, points one by one
   return Math.max(step, Math.round(u.base * (u.growth ?? 1) ** lvl(id) / step) * step);
 }
 function whyNot(id) { // reason an upgrade can't be bought now, or '' if it can
@@ -165,11 +169,11 @@ function roadMarks() {
 }
 
 // ---- garage ----
-let garageTab = 'car';
+let garageTab = 'workshop';
 function renderGarage(bought) {
-  if (!progress.racing) garageTab = 'car';
+  if (!progress.racing && garageTab === 'black') garageTab = 'workshop';
   $('bank').textContent = `${money(progress.bank)} m` + (progress.racing ? ` · ${money(progress.points)} pts` : '') + ' to spend';
-  const done = Object.keys(UPGRADES).every(id => racing(UPGRADES[id]) || whyNot(id) === 'max'), r = run.race;
+  const done = Object.keys(UPGRADES).every(id => inPoints(UPGRADES[id]) || whyNot(id) === 'max'), r = run.race;
   $('report').innerHTML = !progress.runs
     ? `You get ${runTime()} seconds. Drive as far as you can: every metre is money for upgrades.`
     : (r?.dnf ? `<b>DNF</b>: ${{ 'head-on': 'head-on with oncoming traffic', wrecked: 'the car is wrecked',
@@ -179,19 +183,19 @@ function renderGarage(bought) {
       `Last run <b>+${fmt(run.gain)} m</b>${run.newBest ? ' · <b>new best!</b>' : ''} · best ${fmt(progress.best)} m · ` +
       `${progress.runs} run${progress.runs > 1 ? 's' : ''} · ${runTime()} s a run` + (done ? ' · fully built' : '') +
       (run.refill ? ` · nitro refill −${fmt(run.refill)} m` : '') +
-      (run.revealed ? '<br><b>That quick car was racer #100. You are in a race: the Racing tab is open.</b>' : '');
-  $('tabs').innerHTML = progress.racing ? [['car', 'Car', `${money(progress.bank)} m`], ['racing', 'Racing', `${money(progress.points)} pts`]]
-    .map(([id, name, money]) => `<button data-tab="${id}"${id === garageTab ? ' class="on"' : ''}>${name} · ${money}</button>`).join('') : '';
-  $('engine-row').hidden = garageTab !== 'car';
+      (run.revealed ? '<br><b>That quick car was racer #100. You are in a race: the Black market is open.</b>' : '');
+  $('tabs').innerHTML = PAGES.filter(([id]) => id !== 'black' || progress.racing)
+    .map(([id, name]) => `<button data-tab="${id}"${id === garageTab ? ' class="on"' : ''}>${name}</button>`).join('');
+  $('engine-row').hidden = garageTab !== 'workshop';
   $('engine-row').innerHTML = ENGINES.map((e, i) => i <= lvl('engine')
     ? `<button data-engine="${i}"${i === progress.engine ? ' class="on"' : ''}>${e.name}</button>`
     : i === lvl('engine') + 1
       ? `<button data-buy="engine"${whyNot('engine') ? ' disabled' : ''}>${e.name} · ${fmt(cost('engine'))} m</button>`
       : `<button disabled>${e.name} · locked</button>`).join('');
-  const onTab = ([id, u]) => id !== 'engine' && (u.tab ?? 'car') === garageTab;
+  const onTab = ([id, u]) => id !== 'engine' && pageOf(u) === garageTab;
   const d = progress.damage;
   $('drive').textContent = wrecked() ? `LIMP ${LIMP} m ▶` : 'DRIVE ▶'; // a wreck can always limp: no dead end
-  const repairCard = garageTab === 'car' && d > 0 ? `<div class="card repair"><b>Repair</b><small>${Math.round(d)}% damage · ` +
+  const repairCard = garageTab === 'workshop' && d > 0 ? `<div class="card repair"><b>Repair</b><small>${Math.round(d)}% damage · ` +
     `rev limit −${fmt(revLoss())} rpm${progress.broken.length ? ` · broken: ${progress.broken.map(ordinal).join(', ')}` : ''}</small>` +
     `<button data-repair${progress.bank >= REPAIR ? '' : ' disabled'}>${progress.bank >= repairCost() ? 'Repair all' : 'Repair what I can'}` +
     ` · ${fmt(Math.min(repairCost(), Math.floor(progress.bank / REPAIR) * REPAIR))} m</button></div>` : '';
