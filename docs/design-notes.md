@@ -98,7 +98,9 @@ runs. A hidden race is the second act.
   | Engine swap | Workshop | 2 | 4000 | 2.5 | Boxer → V8 → Turbo I6 |
 
 - **The aids** work the same pedals and lever as the player, so you can watch them.
-  - Your own foot on the gas overrides them: no auto brake and no lift.
+  - They leave a control to you only while you touch it: your foot on the gas (no auto brake, no lift), on the
+    clutch or the brake, your hand on the wheel or the lever. The nitro pedal isn't the gas pedal: pushing it,
+    traction control and autocruise's braking carry on.
   - With an ECU tune they keep the engine on its factory map (the limiter at the factory redline), unless you push
     the gas or use nitro.
   - Autocruise:
@@ -113,7 +115,7 @@ runs. A hidden race is the second act.
       beside a car only to escape a head-on under 2 s away: a bump beats a DNF;
     - it revs into the ECU tune while the engine is cool: the factory map from heat 0.6, the tune again below 0.4;
     - it pushes the nitro pedal when a racer is within 500 m ahead, the tyres grip, it is in 2nd or higher and isn't
-      braking. Its foot on the nitro pedal, unlike yours, leaves the other aids on.
+      braking.
   - Auto flash only flashes a car that will move over, never a racer, and never plays chicken.
 
 **The hidden race.**
@@ -178,8 +180,8 @@ runs. A hidden race is the second act.
 - In the red it damages the engine, up to 2% a second.
 
 **Nitro** pushes the heat into the red, so it does direct damage, but the top places need it. Tanks are refilled
-before each run at 100 m per second of nitro. The NOS pedal counts as your own foot on the gas, so the aids step aside
-while it is pushed: no auto brake, and no traction control (the tyres can spin).
+before each run at 100 m per second of nitro. The NOS pedal floors the gas, but the aids stay on while it is pushed:
+Auto gas's traction control trims it, and autocruise still brakes.
 
 ### Balance targets and results
 
@@ -232,8 +234,6 @@ Max**, paid in parts. It is to the fleet what the Black market is to the Worksho
   you and the gang have to outgun it. Losing is a DNF, and the heat drops.
 
 **Also decided (13 Oct), to build:**
-- Every automation keeps working unless you are touching that control yourself. Pushing the nitro pedal no longer
-  switches the other aids off: traction control and autocruise's braking carry on.
 - The ECU tune works in every gear, with the aids driving too ("ECU only works in 6th gear" was a bug report).
 - Auto flash plays chicken once Game of chicken is bought. Reckless auto-drive uses everything you have, Auto flash
   included.

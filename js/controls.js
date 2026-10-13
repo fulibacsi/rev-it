@@ -69,8 +69,10 @@ function updatePedals(dt) {
   }
   if (nitroHeld || nitroByAid) PEDALS.gas.set(1); // the nitro pedal sits on the gas pedal: pushing it floors the gas
 }
-// your own foot on the gas (or on the nitro pedal): it overrides the aids
-const pushing = () => PEDALS.gas.hold !== null || PEDALS.gas.down || nitroHeld;
+// your own foot (a key, a finger or the mouse button) on a pedal: the aids leave that pedal to you, and only that one.
+// The nitro pedal floors the gas, but it isn't the gas pedal: traction control and autocruise's braking carry on
+const touching = id => PEDALS[id].hold !== null || PEDALS[id].down;
+const pushing = () => touching('gas');
 function holdPedal(id, down) { const p = PEDALS[id]; p.hold = down ? 1 : null; if (!down) p.back = p.release; }
 
 // ---- gear lever in an H gate: slide along the neutral rail, push up or down into a slot when lined up with it.
