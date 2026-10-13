@@ -16,6 +16,9 @@ const UPGRADES = {
   steering: { name: 'Steering', max: 3, base: 300, growth: 2, info: l => l ? `lane changes ${40 * l}% quicker` : 'stock rack' },
   flash:  { name: 'Headlight flash', max: 10, base: 300, growth: 1.25, built: 1,
             info: l => `${l} flash${l === 1 ? '' : 'es'} a run. F or the stalk left of the wheel: the car ahead in your lane moves over (racers won't)` },
+  flashRecharge: { name: 'Flash recharge', max: 5, base: 2500, growth: 1.5, built: 0, needs: ['flash'],
+                   gate: () => lvl('flash') >= UPGRADES.flash.max || `needs ${UPGRADES.flash.max} flashes`,
+                   info: l => l ? `a flash back every ${rechargeTime(l)} s` : 'a flash used is gone for the run' },
   autoflash: { name: 'Auto flash', tab: 'autopilot', max: 1, base: 2000, needs: ['flash'], gate: () => lvl('flash') >= 5 || 'needs 5 flashes',
                info: () => 'flashes slower cars ahead for you, and changes lanes round racers instead' },
   clutch: { name: 'Auto clutch', tab: 'autopilot', max: 1, base: 700, info: () => 'works the clutch: no stalls' },
@@ -32,6 +35,7 @@ const lvl = id => progress.levels[id] ?? 0;
 const limiter = (e, l = lvl('rev')) => e.stock.redline - 600 * (UPGRADES.rev.max - l); // fully upgraded: stock
 const tyreGrip = (l = lvl('tyres')) => 0.8 + 0.1 * l;
 const runTime = (l = lvl('time')) => 20 + 5 * l;
+const rechargeTime = (l = lvl('flashRecharge')) => 12 - 2 * l; // s for a used flash to come back
 const topGear = () => 3 + lvl('gears') + lvl('gear7');
 
 function applyUpgrades() { // the garage's work on the engines and the car, and the damage the car has taken
@@ -122,7 +126,7 @@ const run = { phase: 'garage', count: 0, left: 0, best: progress.best, gain: 0, 
 function startRun() { // back to the start line, engine running, in neutral, held on the brake
   Object.assign(run, { phase: 'starting', count: COUNTDOWN, left: runTime(), best: progress.best, gain: 0, newBest: false,
                        slot: progress.racing ? startSlot() : null, race: null, revealed: false, limp: wrecked(),
-                       flashes: lvl('flash') });
+                       flashes: lvl('flash'), recharge: 0 });
   resetScene();
   brakePedal = 1;
   coolDown();
@@ -149,8 +153,15 @@ function updateRun(dt) {
   else if (run.phase === 'run' && (run.left -= dt) <= 0) { run.left = 0; finishRun(); }
   else if (run.phase === 'finish' && (run.count -= dt) <= 0) run.phase = 'garage';
   if (run.phase === 'run' && raceTick()) run.revealed = true;
+  if (run.phase === 'run') rechargeFlash(dt);
   if (run.phase === 'run' && damageOn()) damageTick(dt);
   if (run.phase === 'run' && run.limp && odo >= LIMP) finishRun('limped'); // as far as a wreck gets
+}
+
+// flash recharge: a used flash comes back after a while, up to the run's full count
+function rechargeFlash(dt) {
+  if (!lvl('flashRecharge') || run.flashes >= lvl('flash')) { run.recharge = 0; return; }
+  if ((run.recharge += dt) >= rechargeTime()) { run.recharge = 0; run.flashes++; }
 }
 
 // a collision (once you drive recklessly): damage; a head-on, or the damage that wrecks the car, ends the run
@@ -274,6 +285,7 @@ function renderRun() {
   document.body.classList.toggle('has-flash', lvl('flash') > 0 && !progress.off.flash);
   $('hud-flashes').textContent = run.phase === 'garage' ? lvl('flash') : run.flashes;
   $('hud-beam').classList.toggle('empty', run.phase !== 'garage' && !run.flashes);
+  $('hud-beam').style.setProperty('--charge', run.phase === 'run' ? run.recharge / rechargeTime() : 0); // the refill
 }
 
 function gaps() { // the racers just ahead and just behind you

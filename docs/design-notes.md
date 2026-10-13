@@ -62,7 +62,9 @@ machine or session. Keep it current: update a section when a decision changes, a
     hid it.
 - The head-up display is see-through (its readouts at 0.65), so the traffic behind it shows; its messages (GO!,
   CRASH) come at full strength. It stays where it is. (Claude's call: 0.65 over 0.92, from screenshots over traffic.)
-- The flashes left show on the head-up display as the blue high-beam telltale and a count.
+- The flashes left show on the head-up display as the blue high-beam telltale and a count. With Flash recharge a
+  line fills under it while a used flash comes back (up to the run's full count); it shows in full even when the
+  telltale is dimmed for none left. (Claude's call: 10, 8, 6, 4, 2 s over five levels, 2,500 m and up.)
 - The run's time left is a bar draining across the widened rear-view mirror. It turns red and blinks under 5 s.
 - Nitro is a smaller red NOS pedal bolted over the gas pedal's top right corner, like a side pedal (the owner's
   design). Pushing it floors the gas, and N does the same. The tank shows as a NOS bar under TEMP on the cluster. It
@@ -91,6 +93,7 @@ runs. A hidden race is the second act.
   | Time | Workshop | 6 | 200 | 1.9 | +5 s a run |
   | Steering | Workshop | 3 | 300 | 2 | lane changes 40% quicker a level |
   | Headlight flash | Workshop | 10 | 300 | 1.25 | 1–10 flashes a run, refilled free; racers never yield |
+  | Flash recharge | Workshop | 5 | 2500 | 1.5 | a used flash back every 10 s, down to 2 s; needs 10 flashes |
   | Auto flash | Autopilot | 1 | 2000 | | needs 5 flashes |
   | Auto clutch | Autopilot | 1 | 700 | | centrifugal: can't stall or bog |
   | Auto gas | Autopilot | 1 | 800 | | launch revs, traction control |
@@ -123,7 +126,8 @@ runs. A hidden race is the second act.
 - Traffic includes 100 numbered racers. Before the reveal only #100 is on the road: a white car with red stripes,
   some way ahead.
 - Its head start shrinks as the car gets built: `HEAD_START` in `race.js` holds metres ahead against the share of car
-  levels bought. Only Headlight flash's first level counts toward that share (`built: 1`).
+  levels bought. Only Headlight flash's first level counts toward that share (`built: 1`), and none of Flash
+  recharge's (`built: 0`).
 - Getting past #100 reveals the race ("IT'S A RACE!"), with numbers on every racer.
 - **Target:** a perfect player first passes #100 around run 20 (about 15 min of play), barely, in a run's last
   seconds, after some near misses.
@@ -237,8 +241,6 @@ Max**, paid in parts. It is to the fleet what the Black market is to the Worksho
 **Also decided (13 Oct), to build:**
 - Auto flash plays chicken once Game of chicken is bought. Reckless auto-drive uses everything you have, Auto flash
   included.
-- **Flash recharge,** a new upgrade after Headlight flash: flashes come back over time, up to one every 2 s. The number
-  of flashes stays a separate upgrade.
 - Autocruise aims for top speed: it brakes a lot at 300+ km/h when both lanes are blocked.
 - Dropped: reverse gear and a handbrake (we go fast and forward; there is no room left on the dash). Kept: the V8
   creeping off in 1st without gas.
