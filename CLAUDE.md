@@ -15,6 +15,9 @@ Design decisions, balance targets, the playtest history and the open questions a
 - **Branch names** describe the change, one branch per change: `feature/<change>` for features, `fix/<change>` for
   bug fixes (`feature/nos-pedal`, `fix/stalk-behind-shifter`). In a cloud session this replaces the branch name the
   session was given: create the named branch, and work and push there.
+- **Commits credit you both:** the owner as author, as on their own commits
+  (`git commit --author "fulibacsi <fulibacsi@gmail.com>"`), and Claude as co-author in a `Co-Authored-By:` trailer.
+  Leave the committer as git has it: a cloud session signs commits for that identity.
 - The owner designs the game. Ideas they throw out are proposals to discuss, not orders. When feedback can be read
   two ways that lead to different work, say which reading you took, or ask.
 - They playtest on an iPhone 14 Pro held sideways (Safari, added to the home screen). Phone feel matters most.
