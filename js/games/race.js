@@ -44,12 +44,15 @@ Object.assign(UPGRADES, { // the Black market (distance.js PAGES), paid in race 
              info: l => l ? `${ROLLING[l - 1][1]} km/h in ${ordinal(ROLLING[l - 1][0])}` : 'standing start' },
 });
 
-const everythingElse = () => Object.keys(UPGRADES).every(id => id === 'daredevil' || id === 'grid' || lvl(id) >= maxOf(UPGRADES[id]));
+// the car and the Black market maxed, but for the grid and Daredevil itself (the Fleet and later pages don't count)
+const everythingElse = () => Object.entries(UPGRADES).every(([id, u]) => id === 'daredevil' || id === 'grid' ||
+  !['bank', 'points'].includes(wallet(u)) || lvl(id) >= maxOf(u));
 const startSlot = () => FIELD + 1 - lvl('grid'); // the position you start in; 101 is behind #100
 
 function racer(n, z) {
-  return { z, dir: 1, lane: n % 2, x: MY_LANES[n % 2], v: 0, want: pace(n), racer: n, look: racerSprite(n, progress.racing),
-           d: NaN, hit: -Infinity };
+  const fleet = inFleet(n); // fleet.js
+  return { z, dir: 1, lane: n % 2, x: MY_LANES[n % 2], v: 0, want: pace(n), racer: n, fleet,
+           look: racerSprite(n, progress.racing, fleet), d: NaN, hit: -Infinity };
 }
 // before the reveal #100 is one quick car up the road. Its head start shrinks as the car gets built, so it can only be
 // caught once the car is nearly done (around run 20 for a perfect player, just before the bell): [share of the car
@@ -73,10 +76,11 @@ function raceField() {
   return cars;
 }
 const racers = () => traffic.filter(c => c.racer);
+const rivals = () => racers().filter(c => !c.fleet); // your fleet races for you (fleet.js)
 const ahead = c => c.z + CAR_LEN / 2 > odo - (MY_REAR - MY_FRONT) / 2; // its middle is past yours
-const position = () => { // racers not on the road (before the reveal: all but #100) are the faster ones, ahead
-  const field = racers();
-  return 1 + FIELD - field.length + field.filter(ahead).length;
+const position = () => { // racers not on the road (before the reveal: all but #100) are the faster ones, ahead; your
+  const field = rivals();  // fleet doesn't count
+  return 1 + FIELD - fleetSize() - field.length + field.filter(ahead).length;
 };
 
 // on the grid until GO: the racers wait in their slots
@@ -112,10 +116,10 @@ function raceFinish(dnf) {
   return { start, p, points: finish + fresh, finish, fresh };
 }
 
-// the racers either side of you, for the head-up display
+// the rivals either side of you, for the head-up display
 function nearestRacers() {
   let front = null, back = null;
-  for (const c of racers()) {
+  for (const c of rivals()) {
     if (ahead(c)) { if (!front || c.z < front.z) front = c; } else if (!back || c.z > back.z) back = c;
   }
   return { front, back };

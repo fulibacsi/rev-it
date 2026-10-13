@@ -91,11 +91,11 @@ function carSprite(color, front, beams) { // rear view (same direction) or front
 }
 const CARS = CAR_COLORS.map(c => ({ rear: carSprite(c, false), front: carSprite(c, true), beams: carSprite(c, true, true) }));
 const RACERS = new Map(); // racers' rear views by number: a racing stripe, and the number once the race is revealed
-function racerSprite(n, numbered) {
-  const key = numbered ? n : 0;
+function racerSprite(n, numbered, team) { // team: one of your fleet, black with gold stripes
+  const key = numbered ? (team ? -n : n) : 0;
   if (!RACERS.has(key)) RACERS.set(key, sprite(180, 140, (g, w, h) => {
-    g.drawImage(carSprite('#f4f4f4', false), 0, 0);
-    g.fillStyle = '#c62828'; g.fillRect(w * 0.38, h * 0.06, w * 0.1, h * 0.78); g.fillRect(w * 0.52, h * 0.06, w * 0.1, h * 0.78);
+    g.drawImage(carSprite(team ? '#1a1a20' : '#f4f4f4', false), 0, 0);
+    g.fillStyle = team ? '#ec4' : '#c62828'; g.fillRect(w * 0.38, h * 0.06, w * 0.1, h * 0.78); g.fillRect(w * 0.52, h * 0.06, w * 0.1, h * 0.78);
     if (!numbered) return;
     g.fillStyle = '#fff'; g.beginPath(); g.arc(w / 2, h * 0.62, h * 0.2, 0, 2 * Math.PI); g.fill(); // number roundel
     g.strokeStyle = '#111'; g.lineWidth = 3; g.stroke();
@@ -189,6 +189,7 @@ function driveCar(c, dt) { // follow at a safe distance, or pull out and pass
   const lead = leader(c), gap = lead ? lead.z - c.z - CAR_LEN : Infinity, safe = 8 + 1.2 * c.v;
   let aim = c.want;
   c.cool = Math.max(0, (c.cool ?? 0) - dt);
+  if (c.fleet) teamwork(c); // one of your fleet (fleet.js)
   if (lead && gap < 2 * safe && lead.v < c.want) {
     const other = 1 - c.lane;
     if (!c.cool && Math.abs(c.x - MY_LANES[c.lane]) < 0.2 && roomAt(c, MY_LANES[other], 20, 30)) { // settled first
