@@ -31,11 +31,14 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 [data-hud="run"] #run-info { display: inline; }
 #run-dist { margin-top: 8px; font-size: 30px; font-weight: 600; }
 #run-info { font-size: 14px; }
-#hud-beam { display: none; align-items: center; gap: 3px; align-self: center; color: #7ab8ff; text-shadow: 0 0 8px #48f8; }
+#hud-beam { display: none; position: relative; align-items: center; gap: 3px; align-self: center; color: #7ab8ff;
+            text-shadow: 0 0 8px #48f8; }
+#hud-beam::after { content: ''; position: absolute; left: 0; bottom: -3px; height: 2px; border-radius: 1px; /* Flash recharge */
+                   width: calc(var(--charge, 0) * 100%); background: currentColor; box-shadow: 0 0 4px #48f8; }
 #hud-beam svg { width: 26px; height: 18px; fill: currentColor; stroke: currentColor; filter: drop-shadow(0 0 4px #48f8); }
 #hud-beam b { font-size: 24px; font-weight: 600; }
 .has-flash #hud-beam { display: inline-flex; }
-#hud-beam.empty { opacity: 0.3; }
+#hud-beam.empty > * { opacity: 0.3; } /* none left: dimmed, though the refill shows in full */
 .flashing #hud-beam { color: #d8ebff; } /* the high-beam telltale lights up */
 /* the run's time left, a bar draining across the rear-view mirror's glass (the frame's mirror: x 570-1030, y 42-88
    of 1600 x 900, stretched to the window like the frame) */

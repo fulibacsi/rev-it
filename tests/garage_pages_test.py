@@ -2,7 +2,7 @@
 illegal and forbidden) in race points, only once the race is revealed, and not a word about it before."""
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
-WORKSHOP = ["Power", "Rev limit", "Gearbox", "Tyres", "Time", "Steering", "Headlight flash"]
+WORKSHOP = ["Power", "Rev limit", "Gearbox", "Tyres", "Time", "Steering", "Headlight flash", "Flash recharge"]
 AUTOPILOT = ["Auto flash", "Auto clutch", "Auto gas", "Auto shift", "Lane assist", "Autocruise"]
 BLACK = ["Bribe the starter", "Reckless driving", "Game of chicken", "Reckless auto-drive", "Cooling", "ECU: rev limit",
          "ECU: power", "Nitro", "7th gear", "Daredevil", "Jump the start"]
