@@ -26,6 +26,8 @@ machine or session. Keep it current: update a section when a decision changes, a
 - **Placement:** shifter on the left, pedals on the right. Everything keeps clear of the phone's swipe zones
   (`--edge-l/r/b`: the safe area plus a gap), because a swipe up from the home bar once switched apps mid-run.
 - **Full screen:** add the page to the iPhone home screen.
+- **The notch** pushes everything on the left inwards. The ignition key then shrinks into the room left of the
+  cluster (at least 48 px), and the garage's title moves clear of the menu button.
 - **Leaving the page:** hiding it pauses into the menu, and RESUME restarts the audio that iOS suspends.
 
 **Pedals.**
@@ -239,7 +241,6 @@ Max**, paid in parts. It is to the fleet what the Black market is to the Worksho
   of flashes stays a separate upgrade.
 - The head-up display gets a bit more transparent, so traffic shows through; it stays where it is.
 - Autocruise aims for top speed: it brakes a lot at 300+ km/h when both lanes are blocked.
-- Bugs: on the iPhone, the ignition key overlaps the rev counter and the menu button covers the G of GARAGE.
 - Dropped: reverse gear and a handbrake (we go fast and forward; there is no room left on the dash). Kept: the V8
   creeping off in 1st without gas.
 - Balancing waits until everything is built and the bugs are fixed. Then the prices come from simulations that follow
