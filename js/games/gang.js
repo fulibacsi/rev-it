@@ -50,6 +50,7 @@ function fireGuns(dt) {
   if (!lvl('guns') || !firing || reload) return;
   reload = 0.25;
   beep(70, 0.04);
+  raiseHeat(WANTED.shot);
   const hit = target?.seen && target.z - odo < RANGE ? target : null;
   tracers.push([null, hit, performance.now()]);
   if (hit) hurtCar(hit, GUN * lvl('guns'));
@@ -66,8 +67,9 @@ function hurtCar(c, hp, gang) {
   c.hp = (c.hp ?? health(c)) - hp;
   if (c.hp <= 0) total(c, gang);
 }
-function total(c, gang) { // the parts are yours, whoever did it
+function total(c, gang) { // the parts are yours, whoever did it; the heat too (police.js)
   const parts = c.racer ? PARTS.racer : PARTS.car;
+  raiseHeat(gang ? WANTED.gang : c.police ? WANTED.police : c.racer ? WANTED.racer : WANTED.car);
   Object.assign(c, { wreck: true, hp: 0 });
   progress.totals++;
   progress.parts += parts;

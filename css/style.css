@@ -51,6 +51,11 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
               font: 600 clamp(10px, 2.8vh, 20px) system-ui, sans-serif; text-shadow: 0 0 3px #000, 0 0 6px #000; }
 .low #timer-fill { background: linear-gradient(#ff8a7a, #d33); box-shadow: 0 0 10px #f448; animation: blink 0.5s steps(2) infinite; }
 @keyframes blink { 50% { opacity: 0.45; } }
+/* the police scanner, bolted to the right A-pillar opposite the sonar (from Mad Max on, only on the road) */
+#scanner { display: none; position: fixed; right: 5vw; top: 96px; width: 120px; pointer-events: none; }
+.has-heat #scanner { display: block; }
+.garage #scanner { display: none; }
+
 /* the gang's AR layer on the windscreen: a reticle round the target car, its health above it */
 #ar { display: none; position: fixed; pointer-events: none; --ar: #ff5a3c; filter: drop-shadow(0 0 3px #f40a); }
 .ar-on #ar { display: block; }
@@ -227,6 +232,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 .touch .card small { min-height: 0; } /* phones: tighter cards, so more fit without scrolling */
 .touch #menu-button { left: var(--edge-l); top: max(8px, env(safe-area-inset-top)); }
 .touch #sonar { left: calc(var(--edge-l) - 14px); top: calc(max(8px, env(safe-area-inset-top)) + 42px); width: 88px; }
+.touch #scanner { right: calc(var(--edge-r) - 24px); top: calc(max(8px, env(safe-area-inset-top)) + 42px); width: 88px; }
 .touch #menu-panel { width: 94vw; }
 @media (max-height: 560px) { .touch { --hud-scale: 0.62; } }
 #rotate { display: none; position: fixed; inset: 0; z-index: 20; background: #000; color: #ccc; font-size: 20px;

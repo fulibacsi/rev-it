@@ -32,6 +32,15 @@
   <path d="M0,650 Q240,578 800,572 Q1360,578 1600,650" fill="none" stroke="#33333d" stroke-width="3"/>
 </svg>
 <div id="timer"><i id="timer-fill"></i><b id="timer-left"></b></div> <!-- in the mirror's glass: the run's time left -->
+<svg id="scanner" viewBox="0 0 124 92"> <!-- bolted to the right A-pillar: the police scanner, your heat (police.js) -->
+  <path d="M108,22 H124 M108,62 H124" stroke="#24242c" stroke-width="7"/>
+  <rect x="4" y="3" width="108" height="86" rx="10" fill="#15151b" stroke="#2c2c36" stroke-width="3"/>
+  <rect x="12" y="11" width="78" height="24" rx="3" fill="#14200f"/>
+  <text id="scanner-lcd" x="51" y="28" font-size="12" fill="#8f8" text-anchor="middle" font-family="monospace">HEAT 0%</text>
+  <circle id="scanner-light" cx="100" cy="23" r="6" fill="#333"/>
+  <g id="scanner-leds"><rect x="14" y="44" width="7" height="18" rx="1.5" fill="#2a2a30"/><rect x="23" y="44" width="7" height="18" rx="1.5" fill="#2a2a30"/><rect x="32" y="44" width="7" height="18" rx="1.5" fill="#2a2a30"/><rect x="41" y="44" width="7" height="18" rx="1.5" fill="#2a2a30"/><rect x="50" y="44" width="7" height="18" rx="1.5" fill="#2a2a30"/><rect x="59" y="44" width="7" height="18" rx="1.5" fill="#2a2a30"/><rect x="68" y="44" width="7" height="18" rx="1.5" fill="#2a2a30"/><rect x="77" y="44" width="7" height="18" rx="1.5" fill="#2a2a30"/><rect x="86" y="44" width="7" height="18" rx="1.5" fill="#2a2a30"/><rect x="95" y="44" width="7" height="18" rx="1.5" fill="#2a2a30"/></g>
+  <text x="58" y="82" font-size="8" fill="#778" text-anchor="middle" letter-spacing="2">SCANNER</text>
+</svg>
 <!-- the gang's AR layer on the windscreen: a reticle and a health bar on the target car (gang.js) -->
 <div id="ar"><i></i><i></i><i></i><i></i><b id="ar-bar"><i></i></b><span id="ar-label"></span></div>
 <svg id="sonar" viewBox="0 0 124 92"> <!-- bolted to the A-pillar: your fleet cars behind you (fleet.js) -->
@@ -197,6 +206,7 @@
 <script src="js/games/race.js"></script>
 <script src="js/games/fleet.js"></script>
 <script src="js/games/gang.js"></script>
+<script src="js/games/police.js"></script>
 <script src="js/games/damage.js"></script>
 <script src="js/games/aids.js"></script>
 <script src="js/main.js"></script>
