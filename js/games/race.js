@@ -17,7 +17,8 @@ const NITRO_REFILL = 100; // metres per second of nitro, refilled before each ru
 
 Object.assign(UPGRADES, { // the Black market (distance.js PAGES), paid in race points
   // prices: everything here costs about the 5,050 points the positions pay once, plus places gained along the way
-  grid: { name: 'Bribe the starter', tab: 'black', base: 1, growth: 1.035, max: () => FIELD + 1 - progress.finish,
+  grid: { name: 'Bribe the starter', tab: 'black', base: 1, growth: 1.035, // debug mode: every slot, to test what comes after
+          max: () => debugSave ? FIELD : FIELD + 1 - progress.finish,
           info: l => l ? `start P${FIELD + 1 - l}` : 'start at the back', locked: 'finish higher to unlock' },
   reckless: { name: 'Reckless driving', tab: 'black', max: 1, base: 100,
               info: () => 'the oncoming lanes are yours too. From now on, collisions damage the car' },
