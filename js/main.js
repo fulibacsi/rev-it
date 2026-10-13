@@ -241,6 +241,23 @@ function tick(now) {
 
   game.render?.();
 }
+// debug mode: tap the menu's title 5 times. Distance then plays a save of its own with unlimited metres and points
+let titleTaps = [];
+function applyDebug() { useDebugSave(!!settings.debug); document.body.classList.toggle('debug', !!settings.debug); }
+document.querySelector('#menu h1').onclick = () => {
+  const now = performance.now();
+  titleTaps = [...titleTaps.filter(t => now - t < 3000), now];
+  if (titleTaps.length < 5) return;
+  titleTaps = [];
+  if (!confirm(settings.debug ? 'Leave debug mode? Your own Distance game comes back as you left it.'
+    : 'Debug mode: Distance plays a separate save with unlimited metres and points. Your own game is kept as it is.')) return;
+  settings.debug = !settings.debug;
+  saveSettings();
+  applyDebug();
+  if (game === DISTANCE && playing) play(DISTANCE); else renderMenu();
+};
+
+if (settings.debug) applyDebug();
 applyLayout();
 refreshCar();
 openMenu();

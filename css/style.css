@@ -63,6 +63,8 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
               background: #0b0d16f2; border: 1px solid #2c3140; color: #bbb; font-size: 13px; }
 #menu h1 { margin: 0; font-size: 30px; letter-spacing: 6px; color: #eee; }
 #menu h1 span { color: var(--accent); }
+.debug #menu h1::after, .debug #garage header b::after { content: 'DEBUG'; margin-left: 10px; padding: 1px 6px; border-radius: 4px;
+  font-size: 11px; letter-spacing: 1px; vertical-align: middle; background: #c33; color: #fff; } /* debug mode, main.js */
 #menu p { margin: 2px 0 12px; color: #9ab; }
 #menu h2 { margin: 14px 0 6px; font-size: 11px; letter-spacing: 2px; color: #778; font-weight: 600; }
 #menu button { background: #12141e; color: #ccc; border: 1px solid #2c3140; border-radius: 8px; cursor: pointer; font: inherit; }
