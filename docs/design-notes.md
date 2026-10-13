@@ -120,7 +120,10 @@ runs. A hidden race is the second act.
       beside a car only to escape a head-on under 2 s away: a bump beats a DNF;
     - it pushes the nitro pedal when a racer is within 500 m ahead, the tyres grip, it is in 2nd or higher and isn't
       braking.
-  - Auto flash only flashes a car that will move over, never a racer, and never plays chicken.
+  - Auto flash only flashes a car that will move over, never a racer. With Game of chicken it plays chicken too: in
+    an oncoming lane it flashes the car coming at you once a flash would make it swerve (under 4.5 s away). Reckless
+    auto-drive plays chicken with or without it, and Auto flash works alongside it when it is on. (Claude's call:
+    "uses everything, even Auto flash" read as: everything you own and have switched on; the switch is still yours.)
 
 **The hidden race.**
 - Traffic includes 100 numbered racers. Before the reveal only #100 is on the road: a white car with red stripes,
@@ -239,8 +242,6 @@ Max**, paid in parts. It is to the fleet what the Black market is to the Worksho
   you and the gang have to outgun it. Losing is a DNF, and the heat drops.
 
 **Also decided (13 Oct), to build:**
-- Auto flash plays chicken once Game of chicken is bought. Reckless auto-drive uses everything you have, Auto flash
-  included.
 - Autocruise aims for top speed: it brakes a lot at 300+ km/h when both lanes are blocked.
 - Dropped: reverse gear and a handbrake (we go fast and forward; there is no room left on the dash). Kept: the V8
   creeping off in 1st without gas.
