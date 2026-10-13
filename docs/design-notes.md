@@ -306,6 +306,7 @@ lamp. It shows from Mad Max on, only on the road; the garage's report gives it t
   - `act2.py [races] [seed]`: races from the reveal to P1, the bot driving like Reckless auto-drive (`aids.js`). The
     traffic seed alone moves the result by up to 7 races, so compare a few seeds;
   - `act3.py [races] [seed] [order|cheapest]`: races from the first win to 51 fleet cars, buying the Fleet's upgrades;
+  - `cruise.py [runs] [plain|reckless]`: autocruise at speed through traffic: metres a run, time on the brake, crashes;
   - `race_test.py` and `race_seq.py`: grid slots and finishing places;
   - `progress.py` and `balance.py`: whole progressions played by a bot;
   - `accel.py`: stock acceleration;
@@ -326,7 +327,17 @@ upgrades and the guns (see Act 4). The gang uses whatever offensive upgrades it 
 - **The final boss,** the tank: built (see Act 4).
 
 **Also decided (13 Oct), to build:**
-- Autocruise aims for top speed: it brakes a lot at 300+ km/h when both lanes are blocked.
+- Autocruise aims for top speed: it brakes a lot at 300+ km/h when both lanes are blocked. **Looked into, not changed
+  yet** (14 Oct, `cruise.py`, 24 traffic seeds each, the car act 2 ends with):
+  - It spends 28–30% of a run on the brake, plain or reckless. At speed it starts braking for a car 300+ m ahead in
+    its lane because the other lane has a slower car nearer; it never plans to pass that one and move over before
+    reaching its own. The following itself is not the problem (gentler following changed nothing).
+  - Weaving instead of braking (move over once past the nearer car, if that lane is clearer beyond): 2,481 → 2,605 m a
+    run plain, 2,577 → 2,753 reckless (+5–7%, about one standard error each), but crashes up from 32 → 44 and
+    36 → 48. The simulations don't charge crash damage; play does.
+  - The same weave only when full braking could still stop you behind your own car: crashes as before, and no
+    measurable gain (2,491 and 2,654 m).
+  - Not kept: not proven. The owner's call whether the faster, crashier weave is worth it.
 - Dropped: reverse gear and a handbrake (we go fast and forward; there is no room left on the dash). Kept: the V8
   creeping off in 1st without gas.
 - Balancing waits until everything is built and the bugs are fixed. Then the prices come from simulations that follow
