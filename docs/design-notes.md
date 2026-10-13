@@ -203,11 +203,24 @@ racers you beat are open to offers". It is a garage page paid in **miles**.
     first 51. #1 won't sell.
   - Your position counts the rivals only, so a fleet car ahead of you doesn't cost you a place; the head-up display's
     gaps are to rivals too.
-  - Claude's calls: the order (the slowest first, so a fleet car is one you have already beaten) and the prices, a first
-    guess from a paper model: with Fleet dues (to come) the 51st car about 26 races after the first win.
+  - Claude's calls: the order (the slowest first, so a fleet car is one you have already beaten) and the prices (first
+    guesses; see the simulation below).
 - **In a race** a fleet car gives way when you come up behind it in its lane (from 250 m, briskly, as for a flash). It
   blocks a rival closing on it from behind: when one within 60 m heads for its other lane, it moves across in front of
   it. It waits 2 s between moves and a racer 5 s, so a blocked rival rarely gets past. It never moves into your path.
+- **Fleet upgrades** are fleet-wide, paid in miles (Claude's calls, first-guess prices):
+
+  | Upgrade | Levels | Base | Growth | Notes |
+  |---|---|---|---|---|
+  | Pay off a racer | up to 99 | 1 | 1.06 | the slowest first; #1 won't sell |
+  | Fleet dues | 5 | 5 | 2 | each fleet car pays you 10% a level of the metres it drove, at the finish |
+  | Fleet tuning | 5 | 3 | 2 | fleet cars 5% quicker a level |
+  | Fleet flash | 1 | 15 | | a fleet car flashes a slower ordinary car up to 100 m ahead of it out of your lane (every 3 s at most; none of your flashes) |
+
+  Dues are the act's income: a race nets you only about 1 mile after the nitro refill and repairs, while a fleet car
+  drives about 2.5 km a race. They pay metres, into the bank, so the Exchange stays the one way to miles.
+- **Simulated** (`act3.py`, seed 11, from P1 with act 2's car and 57k m): 51 fleet cars after 26 races buying dues
+  first, 71 buying the cheapest first (dues came only at race 46).
 
 ### Balance targets and results
 
@@ -222,6 +235,7 @@ racers you beat are open to offers". It is a garage page paid in **miles**.
   - `act1.py [cheapest|value] [head-start curve]`: when #100 is first passed;
   - `act2.py [races] [seed]`: races from the reveal to P1, the bot driving like Reckless auto-drive (`aids.js`). The
     traffic seed alone moves the result by up to 7 races, so compare a few seeds;
+  - `act3.py [races] [seed] [order|cheapest]`: races from the first win to 51 fleet cars, buying the Fleet's upgrades;
   - `race_test.py` and `race_seq.py`: grid slots and finishing places;
   - `progress.py` and `balance.py`: whole progressions played by a bot;
   - `accel.py`: stock acceleration;
@@ -234,9 +248,7 @@ order of work is in [phase-3-build-plan.md](phase-3-build-plan.md).
 
 **The fleet** unlocks once you reach P1: a garage page, **Fleet**, paid in miles (built: see Act 3). No
 frequent-driver tiers.
-- **Fleet cars** (built: see Act 3). **In a race** they use their upgrades for you (a flash to move traffic out of
-  your way, for one).
-- **Upgrades** are fleet-wide, not per car.
+- **Fleet cars** and their upgrades: built, see Act 3.
 - **Sonar:** the mirror is the timer, so there is no rear view. A mechanical device fixed to the A-pillar, in the top
   left corner of the windscreen, shows where your fleet cars are behind you.
 
@@ -264,8 +276,8 @@ Max**, paid in parts. It is to the fleet what the Black market is to the Worksho
   incremental-game practice. The Rev curve is right; Speed signs is too easy, but leave it for now.
 
 **Open, for Claude to decide while building:** the tank or a more fitting opponent; what follows beating it (an
-ending, then play on); how the sonar and the scanner look; the fleet's upgrades; the miles rate, car health, parts per
-car and heat rates (first guesses, tuned in the balancing pass).
+ending, then play on); how the sonar and the scanner look; car health, parts per car and heat rates (first guesses,
+tuned in the balancing pass).
 
 ## Playtest log
 
