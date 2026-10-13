@@ -123,9 +123,11 @@ function autocruise() {
 }
 
 // auto flash: flashes the car ahead in your lane when it is slower than you, under 4 s away and would move over: an
-// ordinary car with room in your other lane. Never a racer, so no flash is wasted (autocruise overtakes those)
+// ordinary car with room in your other lane. Never a racer, so no flash is wasted (autocruise overtakes those). With
+// Game of chicken it plays in the oncoming lanes too: the car coming at you, once a flash would make it swerve
 function autoFlash() {
-  if (lane > 1 || !run.flashes) return;
+  if (!run.flashes) return;
+  if (lane > 1) { if (chicken && facing()) flashLights(); return; } // over there only a game of chicken moves them
   const c = nextCar(carX);
   if (c && c.v < speed - 2 && (c.z - odo) / (speed - c.v) < 4 && yields(c, 1 - lane)) flashLights();
 }
@@ -136,6 +138,8 @@ function autoFlash() {
 // head-on under 2 s away), or once your side is open again. It pushes the nitro pedal when a racer is close ahead, the
 // tyres grip and it isn't braking.
 let tunedRevs = true; // the aids rev into the tune now (see updateAids)
+// an oncoming car in your lane, under 4.5 s away, that a flash would make swerve: a game of chicken to play
+const facing = () => traffic.find(c => sameLane(c.x, carX) && swerves(c) && (c.z - odo) / Math.max(1, speed + c.v) < 4.5);
 const meets = x => { // s until the first oncoming car in lane x meets you
   let t = Infinity;
   for (const c of traffic)
@@ -152,8 +156,7 @@ function recklessLanes() {
     return;
   }
   if (lane === 3) return changeLane(1); // the far oncoming lane: back towards your side
-  const facing = traffic.find(c => sameLane(c.x, carX) && swerves(c) && (c.z - odo) / Math.max(1, speed + c.v) < 4.5);
-  if (brave && facing) flashLights(); // a game of chicken
+  if (brave && facing()) flashLights(); // a game of chicken, with or without Auto flash
   const coming = meets(ROAD_LANES[2]), home = laneClear(MY_LANES[1], MY_FRONT + 6);
   if (coming < 3.5 && (home || coming < 2) || home && reach(carAhead(MY_LANES[1])) > 4) changeLane(1);
 }

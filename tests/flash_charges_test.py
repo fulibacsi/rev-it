@@ -1,6 +1,6 @@
 """Headlight flash charges: 1-10 a run, auto flash from 5, no flash wasted on racers, autocruise overtakes a racer by
-moving over behind an ordinary car it can flash away, a game of chicken moves oncoming cars. Extra flashes don't
-change the reveal's head start."""
+moving over behind an ordinary car it can flash away, a game of chicken moves oncoming cars, and Auto flash plays it
+once you have it. Extra flashes don't change the reveal's head start."""
 from playwright.sync_api import sync_playwright
 from common import URL, launch
 CAR = "power: 10, rev: 4, gears: 3, tyres: 4, time: 6, clutch: 1, gas: 1, shift: 1, engine: 2, steering: 3"
@@ -77,6 +77,22 @@ with sync_playwright() as p:
         else:
             pg.wait_for_function("ch.z < odo - 10", timeout=15000)
             check("chicken: the oncoming car swerves into its other lane and passes, no head-on",
+                  got["flashes"] == n0 - 1 and got["x"] == -5.25 and js("crashes") == 0 and js("run.phase") == "run",
+                  {**got, "crashes": js("crashes"), "phase": js("run.phase")})
+    # 7. Auto flash plays chicken once you have Game of chicken: in an oncoming lane, the car coming at you swerves
+    #    without a press of F; without the upgrade it keeps to your side and spends nothing
+    for chicken in [0, 1]:
+        start(CAR + f", reckless: 1, flash: 3, autoflash: 1, chicken: {chicken}")
+        js("traffic.forEach(c => { if (!c.racer) c.z = odo + 4000; }); lane = fromLane = 2; carX = ROAD_LANES[2]; "
+           "window.ch = traffic.find(c => !c.racer); Object.assign(ch, { dir: -1, x: LANES.oncoming[0], z: odo + 150, v: 25, swerve: null, warned: false })")
+        n0 = js("run.flashes"); pg.wait_for_timeout(1500)
+        got = js("({ flashes: run.flashes, x: ch.x, ahead: Math.round(ch.z - odo) })")
+        if not chicken:
+            js("lane = fromLane = 0; carX = ROAD_LANES[0]")
+            check("Auto flash, no chicken: no flash spent on the oncoming car", got["flashes"] == n0 and got["x"] == -1.75, got)
+        else:
+            pg.wait_for_function("ch.z < odo - 10", timeout=15000)
+            check("Auto flash with chicken: flashes the oncoming car, it swerves, no head-on",
                   got["flashes"] == n0 - 1 and got["x"] == -5.25 and js("crashes") == 0 and js("run.phase") == "run",
                   {**got, "crashes": js("crashes"), "phase": js("run.phase")})
     # 5. the reveal's head start counts the first flash only
