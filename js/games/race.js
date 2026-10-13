@@ -1,7 +1,7 @@
 // The race hidden in Distance. A field of numbered racers drives the same road through the same traffic, lower
 // numbers faster. Until you first get past #100 it looks like just one quick car pulling away from you; getting past
 // it reveals the race. From then on every run is a race from your grid slot, and your result is your position when
-// the clock runs out. Race points, spent on the garage's Racing tab, come from two places: every position is worth
+// the clock runs out. Race points, spent on the garage's Black market, come from two places: every position is worth
 // points once, the first time you finish there (1 for 100th, 2 for 99th ... 100 for 1st: 5,050 in all), and every
 // race pays a tenth of that for where you finish (P61: 4, P20: 9, P1: 10), so you always earn a little. It goes by
 // where you finish, not how many you passed: starting at the back on purpose, or swapping places, pays nothing extra.
@@ -15,31 +15,31 @@ const ordinal = n => n + (['st', 'nd', 'rd'][n - 1] ?? 'th');
 const nitroTank = (l = lvl('nitro')) => 2 * l; // seconds of nitro the tank holds
 const NITRO_REFILL = 100; // metres per second of nitro, refilled before each run
 
-Object.assign(UPGRADES, { // the Racing tab, paid in race points
+Object.assign(UPGRADES, { // the Black market (distance.js PAGES), paid in race points
   // prices: everything here costs about the 5,050 points the positions pay once, plus places gained along the way
-  grid: { name: 'Grid', tab: 'racing', base: 1, growth: 1.035, max: () => FIELD + 1 - progress.finish,
+  grid: { name: 'Bribe the starter', tab: 'black', base: 1, growth: 1.035, max: () => FIELD + 1 - progress.finish,
           info: l => l ? `start P${FIELD + 1 - l}` : 'start at the back', locked: 'finish higher to unlock' },
-  reckless: { name: 'Reckless driving', tab: 'racing', max: 1, base: 100,
+  reckless: { name: 'Reckless driving', tab: 'black', max: 1, base: 100,
               info: () => 'the oncoming lanes are yours too. From now on, collisions damage the car' },
-  chicken: { name: 'Game of chicken', tab: 'racing', max: 1, base: 150, needs: ['reckless', 'flash'],
+  chicken: { name: 'Game of chicken', tab: 'black', max: 1, base: 150, needs: ['reckless', 'flash'],
              info: () => 'flash now works on oncoming traffic: it swerves into its other lane, if there is room' },
-  recklessCruise: { name: 'Reckless auto-drive', tab: 'racing', max: 1, base: 300, needs: ['cruise', 'reckless'],
+  recklessCruise: { name: 'Reckless auto-drive', tab: 'black', max: 1, base: 300, needs: ['cruise', 'reckless'],
                     info: () => 'autocruise without manners: the oncoming lanes, chicken, the ECU tune and nitro, ' +
                       'as far as the car has them' },
-  cooling: { name: 'Cooling', tab: 'racing', max: 3, base: 60, growth: 2, needs: ['reckless'],
+  cooling: { name: 'Cooling', tab: 'black', max: 3, base: 60, growth: 2, needs: ['reckless'],
              info: l => l ? `the engine heats up ${15 * l}% slower` : 'factory radiator' },
-  ecuRev: { name: 'ECU: rev limit', tab: 'racing', max: 4, base: 50, growth: 1.6, needs: ['reckless'],
+  ecuRev: { name: 'ECU: rev limit', tab: 'black', max: 4, base: 50, growth: 1.6, needs: ['reckless'],
             info: l => `+${300 * l} rpm past the factory redline` },
-  ecuPower: { name: 'ECU: power', tab: 'racing', max: 4, base: 60, growth: 1.6, needs: ['reckless'],
+  ecuPower: { name: 'ECU: power', tab: 'black', max: 4, base: 60, growth: 1.6, needs: ['reckless'],
               info: l => `+${8 * l}% torque on top` },
-  nitro: { name: 'Nitro', tab: 'racing', max: 5, base: 100, growth: 1.5, needs: ['ecuPower'],
+  nitro: { name: 'Nitro', tab: 'black', max: 5, base: 100, growth: 1.5, needs: ['ecuPower'],
            info: l => `${nitroTank(l)} s tank: +${Math.round((NITRO - 1) * 100)}% torque, heat in the red. ` +
              `The NOS pedal (or N) floors the gas; refills cost ${NITRO_REFILL} m a second` },
-  gear7: { name: '7th gear', tab: 'racing', max: 1, base: 600, needs: ['nitro'], gate: () => lvl('gears') < 3 ? 'needs 6 gears' : true,
+  gear7: { name: '7th gear', tab: 'black', max: 1, base: 600, needs: ['nitro'], gate: () => lvl('gears') < 3 ? 'needs 6 gears' : true,
            info: () => 'a tall overdrive: hundreds more km/h, if nitro gets you there' },
-  daredevil: { name: 'Daredevil', tab: 'racing', max: 1, base: 200, gate: () => everythingElse() || 'max everything else first',
+  daredevil: { name: 'Daredevil', tab: 'black', max: 1, base: 200, gate: () => everythingElse() || 'max everything else first',
                info: () => 'every second in the oncoming lanes puts 0.5 s back in the nitro tank' },
-  rolling: { name: 'Rolling start', tab: 'racing', max: ROLLING.length, base: 5, growth: 2.3,
+  rolling: { name: 'Jump the start', tab: 'black', max: ROLLING.length, base: 5, growth: 2.3,
              gate: l => ROLLING[l][0] <= topGear() || 'needs Gearbox',
              info: l => l ? `${ROLLING[l - 1][1]} km/h in ${ordinal(ROLLING[l - 1][0])}` : 'standing start' },
 });
@@ -58,7 +58,7 @@ function racer(n, z) {
 const HEAD_START = [[0, 1300], [0.55, 1300], [0.78, 980], [1, 400]];
 function headStart() {
   let have = 0, all = 0;
-  for (const [id, u] of Object.entries(UPGRADES)) if (!u.tab) {
+  for (const [id, u] of Object.entries(UPGRADES)) if (!inPoints(u)) {
     const n = u.built ?? maxOf(u);
     have += Math.min(lvl(id), n); all += n;
   }

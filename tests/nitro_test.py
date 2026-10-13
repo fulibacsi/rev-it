@@ -8,7 +8,7 @@ with sync_playwright() as p:
     pg = b.new_page(viewport={"width": 1440, "height": 900}); pg.on("pageerror", lambda e: errors.append(str(e)))
     pg.goto(URL); js = pg.evaluate; kb = pg.keyboard
     js(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, points: 20000, bank: 5000, levels: {{ {LV} }}, engine: 2 }})")
-    pg.click('[data-play="distance"]'); pg.wait_for_timeout(200); pg.click('[data-tab="racing"]')
+    pg.click('[data-play="distance"]'); pg.wait_for_timeout(200); pg.click('[data-tab="black"]')
     card = lambda name: js(f"[...document.querySelectorAll('#cards .card')].map(c => c.innerText.replace(/\\n/g, ' · ')).find(t => t.startsWith('{name}'))")
     print("7th gear before nitro:", card("7th gear"))
     pg.click('[data-buy="nitro"]'); pg.click('[data-buy="nitro"]'); pg.wait_for_timeout(100)

@@ -50,7 +50,7 @@ with sync_playwright() as p:
 
     # ---- buy through the garage UI ----
     js("progress.bank += 3000; renderGarage()")
-    for sel in ['[data-buy="clutch"]', '[data-buy="power"]', '[data-buy="gears"]', '[data-buy="rev"]']:
+    for sel in ['[data-tab="autopilot"]', '[data-buy="clutch"]', '[data-tab="workshop"]', '[data-buy="power"]', '[data-buy="gears"]', '[data-buy="rev"]']:
         pg.click(sel); pg.wait_for_timeout(100)
     print("after buying:", js("({ bank: progress.bank, levels: progress.levels, top: topGear(), redline: engine.redline })"))
     pg.screenshot(path=f"{OUT}/p_garage2.png")
@@ -68,14 +68,14 @@ with sync_playwright() as p:
 
     # ---- run 3: all aids, hands off ----
     js("progress.bank += 4000; renderGarage()")
-    pg.click('[data-buy="gas"]'); pg.wait_for_timeout(100); pg.click('[data-buy="shift"]'); pg.wait_for_timeout(100)
+    pg.click('[data-tab="autopilot"]'); pg.click('[data-buy="gas"]'); pg.wait_for_timeout(100); pg.click('[data-buy="shift"]'); pg.wait_for_timeout(100)
     pg.click("#drive"); wait_phase("run"); pg.wait_for_timeout(6000); print("hands off 6 s:", st())
     pg.screenshot(path=f"{OUT}/p_auto.png")
     wait_phase("garage"); print("run 3:", js("run.gain"), "m")
 
     # ---- toggle an aid off, then reload: progress kept ----
     pg.click('[data-toggle="shift"]'); pg.wait_for_timeout(100)
-    pg.reload(); pg.wait_for_timeout(300); pg.click("[data-play=distance]"); pg.wait_for_timeout(200)
+    pg.reload(); pg.wait_for_timeout(300); pg.click("[data-play=distance]"); pg.wait_for_timeout(200); pg.click('[data-tab="autopilot"]')
     print("after reload:", js("({ bank: progress.bank, best: progress.best, runs: progress.runs, levels: progress.levels, off: progress.off })"))
     print("shift button:", pg.inner_text('[data-toggle="shift"]'))
     b.close()

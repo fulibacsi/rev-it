@@ -1,4 +1,4 @@
-"""Real time: the hidden #100 and the reveal, a race with numbered racers and the position HUD, the Racing tab."""
+"""Real time: the hidden #100 and the reveal, a race with numbered racers and the position HUD, the Black market."""
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
 FULL = "{ power: 10, rev: 4, gears: 3, tyres: 4, time: 6, clutch: 1, gas: 1, shift: 1, steer: 1, cruise: 1, engine: 2 }"
@@ -19,7 +19,7 @@ with sync_playwright() as p:
     js("run.left = 0.3"); pg.wait_for_function("run.phase === 'garage'", timeout=15000); pg.wait_for_timeout(300)
     print("garage report:", pg.inner_text("#report").replace("\n", " / "))
     print("tabs:", pg.inner_text("#tabs").replace("\n", " | "))
-    pg.click('[data-tab="racing"]'); pg.wait_for_timeout(200)
+    pg.click('[data-tab="black"]'); pg.wait_for_timeout(200)
     print("racing cards:", [t.replace("\n", " · ") for t in pg.locator("#cards .card").all_inner_texts()])
     pg.screenshot(path=f"{OUT}/race_tab.png")
     js("Object.assign(progress, { points: 500, finish: 40 }); renderGarage()")
