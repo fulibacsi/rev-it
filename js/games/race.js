@@ -23,6 +23,9 @@ Object.assign(UPGRADES, { // the Racing tab, paid in race points
               info: () => 'the oncoming lanes are yours too. From now on, collisions damage the car' },
   chicken: { name: 'Game of chicken', tab: 'racing', max: 1, base: 150, needs: ['reckless', 'flash'],
              info: () => 'flash now works on oncoming traffic: it swerves into its other lane, if there is room' },
+  recklessCruise: { name: 'Reckless auto-drive', tab: 'racing', max: 1, base: 300, needs: ['cruise', 'reckless'],
+                    info: () => 'autocruise without manners: the oncoming lanes, chicken, the ECU tune and nitro, ' +
+                      'as far as the car has them' },
   cooling: { name: 'Cooling', tab: 'racing', max: 3, base: 60, growth: 2, needs: ['reckless'],
              info: l => l ? `the engine heats up ${15 * l}% slower` : 'factory radiator' },
   ecuRev: { name: 'ECU: rev limit', tab: 'racing', max: 4, base: 50, growth: 1.6, needs: ['reckless'],

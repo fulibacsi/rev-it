@@ -235,7 +235,7 @@ function tick(now) {
   // seen through a 300px perspective: the top edge shrinks by `far`)
   const g = $('gas'), a = gasPedal * 35 * Math.PI / 180, far = 300 / (300 + g.clientHeight * Math.sin(a));
   const down = g.clientHeight * (1 - Math.cos(a) * far), inward = g.clientWidth * (1 - far) / 2;
-  $('nos').style.transform = `translate(${-inward}px, ${down}px) perspective(300px) rotateX(${nitroHeld ? 25 : 0}deg)`;
+  $('nos').style.transform = `translate(${-inward}px, ${down}px) perspective(300px) rotateX(${nitroHeld || nitroByAid ? 25 : 0}deg)`;
   $('knob').setAttribute('transform', `translate(${lever.x} ${lever.y})`);
   $('knob-gear').textContent = gear || 'N';
 

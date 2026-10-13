@@ -67,7 +67,7 @@ function updatePedals(dt) {
     if (p.hold !== null) p.set(p.hold > v ? Math.min(p.hold, v + dt / p.press) : Math.max(p.hold, v - dt / p.press));
     else if (p.back) { p.set(Math.max(0, v - dt / p.back)); if (!p.get()) p.back = 0; }
   }
-  if (nitroHeld) PEDALS.gas.set(1); // the nitro pedal sits on the gas pedal: pushing it floors the gas
+  if (nitroHeld || nitroByAid) PEDALS.gas.set(1); // the nitro pedal sits on the gas pedal: pushing it floors the gas
 }
 // your own foot on the gas (or on the nitro pedal): it overrides the aids
 const pushing = () => PEDALS.gas.hold !== null || PEDALS.gas.down || nitroHeld;
@@ -207,6 +207,7 @@ $('stalk-hit').onpointerdown = e => { e.preventDefault(); flashLights(); };
 // ---- nitro (Distance): push the nitro pedal on top of the gas pedal (mouse or finger), or hold N. It floors the gas,
 // and letting it go puts the gas back where it was (where the mouse left it, or a finger or key still holds it)
 let nitroHeld = false, gasBeforeNitro = 0;
+let nitroByAid = false; // reckless auto-drive's foot on the nitro pedal (aids.js): unlike yours, it leaves the aids on
 function pushNitro(down) {
   if (down === nitroHeld) return;
   if (down) gasBeforeNitro = PEDALS.gas.get(); else PEDALS.gas.set(gasBeforeNitro);

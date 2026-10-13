@@ -3,15 +3,19 @@
 
 function updateAids(dt) {
   // an ECU tune: driving on its own the car keeps to the factory map, limiter at the factory redline (no heat from the
-  // revs); your own foot on the gas, or nitro, switches to the tuned map for the rest
-  revCap = aid('gas') && tuned() && !pushing() && !nitro ? engine.stock.redline : Infinity;
+  // revs); your own foot on the gas, nitro, or reckless auto-drive while the engine is cool, switch to the tuned map
+  const reckless = aid('recklessCruise');
+  tunedRevs = reckless && heat < (tunedRevs ? 0.6 : 0.4); // it cools down on the factory map, well short of the red
+  revCap = aid('gas') && tuned() && !pushing() && !nitro && !tunedRevs ? engine.stock.redline : Infinity;
   if (state !== 'running') return;
   if (aid('shift')) autoShift();
   if (aid('clutch')) autoClutch(dt);
   if (aid('gas')) autoGas(dt);
+  if (reckless) recklessLanes(); // before autocruise, which keeps out of the oncoming lanes
   if (aid('cruise')) autocruise(); // after the gas: it brakes behind traffic it can't pass
   else if (aid('steer')) laneAssist();
   if (aid('autoflash')) autoFlash();
+  if (reckless) recklessNitro(); // last: never while braking
 }
 
 const launchRpm = () => 0.6 * engine.redline; // revs to set off at: well into the pull, clear of the limiter
@@ -31,7 +35,7 @@ function autoClutch(dt) {
 // while the clutch is out). Once the clutch has caught up it is traction control: no more gas than the tyres can
 // take (worked out from the torque the engine makes at these revs), and well under that if they spin anyway.
 function autoGas() {
-  if (pushing()) return; // your own foot on the gas: it's yours
+  if (pushing() || nitroByAid) return; // your own foot on the gas: it's yours; its foot on the nitro pedal floors it
   if (speed < 1 && (!gear || clutch < 0.05)) gasPedal = clamp(0.5 + (launchRpm() - rpm) / 800, 0, 1);
   else if (!locked && !spinning) gasPedal = 1;
   else {
@@ -121,4 +125,37 @@ function autoFlash() {
   if (lane > 1 || !run.flashes) return;
   const c = nextCar(carX);
   if (c && c.v < speed - 2 && (c.z - odo) / (speed - c.v) < 4 && yields(c, 1 - lane)) flashLights();
+}
+
+// reckless auto-drive (Racing tab): autocruise without manners. Boxed in on your side it takes the near oncoming lane
+// when nothing is coming for 6 s, or when whatever comes can be flashed out of the way (Game of chicken and a flash
+// left). It goes home when something it can't flash away comes within 3.5 s (cutting in beside a car only to escape a
+// head-on under 2 s away), or once your side is open again. It revs into the ECU tune while the engine is cool, and
+// pushes the nitro pedal when a racer is close ahead, the tyres grip and it isn't braking.
+let tunedRevs = false; // revving into the tune now (see updateAids)
+const meets = x => { // s until the first oncoming car in lane x meets you
+  let t = Infinity;
+  for (const c of traffic)
+    if (c.dir < 0 && sameLane(c.x, x) && c.z > odo - 5) t = Math.min(t, (c.z - odo) / Math.max(1, speed + c.v));
+  return t;
+};
+function recklessLanes() {
+  if (lane > 1 && cruiseBrake) { brakePedal = 0; cruiseBrake = false; } // autocruise doesn't drive over there
+  if (wheel.held || Math.abs(carX - ROAD_LANES[lane]) > 0.3) return; // your hand on the wheel, or already moving over
+  const reach = a => a && a.closing > 0 ? a.gap / a.closing : Infinity, brave = chicken && run.flashes > 0;
+  if (lane <= 1) {
+    const boxed = reach(carAhead(MY_LANES[lane])) < 3 && reach(carAhead(MY_LANES[1 - lane])) < 3;
+    if (lane === 1 && boxed && speed > 15 && (meets(ROAD_LANES[2]) > 6 || brave)) changeLane(-1);
+    return;
+  }
+  if (lane === 3) return changeLane(1); // the far oncoming lane: back towards your side
+  const facing = traffic.find(c => sameLane(c.x, carX) && swerves(c) && (c.z - odo) / Math.max(1, speed + c.v) < 4.5);
+  if (brave && facing) flashLights(); // a game of chicken
+  const coming = meets(ROAD_LANES[2]), home = laneClear(MY_LANES[1], MY_FRONT + 6);
+  if (coming < 3.5 && (home || coming < 2) || home && reach(carAhead(MY_LANES[1])) > 4) changeLane(1);
+}
+function recklessNitro() {
+  const front = nearestRacers().front;
+  nitroByAid = run.phase === 'run' && progress.nitro > 0 && !pushing() && !cruiseBrake && !spinning && gear >= 2 &&
+    !!front && front.z - odo < 500;
 }

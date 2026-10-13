@@ -101,7 +101,15 @@ runs. A hidden race is the second act.
     - picks the lane that goes further and keeps right;
     - brakes behind traffic it can't pass;
     - overtakes a racer by moving over behind an ordinary car that Auto flash can move out of the way;
-    - never drives in the oncoming lanes.
+    - never drives in the oncoming lanes (Reckless auto-drive does).
+  - Reckless auto-drive (Racing tab) is autocruise without manners:
+    - boxed in on your side, it takes the near oncoming lane when nothing is coming for 6 s, or when whatever comes
+      can be flashed away (Game of chicken and a flash left);
+    - it goes home when something it can't flash away comes within 3.5 s, or when your side opens again. It cuts in
+      beside a car only to escape a head-on under 2 s away: a bump beats a DNF;
+    - it revs into the ECU tune while the engine is cool: the factory map from heat 0.6, the tune again below 0.4;
+    - it pushes the nitro pedal when a racer is within 500 m ahead, the tyres grip, it is in 2nd or higher and isn't
+      braking. Its foot on the nitro pedal, unlike yours, leaves the other aids on.
   - Auto flash only flashes a car that will move over, never a racer, and never plays chicken.
 
 **The hidden race.**
@@ -135,13 +143,14 @@ runs. A hidden race is the second act.
 - Payment goes by finishing position, never by places gained. An earlier "points per place gained" rule was farmable:
   starting at the back on purpose, or swapping places with a racer, paid extra.
 
-**Racing tab** (paid in race points, 5,236 in all):
+**Racing tab** (paid in race points, 5,536 in all):
 
 | Upgrade | Levels | Base | Growth | Notes |
 |---|---|---|---|---|
 | Grid | up to 100 | 1 | 1.035 | slot N needs a finish ahead of #N |
 | Reckless driving | 1 | 100 | | oncoming lanes; from now on collisions damage the car |
 | Game of chicken | 1 | 150 | | flashes work on oncoming cars: they swerve, room permitting; needs Headlight flash |
+| Reckless auto-drive | 1 | 300 | | autocruise in the oncoming lanes too, with chicken, the tune and nitro; needs Autocruise |
 | Cooling | 3 | 60 | 2 | heat rises 15% slower a level |
 | ECU: rev limit | 4 | 50 | 1.6 | +300 rpm past the factory redline a level |
 | ECU: power | 4 | 60 | 1.6 | +8% torque a level |
@@ -171,15 +180,16 @@ while it is pushed: no auto brake, and no traction control (the tyres can spin).
 ### Balance targets and results
 
 - **First playtest (act 1 into act 2):** "fun, relatively quick", no excess currency, P76 after about 30 min.
-- **Act 2, simulated:** P1 after 18–25 races over four traffic seeds (about 22, 13 Oct). The top 10 need max nitro
-  and 7th gear. Game of chicken makes no measurable difference: the bot plays it 9–21 times in the whole act. After
-  P1 a race still pays 10.
+- **Act 2, simulated** (13 Oct, four traffic seeds each): the bot drives with Reckless auto-drive's habits and buys it
+  after Game of chicken: P1 after 20–26 races (mean about 22). Never buying it (so no ECU revs outside nitro): 16–23
+  (about 21). Neither upgrade makes a measurable difference to the pace. The top 10 need max nitro and 7th gear.
+  After P1 a race still pays 10.
 - **Metres:** they pile up in act 2 (about 65–70k unspent by P1). Metre sinks and the fleet (below) are meant to soak
   them up.
 - **Simulation tools** live in `tests/balance/` and are run from the repo root:
   - `act1.py [cheapest|value] [head-start curve]`: when #100 is first passed;
-  - `act2.py [races] [seed]`: races from the reveal to P1. The traffic seed alone moves the result by up to 7 races,
-    so compare a few seeds;
+  - `act2.py [races] [seed]`: races from the reveal to P1, the bot driving like Reckless auto-drive (`aids.js`). The
+    traffic seed alone moves the result by up to 7 races, so compare a few seeds;
   - `race_test.py` and `race_seq.py`: grid slots and finishing places;
   - `progress.py` and `balance.py`: whole progressions played by a bot;
   - `accel.py`: stock acceleration;
@@ -220,6 +230,7 @@ All dates are 2026.
   - The NOS button became a NOS pedal on the gas pedal, with a gauge on the cluster. Then it was bolted to the gas
     pedal's corner, as it seemed to hover.
   - Game of chicken (the owner's idea): a Racing upgrade that makes a flash work on oncoming traffic.
+  - Reckless auto-drive (the owner's idea): autocruise that uses the oncoming lanes, chicken, the tune and nitro.
 
 ## Open questions
 
@@ -228,7 +239,6 @@ Waiting for the owner. Don't build these on a guess: ask.
 - What happens when you reach P1 / pass #1?
 - Should Auto gas's traction control keep working while the NOS pedal is pushed? Without it, nitro spins the tyres
   in the middle gears: in `nitro_test`, 4th at about 170 km/h, nitro now adds 25 km/h in a second instead of 34.
-- Should autocruise ever drive in the oncoming lanes?
 - "ECU updates only works on 6th gear" was read as a bug report and fixed. Confirm it wasn't a request to restrict
   the ECU to 6th gear.
 - The flash prices moved the simulated reveal about 2 runs later. Make flashes cheaper if the reveal should stay

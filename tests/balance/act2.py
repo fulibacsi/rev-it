@@ -6,7 +6,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))  # tests/common.py
 from common import URL, launch
 ACT1 = dict(power=10, rev=4, gears=3, tyres=4, time=6, clutch=1, gas=1, shift=1, steer=1, cruise=1, engine=2, flash=5)
-ORDER = ["rolling", "reckless", "chicken", "cooling", "ecuRev", "ecuPower", "nitro", "gear7"]
+ORDER = ["rolling", "reckless", "chicken", "recklessCruise", "cooling", "ecuRev", "ecuPower", "nitro", "gear7"]
 RACES = int(sys.argv[1]) if len(sys.argv) > 1 else 60
 SEED = int(sys.argv[2]) if len(sys.argv) > 2 else None  # another traffic seed: another sample of the same balance
 with sync_playwright() as p:
