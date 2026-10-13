@@ -60,6 +60,8 @@ machine or session. Keep it current: update a section when a decision changes, a
   wheel). Its touch area is kept off the rim. F also flashes.
   - On phones it comes out further up the rim and is a little shorter: the shifter, pushed in by the iPhone's island,
     hid it.
+- The head-up display is see-through (its readouts at 0.65), so the traffic behind it shows; its messages (GO!,
+  CRASH) come at full strength. It stays where it is. (Claude's call: 0.65 over 0.92, from screenshots over traffic.)
 - The flashes left show on the head-up display as the blue high-beam telltale and a count.
 - The run's time left is a bar draining across the widened rear-view mirror. It turns red and blinks under 5 s.
 - Nitro is a smaller red NOS pedal bolted over the gas pedal's top right corner, like a side pedal (the owner's
@@ -237,7 +239,6 @@ Max**, paid in parts. It is to the fleet what the Black market is to the Worksho
   included.
 - **Flash recharge,** a new upgrade after Headlight flash: flashes come back over time, up to one every 2 s. The number
   of flashes stays a separate upgrade.
-- The head-up display gets a bit more transparent, so traffic shows through; it stays where it is.
 - Autocruise aims for top speed: it brakes a lot at 300+ km/h when both lanes are blocked.
 - Dropped: reverse gear and a handbrake (we go fast and forward; there is no room left on the dash). Kept: the V8
   creeping off in 1st without gas.
