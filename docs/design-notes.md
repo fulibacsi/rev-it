@@ -197,6 +197,26 @@ while it is pushed: no auto brake, and no traction control (the tyres can spin).
   - `accel.py`: stock acceleration;
   - `sim.js`: the in-page bot they share.
 
+### Phase 3: the fleet, then Mad Max (decided 13 Oct, not built yet)
+
+- **Two more garage pages.** **Fleet**: cars, and upgrades for them. **Mad Max**: to the fleet what the Black market is
+  to the Workshop, the illegal side: illegal parts, bull bars and, as the last upgrades, guns.
+- **Currencies:** more of them is fine. Miles pay for the fleet, parts for Mad Max.
+  - Miles: metres exchanged like frequent-flyer miles (a mile is 1,609 m). The speedometer stays in km/h.
+  - Parts: from any car you total, traffic or racer.
+- **The fleet** unlocks once you reach P1. Fleet cars race in your races, behind you. The mirror shows the timer, so
+  there is no rear view: a sonar shows where they are.
+- **The gang (Mad Max)** unlocks once a race has more of your fleet cars than other racers. You get a task, total a car,
+  and a health bar for the car appears.
+  - Parts pay for bars, illegal parts and guns. Firing guns from your car is an upgrade.
+  - Police heat rises. Past a threshold a tank boss appears, and the gang has to defeat it.
+- **Proposed, not decided:** frequent-driver status (Silver, Gold, Platinum, from lifetime miles) with perks such as
+  free nitro refills or cheaper repairs; a bull bar first (you lose less speed, they take the damage), then a PIT
+  manoeuvre; gang orders over a CB radio on the dash; heat cooling between runs, or bribed down with miles.
+- **Open:** where the sonar sits (cluster, head-up display?); the miles rate; the fleet's upgrades; how much a car
+  takes to total, by kind; the tank fight; what police heat does below the threshold; how race results pay when
+  racers are wrecked (by finishing position only, so wrecking can't be farmed for points).
+
 ## Playtest log
 
 All dates are 2026.
@@ -241,7 +261,6 @@ All dates are 2026.
 
 Waiting for the owner. Don't build these on a guess: ask.
 
-- What happens when you reach P1 / pass #1?
 - Should Auto gas's traction control keep working while the NOS pedal is pushed? Without it, nitro spins the tyres
   in the middle gears: in `nitro_test`, 4th at about 170 km/h, nitro now adds 25 km/h in a second instead of 34.
 - "ECU updates only works on 6th gear" was read as a bug report and fixed. Confirm it wasn't a request to restrict
@@ -249,7 +268,6 @@ Waiting for the owner. Don't build these on a guess: ask.
 - The flash prices moved the simulated reveal about 2 runs later. Make flashes cheaper if the reveal should stay
   where it was.
 - **Older questions, never answered:**
-  - km/h or mph (the road is Californian)?
   - Is the V8 creeping off in 1st without gas fun?
   - A live rear view in the mirror (it now shows the timer)?
   - Reverse gear and a handbrake?
@@ -260,23 +278,16 @@ Waiting for the owner. Don't build these on a guess: ask.
 ## Brainstorm waiting for the owner's picks
 
 The owner asked for ideas on the fleet, sinks for the surplus metres and future acts: keep the car theme and the
-hands-on driving, and extreme ideas are welcome. These are the proposals; none is decided.
+hands-on driving, and extreme ideas are welcome. The fleet, miles and police heat are now decided (phase 3, above);
+these proposals are still open.
 
-- **Fleet.**
-  - Unlocks late in act 2, alongside autocruise, and is bought with metres.
-  - Fleet cars race as your teammates. They earn only the per-race part of race points, and you can draft behind
-    them.
-  - A later act grows it into buying out the rivals you've beaten until you own the field.
-  - It would get its own garage tab.
-- **Metres sinks:**
+- **Metres sinks** (the miles exchange is one now):
   - repairs that scale with the car's value;
   - tyres as a per-race consumable;
-  - the fleet;
   - cockpit cosmetics;
   - an escalating metres-to-points exchange.
-- **Future acts:**
-  - 3, Team and fleet: sponsors and money.
-  - 4, Cannonball run across the country: miles, police heat.
-  - 5, Manufacturer: the Rev game returns as dyno engine design, and the traffic becomes your cars.
-  - 6, Extreme: land speed records, then a road off the planet.
+- **Acts after Mad Max:**
+  - Cannonball run across the country (its police heat went into phase 3).
+  - Manufacturer: the Rev game returns as dyno engine design, and the traffic becomes your cars.
+  - Extreme: land speed records, then a road off the planet.
   - Then a new game plus, with a legacy bonus.
