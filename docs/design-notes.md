@@ -60,9 +60,11 @@ machine or session. Keep it current: update a section when a decision changes, a
     hid it.
 - The flashes left show on the head-up display as the blue high-beam telltale and a count.
 - The run's time left is a bar draining across the widened rear-view mirror. It turns red and blinks under 5 s.
-- Nitro is a smaller red NOS pedal riding on top of the gas pedal (the owner's design), and pushing it floors the
-  gas. N does the same. The tank shows as a NOS bar under TEMP on the cluster. It replaced a red NOS button, which
-  floated over the oncoming lanes on phones.
+- Nitro is a smaller red NOS pedal bolted over the gas pedal's top right corner, like a side pedal (the owner's
+  design). Pushing it floors the gas, and N does the same. The tank shows as a NOS bar under TEMP on the cluster. It
+  replaced a red NOS button, which floated over the oncoming lanes on phones.
+  - It sticks out past the gas pedal by no more than the gap kept clear of the screen's edge, and covers only the gas
+    pedal's corner (4–8% of its touch area), so a thumb on the gas doesn't fire nitro by accident.
 
 ## Distance
 
@@ -212,7 +214,8 @@ All dates are 2026.
 - **12 Oct, diegetic pass:** the light stalk replaced the FLASH button, and the timer moved into the mirror.
 - **13 Oct, phone:**
   - The light stalk was partly hidden behind the gear shifter. It now comes out further up the rim.
-  - The NOS button became a NOS pedal on the gas pedal, with a gauge on the cluster.
+  - The NOS button became a NOS pedal on the gas pedal, with a gauge on the cluster. Then it was bolted to the gas
+    pedal's corner, as it seemed to hover.
 
 ## Open questions
 

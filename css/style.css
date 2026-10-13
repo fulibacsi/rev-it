@@ -85,12 +85,13 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 #menu #layout { margin-right: auto; padding: 4px 10px; color: #889; }
 #menu, #garage { touch-action: pan-y; } /* these two scroll on small screens */
 .touch .desk-only, body:not(.touch) .touch-only { display: none; }
-/* nitro: a smaller red pedal riding on the gas pedal's top edge (centred with a margin: its transform places and
-   tilts it), and a gauge on the cluster; while it burns the view runs hot */
+/* nitro: a smaller red pedal bolted over the gas pedal's top right corner (its transform keeps it there as the gas
+   pedal tilts), and a gauge on the cluster; while it burns the view runs hot. It sticks out past the gas pedal by no
+   more than the gap kept clear of the screen's edge, and overlaps it only a little, so a thumb on the gas stays on it */
 #nos, #nos-gauge { display: none; }
 .has-nos #nos { display: block; }
 .has-nos #nos-gauge { display: inline; }
-#nos { position: absolute; bottom: 100%; left: 50%; width: 60%; margin: 0 0 4px -30%; }
+#nos { position: absolute; bottom: 100%; right: -16%; width: 60%; margin-bottom: -14%; }
 .nitro #nos { filter: drop-shadow(0 0 8px #f44); }
 .nitro #world { filter: saturate(1.5) brightness(1.08); }
 .flashing #world { filter: brightness(1.4); }
