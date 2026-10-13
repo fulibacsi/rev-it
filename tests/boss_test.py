@@ -1,0 +1,61 @@
+"""The final boss: at 100% heat the garage warns of the tank, and the next race has it. It holds the road about 80 m
+ahead of you in your lane, is the AR target ("TANK"), shells you (8% damage each, less with armour), and shrugs off
+rams; your guns and the gang's wear it down. Destroyed: the ending (heat back to 0, parts), and the next tank is
+tougher. Not destroyed by the bell: a DNF, and the heat drops to half."""
+from playwright.sync_api import sync_playwright
+from common import URL, OUT, launch
+CAR = ("power: 10, rev: 4, gears: 3, tyres: 4, time: 6, clutch: 1, gas: 1, shift: 1, engine: 2, reckless: 1, flash: 5, "
+       "fleet: 51, bullbar: 1, spikes: 1, guns: 3")
+errors, fails = [], []
+def check(name, ok, got=""):
+    print(f"{'ok ' if ok else 'FAIL'} {name}" + (f": {got}" if got != "" else ""))
+    if not ok: fails.append(name)
+with sync_playwright() as p:
+    b = launch(p, args=["--autoplay-policy=no-user-gesture-required"])
+    pg = b.new_page(viewport={"width": 1440, "height": 900}); pg.on("pageerror", lambda e: errors.append(str(e))); js = pg.evaluate
+    pg.goto(URL)
+    def garage(wanted, tanks=0, armour=0):
+        js(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, runs: 80, bank: 10000, totals: 5, wanted: {wanted}, tanks: {tanks}, damage: 0, broken: [], levels: {{ {CAR}, armour: {armour} }}, engine: 2 }})")
+        if js("game.id") != "distance": pg.click('[data-play="distance"]'); pg.wait_for_timeout(200)
+        elif js("run.phase") != "garage": js("run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
+        js("refreshCar(); forgetRun(); renderGarage()")
+    def race():
+        pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
+        js("traffic.forEach(c => { if (c.racer) c.z = odo - (c.fleet ? 3000 : 9000); else if (!c.tank) Object.assign(c, { dir: -1, x: LANES.oncoming[1], police: false }); }); copClock = 999; 0")
+    # 1. 99%: no tank; 100%: the garage warns of it
+    garage(0.99); check("99% heat: no tank", not js("bossRace()") and "tank" not in js("$('report').innerText"))
+    garage(1); check("100% heat: the garage warns of the tank", js("bossRace()") and "the army has sent a tank" in js("$('report').innerText"), js("$('report').innerText")[-100:])
+    # 2. the race: the tank appears up the road, comes back to about 80 m ahead, in your lane, the AR on it
+    race(); pg.wait_for_function("run.tank", timeout=5000)
+    pg.wait_for_function("speed > 25", timeout=20000); pg.wait_for_timeout(5000)
+    got = js("({ gap: Math.round(run.tank.z - odo), lane: run.tank.lane === lane, target: target === run.tank, label: $('ar-label').textContent })")
+    check("the tank: about 80 m ahead of you, in your lane, in the reticle as TANK", 60 <= got["gap"] <= 110 and got["lane"] and got["target"] and got["label"] == "TANK", got)
+    pg.screenshot(path=f"{OUT}/boss_tank.png")
+    # 3. it shells you: 8% a hit every 2.5 s
+    d0 = js("progress.damage"); pg.wait_for_timeout(2700); d1 = js("progress.damage")
+    check("it shells you: 8% damage a hit", round(d1 - d0) in (8, 16), round(d1 - d0, 1))
+    # 4. a ram barely scratches it; guns wear it down
+    got = js("(() => { const t = run.tank, h0 = t.hp ?? health(t); ram({ car: t, kmh: 100, headOn: false, side: false }); return [Math.round(h0), Math.round(h0 - t.hp)]; })()")
+    check("a 100 km/h ram: a fifth of the damage (12 of its 2,000; the gang may have shot it already)", got[1] == 12, got)
+    js("progress.damage = 0"); h0 = js("run.tank.hp"); pg.keyboard.down("g"); pg.wait_for_timeout(1000); pg.keyboard.up("g")
+    check("guns 3: about 18 a shot, 4 a second", 50 <= h0 - js("run.tank.hp") <= 95, h0 - js("run.tank.hp"))
+    # 5. destroyed: the ending
+    js("progress.damage = 0; run.tank.hp = 10"); pg.keyboard.down("g"); pg.wait_for_function("run.tank.wreck", timeout=5000); pg.keyboard.up("g")
+    got = js("({ wanted: progress.wanted, tanks: progress.tanks, parts: run.parts })")
+    check("destroyed: heat back to 0, 300 parts, one tank beaten", got == {"wanted": 0, "tanks": 1, "parts": 300}, got)
+    js("run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
+    rep = js("$('report').innerText")
+    check("the ending, then play on (a result, not a DNF)", "THE END" in rep and "Play on" in rep and "DNF" not in rep, rep[-160:])
+    check("the next tank is half as tough again", js("tankHealth()") == 3000, js("tankHealth()"))
+    # 6. lost at the bell: a DNF, the heat down to half
+    garage(1); race(); pg.wait_for_function("run.tank", timeout=5000); js("run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
+    got = js("({ dnf: run.race && run.race.dnf, wanted: progress.wanted, report: $('report').innerText })")
+    check("the bell with the tank still going: DNF, heat 50%", got["dnf"] == "tank" and got["wanted"] == 0.5 and "the tank held the road" in got["report"], {k: v for k, v in got.items() if k != "report"})
+    # 7. wrecked by its shells: a DNF too; armour takes the sting out
+    garage(1, armour=2); race(); pg.wait_for_function("run.tank", timeout=5000)
+    js("progress.damage = 0; run.tank.z = odo + 100; run.tank.shell = 0"); pg.wait_for_timeout(300)
+    check("armour 2: a shell does 4%", round(js("progress.damage")) == 4, js("progress.damage"))
+    js("progress.damage = 99; run.tank.shell = 0"); pg.wait_for_function("run.phase !== 'run'", timeout=5000)
+    check("wrecked by the tank: DNF, heat 50%", js("[run.race.dnf, progress.wanted]") == ["wrecked", 0.5], js("[run.race.dnf, progress.wanted]"))
+    b.close()
+print("ERRORS:", errors or "none", "| FAILS:", fails or "none")

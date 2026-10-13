@@ -272,6 +272,21 @@ lamp. It shows from Mad Max on, only on the road; the garage's report gives it t
   - They don't move over for a flash, nor swerve for chicken. They can be totalled (8% heat).
 - Claude's calls: the heat rates, the police numbers and moves, and the scanner on the right A-pillar instead of the
   dash (on a phone the dash is full: shifter, cluster and pedals).
+
+**The final boss, the tank.** At 100% heat the garage warns that the army has sent a tank, and the next race has it
+(not in limp mode).
+- It comes into view 250 m up the road and holds the road about 80 m ahead of you, in your lane: you can't get away
+  from it or past it. It is the AR target ("TANK"), with 2,000 health.
+- It fires a shell at you every 2.5 s while you are within 250 m behind it: 8% damage a hit (armour takes a quarter
+  off a level), with the shot, a jolt and the cracks to show it.
+- You and the gang outgun it: your guns, and the fleet's, which race up to join the fight (40 m/s quicker until
+  they are with it) and shoot it from within 200 m. A ram does a fifth of its usual damage.
+- **Destroyed:** the ending. "THE END. You beat the tank: the road is yours", 300 parts, the heat back to 0. Then you
+  play on; the next tank is half as tough again (3,000, then 4,000 ...).
+- **Lost** (wrecked, a head-on, or the bell with the tank still going): a DNF ("the tank held the road"), and the heat
+  drops to half, so you have to push for it again.
+- Claude's calls: the tank stayed (the owner's pick; it fits the army being called in when the police can't cope), its
+  numbers, the ending as a garage message rather than a screen of its own, and play on with a tougher tank.
 - Claude's calls: the AR look, the target rule, 0.4 per km/h, the health and parts numbers, the Mad Max page opening
   with the first total (the job is the way in), the illegal parts (armour and spiked hubs), how the gang uses its
   gear, and the guns' numbers (they aim themselves at the reticle: on a phone your thumbs are busy). All first
@@ -308,8 +323,7 @@ frequent-driver tiers.
 **The gang** unlocks once a race has more of your fleet cars than other racers (51 of the 100): built, with its
 upgrades and the guns (see Act 4). The gang uses whatever offensive upgrades it has. No CB radio, no orders.
 - **Police heat** and the scanner: built (see Act 4).
-- **The final boss:** past the threshold a tank appears (or a more fitting armoured opponent). It shoots at you, and
-  you and the gang have to outgun it. Losing is a DNF, and the heat drops.
+- **The final boss,** the tank: built (see Act 4).
 
 **Also decided (13 Oct), to build:**
 - Autocruise aims for top speed: it brakes a lot at 300+ km/h when both lanes are blocked.
@@ -318,8 +332,7 @@ upgrades and the guns (see Act 4). The gang uses whatever offensive upgrades it 
 - Balancing waits until everything is built and the bugs are fixed. Then the prices come from simulations that follow
   incremental-game practice. The Rev curve is right; Speed signs is too easy, but leave it for now.
 
-**Open, for Claude to decide while building:** the tank or a more fitting opponent; what follows beating it (an
-ending, then play on); car health, parts per car and heat rates (first guesses,
+**Open, for Claude to decide while building:** car health, parts per car and heat rates (first guesses,
 tuned in the balancing pass).
 
 ## Playtest log
