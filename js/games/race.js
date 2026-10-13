@@ -58,7 +58,7 @@ function racer(n, z) {
 const HEAD_START = [[0, 1300], [0.55, 1300], [0.78, 980], [1, 400]];
 function headStart() {
   let have = 0, all = 0;
-  for (const [id, u] of Object.entries(UPGRADES)) if (!inPoints(u)) {
+  for (const [id, u] of Object.entries(UPGRADES)) if (inMetres(u)) {
     const n = u.built ?? maxOf(u);
     have += Math.min(lvl(id), n); all += n;
   }

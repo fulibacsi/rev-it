@@ -53,9 +53,9 @@ function applyUpgrades() { // the garage's work on the engines and the car, and 
 // ---- saved progress (localStorage; the game still works without it, it just won't remember) ----
 const SAVE_KEY = 'car-rev-incremental';
 // off: aids switched off; racing: the race has been revealed; points: race points; finish: best finishing position;
-// damage: % (damage.js), broken: gears it broke; nitro: seconds in the tank
+// damage: % (damage.js), broken: gears it broke; nitro: seconds in the tank; miles: the Fleet's money
 const FRESH = () => ({ bank: 0, best: 0, runs: 0, levels: {}, off: {}, engine: 0, racing: false, points: 0, finish: 101,
-                       damage: 0, broken: [], nitro: 0 });
+                       damage: 0, broken: [], nitro: 0, miles: 0 });
 // debug mode (main.js) plays a save of its own, with wallets that never run out, so testing never touches the game
 const FUNDS = 1e9;
 let debugSave = false;
@@ -63,10 +63,10 @@ const saveKey = () => debugSave ? SAVE_KEY + '-debug' : SAVE_KEY;
 const progress = Object.assign(FRESH(), load());
 function load() { try { return JSON.parse(localStorage.getItem(saveKey())) ?? {}; } catch { return {}; } }
 function save() {
-  if (debugSave) progress.bank = progress.points = FUNDS; // spent or earned, back to full
+  if (debugSave) progress.bank = progress.points = progress.miles = FUNDS; // spent or earned, back to full
   try { localStorage.setItem(saveKey(), JSON.stringify(progress)); } catch { /* not saved */ }
 }
-const forgetRun = () => Object.assign(run, { gain: 0, race: null, revealed: false, newBest: false, best: 0 });
+const forgetRun = () => Object.assign(run, { gain: 0, race: null, revealed: false, won: false, newBest: false, best: 0 });
 function resetProgress() { // a new game: the menu's "new game"
   Object.assign(progress, FRESH());
   save();
@@ -83,15 +83,20 @@ function useDebugSave(on) { // switch saves; the first debug save starts as a co
 const money = n => debugSave ? '∞' : fmt(n); // a debug wallet shows as bottomless
 
 // the garage's pages: the car itself and the robot driver, paid in metres; the illegal and forbidden, paid in race
-// points, open once the race is revealed (race.js fills it)
-const PAGES = [['workshop', 'Workshop'], ['autopilot', 'Autopilot'], ['black', 'Black market']];
+// points, open once the race is revealed (race.js fills it); the Fleet, paid in miles, open once you have won a race.
+// Each page's currency: the key in progress, and its unit
+const PAGES = [['workshop', 'Workshop'], ['autopilot', 'Autopilot'], ['black', 'Black market'], ['fleet', 'Fleet']];
+const WALLETS = { workshop: 'bank', autopilot: 'bank', black: 'points', fleet: 'miles' };
+const UNITS = { bank: 'm', points: 'pts', miles: 'mi' };
+const pageOpen = id => id === 'black' ? progress.racing : id === 'fleet' ? fleetOpen() : true;
+const fleetOpen = () => progress.finish === 1;
 const pageOf = u => u.tab ?? 'workshop';
-const inPoints = u => pageOf(u) === 'black';
-const wallet = u => inPoints(u) ? 'points' : 'bank';     // which of progress's currencies it costs
-const price = (id, n) => fmt(n) + (inPoints(UPGRADES[id]) ? ' pts' : ' m');
+const wallet = u => WALLETS[pageOf(u)];     // which of progress's currencies it costs
+const inMetres = u => wallet(u) === 'bank';
+const price = (id, n) => `${fmt(n)} ${UNITS[wallet(UPGRADES[id])]}`;
 const maxOf = u => typeof u.max === 'function' ? u.max() : u.max;
 function cost(id) {
-  const u = UPGRADES[id], step = inPoints(u) ? 1 : 10; // metres in round tens, points one by one
+  const u = UPGRADES[id], step = inMetres(u) ? 10 : 1; // metres in round tens, the rest one by one
   return Math.max(step, Math.round(u.base * (u.growth ?? 1) ** lvl(id) / step) * step);
 }
 function whyNot(id) { // reason an upgrade can't be bought now, or '' if it can
@@ -125,7 +130,7 @@ const run = { phase: 'garage', count: 0, left: 0, best: progress.best, gain: 0, 
 
 function startRun() { // back to the start line, engine running, in neutral, held on the brake
   Object.assign(run, { phase: 'starting', count: COUNTDOWN, left: runTime(), best: progress.best, gain: 0, newBest: false,
-                       slot: progress.racing ? startSlot() : null, race: null, revealed: false, limp: wrecked(),
+                       slot: progress.racing ? startSlot() : null, race: null, revealed: false, won: false, limp: wrecked(),
                        flashes: lvl('flash'), recharge: 0 });
   resetScene();
   brakePedal = 1;
@@ -139,7 +144,9 @@ function finishRun(dnf) { // dnf: why the run ended early (a crash), if it did
   progress.bank += run.gain;
   progress.best = Math.max(progress.best, run.gain);
   progress.runs++;
+  const was = progress.finish;
   run.race = raceFinish(dnf);
+  run.won = was > 1 && progress.finish === 1; // the first win opens the Fleet
   save();
   Object.assign(run, { phase: 'finish', count: FINISH });
   nitro = false;
@@ -179,12 +186,36 @@ function roadMarks() {
   return marks;
 }
 
+// the Fleet's Exchange: metres for miles, one way
+const MILE = 1609; // m
+let exchange = 0;  // miles on its slider
+const canExchange = () => Math.floor(progress.bank / MILE);
+function convert(mi) {
+  mi = Math.min(mi, canExchange());
+  if (mi <= 0) return false;
+  progress.bank -= mi * MILE;
+  progress.miles += mi;
+  exchange = 0;
+  save();
+  return true;
+}
+const exchangeLabel = () => `${fmt(exchange)} mi for ${fmt(exchange * MILE)} m`;
+function exchangeCard() {
+  const can = canExchange();
+  exchange = Math.min(exchange, can);
+  return `<div class="card exchange"><b>Exchange</b><small>metres for miles, one way: ${fmt(MILE)} m a mile · ` +
+    `${money(progress.miles)} mi to spend</small><input type="range" id="exchange" min="0" max="${can}" value="${exchange}">` +
+    `<span><button data-exchange${exchange ? '' : ' disabled'}>${exchangeLabel()}</button> ` +
+    `<button data-exchange-all${can ? '' : ' disabled'}>all available · ${money(can)} mi</button></span></div>`;
+}
+
 // ---- garage ----
 let garageTab = 'workshop';
 function renderGarage(bought) {
-  if (!progress.racing && garageTab === 'black') garageTab = 'workshop';
-  $('bank').textContent = `${money(progress.bank)} m` + (progress.racing ? ` · ${money(progress.points)} pts` : '') + ' to spend';
-  const done = Object.keys(UPGRADES).every(id => inPoints(UPGRADES[id]) || whyNot(id) === 'max'), r = run.race;
+  if (!pageOpen(garageTab)) garageTab = 'workshop';
+  $('bank').textContent = `${money(progress.bank)} m` + (progress.racing ? ` · ${money(progress.points)} pts` : '') +
+    (fleetOpen() ? ` · ${money(progress.miles)} mi` : '') + ' to spend';
+  const done = Object.keys(UPGRADES).every(id => !inMetres(UPGRADES[id]) || whyNot(id) === 'max'), r = run.race;
   $('report').innerHTML = !progress.runs
     ? `You get ${runTime()} seconds. Drive as far as you can: every metre is money for upgrades.`
     : (r?.dnf ? `<b>DNF</b>: ${{ 'head-on': 'head-on with oncoming traffic', wrecked: 'the car is wrecked',
@@ -194,8 +225,9 @@ function renderGarage(bought) {
       `Last run <b>+${fmt(run.gain)} m</b>${run.newBest ? ' · <b>new best!</b>' : ''} · best ${fmt(progress.best)} m · ` +
       `${progress.runs} run${progress.runs > 1 ? 's' : ''} · ${runTime()} s a run` + (done ? ' · fully built' : '') +
       (run.refill ? ` · nitro refill −${fmt(run.refill)} m` : '') +
-      (run.revealed ? '<br><b>That quick car was racer #100. You are in a race: the Black market is open.</b>' : '');
-  $('tabs').innerHTML = PAGES.filter(([id]) => id !== 'black' || progress.racing)
+      (run.revealed ? '<br><b>That quick car was racer #100. You are in a race: the Black market is open.</b>' : '') +
+      (run.won ? '<br><b>P1! The racers you beat are open to offers: the Fleet is open, paid in miles.</b>' : '');
+  $('tabs').innerHTML = PAGES.filter(([id]) => pageOpen(id))
     .map(([id, name]) => `<button data-tab="${id}"${id === garageTab ? ' class="on"' : ''}>${name}</button>`).join('');
   $('engine-row').hidden = garageTab !== 'workshop';
   $('engine-row').innerHTML = ENGINES.map((e, i) => i <= lvl('engine')
@@ -210,7 +242,7 @@ function renderGarage(bought) {
     `rev limit −${fmt(revLoss())} rpm${progress.broken.length ? ` · broken: ${progress.broken.map(ordinal).join(', ')}` : ''}</small>` +
     `<button data-repair${progress.bank >= REPAIR ? '' : ' disabled'}>${progress.bank >= repairCost() ? 'Repair all' : 'Repair what I can'}` +
     ` · ${fmt(Math.min(repairCost(), Math.floor(progress.bank / REPAIR) * REPAIR))} m</button></div>` : '';
-  $('cards').innerHTML = repairCard + Object.entries(UPGRADES).filter(onTab).map(([id, u]) => {
+  $('cards').innerHTML = repairCard + (garageTab === 'fleet' ? exchangeCard() : '') + Object.entries(UPGRADES).filter(onTab).map(([id, u]) => {
     const l = lvl(id), why = whyNot(id), max = maxOf(u), steps = typeof u.max === 'function' ? 0 : max;
     const pips = steps > 1 ? `<i>${'■'.repeat(l)}${'□'.repeat(steps - l)}</i>` : '';
     const info = max > 1 || steps === 0 ? u.info(l) + (why !== 'max' && !why.startsWith('finish') ? ` → ${u.info(l + 1)}` : '') : u.info();
@@ -233,10 +265,19 @@ $('garage').onclick = e => {
   if (max) { while (buy(max)); beep(1760, 0.08); }
   if (tab) garageTab = tab;
   if ('repair' in b.dataset && repair()) { beep(1320, 0.1); refreshCar(); }
+  if (('exchange' in b.dataset || 'exchangeAll' in b.dataset) && convert('exchange' in b.dataset ? exchange : Infinity)) beep(1760, 0.08);
   if (i) { progress.engine = +i; save(); refreshCar(); }
   if (toggle) { progress.off[toggle] = !progress.off[toggle]; save(); }
   if (b.id === 'drive') return drive();
   renderGarage(id ?? max);
+};
+
+$('garage').oninput = e => { // the Exchange's slider: only its button changes, so the drag carries on
+  if (e.target.id !== 'exchange') return;
+  exchange = +e.target.value;
+  const b = $('garage').querySelector('[data-exchange]');
+  b.textContent = exchangeLabel();
+  b.disabled = !exchange;
 };
 
 function drive() {
