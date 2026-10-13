@@ -10,8 +10,9 @@ Design decisions, balance targets, the playtest history and the open questions a
 
 ## Working with the owner (fulibacsi)
 
-- **`main` is live.** Never push to `main` or merge into it. Locally, commit and let the owner push; in a cloud session,
-  work on the session's branch for the owner to review. Ask before any push.
+- **`main` is live.** Never push to `main` or merge into it. In a local session, commit and let the owner push: ask
+  before any push. In a cloud session, push each commit to its branch as soon as it is done; the owner reviews and
+  merges.
 - **Branch names** describe the change, one branch per change: `feature/<change>` for features, `fix/<change>` for
   bug fixes (`feature/nos-pedal`, `fix/stalk-behind-shifter`). In a cloud session this replaces the branch name the
   session was given: create the named branch, and work and push there.
