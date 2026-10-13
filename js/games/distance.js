@@ -48,6 +48,7 @@ function applyUpgrades() { // the garage's work on the engines and the car, and 
   chicken = lvl('chicken') > 0; // a flash moves oncoming cars too
   steering = 1 + 0.4 * lvl('steering');
   bullBar = lvl('bullbar');
+  spikes = lvl('spikes') > 0;
   brokenGears = damageOn() ? progress.broken : [];
 }
 

@@ -41,6 +41,7 @@ function renderSonar() {
 function teamwork(c, dt) {
   const other = MY_LANES[1 - c.lane], you = c.z - odo; // m it is ahead of you
   c.flashed = Math.max(0, (c.flashed ?? 0) - dt);
+  if (arOn()) gangwork(c, dt); // a gang now (gang.js)
   // its flash, for you (Fleet flash): a slower car in your lane up to 100 m ahead of it moves over, every 3 s at most
   if (lvl('fleetFlash') && !progress.off.fleetFlash && lane <= 1 && !c.flashed) {
     const t = traffic.find(o => !o.racer && sameLane(o.x, MY_LANES[lane]) && o.z > c.z && o.z - c.z < 100 &&
