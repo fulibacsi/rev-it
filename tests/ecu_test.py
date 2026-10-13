@@ -1,5 +1,5 @@
-"""ECU tune with the driver aids (phone layout): hands off, the aids keep a tuned engine on its factory map, so a tune
-never makes the car slower and the revs stay at the factory redline; a finger on the gas uses the tuned rev range."""
+"""ECU tune with the driver aids (phone layout): hands off, the aids use the tune in every gear while the engine is
+cool (the factory map when hot), a tune never makes the car slower; a finger on the gas uses the tuned rev range."""
 from playwright.sync_api import sync_playwright
 from common import URL, launch
 CAR = "power: 10, rev: 4, gears: 3, tyres: 4, time: 6, clutch: 1, gas: 1, shift: 1, engine: 2, steer: 1, cruise: 1, steering: 3, reckless: 1"
@@ -29,7 +29,13 @@ with sync_playwright() as p:
     base = hands_off["no ECU"]["kmh"]
     for label, r in list(hands_off.items())[1:]:
         check(f"{label}, hands off: no slower than untuned ({base} km/h)", r["kmh"] >= base - 5, f"{r['kmh']} km/h")
-        check(f"{label}, hands off: revs held at the factory redline", max(r["most"].values()) < r["stock"] + 400, max(r["most"].values()))
+    for label in ["ECU rev 4", "both"]:  # the tune in every gear ("ECU only works in 6th gear" was a bug)
+        r = hands_off[label]
+        check(f"{label}, hands off: past the factory redline in every gear", all(v > r["stock"] + 400 for v in r["most"].values()), r["most"])
+    # hot, the aids keep to the factory map from 0.6 until the engine has cooled below 0.4, well short of the red
+    cap = lambda h: js(f"() => new Promise(res => {{ heat = {h}; setTimeout(() => res(revCap === engine.stock.redline ? 'factory' : 'tuned'), 150); }})")
+    got = [cap(h) for h in (0.65, 0.5, 0.3, 0.5)]
+    check("tuned, hands off: the factory map from heat 0.6 until it has cooled below 0.4", got == ["factory", "factory", "tuned", "tuned"], got)
     start(CAR + ", ecuRev: 4, ecuPower: 4")
     g = pg.locator("#gas").bounding_box(); x, y = g["x"] + g["width"] / 2, g["y"] + g["height"] / 2
     cdp.send("Input.dispatchTouchEvent", {"type": "touchStart", "touchPoints": [{"x": x, "y": y, "id": 1}]})

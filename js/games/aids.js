@@ -2,10 +2,11 @@
 // can watch them do it. Each one only works while bought, switched on and a run is under way (aid() in distance.js).
 
 function updateAids(dt) {
-  // an ECU tune: driving on its own the car keeps to the factory map, limiter at the factory redline (no heat from the
-  // revs); your own foot on the gas, nitro, or reckless auto-drive while the engine is cool, switch to the tuned map
+  // an ECU tune: driving on its own the car revs into the tune, in every gear, while the engine is cool; from heat 0.6
+  // it keeps to the factory map (limiter at the factory redline) until it has cooled below 0.4, well short of the red.
+  // Your own foot on the gas, or nitro, take the tuned map whatever the heat
   const reckless = aid('recklessCruise');
-  tunedRevs = reckless && heat < (tunedRevs ? 0.6 : 0.4); // it cools down on the factory map, well short of the red
+  tunedRevs = heat < (tunedRevs ? 0.6 : 0.4);
   revCap = aid('gas') && tuned() && !pushing() && !nitro && !tunedRevs ? engine.stock.redline : Infinity;
   if (state !== 'running') return;
   if (aid('shift')) autoShift();
@@ -132,9 +133,9 @@ function autoFlash() {
 // reckless auto-drive (Black market): autocruise without manners. Boxed in on your side it takes the near oncoming lane
 // when nothing is coming for 6 s, or when whatever comes can be flashed out of the way (Game of chicken and a flash
 // left). It goes home when something it can't flash away comes within 3.5 s (cutting in beside a car only to escape a
-// head-on under 2 s away), or once your side is open again. It revs into the ECU tune while the engine is cool, and
-// pushes the nitro pedal when a racer is close ahead, the tyres grip and it isn't braking.
-let tunedRevs = false; // revving into the tune now (see updateAids)
+// head-on under 2 s away), or once your side is open again. It pushes the nitro pedal when a racer is close ahead, the
+// tyres grip and it isn't braking.
+let tunedRevs = true; // the aids rev into the tune now (see updateAids)
 const meets = x => { // s until the first oncoming car in lane x meets you
   let t = Infinity;
   for (const c of traffic)
