@@ -171,6 +171,12 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 @supports (height: 1dvh) { .touch { --shifter-h: min(52dvh, 300px); } }
 .touch #help { display: none; }
 .touch #wheel { top: 80vh; top: 80dvh; } /* the rim is a control here: up off the screen's edge, under the cluster */
+/* the light stalk comes out 10° further up the rim and 10% shorter, at the same angle: the shifter, pushed in by the
+   notch or island, covered it. Shorter keeps the knob inside the wheel's drawing. Its touch area also slides out
+   along it, to stay as far off the rim as before. */
+.touch #stalk, .touch #stalk-hit { --at: translate(78px, -37px) scale(0.9); transform-origin: 250px 130px; transform: var(--at); }
+.touch #stalk-hit { transform: var(--at) translate(-15px, -7px); }
+.touch.flashing #stalk { transform: var(--at) translate(-3px, 9px); }
 .touch #hud { top: 38vh; top: 38dvh; transform: translateX(-50%) scale(var(--hud-scale)); transform-origin: top center; }
 .touch #cluster { top: 60vh; top: 60dvh; width: 28vw; }
 .touch #shifter { left: var(--edge-l); top: auto; bottom: var(--edge-b); height: calc(var(--shifter-h) * 3.2 / var(--gate-w)); }

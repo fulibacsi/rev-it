@@ -26,6 +26,10 @@ with sync_playwright() as p:
     for sel in ["#shifter", "#pedals", "#ignition", "#stalk-hit", "#timer", "#menu-button"]:
         r = js(f"(() => {{ const r = document.querySelector('{sel}').getBoundingClientRect(); return [r.left, r.right, r.top, r.bottom]; }})()")
         print(f"  {sel:13} left {r[0]:5.0f}  right gap {W - r[1]:5.0f}  bottom gap {H - r[3]:5.0f}")
+    # the island pushes the shifter in, and it once covered the light stalk: nothing may cover the stalk's knob
+    on = js("""(() => { const k = document.querySelector('#stalk path:nth-of-type(3)'), m = k.getScreenCTM(), n = k.getTotalLength();
+      return Array.from({ length: 9 }, (_, i) => { const p = k.getPointAtLength(n * i / 8).matrixTransform(m); return document.elementFromPoint(p.x, p.y)?.id; }); })()""")
+    print(f"{'ok ' if all(i == 'stalk-hit' for i in on) else 'FAIL'} the light stalk's knob is uncovered:", on)
     # the page goes to the background mid-run (switching apps)
     js("Object.defineProperty(document, 'hidden', { configurable: true, get: () => true }); document.dispatchEvent(new Event('visibilitychange'))")
     pg.wait_for_timeout(300); print("hidden mid-run:", js("({ menu: menuOpen, sound: ctx && ctx.state, phase: run.phase, left: +run.left.toFixed(1) })"))

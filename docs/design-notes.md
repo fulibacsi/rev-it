@@ -56,6 +56,8 @@ machine or session. Keep it current: update a section when a decision changes, a
 **Keeping it in the car (diegetic).**
 - Headlight flash is a light stalk on the steering column, left of the wheel and fixed (it doesn't turn with the
   wheel). Its touch area is kept off the rim. F also flashes.
+  - On phones it comes out further up the rim and is a little shorter: the shifter, pushed in by the iPhone's island,
+    hid it.
 - The flashes left show on the head-up display as the blue high-beam telltale and a count.
 - The run's time left is a bar draining across the widened rear-view mirror. It turns red and blinks under 5 s.
 - The red NOS button is accepted as a dashboard button.
@@ -205,6 +207,7 @@ All dates are 2026.
   - Flash charges.
   - Auto flash leaves racers alone.
 - **12 Oct, diegetic pass:** the light stalk replaced the FLASH button, and the timer moved into the mirror.
+- **13 Oct, phone:** the light stalk was partly hidden behind the gear shifter. It now comes out further up the rim.
 
 ## Open questions
 
