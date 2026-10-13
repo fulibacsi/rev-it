@@ -23,6 +23,19 @@ const fleetPace = () => 1 + 0.05 * lvl('fleetPace');
 // the dues for a run: a share of the metres your fleet drove from the grid, paid into the bank at the finish
 const fleetDues = () => Math.round(0.1 * lvl('dues') * racers().reduce((m, c) => m + (c.fleet ? Math.max(0, c.z - c.grid) : 0), 0));
 
+// the sonar on the A-pillar: your fleet cars up to 500 m behind you, by distance (out from you at the top) and by how
+// far across the road they are (the angle)
+const SONAR = 500; // m
+function renderSonar() {
+  const on = run.phase !== 'garage' && fleetSize() > 0;
+  document.body.classList.toggle('has-fleet', on);
+  if (!on) return;
+  $('sonar-blips').innerHTML = racers().filter(c => c.fleet && c.z < odo && odo - c.z < SONAR).map(c => {
+    const r = 8 + 52 * (odo - c.z) / SONAR, a = clamp((c.x - carX) / 7, -1, 1) * 36 * Math.PI / 180;
+    return `<circle cx="${(64 + r * Math.sin(a)).toFixed(1)}" cy="${(12 + r * Math.cos(a)).toFixed(1)}" r="3.2"/>`;
+  }).join('');
+}
+
 // a fleet car's teamwork, before it drives on (road.js driveCar): its flash for you, out of your way, then in the way
 // of a rival
 function teamwork(c, dt) {
