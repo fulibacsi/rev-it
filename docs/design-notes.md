@@ -197,6 +197,17 @@ Auto gas's traction control trims it, and autocruise still brakes.
 racers you beat are open to offers". It is a garage page paid in **miles**.
 - **The Exchange** card turns metres into miles, one way, a mile for 1,609 m: a slider for how many, an "all
   available" button, and the miles you have. Miles show in the garage's header too. The speedometer stays in km/h.
+- **Pay off a racer:** each one you pay off joins your fleet. It keeps its number, its slot in the 100-car field and
+  its pace, in your colours (black with gold stripes).
+  - The slowest go first (#100, then #99 ...), from 1 mi, each 6% dearer: 18 mi for the 51st, about 308 mi for the
+    first 51. #1 won't sell.
+  - Your position counts the rivals only, so a fleet car ahead of you doesn't cost you a place; the head-up display's
+    gaps are to rivals too.
+  - Claude's calls: the order (the slowest first, so a fleet car is one you have already beaten) and the prices, a first
+    guess from a paper model: with Fleet dues (to come) the 51st car about 26 races after the first win.
+- **In a race** a fleet car gives way when you come up behind it in its lane (from 250 m, briskly, as for a flash). It
+  blocks a rival closing on it from behind: when one within 60 m heads for its other lane, it moves across in front of
+  it. It waits 2 s between moves and a racer 5 s, so a blocked rival rarely gets past. It never moves into your path.
 
 ### Balance targets and results
 
@@ -223,10 +234,8 @@ order of work is in [phase-3-build-plan.md](phase-3-build-plan.md).
 
 **The fleet** unlocks once you reach P1: a garage page, **Fleet**, paid in miles (built: see Act 3). No
 frequent-driver tiers.
-- **Fleet cars:** you pay racers off to join your team. Each one takes its racer's place in the 100-car field, and
-  each costs more than the last.
-- **In a race** they give way to you, use their upgrades for you (a flash to move traffic out of your way, for one)
-  and block racers.
+- **Fleet cars** (built: see Act 3). **In a race** they use their upgrades for you (a flash to move traffic out of
+  your way, for one).
 - **Upgrades** are fleet-wide, not per car.
 - **Sonar:** the mirror is the timer, so there is no rear view. A mechanical device fixed to the A-pillar, in the top
   left corner of the windscreen, shows where your fleet cars are behind you.

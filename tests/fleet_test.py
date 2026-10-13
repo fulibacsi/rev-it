@@ -1,10 +1,12 @@
 """The Fleet: never shown before your first win; winning a race opens it (the garage says so), with miles in the
 header and the Exchange card: metres for miles, one way, 1,609 m a mile, a slider (dragged with a finger on the
-phone) and "all available"."""
+phone) and "all available". Racers paid off (the slowest first, each dearer, #1 never) race for you in your colours:
+they don't count against your position, give way when you come up behind them and block a rival closing on them."""
 import re
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
 CAR = "power: 10, rev: 4, gears: 3, tyres: 4, time: 6, clutch: 1, gas: 1, shift: 1, engine: 2, steer: 1, cruise: 1"
+HANDS = "power: 10, rev: 4, gears: 3, tyres: 4, time: 6, clutch: 1, gas: 1, shift: 1, engine: 2"  # no steering aids
 errors, fails = [], []
 def check(name, ok, got=""):
     print(f"{'ok ' if ok else 'FAIL'} {name}" + (f": {got}" if got != "" else ""))
@@ -47,5 +49,41 @@ with sync_playwright() as p:
     got = js("({ bank: progress.bank, miles: progress.miles, all: document.querySelector('[data-exchange-all]').disabled })")
     check("all available: every whole mile, the rest stays", got == {"bank": 10000 - 6 * 1609, "miles": 6, "all": True}, got)
     check("the header shows them", js("$('bank').textContent").endswith("· 6 mi to spend"), js("$('bank').textContent"))
+    # 4. paying racers off: the slowest first, each a little dearer; #1 won't sell
+    js("progress.miles = 100"); pg.wait_for_timeout(50); js("renderGarage()")
+    for _ in range(3): pg.tap('[data-buy="fleet"]'); pg.wait_for_timeout(80)
+    check("three racers paid off, a mile each", js("[lvl('fleet'), progress.miles]") == [3, 97], js("[lvl('fleet'), progress.miles]"))
+    check("the card names them", "#98 to #100 race for you" in js("$('cards').innerText"), js("$('cards').innerText")[-160:])
+    prices = js("(() => { const l0 = lvl('fleet'), p = Array.from({ length: 99 }, (_, l) => { progress.levels.fleet = l; return cost('fleet'); }); progress.levels.fleet = l0; return p; })()")
+    print(f"   prices: the 1st {prices[0]} mi, the 51st {prices[50]}, the 99th {prices[98]}; the first 51 together {sum(prices[:51])} mi")
+    check("each costs at least as much as the last, and more over time", all(a <= b for a, b in zip(prices, prices[1:])) and prices[50] > prices[0], prices[::10])
+    check("#1 won't sell", js("(() => { progress.levels.fleet = 99; const w = whyNot('fleet'); progress.levels.fleet = 3; return w; })()") == "#1 won't sell")
+    # 5. a race with three fleet cars: #98 to #100 in your colours; they don't count against your position
+    start = lambda levels: (js(f"progress.levels = {{ {levels}, fleet: 3 }}; refreshCar()"), pg.tap("#drive"), pg.wait_for_function("run.phase === 'run'", timeout=15000))
+    start(HANDS)
+    check("fleet cars: #98 to #100", js("racers().filter(c => c.fleet).map(c => c.racer).sort((a, b) => a - b)") == [98, 99, 100], js("racers().filter(c => c.fleet).map(c => c.racer)"))
+    check("in your colours", js("racers().find(c => c.racer === 99).look.rear === racerSprite(99, true, true).rear && racerSprite(99, true, true).rear !== racerSprite(99, true).rear"))
+    js("rivals().forEach(c => c.z = odo - 9000); racers().filter(c => c.fleet).forEach((c, i) => Object.assign(c, { z: odo + 18 + 14 * i, lane: i % 2, x: MY_LANES[i % 2] }))")
+    pg.wait_for_timeout(150); pg.screenshot(path=f"{OUT}/fleet_cars.png")
+    check("ahead of every rival, behind your fleet: P1", js("position()") == 1, js("position()"))
+    # 6. a fleet car ahead in your lane, slower: it moves over for you, no crash
+    js("traffic.forEach(c => { if (!c.racer) { c.dir = -1; c.x = LANES.oncoming[0]; c.z = odo + 4000; } }); window.crashes = 0; "
+       "if (!DISTANCE.crash0) { DISTANCE.crash0 = DISTANCE.crash; DISTANCE.crash = i => { crashes++; DISTANCE.crash0(i); }; } 0")  # 0: or Playwright calls the function
+    pg.wait_for_function("speed > 25", timeout=20000)
+    js("window.f = racers().find(c => c.racer === 100); racers().filter(c => c.fleet && c !== f).forEach(c => c.z = odo - 5000); "
+       "Object.assign(f, { lane, x: MY_LANES[lane], z: odo + 90, v: 15, want: 15, cool: 0 })")
+    pg.wait_for_timeout(1200); moved = js("[f.lane, lane, Math.round(f.z - odo)]")
+    try: pg.wait_for_function("f.z < odo - 20", timeout=15000); past = True
+    except Exception: past = False
+    check("a fleet car ahead in your lane moves over for you; no crash", moved[0] != moved[1] and past and js("crashes") == 0, {"its lane, yours, m ahead": moved, "past it": past, "crashes": js("crashes")})
+    # 7. a rival closing on a fleet car in the other lane: the fleet car moves across and holds it up
+    js("""Object.assign(f, { lane: 0, x: MY_LANES[0], z: odo + 700, v: 30, want: 30, cool: 0 });
+        window.r = rivals().find(c => c.racer === 40); Object.assign(r, { lane: 1, x: MY_LANES[1], z: f.z - 40, v: 45, want: 45, cool: 0 });
+        rivals().filter(c => c !== r).forEach(c => c.z = odo - 9000)""")
+    trace = js("""() => new Promise(res => { const out = []; let t = 0; const h = setInterval(() => {
+        out.push([+(t += 0.5).toFixed(1), f.lane, r.lane, Math.round(r.z - f.z), Math.round(f.z - odo)]); if (t >= 5) { clearInterval(h); res(out); } }, 500); })""")
+    print("   [s, fleet car's lane, rival's lane, rival m ahead of it, fleet car m ahead of you]:", trace)
+    check("the fleet car moves across in front of the rival", any(t[1] == 1 for t in trace[:3]), trace[:3])
+    check("and holds it up for 5 s (it would have passed in 3)", all(t[3] < 0 for t in trace), [t[3] for t in trace])
     b.close()
 print("ERRORS:", errors or "none", "| FAILS:", fails or "none")
