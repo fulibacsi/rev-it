@@ -312,7 +312,7 @@ lamp. It shows from Mad Max on, only on the road; the garage's report gives it t
   - `accel.py`: stock acceleration;
   - `sim.js`: the in-page bot they share.
 
-### Phase 3: the fleet, then Mad Max (decided 13 Oct, being built)
+### Phase 3: the fleet, then Mad Max (decided 13 Oct, built overnight 13–14 Oct)
 
 The owner's answers of 13 Oct. Where a detail is still open, Claude decides while building and notes it here. The
 order of work is in [phase-3-build-plan.md](phase-3-build-plan.md).
@@ -385,15 +385,25 @@ All dates are 2026.
   - The garage split into pages: Workshop, Autopilot and the Black market (the owner's picks of the proposed names),
     with the illegal automation (Reckless auto-drive) on the Black market. Grid and Rolling start became Bribe the
     starter and Jump the start. Time keeps its name: a fuel tank would have to burn more in a faster car.
+- **13–14 Oct, the overnight build** (Claude, while the owner slept, from the answers of 13 Oct; every open detail is
+  marked "Claude's call" above):
+  - Fixes: the iPhone overlaps (key over the rev counter, menu button over GARAGE); the aids leave a control only
+    while you touch it (nitro is not the gas pedal); the ECU tune in every gear.
+  - The head-up display see-through; Flash recharge; Auto flash plays chicken.
+  - Act 3, the Fleet: miles and the Exchange, paying racers off, their teamwork, the fleet's upgrades, the sonar.
+  - Act 4, Mad Max: the AR target, totals and parts, bull bars, armour, spiked hubs, guns on the wheel's marker, the
+    gang at work, police heat with the scanner and the police, and the tank.
+  - Autocruise's top speed was measured, not changed (see "Also decided").
 
 ## Open questions
 
 Waiting for the owner. Don't build these on a guess: ask.
 
-- None right now: the answers of 13 Oct settled them (phase 3, above).
+- **Autocruise's weave** (see "Also decided"): about 5–7% further a run, but about a third more crashes. Worth it?
 - **For the balancing pass, after the build:** the flash prices moved the simulated reveal about 2 runs later; the
-  prices of Game of chicken and Reckless auto-drive; the miles rate, car health, parts per car and heat rates; Speed
-  signs is too easy.
+  prices of Game of chicken and Reckless auto-drive; Speed signs is too easy. All of phase 3's numbers are first
+  guesses: the miles prices and dues (`act3.py`), car health and damage per bump, parts per car and the Mad Max
+  prices, the heat rates and the police, the tank's health and shells.
 
 ## Brainstorm waiting for the owner's picks
 
