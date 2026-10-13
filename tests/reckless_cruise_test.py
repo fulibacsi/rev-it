@@ -33,9 +33,10 @@ with sync_playwright() as p:
     js("Object.assign(progress, { levels: { steer: 1, gas: 1, shift: 1, clutch: 1, cruise: 1 } })")
     check("needs Reckless driving", js("whyNot('recklessCruise')") == "needs Reckless driving", js("whyNot('recklessCruise')"))
     # 2. boxed in on your side, nothing coming: over the line, past, and home again
-    start(CAR, 160)
-    js("lane = fromLane = 1; carX = MY_LANES[1]")
-    js(f"({place})([[1, MY_LANES[0], 60, 90], [1, MY_LANES[1], 70, 90]])")
+    # up to speed on its own first, then two slow cars close ahead: under 3 s away at once, before autocruise has
+    # braked to their speed (behind them at their speed it would stay: it is only boxed in while closing)
+    start(CAR); pg.wait_for_function("gear >= 3 && speed > 30", timeout=20000)
+    js(f"lane = fromLane = 1; carX = MY_LANES[1]; slide = 0; ({place})([[1, MY_LANES[0], 30, 40], [1, MY_LANES[1], 35, 40]])")
     trace = js(f"({watch})(8)")
     over = any(r[1] == 2 for r in trace); home = trace[-1][1] <= 1
     check("boxed in: passes in the oncoming lane and comes home, no crash", over and home and js("crashes") == 0,
@@ -54,13 +55,17 @@ with sync_playwright() as p:
             check("chicken: flashes the oncoming car away and stays over there, no crash",
                   swerved == -5.25 and trace[-1][2] == 4 and all(l == 2 for l in lanes) and js("crashes") == 0, f"its swerve {swerved}, lanes {lanes}, crashes {js('crashes')}")
         else:
+            # where it ends up varies: once the oncoming car has passed, still boxed in, it may go straight back out
             check("no chicken: stays out until the head-on is near, then cuts in: no head-on",
-                  swerved is None and lanes[0] == 2 and lanes[-1] <= 1 and js("run.phase") == "run", f"lanes {lanes}, crashes {js('crashes')}, phase {js('run.phase')}")
+                  swerved is None and lanes[0] == 2 and min(lanes) <= 1 and js("run.phase") == "run", f"lanes {lanes}, crashes {js('crashes')}, phase {js('run.phase')}")
     # 5. nitro: a racer 300 m ahead, the road clear: its foot on the nitro pedal (which goes down), not under yours
     start(CAR + ", ecuPower: 1, nitro: 2"); pg.wait_for_function("gear >= 3", timeout=20000)
-    js("progress.nitro = 4; racers()[0].z = odo + 300; racers()[0].v = speed + 5"); pg.wait_for_timeout(600)
-    got = js("({ nitroByAid, nitro, pedal: $('nos').style.transform.includes('rotateX(25deg)'), left: +progress.nitro.toFixed(1) })")
-    check("a racer close ahead: it pushes the nitro pedal and nitro burns", got["nitroByAid"] and got["nitro"] and got["pedal"] and got["left"] < 4, got)
+    js("progress.nitro = 4; racers()[0].z = odo + 300; racers()[0].v = speed + 5")
+    # watched for 0.6 s, not at one instant: a gear change goes through neutral, and it uses nitro from 2nd up
+    got = js("""() => new Promise(res => { let seen = false, t = 0; const h = setInterval(() => {
+        seen ||= nitroByAid && nitro && $('nos').style.transform.includes('rotateX(25deg)');
+        if ((t += 50) >= 600) { clearInterval(h); res({ seen, left: +progress.nitro.toFixed(1) }); } }, 50); })""")
+    check("a racer close ahead: it pushes the nitro pedal and nitro burns", got["seen"] and got["left"] < 4, got)
     kb.down(" "); pg.wait_for_timeout(200); got = js("({ nitroByAid, nitro })"); kb.up(" ")
     check("your foot on the gas: it takes its foot off the nitro pedal", not got["nitroByAid"] and not got["nitro"], got)
     js("racers()[0].z = odo - 9000"); pg.wait_for_timeout(200)
