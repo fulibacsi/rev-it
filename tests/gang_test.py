@@ -2,7 +2,9 @@
 windscreen: a reticle and a health bar on the nearest car ahead, kept until you pass it. Bumps hurt the car you hit;
 at 0 health it skids onto the shoulder, out of your way, and pays parts. A totalled rival is out of the race. The
 first total opens the Mad Max page, paid in parts; a bull bar hurts them more and costs you less speed. Armour takes
-off your damage, spiked hubs make a side-swipe free and harder; with a bull bar the gang side-swipes rivals."""
+off your damage, spiked hubs make a side-swipe free and harder; with a bull bar the gang side-swipes rivals. Guns,
+last: the wheel's red marker turns into the trigger (FIRE on it), shots hurt the car in the reticle within 200 m, and
+the gang shoots at rivals."""
 import re
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -93,5 +95,31 @@ with sync_playwright() as p:
             setTimeout(() => res(Math.round(r.hp ?? 150)), 1000); })""")
     got = [gang(0), gang(2)]
     check("bull bar 2: the gang side-swipes the rival beside it (40); without one it doesn't", got == [150, 110], got)
+    # 12. guns: before them the marker is part of the rim; with them it is the trigger
+    js("progress.levels.bullbar = 0; progress.levels.guns = 0; refreshCar()"); pg.wait_for_timeout(100)
+    m = js("(() => { const r = $('trigger').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; })()")
+    pg.mouse.move(*m); pg.mouse.down(); pg.wait_for_timeout(100); got = js("({ wheel: wheel.held, firing, fire: getComputedStyle($('fire')).display })"); pg.mouse.up()
+    check("no guns: the marker is the wheel's, no FIRE", got == {"wheel": True, "firing": False, "fire": "none"}, got)
+    js("progress.levels.guns = 2; refreshCar()"); pg.wait_for_timeout(100)
+    place = """(d) => { const c = traffic.find(c => !c.racer); traffic.forEach(o => { if (o !== c && !o.fleet) o.z = o.racer ? odo - 9000 : odo + 5000; });
+        racers().filter(o => o.fleet).forEach(o => o.z = odo - 4000);
+        Object.assign(c, { dir: 1, lane: 1, x: MY_LANES[1], z: odo + d, v: speed, want: speed, cool: 99, hp: null, wreck: false }); window.tg = c; lane = fromLane = 0; carX = MY_LANES[0]; target = null; }"""
+    js(f"({place})(60)"); pg.wait_for_function("target === tg && tg.seen", timeout=5000)
+    fire = lambda secs: js(f"() => new Promise(res => {{ const t0 = run.left; const f = () => run.left > t0 - {secs} ? requestAnimationFrame(f) : res(); requestAnimationFrame(f); }})")
+    pg.mouse.move(*m); pg.mouse.down(); held = js("({ firing, fire: getComputedStyle($('fire')).display, wheel: wheel.held })"); fire(1); pg.screenshot(path=f"{OUT}/gang_guns.png"); pg.mouse.up()
+    hp = js("Math.round(tg.hp ?? 100)")
+    check("guns 2: the marker is the trigger (FIRE on it); a second of fire, 4 or 5 shots of 12", held["firing"] and held["fire"] != "none" and not held["wheel"] and 100 - hp in (36, 48, 60), {"held": held, "hp": hp})
+    pg.wait_for_timeout(500); check("let go: the guns stop", js("[firing, Math.round(tg.hp)]") == [False, hp], js("[firing, Math.round(tg.hp)]"))
+    pg.keyboard.down("g"); fire(0.5); pg.keyboard.up("g")
+    check("G fires too", js("Math.round(tg.hp)") < hp, [hp, js("Math.round(tg.hp)")])
+    js(f"({place})(250)"); pg.wait_for_function("target === tg", timeout=5000); pg.keyboard.down("g"); fire(0.6); pg.keyboard.up("g")
+    check("out of reach (250 m): no damage", js("tg.hp") is None, js("tg.hp"))
+    # 13. the gang shoots: a fleet car with a rival 50 m ahead of it, a shot a second
+    got = js("""() => new Promise(res => { const f = racers().find(c => c.fleet), r = rivals().find(c => c.racer === 25);
+        traffic.forEach(c => { if (c !== f && c !== r) c.z = c.racer ? odo - 9000 : odo + 5000; });
+        Object.assign(f, { lane: 0, x: MY_LANES[0], z: odo + 300, v: 30, want: 30, cool: 99, gun: 0 });
+        Object.assign(r, { lane: 0, x: MY_LANES[0], z: odo + 350, v: 30, want: 30, cool: 99, hp: null, wreck: false });
+        setTimeout(() => res(Math.round(r.hp ?? 150)), 1500); })""")
+    check("the gang shoots at a rival ahead: 12 a second (one or two shots in 1.5 s)", got in (126, 138), got)
     b.close()
 print("ERRORS:", errors or "none", "| FAILS:", fails or "none")

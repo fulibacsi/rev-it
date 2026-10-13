@@ -167,6 +167,10 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 #cluster text { font-family: system-ui, sans-serif; fill: #ccc; text-anchor: middle; }
 #wheel { position: fixed; left: 50%; top: 83vh; transform: translateX(-50%); width: 54vw; pointer-events: none; }
 #wheel-grip { pointer-events: stroke; cursor: grab; touch-action: none; } /* a wide band around the rim takes hold */
+#fire { display: none; font-family: system-ui, sans-serif; }
+#trigger { pointer-events: none; touch-action: none; }
+.has-guns #fire { display: inline; }
+.has-guns #trigger { pointer-events: fill; cursor: crosshair; } /* with guns, the marker fires instead of steering */
 /* kinetic controls: dragged with the mouse */
 #ignition { position: fixed; left: 67vw; top: 65vh; width: 11vw; cursor: grab; touch-action: none; }
 #ignition text { font: bold 10px system-ui, sans-serif; fill: #777; text-anchor: middle; }
