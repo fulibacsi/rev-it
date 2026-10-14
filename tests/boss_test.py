@@ -65,5 +65,15 @@ with sync_playwright() as p:
     check("armour 2: a shell does 4%", round(js("progress.damage")) == 4, js("progress.damage"))
     js("progress.damage = 99; run.tank.shell = 0"); pg.wait_for_function("run.phase !== 'run'", timeout=5000)
     check("wrecked by the tank: DNF, heat 50%", js("[run.race.dnf, progress.wanted]") == ["wrecked", 0.5], js("[run.race.dnf, progress.wanted]"))
+    # 8. Reckless auto-drive doesn't try to pass the tank: boxed in behind it, nothing coming, it stays on your side
+    garage(1); js("Object.assign(progress.levels, { steer: 1, cruise: 1, recklessCruise: 1 }); refreshCar()"); race()
+    pg.wait_for_function("run.tank", timeout=5000); pg.wait_for_function("speed > 25", timeout=20000)
+    js("progress.damage = 0")
+    box = """(() => { lane = fromLane = 1; carX = MY_LANES[1]; const cs = traffic.filter(c => !c.racer && !c.tank && !c.police);
+        [[0, 30], [1, 35]].forEach(([l, d], i) => Object.assign(cs[i], { dir: 1, lane: l, x: MY_LANES[l], z: odo + d, v: 5, want: 5, cool: 99 }));
+        run.tank.shell = 99; })()"""
+    lanes = js(f"""() => new Promise(res => {{ const out = []; {box}; const h = setInterval(() => {{ out.push(lane);
+        if (out.length >= 25) {{ clearInterval(h); res(out); }} }}, 100); }})""")
+    check("Reckless auto-drive behind the tank: boxed in, it stays on your side", max(lanes) <= 1, lanes)
     b.close()
 print("ERRORS:", errors or "none", "| FAILS:", fails or "none")
