@@ -202,14 +202,14 @@ runs. A hidden race is the second act.
 - Payment goes by finishing position, never by places gained. An earlier "points per place gained" rule was farmable:
   starting at the back on purpose, or swapping places with a racer, paid extra.
 
-**Black market** (paid in race points, 5,536 in all):
+**Black market** (paid in race points, 5,761 in all):
 
 | Upgrade | Levels | Base | Growth | Notes |
 |---|---|---|---|---|
 | Bribe the starter (grid) | up to 100 | 1 | 1.035 | slot N needs a finish ahead of #N |
 | Reckless driving | 1 | 100 | | oncoming lanes; from now on collisions damage the car |
-| Game of chicken | 1 | 150 | | flashes work on oncoming cars: they swerve, room permitting; needs Headlight flash |
-| Reckless auto-drive | 1 | 300 | | autocruise in the oncoming lanes too, with chicken, the tune and nitro; needs Autocruise |
+| Game of chicken | 1 | 75 | | flashes work on oncoming cars: they swerve, room permitting; needs Headlight flash |
+| Reckless auto-drive | 1 | 600 | | autocruise in the oncoming lanes too, with chicken, the tune and nitro; needs Autocruise |
 | Cooling | 3 | 60 | 2 | heat rises 15% slower a level |
 | ECU: rev limit | 4 | 50 | 1.6 | +300 rpm past the factory redline a level |
 | ECU: power | 4 | 60 | 1.6 | +8% torque a level |
@@ -279,8 +279,11 @@ health bar above it, and "TOTAL IT" until the first job is done (a racer's numbe
 it is within the guns' reach (200 m) until you pass it or total it, then moves to the next; further up the road it
 takes the nearest car ahead. Each race starts afresh (14 Oct fix: the reticle kept last race's car, out of sight
 on the horizon, and the guns would fire at nothing else).
-- **Damage:** a bump takes 0.4 of the speed you hit at (km/h) off the car's health: 100 for traffic, 150 for a racer,
-  so two or three rams, or three or four. A head-on is still your DNF, not a total. Your fleet cars can't be hurt.
+- **Damage:** a ram is a hit, 34 off the car's health: 100 for traffic, 150 for a racer, 200 for the police, so 3, 5
+  and 6 hits; with a full bull bar (3 times a hit) 1, 2 and 2 (the owner's numbers, 14 Oct). From behind, a bump
+  closing at under 30 km/h is only a nudge, and one at over 200 km/h totals the car at once: "OHKO!" (the owner's
+  idea). A side-swipe always counts. A head-on is still your DNF, not a total. Your fleet cars can't be hurt. (It used
+  to be 0.4 of the closing speed in km/h a ram: the simulations rammed at 130–300 km/h, so one ram often did it.)
 - **Totalled** at 0 health, a car skids onto the right shoulder, tipped and smoking, and stops; you collect its parts
   (10 from traffic, 25 from a racer). A totalled rival is out of the race and you move up; results still pay by
   finishing position only, so wrecking can't be farmed for points.
@@ -289,9 +292,9 @@ on the horizon, and the guns would fire at nothing else).
 
   | Upgrade | Levels | Base | Growth | Notes |
   |---|---|---|---|---|
-  | Bull bar | 3 | 20 | 2.5 | bumps hurt them 50% more a level; you keep more speed (at 3, you carry on at the car's speed); the gang side-swipes rivals |
+  | Bull bar | 3 | 20 | 2.5 | a hit counts 2/3 more a level (3 times at 3); you keep more speed (at 3, you carry on at the car's speed); the gang side-swipes rivals |
   | Armour plating | 3 | 30 | 2.5 | collisions do 25% less damage to your car a level |
-  | Spiked hubs | 1 | 150 | | a side-swipe (into a car while moving over) costs you no speed and does 50 more damage; the gang's 30 more |
+  | Spiked hubs | 1 | 150 | | a side-swipe (into a car while moving over) costs you no speed and counts one more hit; the gang's 30 more damage |
   | Guns | 3 | 400 | 2 | needs Spiked hubs: 6 damage a shot a level, 4 shots a second, up to 200 m; the gang fires too |
   | Auto gun | 1 | 200 | | needs Guns: fires for you while the reticle's car is in reach and in sight; the marker reads AUTO; ON/OFF in the garage |
 
@@ -320,7 +323,7 @@ lamp. It shows from Mad Max on, only on the road; the garage's report gives it t
     for 2.5 s, then drive off up the road;
   - while you drive in the oncoming lanes one comes at you head-on, flat out (to 250 km/h), steering for you until 1.2 s
     out, so you can still get out of its way. A head-on is a DNF.
-  - They don't move over for a flash, nor swerve for chicken. They can be totalled (8% heat).
+  - They don't move over for a flash, nor swerve for chicken. They can be totalled (4% heat).
 - Claude's calls: the heat rates, the police numbers and moves, and the scanner on the right A-pillar instead of the
   dash (on a phone the dash is full: shifter, cluster and pedals).
 
@@ -341,7 +344,7 @@ the heat. Till then the garage says "the army has a tank ready for when you are 
   drops to half, so you have to push for it again.
 - Claude's calls: the tank stayed (the owner's pick; it fits the army being called in when the police can't cope), its
   numbers, the ending as a garage message rather than a screen of its own, and play on with a tougher tank.
-- Claude's calls: the AR look, the target rule, 0.4 per km/h, the health and parts numbers, the Mad Max page opening
+- Claude's calls: the AR look, the target rule, the hit (34) and the nudge (30 km/h), the parts numbers, the Mad Max page opening
   with the first total (the job is the way in), the illegal parts (armour and spiked hubs), how the gang uses its
   gear, and the guns' numbers (they aim themselves at the reticle: on a phone your thumbs are busy). All first
   guesses for the balancing pass.
@@ -373,6 +376,12 @@ the heat. Till then the garage says "the army has a tank ready for when you are 
     does).
   - The bot fires all race long. A player who doesn't (no Auto gun) can lose the first fight and come back with
     the second level of guns.
+  - Rams as hits, with OHKO (14 Oct, the owner's numbers): act 4 after 23, 21, 27, 25 races with the prices above,
+    the tank beaten at the first go every time; act 2 after 24, 22, 20, 20 with Game of chicken at 75 points.
+  - Reckless auto-drive: the owner asked for about Autocruise's price times 1.5 (1,200 points in effort), but that put
+    the Black market at 6,360 points against the ~5,200 act 2 pays (10 a race after P1), so a buyer would go without
+    nitro or 7th gear for about 115 races. 600 (the owner's pick): the dearest item with 7th gear, the market 5,761.
+    Act 2 then: P1 after 24, 22, 21, 19 races, Reckless auto-drive bought along the way (races 12–22).
 - **Simulation tools** live in `tests/balance/` and are run from the repo root:
   - `act1.py [cheapest|value] [head-start curve or -] [traffic]`: when #100 is first passed;
   - `act2.py [races] [seed]`: races from the reveal to P1, the bot driving like Reckless auto-drive (`aids.js`). The

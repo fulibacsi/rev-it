@@ -43,10 +43,19 @@ with sync_playwright() as p:
                  hp: +getComputedStyle($('ar')).getPropertyValue('--hp') }; })()""")
     check("the reticle round the nearest car ahead, full health, 'TOTAL IT'", got == {"on": "block", "target": True, "label": "TOTAL IT", "around": True, "hp": 1}, got)
     pg.screenshot(path=f"{OUT}/gang_reticle.png")
-    # 4. ram it: it loses health by the speed you hit it at, shown on the bar
+    # 4. ram it: a hit, a third of a car's health, shown on the bar
     pg.wait_for_function("cs[0].hp !== null", timeout=15000); pg.wait_for_timeout(100)
     got = js("({ hp: Math.round(cs[0].hp), bar: +getComputedStyle($('ar')).getPropertyValue('--hp'), kmh: Math.round(impact.kmh) })")
-    check("a bump takes 0.4 of its speed off the car's health, and the bar shows it", abs(got["hp"] - (100 - 0.4 * got["kmh"])) <= 1 and abs(got["bar"] - got["hp"] / 100) < 0.02 and got["kmh"] > 10, got)
+    check("a ram is a hit: 34 off the car's 100, and the bar shows it", got["hp"] == 66 and abs(got["bar"] - 0.66) < 0.02 and 30 <= got["kmh"] <= 200, got)
+    aside = lambda expr: js(f"""(() => {{ const p = {{ parts: progress.parts, totals: progress.totals, wanted: progress.wanted }},
+        r = {{ parts: run.parts, totals: run.totals, firstTotal: run.firstTotal }}, out = {expr}; Object.assign(progress, p); Object.assign(run, r);
+        return out; }})()""")  # made-up cars: the game's counts stay as they were
+    got = aside("""[[100, false], [20, false], [250, false], [10, true]].map(([kmh, side]) => { const c = { v: 20, hp: null, racer: 0 };
+        ram({ car: c, kmh, side, headOn: false }); return c.wreck ? 'total' : Math.round(c.hp ?? 100); })""")
+    check("a nudge (20 km/h) does nothing, over 200 km/h it's an instant total, a side-swipe always counts", got == [66, 100, "total", 66], got)
+    got = aside("""[{ v: 20, racer: 0 }, { v: 20, racer: 5 }, { v: 20, police: true }].map(c => { let n = 0;
+        while (!c.wreck && n < 10) { ram({ car: c, kmh: 100, side: false, headOn: false }); n++; } return n; })""")
+    check("hits to total, no bull bar: traffic 3, a racer 5, police 6", got == [3, 5, 6], got)
     # 5. at 0 it is totalled: parts, off onto the shoulder, out of your way; the reticle moves on to the next car
     js("cs[0].hp = 1; Object.assign(cs[0], { z: odo + 25, v: 5, want: 5 }); cs[0].hit = -1e9; Object.assign(cs[1], { z: odo + 120 })")
     trace = js("""() => new Promise(res => { const out = []; const f = () => { if (cs[0].wreck) out.push([+cs[0].x.toFixed(2), +cs[0].v.toFixed(2), Math.round(cs[0].z - odo)]);
@@ -73,18 +82,21 @@ with sync_playwright() as p:
     # 8. the bull bar at 3: you carry on at the car's speed, and it takes 2.5 times the damage
     js("progress.levels.bullbar = 3; refreshCar()")
     got = js("(() => { const c = { v: 20, hp: null, racer: 0 }; speed = 60; bump(c); const kept = speed; ram(impact); return [Math.round(kept), c.wreck]; })()")
-    check("bull bar 3: a bump at 144 km/h leaves you at its 72 km/h and totals it (144 of its 100)", got == [20, True], got)
+    check("bull bar 3: a bump at 144 km/h leaves you at its 72 km/h and totals it in one hit (102 of its 100)", got == [20, True], got)
+    got = aside("""[{ v: 20, racer: 0 }, { v: 20, racer: 5 }, { v: 20, police: true }].map(c => { let n = 0;
+        while (!c.wreck && n < 10) { ram({ car: c, kmh: 100, side: false, headOn: false }); n++; } return n; })""")
+    check("hits to total, full bull bar: traffic 1, a racer 2, police 2", got == [1, 2, 2], got)
     # 9. armour: a quarter off your damage a level
     got = js("[0, 2].map(l => { progress.levels.armour = l; progress.damage = 0; hurt(100, false); return +progress.damage.toFixed(2); })")
     check("armour 2: a 100 km/h bump does half the damage", got == [25, 12.5], got)
     js("progress.damage = 0; progress.levels.armour = 0")
-    # 10. spiked hubs: a side-swipe while moving over costs no speed and does 50 more
+    # 10. spiked hubs: a side-swipe while moving over costs no speed and counts one more hit
     def swipe(spiked):
         js(f"progress.levels.spikes = {spiked}; progress.levels.bullbar = 0; refreshCar()")
         return js("""(() => { const c = { v: 30, hp: null, racer: 0 }; speed = 32; lane = 1; fromLane = 0; carX = 3.5; bump(c);
             const kept = speed; ram(impact); return { side: impact.side, kept: Math.round(kept), hp: Math.round(c.hp) }; })()""")
     got = [swipe(0), swipe(1)]
-    check("spiked hubs: a side-swipe keeps your speed and does 50 more", got[0]["side"] and got[1]["kept"] == 32 and got[0]["kept"] < 20 and got[0]["hp"] - got[1]["hp"] == 50, got)
+    check("spiked hubs: a side-swipe keeps your speed and counts one more hit (34)", got[0]["side"] and got[1]["kept"] == 32 and got[0]["kept"] < 20 and got[0]["hp"] - got[1]["hp"] == 34, got)
     # 11. the gang: with a bull bar a fleet car side-swipes a rival beside it, every 3 s; parts are yours
     pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     def gang(bull):

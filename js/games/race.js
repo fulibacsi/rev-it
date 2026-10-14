@@ -22,9 +22,11 @@ Object.assign(UPGRADES, { // the Black market (distance.js PAGES), paid in race 
           info: l => l ? `start P${FIELD + 1 - l}` : 'start at the back', locked: 'finish higher to unlock' },
   reckless: { name: 'Reckless driving', tab: 'black', max: 1, base: 100,
               info: () => 'the oncoming lanes are yours too. From now on, collisions damage the car' },
-  chicken: { name: 'Game of chicken', tab: 'black', max: 1, base: 150, needs: ['reckless', 'flash'],
+  chicken: { name: 'Game of chicken', tab: 'black', max: 1, base: 75, needs: ['reckless', 'flash'], // the flash's next step: cheap
              info: () => 'flash now works on oncoming traffic: it swerves into its other lane, if there is room' },
-  recklessCruise: { name: 'Reckless auto-drive', tab: 'black', max: 1, base: 300, needs: ['cruise', 'reckless'],
+  // the owner (14 Oct): pricey, the dearest here with 7th gear. 1,200 (Autocruise times 1.5 in effort) put the Black
+  // market at 6,360 points against the ~5,200 act 2 pays, with 10 a race after P1
+  recklessCruise: { name: 'Reckless auto-drive', tab: 'black', max: 1, base: 600, needs: ['cruise', 'reckless'],
                     info: () => 'autocruise without manners: the oncoming lanes, chicken, the ECU tune and nitro, ' +
                       'as far as the car has them' },
   cooling: { name: 'Cooling', tab: 'black', max: 3, base: 60, growth: 2, needs: ['reckless'],

@@ -9,11 +9,11 @@ errors, fails = [], []
 def check(name, ok, got=""):
     print(f"{'ok ' if ok else 'FAIL'} {name}" + (f": {got}" if got != "" else ""))
     if not ok: fails.append(name)
-# 1.5 s of the music: the loudest sample and the average level off the analyser, and the lights lit, frame by frame
+# 3 s of the music: the loudest sample and the average level off the analyser, and the lights lit, frame by frame
 LISTEN = """() => new Promise(res => { const a = stereo.eq, buf = new Float32Array(a.fftSize); let peak = 0, sum = 0, n = 0; const lit = [];
     const t0 = performance.now(), f = () => { a.getFloatTimeDomainData(buf); for (const v of buf) { peak = Math.max(peak, Math.abs(v)); sum += v * v; n++; }
       lit.push(document.querySelectorAll('#beat rect.on').length);
-      performance.now() - t0 < 1500 ? requestAnimationFrame(f) : res({ peak: +peak.toFixed(3), rms: +Math.sqrt(sum / n).toFixed(3), lit }); };
+      performance.now() - t0 < 3000 ? requestAnimationFrame(f) : res({ peak: +peak.toFixed(3), rms: +Math.sqrt(sum / n).toFixed(3), lit }); };
     requestAnimationFrame(f); })"""
 with sync_playwright() as p:
     b = launch(p, args=["--autoplay-policy=no-user-gesture-required"])
@@ -29,7 +29,8 @@ with sync_playwright() as p:
     check("bought: the stereo is on, tape 1", js("[stereo.on, stereo.tape, $('stereo-lcd').textContent]") == [True, 0, "1 NEON COAST"], js("[stereo.on, stereo.tape, $('stereo-lcd').textContent]"))
     got = js(LISTEN)
     check("music: you can hear it, and it never clips", 0.01 < got["rms"] and got["peak"] < 1, {"peak": got["peak"], "rms": got["rms"]})
-    check("the lights jump with the beat (all lit on a kick, then down)", max(got["lit"]) >= 14 and min(got["lit"]) <= 4, sorted(set(got["lit"])))
+    # a kick lights them all, 12 or more for 47 ms after it (14 only for 19 ms: a slow frame rate could miss that)
+    check("the lights jump with the beat (all lit on a kick, then down)", max(got["lit"]) >= 12 and min(got["lit"]) <= 4, sorted(set(got["lit"])))
     check("the head unit's equaliser moves", js("document.querySelectorAll('#stereo-eq u.on').length") > 0)
     pg.screenshot(path=f"{OUT}/stereo_desktop.png")
     # 3. the head unit's button, M, the lights: the next tape; after the last, off; the garage's switch follows
