@@ -36,17 +36,18 @@ with sync_playwright() as p:
     pg = b.new_page(); errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
     pg.goto(URL); js = pg.evaluate
     js("localStorage.clear()"); pg.reload(); pg.add_script_tag(path=str(HERE / "sim.js")); pg.click('[data-play="distance"]'); pg.click("#drive"); pg.wait_for_timeout(1500)
-    if SEED is not None: js(f"rng = {SEED}")
     js("window.RACER_BOT = window.CRASH_DAMAGE = window.SEE_AHEAD = true")
     js(HABITS)
     if OVERRIDES: js(OVERRIDES + "; 0")
     js(f"Object.assign(progress, {{ racing: true, finish: 1, points: 0, bank: {RESERVE}, miles: 0, parts: 0, totals: 0, wanted: 0, tanks: 0, damage: 0, broken: [], nitro: 0, levels: {json.dumps(START)} }})")
     for race in range(1, RACES + 1):
         boss = js("bossRace()")
-        js(f"simRun({{ ...progress.levels }}, 2, 1, {{}}, true)")
-        r = js("""({ p: run.race && run.race.p, dnf: run.race && run.race.dnf, totals: run.totals, parts: run.parts, heat: Math.round(progress.wanted * 100),
+        # each race's traffic from a seed of its own, and what it did read in the same call: the page's own loop draws on
+        # the seed and moves on between calls, so the results would move with the machine's load
+        r = js(f"""(() => {{ {f"rng = {SEED * 1000 + race};" if SEED is not None else ""} simRun({{ ...progress.levels }}, 2, 1, {{}}, true);
+                  return {{ p: run.race && run.race.p, dnf: run.race && run.race.dnf, totals: run.totals, parts: run.parts, heat: Math.round(progress.wanted * 100),
                   dmg: Math.round(progress.damage), tank: run.tank ? Math.round(Math.max(0, run.tank.hp ?? tankHealth())) : null, beat: run.beatTank,
-                  hit: run.race && run.race.dnf === 'head-on' ? (impact.car.police ? 'police' : 'traffic') : '' })""")
+                  hit: run.race && run.race.dnf === 'head-on' ? (impact.car.police ? 'police' : 'traffic') : '' }}; }})()""")
         js("while (repair() && progress.damage > 0);")  # metres pay the repairs
         js(f"convert(Math.max(0, Math.floor((progress.bank - {RESERVE}) / MILE)))")
         bought = js(f"""(() => {{ const b = [], buyAll = (ids, cheapest) => {{ for (;;) {{ const ok = ids.filter(id => !whyNot(id));

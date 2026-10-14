@@ -1,4 +1,5 @@
-"""The first act with a perfect player: when does the white car (#100) get passed, and what does the car have then?"""
+"""The first act with a perfect player: when does the white car (#100) get passed, and what does the car have then?
+Usage: act1.py [cheapest|value] [head-start curve, or -] [traffic], traffic a number for another set of seeds."""
 import json, sys
 from playwright.sync_api import sync_playwright
 from pathlib import Path
@@ -6,26 +7,29 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))  # tests/common.py
 from common import URL, launch
 policy = sys.argv[1] if len(sys.argv) > 1 else "cheapest"
+TRAFFIC = int(sys.argv[3]) if len(sys.argv) > 3 else 1
 
 with sync_playwright() as p:
     b = launch(p, args=["--autoplay-policy=no-user-gesture-required"])
     pg = b.new_page(); errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
     pg.goto(URL); js = pg.evaluate
     js("localStorage.clear()"); pg.reload(); pg.add_script_tag(path=str(HERE / "sim.js")); pg.click('[data-play="distance"]'); pg.click("#drive"); pg.wait_for_timeout(1500)
-    if len(sys.argv) > 2: js(f"HEAD_START.splice(0, HEAD_START.length, ...{sys.argv[2]})")
+    if len(sys.argv) > 2 and sys.argv[2] != "-": js(f"HEAD_START.splice(0, HEAD_START.length, ...{sys.argv[2]})")
     U = js("Object.fromEntries(Object.entries(UPGRADES).filter(([, u]) => !u.tab && !u.afterReveal).map(([k, u]) => [k, { max: u.max, base: u.base, growth: u.growth ?? 1, needs: u.needs ?? [] }]))")
     cost = lambda k, l: round(U[k]["base"] * U[k]["growth"] ** l / 10) * 10
     lv, bank, revealed, clock = {}, 0, None, 0
     # every run in the first act (the white car is all there is), its traffic from a seed of its own: the same for each
     # upgrade the value player tries then. The page's own loop draws on the seed between runs, so left alone the
-    # results moved with the machine's load
+    # results moved with the machine's load. The rest of what a run shows is read in the same call, before that loop moves
+    # the white car: its gap at the bell (negative: behind you), whether it was passed and when, its head start
     seed = 1
-    sim = lambda lv: js(f"rng = {seed}; progress.racing = false; progress.finish = 101; simRun({json.dumps(lv)}, {lv.get('engine', 0)}, 1, {{}}, true)")
-    def gap():  # how far ahead the white car was at the bell (negative: behind you)
-        return js("(() => { const c = racers().find(c => c.racer === 100); return c ? Math.round(c.z - odo) : null; })()")
+    sim = lambda lv: js(f"""(() => {{ rng = {seed}; progress.racing = false; progress.finish = 101;
+        const r = simRun({json.dumps(lv)}, {lv.get('engine', 0)}, 1, {{}}, true), c = racers().find(c => c.racer === 100);
+        return {{ ...r, gap: c ? Math.round(c.z - odo) : null, passed: progress.racing, at: passedAt, head: Math.round(headStart()), rt: runTime() }};
+      }})()""")
     for r in range(1, 81):
-        seed = 1000 + r
-        head = js("Math.round(headStart())"); m = sim(lv)["m"]; g = gap(); passed = js("progress.racing"); at = js("passedAt"); rt = js("runTime()")
+        seed = 1000 * TRAFFIC + r
+        s = sim(lv); m, g, passed, at, head, rt = s["m"], s["gap"], s["passed"], s["at"], s["head"], s["rt"]
         bank += m
         bought = []
         while True:
