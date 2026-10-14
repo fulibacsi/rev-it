@@ -331,6 +331,23 @@ the heat. Till then the garage says "the army has a tank ready for when you are 
   After P1 a race still pays 10.
 - **Metres:** they pile up in act 2 (about 65–70k unspent by P1). Metre sinks and the fleet (below) are meant to soak
   them up.
+- **The balancing pass (14 Oct).** The owner's targets: about 25 races for each of acts 3 and 4. The method follows
+  incremental-game practice ([the math of idle games](https://www.gamedeveloper.com/design/the-math-of-idle-games-part-i):
+  prices grow geometrically, income grows as you buy; the first purchases come quickly and there are no long dry
+  spells). Every simulation now draws each race's traffic from a seed of its own, set in the same call as the race
+  (the page's own loop drew on it between calls, so results moved with the machine's load); four seeds each.
+  - Act 1: on target, unchanged (see the hidden race). Act 2: P1 after 24, 22, 21, 23 races, unchanged.
+  - Act 3: 51 fleet cars after 26, 28, 27, 26 races, a fleet car or two bought every race. Unchanged: within 10%.
+  - Act 4 (`act4.py`): the first guesses took 31–36 races, mostly because the reticle stayed on last race's car (fixed
+    the same day). Without that, they took 15–16, the heat sat at 100% for races before guns were affordable, and one
+    level of guns could never beat the 2,000-health tank (854 short at the bell every time; at 1,200, 54 short).
+    Chosen: Mad Max prices 2–3 times the guesses, heat at half, the tank at 1,000 health and waiting for guns. Eight
+    runs: the tank beaten after 22–34 races (median 24.5), at the first go in six. Mad Max purchases every 1–4
+    races up to the spiked hubs, then a 5–6 race save for the guns (fleet cars still bought every race); the heat
+    reaches 100% about 3 races before the guns. The two runs that took longest lost tank fights to head-ons: boxed
+    in behind the tank, Reckless auto-drive takes the oncoming lane, though the tank can't be passed.
+  - The bot fires all race long. A player who doesn't (no Auto gun) can lose the first fight and come back with
+    the second level of guns.
 - **Simulation tools** live in `tests/balance/` and are run from the repo root:
   - `act1.py [cheapest|value] [head-start curve or -] [traffic]`: when #100 is first passed;
   - `act2.py [races] [seed]`: races from the reveal to P1, the bot driving like Reckless auto-drive (`aids.js`). The
@@ -436,6 +453,8 @@ All dates are 2026.
 Waiting for the owner. Don't build these on a guess: ask.
 
 - **Autocruise's weave** (see "Also decided"): about 5–7% further a run, but about a third more crashes. Worth it?
+- **Reckless auto-drive in a tank fight:** boxed in behind the tank it takes the oncoming lane, though the tank can't
+  be passed, and head-ons lose the fight. Should it stay on your side of the road while the tank is there?
 - **Still open after the balancing pass (14 Oct):** the prices of Game of chicken and Reckless auto-drive, and Speed
   signs being too easy, weren't looked at; nor were the police numbers, car health and damage per bump. The flash
   prices can't be judged by `act1.py`: its bot never flashes, so to it flashes add nothing.
