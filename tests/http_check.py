@@ -10,7 +10,7 @@ with sync_playwright() as p:
     pg.on("pageerror", lambda e: errors.append(str(e))); pg.on("requestfailed", lambda r: failed.append(r.url))
     http.server.SimpleHTTPRequestHandler.log_message = lambda *a: None
     pg.goto(f"http://127.0.0.1:{srv.server_port}/"); pg.wait_for_timeout(400)
-    pg.click('[data-play="signs"]'); pg.keyboard.press("Enter"); pg.wait_for_timeout(2500)
+    pg.click('[data-show="arcade"]'); pg.click('[data-play="signs"]'); pg.keyboard.press("Enter"); pg.wait_for_timeout(2500)
     print("over http:", pg.evaluate("({ state, sounds: players.length, game: game.id })"), "| failed requests:", failed or "none")
     b.close()
 srv.shutdown()

@@ -25,6 +25,7 @@ const CRANK = 0.9; // seconds the key has to be held in START before the engine 
 const LIMITER_CUT = 0.06; // seconds the rev limiter cuts the fuel each time the redline is hit (stutters in any gear)
 
 let engine, ctx, loading, players = [], filter, master, noise, starterBuffer, starterGain, wind, squeal, nos;
+let carBus, carVolume = 1; // every sound the car makes goes out through carBus, at the settings' volume (main.js)
 // state: 'off' | 'cranking' | 'running'; cut: rev limiter has cut the fuel, for cutLeft more seconds
 // gasPedal: 0..1 how far the gas pedal is pressed; lifted: the pedal has come up since the last lift-off
 let rpm = 0, throttle = 0, boost = 0, hang = 0, cut = false, cutLeft = 0, gasPedal = 0, lifted = true;
@@ -35,9 +36,12 @@ let state = 'off', crankUntil = 0, crankWanted = false;
 
 async function start() {
   ctx = new AudioContext();
+  carBus = ctx.createGain();
+  carBus.gain.value = carVolume;
+  carBus.connect(ctx.destination);
   master = ctx.createGain();
   master.gain.value = 0;
-  master.connect(ctx.destination);
+  master.connect(carBus);
   filter = ctx.createBiquadFilter(); // muffles the sound when coasting off throttle
   filter.type = 'lowpass';
   filter.frequency.value = 12000;
@@ -50,7 +54,7 @@ async function start() {
 
   starterGain = ctx.createGain(); // starter motor has its own level, independent of rpm
   starterGain.gain.value = 0;
-  starterGain.connect(ctx.destination);
+  starterGain.connect(carBus);
 
   const roar = ctx.createBufferSource(); // wind and tyre roar: looping noise, louder and brighter with speed
   roar.buffer = noise;
@@ -58,7 +62,7 @@ async function start() {
   wind = { filter: ctx.createBiquadFilter(), gain: ctx.createGain() };
   wind.filter.type = 'lowpass';
   wind.gain.gain.value = 0;
-  roar.connect(wind.filter).connect(wind.gain).connect(ctx.destination);
+  roar.connect(wind.filter).connect(wind.gain).connect(carBus);
   roar.start();
   const scrub = ctx.createBufferSource(); // tyre squeal: noise in a narrow band, faded in while the tyres spin
   scrub.buffer = noise;
@@ -68,7 +72,7 @@ async function start() {
   squeal.filter.frequency.value = 1100;
   squeal.filter.Q.value = 18;
   squeal.gain.gain.value = 0;
-  scrub.connect(squeal.filter).connect(squeal.gain).connect(ctx.destination);
+  scrub.connect(squeal.filter).connect(squeal.gain).connect(carBus);
   scrub.start();
   const hiss = ctx.createBufferSource(); // nitro: a high hiss while it burns
   hiss.buffer = noise;
@@ -77,7 +81,7 @@ async function start() {
   nos.filter.type = 'highpass';
   nos.filter.frequency.value = 3000;
   nos.gain.gain.value = 0;
-  hiss.connect(nos.filter).connect(nos.gain).connect(ctx.destination);
+  hiss.connect(nos.filter).connect(nos.gain).connect(carBus);
   hiss.start();
 
   const decode = wav => ctx.decodeAudioData(Uint8Array.from(atob(wav), c => c.charCodeAt(0)).buffer);
@@ -139,7 +143,7 @@ function whoosh(relSpeed, side) { // a car passing (side -1 left, 1 right); loud
   g.gain.exponentialRampToValueAtTime(level, t + 0.08);
   g.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
   pan.pan.value = side;
-  src.connect(bp).connect(g).connect(pan).connect(ctx.destination);
+  src.connect(bp).connect(g).connect(pan).connect(carBus);
   src.start();
   src.stop(t + 0.6);
 }
@@ -153,7 +157,7 @@ function grind() { // gears clashing: shifting without the clutch
   bp.Q.value = 6;
   for (let i = 0; i < 6; i++) g.gain.setValueAtTime(i % 2 ? 0.15 : 0.6, t + i * 0.04); // rattling teeth
   g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
-  src.connect(bp).connect(g).connect(ctx.destination);
+  src.connect(bp).connect(g).connect(carBus);
   src.start();
   src.stop(t + 0.35);
 }
@@ -167,7 +171,7 @@ function crashSound() { // a thump and a crunch of metal
   lp.frequency.exponentialRampToValueAtTime(300, t + 0.5);
   g.gain.setValueAtTime(0.9, t);
   g.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
-  src.connect(lp).connect(g).connect(ctx.destination);
+  src.connect(lp).connect(g).connect(carBus);
   src.start(t);
   src.stop(t + 0.6);
   const thump = ctx.createOscillator(), tg = ctx.createGain();
@@ -175,7 +179,7 @@ function crashSound() { // a thump and a crunch of metal
   thump.frequency.exponentialRampToValueAtTime(40, t + 0.25);
   tg.gain.setValueAtTime(0.8, t);
   tg.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
-  thump.connect(tg).connect(ctx.destination);
+  thump.connect(tg).connect(carBus);
   thump.start(t);
   thump.stop(t + 0.3);
 }
@@ -187,7 +191,7 @@ function horn() { // an oncoming driver leaning on the horn: two flat tones
   g.gain.exponentialRampToValueAtTime(0.12, t + 0.03);
   g.gain.setValueAtTime(0.12, t + 0.7);
   g.gain.exponentialRampToValueAtTime(0.0001, t + 0.8);
-  g.connect(ctx.destination);
+  g.connect(carBus);
   for (const f of [415, 523]) {
     const o = ctx.createOscillator();
     o.type = 'square'; o.frequency.value = f;
@@ -202,7 +206,7 @@ function beep(freq, seconds) { // countdown and finish tones
   o.frequency.value = freq;
   g.gain.setValueAtTime(0.06, t);
   g.gain.setTargetAtTime(0, t + seconds * 0.8, 0.02);
-  o.connect(g).connect(ctx.destination);
+  o.connect(g).connect(carBus);
   o.start(t);
   o.stop(t + seconds + 0.2);
 }
