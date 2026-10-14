@@ -51,6 +51,21 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
               font: 600 clamp(10px, 2.8vh, 20px) system-ui, sans-serif; text-shadow: 0 0 3px #000, 0 0 6px #000; }
 .low #timer-fill { background: linear-gradient(#ff8a7a, #d33); box-shadow: 0 0 10px #f448; animation: blink 0.5s steps(2) infinite; }
 @keyframes blink { 50% { opacity: 0.45; } }
+/* the gang's AR layer on the windscreen: a reticle round the target car, its health above it */
+#ar { display: none; position: fixed; pointer-events: none; --ar: #ff5a3c; filter: drop-shadow(0 0 3px #f40a); }
+.ar-on #ar { display: block; }
+.garage #ar { display: none; }
+#ar > i { position: absolute; width: 28%; height: 32%; border: 2px solid var(--ar); }
+#ar > i:nth-child(1) { left: -5px; top: -5px; border-width: 2px 0 0 2px; }
+#ar > i:nth-child(2) { right: -5px; top: -5px; border-width: 2px 2px 0 0; }
+#ar > i:nth-child(3) { left: -5px; bottom: -5px; border-width: 0 0 2px 2px; }
+#ar > i:nth-child(4) { right: -5px; bottom: -5px; border-width: 0 2px 2px 0; }
+#ar-bar { position: absolute; left: -5px; right: -5px; bottom: calc(100% + 9px); height: 5px; border: 1px solid var(--ar);
+          border-radius: 2px; }
+#ar-bar i { display: block; height: 100%; width: calc(var(--hp, 1) * 100%); background: var(--ar); }
+#ar-label { position: absolute; left: 50%; bottom: calc(100% + 17px); transform: translateX(-50%); white-space: nowrap;
+            color: var(--ar); font: 600 11px system-ui, sans-serif; letter-spacing: 1px; }
+
 /* the fleet's sonar, bolted to the left A-pillar under the menu button (only with a fleet, only on the road) */
 #sonar { display: none; position: fixed; left: 5vw; top: 96px; width: 120px; pointer-events: none; }
 .has-fleet #sonar { display: block; }

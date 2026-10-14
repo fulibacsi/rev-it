@@ -54,7 +54,7 @@ function teamwork(c, dt) {
   }
   // a rival close behind, faster, in (or heading for) the other lane: it moves across in front of it. It waits 2 s
   // between moves and a racer 5 s, so a blocked rival rarely gets past
-  const rival = traffic.find(o => o.racer && !o.fleet && MY_LANES[o.lane] === other && o.z < c.z && c.z - o.z < 60 && o.want > c.v);
+  const rival = traffic.find(o => o.racer && !o.fleet && !o.wreck && MY_LANES[o.lane] === other && o.z < c.z && c.z - o.z < 60 && o.want > c.v);
   const yours = sameLane(carX, other) && you > 0 && you < 250; // that lane is yours behind it: never block you
   if (rival && !yours && roomAt(c, other, 8, 25)) Object.assign(c, { lane: 1 - c.lane, cool: 2 });
 }

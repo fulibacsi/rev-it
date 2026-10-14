@@ -19,15 +19,16 @@ let gear = 0, clutch = 1, clutchPedal = 0, brakePedal = 0, speed = 0, odo = 0, l
 let spinning = false;
 // lane: 0 the right lane, 1 the passing lane, 2 and 3 the oncoming lanes (ROAD_LANES in road.js), open up to
 // openLanes; carX: the car's centre, m from the centre line, gliding over to its lane at slide m/s; crashed: ran
-// into a car this step, impact: how ({ kmh, headOn }); brokenGears: gears that won't go in (Distance's damage)
+// into a car this step, impact: how ({ kmh, headOn, car }); brokenGears: gears that won't go in (Distance's damage)
 let lane = 0, fromLane = 0, carX = 0, slide = 0, crashed = false, impact = null, openLanes = 2, brokenGears = [];
 let steering = 1; // how quickly the car moves over (Distance's steering upgrade)
+let bullBar = 0;  // levels of bull bar (Distance's Mad Max): a bump costs you less speed
 
 // the car as it left the factory (only the Distance garage tunes it)
 const STOCK_GRIP = CAR.grip;
 function stockCar() {
   for (const e of ENGINES) Object.assign(e, e.stock);
-  CAR.grip = STOCK_GRIP; openLanes = 2; brokenGears = []; steering = 1;
+  CAR.grip = STOCK_GRIP; openLanes = 2; brokenGears = []; steering = 1; bullBar = 0;
 }
 function resetCar() { // standing in the right lane, in neutral, feet off the pedals
   speed = odo = 0; gear = 0; locked = spinning = false;
@@ -47,16 +48,17 @@ function stepLane(dt) {
   carX += slide * dt;
 }
 // ran into car c: you lose most of your speed, down to well under its speed so it pulls away instead of being hit
-// again, and a half-done lane change swerves back to where it came from
+// again, and a half-done lane change swerves back to where it came from. A bull bar keeps more: at 3 levels you
+// carry on at its speed
 function bump(c) {
-  impact = { kmh: Math.abs(speed - c.v) * 3.6, headOn: false };
-  speed = Math.min(speed * 0.35, c.v * 0.4);
+  impact = { kmh: Math.abs(speed - c.v) * 3.6, headOn: false, car: c };
+  speed = Math.min(speed * (0.35 + 0.15 * bullBar), c.v * (0.4 + 0.2 * bullBar));
   if (Math.abs(ROAD_LANES[lane] - carX) > 0.5) [lane, fromLane] = [fromLane, lane]; // was pulling over into it: back
   crashed = true;
 }
 // ran head-on into an oncoming car: both speeds add up, and the car stops dead
 function headOn(c) {
-  impact = { kmh: (speed + c.v) * 3.6, headOn: true };
+  impact = { kmh: (speed + c.v) * 3.6, headOn: true, car: c };
   speed = 0;
   crashed = true;
 }

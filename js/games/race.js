@@ -79,8 +79,8 @@ const racers = () => traffic.filter(c => c.racer);
 const rivals = () => racers().filter(c => !c.fleet); // your fleet races for you (fleet.js)
 const ahead = c => c.z + CAR_LEN / 2 > odo - (MY_REAR - MY_FRONT) / 2; // its middle is past yours
 const position = () => { // racers not on the road (before the reveal: all but #100) are the faster ones, ahead; your
-  const field = rivals();  // fleet doesn't count
-  return 1 + FIELD - fleetSize() - field.length + field.filter(ahead).length;
+  const field = rivals();  // fleet doesn't count, nor do the rivals you have totalled (gang.js)
+  return 1 + FIELD - fleetSize() - field.length + field.filter(c => !c.wreck && ahead(c)).length;
 };
 
 // on the grid until GO: the racers wait in their slots
@@ -120,6 +120,7 @@ function raceFinish(dnf) {
 function nearestRacers() {
   let front = null, back = null;
   for (const c of rivals()) {
+    if (c.wreck) continue;
     if (ahead(c)) { if (!front || c.z < front.z) front = c; } else if (!back || c.z > back.z) back = c;
   }
   return { front, back };
