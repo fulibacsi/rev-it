@@ -51,6 +51,12 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
               font: 600 clamp(10px, 2.8vh, 20px) system-ui, sans-serif; text-shadow: 0 0 3px #000, 0 0 6px #000; }
 .low #timer-fill { background: linear-gradient(#ff8a7a, #d33); box-shadow: 0 0 10px #f448; animation: blink 0.5s steps(2) infinite; }
 @keyframes blink { 50% { opacity: 0.45; } }
+/* the fleet's sonar, bolted to the left A-pillar under the menu button (only with a fleet, only on the road) */
+#sonar { display: none; position: fixed; left: 5vw; top: 96px; width: 120px; pointer-events: none; }
+.has-fleet #sonar { display: block; }
+.garage #sonar { display: none; }
+#sonar-sweep { transform-box: view-box; transform-origin: 64px 12px; animation: sweep 1.6s ease-in-out infinite alternate; }
+@keyframes sweep { from { transform: rotate(-38deg); } to { transform: rotate(38deg); } }
 #stalk, #stalk-hit { display: none; }
 .has-flash #stalk, .has-flash #stalk-hit { display: inline; }
 #stalk-hit { pointer-events: stroke; cursor: pointer; touch-action: none; }
@@ -201,6 +207,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 .touch .card { padding: 5px 7px; gap: 2px; }
 .touch .card small { min-height: 0; } /* phones: tighter cards, so more fit without scrolling */
 .touch #menu-button { left: var(--edge-l); top: max(8px, env(safe-area-inset-top)); }
+.touch #sonar { left: calc(var(--edge-l) - 14px); top: calc(max(8px, env(safe-area-inset-top)) + 42px); width: 88px; }
 .touch #menu-panel { width: 94vw; }
 @media (max-height: 560px) { .touch { --hud-scale: 0.62; } }
 #rotate { display: none; position: fixed; inset: 0; z-index: 20; background: #000; color: #ccc; font-size: 20px;

@@ -2,7 +2,9 @@
 header and the Exchange card: metres for miles, one way, 1,609 m a mile, a slider (dragged with a finger on the
 phone) and "all available". Racers paid off (the slowest first, each dearer, #1 never) race for you in your colours:
 they don't count against your position, give way when you come up behind them and block a rival closing on them.
-The fleet-wide upgrades: dues (a share of the fleet's metres at the finish), tuning (pace) and Fleet flash."""
+The fleet-wide upgrades: dues (a share of the fleet's metres at the finish), tuning (pace) and Fleet flash. The sonar
+on the A-pillar shows the fleet cars behind you, clear of the menu button, the shifter and the mirror, phone and
+desktop."""
 import re
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -106,5 +108,28 @@ with sync_playwright() as p:
     js("progress.levels.fleetPace = 5; refreshCar()"); pg.tap("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     got = js("[racers().find(c => c.racer === 99).want / pace(99), racers().find(c => c.racer === 40).want / pace(40)].map(x => +x.toFixed(2))")
     check("Fleet tuning 5: fleet cars 25% quicker, rivals as before", got == [1.25, 1], got)
+    # 11. the sonar: fleet cars up to 500 m behind you, nothing else; clear of the controls; gone in the garage
+    def sonar(page, shot):
+        page.evaluate("""(() => { const fl = racers().filter(c => c.fleet); rivals().forEach(c => c.z = odo - 120);
+            [[-60, 0], [-220, 1], [-420, 0], [80, 1]].forEach(([d, l], i) => Object.assign(fl[i], { z: odo + d, lane: l, x: MY_LANES[l] })); })()""")
+        page.wait_for_timeout(200); page.screenshot(path=f"{OUT}/{shot}")
+        box = lambda sel: page.evaluate(f"(() => {{ const r = $('{sel}').getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; }})()")
+        apart = lambda a, b: a[2] <= b[0] or b[2] <= a[0] or a[3] <= b[1] or b[3] <= a[1]
+        s, others = box("sonar"), {k: box(k) for k in ["menu-button", "shifter", "timer", "hud"]}
+        return page.evaluate("[getComputedStyle($('sonar')).display, $('sonar-blips').children.length]"), s, [k for k, o in others.items() if not apart(s, o)]
+    js("progress.levels.fleet = 4; refreshCar(); run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
+    check("in the garage: no sonar", js("getComputedStyle($('sonar')).display") == "none")
+    pg.tap("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
+    (shown, n), s, hits = sonar(pg, "sonar_phone.png")
+    check("phone: the sonar shows the 3 fleet cars behind (not the one ahead, nor rivals)", shown == "block" and n == 3, [shown, n])
+    check("phone: clear of the menu button, the shifter, the mirror and the display", not hits and s[0] >= 0, {"sonar": [round(v) for v in s], "overlaps": hits})
+    dk = b.new_page(viewport={"width": 1440, "height": 900}); dk.on("pageerror", lambda e: errors.append(str(e))); dk.goto(URL)
+    dk.evaluate(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, bank: 10000, levels: {{ {HANDS}, fleet: 4 }}, engine: 2 }})")
+    dk.click('[data-play="distance"]'); dk.wait_for_timeout(200); dk.evaluate("refreshCar()"); dk.click("#drive"); dk.wait_for_function("run.phase === 'run'", timeout=15000)
+    (shown, n), s, hits = sonar(dk, "sonar_desktop.png")
+    check("desktop: the sonar shows them, clear of everything", shown == "block" and n == 3 and not hits, {"blips": n, "sonar": [round(v) for v in s], "overlaps": hits})
+    js("progress.levels.fleet = 0; run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
+    pg.tap("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
+    check("no fleet: no sonar", js("getComputedStyle($('sonar')).display") == "none")
     b.close()
 print("ERRORS:", errors or "none", "| FAILS:", fails or "none")

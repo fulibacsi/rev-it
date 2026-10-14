@@ -219,6 +219,10 @@ racers you beat are open to offers". It is a garage page paid in **miles**.
 
   Dues are the act's income: a race nets you only about 1 mile after the nitro refill and repairs, while a fleet car
   drives about 2.5 km a race. They pay metres, into the bank, so the Exchange stays the one way to miles.
+- **The sonar:** the mirror is the timer, so there is no rear view. A sonar bolted to the left A-pillar, under the menu
+  button, shows your fleet cars up to 500 m behind you: gold blips on a green phosphor fan, further out the further
+  back, angled by how far across the road they are, with range rings at 100, 250 and 500 m and a sweeping line. It
+  shows only with a fleet, and only on the road. (Claude's call: the look, the range, and fleet cars only.)
 - **Simulated** (`act3.py`, seed 11, from P1 with act 2's car and 57k m): 51 fleet cars after 26 races buying dues
   first, 71 buying the cheapest first (dues came only at race 46).
 
@@ -249,8 +253,6 @@ order of work is in [phase-3-build-plan.md](phase-3-build-plan.md).
 **The fleet** unlocks once you reach P1: a garage page, **Fleet**, paid in miles (built: see Act 3). No
 frequent-driver tiers.
 - **Fleet cars** and their upgrades: built, see Act 3.
-- **Sonar:** the mirror is the timer, so there is no rear view. A mechanical device fixed to the A-pillar, in the top
-  left corner of the windscreen, shows where your fleet cars are behind you.
 
 **The gang** unlocks once a race has more of your fleet cars than other racers (51 of the 100): a garage page, **Mad
 Max**, paid in parts. It is to the fleet what the Black market is to the Workshop.
@@ -276,7 +278,7 @@ Max**, paid in parts. It is to the fleet what the Black market is to the Worksho
   incremental-game practice. The Rev curve is right; Speed signs is too easy, but leave it for now.
 
 **Open, for Claude to decide while building:** the tank or a more fitting opponent; what follows beating it (an
-ending, then play on); how the sonar and the scanner look; car health, parts per car and heat rates (first guesses,
+ending, then play on); how the scanner looks; car health, parts per car and heat rates (first guesses,
 tuned in the balancing pass).
 
 ## Playtest log

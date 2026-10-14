@@ -343,9 +343,9 @@ const DISTANCE = {
   engine: () => progress.engine, // the garage's engines, not the menu's
   tune: applyUpgrades,
   start() { Object.assign(run, { phase: 'garage', best: progress.best }); shownPhase = null; },
-  stop() { run.phase = 'garage'; document.body.classList.remove('garage', 'low', 'has-flash', 'timing'); clearDamageView(); }, // earns nothing
+  stop() { run.phase = 'garage'; document.body.classList.remove('garage', 'low', 'has-flash', 'timing', 'has-fleet'); clearDamageView(); }, // earns nothing
   update: updateRun,
-  render() { renderRun(); renderDamage(); },
+  render() { renderRun(); renderDamage(); renderSonar(); },
   crash: i => onCollision(i),
   marks: roadMarks,
   useFlash() { // a charge from this run's flashes
