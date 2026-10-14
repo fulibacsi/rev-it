@@ -381,6 +381,7 @@ the heat. Till then the garage says "the army has a tank ready for when you are 
   - Reckless auto-drive: the owner asked for about Autocruise's price times 1.5 (1,200 points in effort), but that put
     the Black market at 6,360 points against the ~5,200 act 2 pays (10 a race after P1), so a buyer would go without
     nitro or 7th gear for about 115 races. 600 (the owner's pick): the dearest item with 7th gear, the market 5,761.
+    Act 2 then: P1 after 24, 22, 21, 19 races, Reckless auto-drive bought along the way (races 12–22).
 - **Simulation tools** live in `tests/balance/` and are run from the repo root:
   - `act1.py [cheapest|value] [head-start curve or -] [traffic]`: when #100 is first passed;
   - `act2.py [races] [seed]`: races from the reveal to P1, the bot driving like Reckless auto-drive (`aids.js`). The
