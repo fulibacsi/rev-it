@@ -15,7 +15,9 @@ with sync_playwright() as p:
     pg.goto(URL); js = pg.evaluate
     js("localStorage.clear()"); pg.reload(); pg.add_script_tag(path=str(HERE / "sim.js")); pg.click('[data-play="distance"]'); pg.click("#drive"); pg.wait_for_timeout(1500)
     if len(sys.argv) > 2 and sys.argv[2] != "-": js(f"HEAD_START.splice(0, HEAD_START.length, ...{sys.argv[2]})")
-    U = js("Object.fromEntries(Object.entries(UPGRADES).filter(([, u]) => !u.tab && !u.afterReveal && u.built !== 0).map(([k, u]) => [k, { max: u.max, base: u.base, growth: u.growth ?? 1, needs: u.needs ?? [] }]))")
+    # what the white car's head start counts (race.js): everything paid in metres, the Autopilot page's aids too, but
+    # nothing that goes on sale with the reveal, and nothing that adds no speed (the stereo)
+    U = js("Object.fromEntries(Object.entries(UPGRADES).filter(([, u]) => inMetres(u) && !u.afterReveal && u.built !== 0).map(([k, u]) => [k, { max: u.max, base: u.base, growth: u.growth ?? 1, needs: u.needs ?? [] }]))")
     cost = lambda k, l: round(U[k]["base"] * U[k]["growth"] ** l / 10) * 10
     lv, bank, revealed, clock = {}, 0, None, 0
     # every run in the first act (the white car is all there is), its traffic from a seed of its own: the same for each
