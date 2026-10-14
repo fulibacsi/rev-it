@@ -34,8 +34,8 @@ Design decisions, balance targets, the playtest history and the open questions a
   anything goes.
 - `js/engine.js` engine model and Web Audio (recorded loops crossfaded by rpm) · `js/car.js` drivetrain, clutch slip,
   lanes, crashes · `js/road.js` pseudo-3D road, traffic AI, sprites · `js/controls.js` all input (key, pedals, H-gate
-  lever, wheel, light stalk, nitro) · `js/main.js` menu, cluster, head-up display, main loop. **The interface a game
-  implements is documented at the top of `main.js`.**
+  lever, wheel, light stalk, nitro, stereo) · `js/stereo.js` the car stereo's synthwave and lights · `js/main.js` menu,
+  cluster, head-up display, main loop. **The interface a game implements is documented at the top of `main.js`.**
 - `js/games/`: `levels.js` (adaptive levels for Rev and Speed signs), `rev.js`, `signs.js`, `distance.js` (garage,
   upgrades, runs, save), `race.js` (the hidden race, the Black market's upgrades, scoring), `fleet.js` (the Fleet:
   paid-off racers and their teamwork), `gang.js` (Mad Max: the AR target, totals, parts, guns), `police.js` (police

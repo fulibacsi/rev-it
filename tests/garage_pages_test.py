@@ -3,7 +3,7 @@ illegal and forbidden) in race points, only once the race is revealed, and not a
 joins the Workshop with the reveal."""
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
-WORKSHOP = ["Power", "Rev limit", "Gearbox", "Tyres", "Time", "Steering", "Headlight flash"]
+WORKSHOP = ["Power", "Rev limit", "Gearbox", "Tyres", "Time", "Steering", "Headlight flash", "Car stereo"]
 AUTOPILOT = ["Auto flash", "Auto clutch", "Auto gas", "Auto shift", "Lane assist", "Autocruise"]
 BLACK = ["Bribe the starter", "Reckless driving", "Game of chicken", "Reckless auto-drive", "Cooling", "ECU: rev limit",
          "ECU: power", "Nitro", "7th gear", "Daredevil", "Jump the start"]
@@ -36,7 +36,7 @@ with sync_playwright() as p:
     js("Object.assign(progress, { racing: true, finish: 50, points: 3000, levels: { flash: 1, steer: 1, gas: 1, shift: 1, clutch: 1, cruise: 1 } }); renderGarage()")
     check("after the reveal: three pages", tabs() == ["Workshop", "Autopilot", "Black market"], tabs())
     page("workshop")
-    check("Workshop: Flash recharge on sale now", cards() == WORKSHOP + ["Flash recharge"], cards())
+    check("Workshop: Flash recharge on sale now", cards() == WORKSHOP[:7] + ["Flash recharge"] + WORKSHOP[7:], cards())
     page("black")
     check("Black market: the illegal and forbidden", cards() == BLACK, cards())
     check("Black market: paid in race points", set(prices()) == {"pts"}, prices())

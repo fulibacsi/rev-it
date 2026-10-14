@@ -4,7 +4,8 @@
 //   start(), stop(), update(dt), render(), marks() for the roadside, readout() for the big HUD number,
 //   engine() / tune() when it chooses and tunes the car itself, key(k) to take a key press, crash(impact) to hear of a collision, speedo() for the
 //   speedometer's top (km/h), field() for
-//   cars it places on the road itself (racers), useFlash() to allow a headlight flash (and count it) }
+//   cars it places on the road itself (racers), useFlash() to allow a headlight flash (and count it), stereo() whether
+//   the car's stereo is on, tape() the tape it plays and nextTape() to change it (stereo.js) }
 const fmt = n => Math.round(n).toLocaleString('en-US');
 
 // settings kept between visits: the engine for the games that let you choose, best scores
@@ -240,6 +241,8 @@ function tick(now) {
   $('knob-gear').textContent = gear || 'N';
 
   game.render?.();
+  updateStereo();
+  renderStereo();
 }
 // debug mode: tap the menu's title 5 times. Distance then plays a save of its own with unlimited metres and points
 let titleTaps = [];

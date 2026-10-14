@@ -30,6 +30,8 @@ const UPGRADES = {
   steer:  { name: 'Lane assist', tab: 'autopilot', max: 1, base: 1500, info: () => 'swerves round a car you are about to hit' },
   cruise: { name: 'Autocruise', tab: 'autopilot', max: 1, base: 6000, needs: ['steer', 'gas', 'shift'],
             info: () => 'drives the whole run: passes, keeps right, brakes when boxed in' },
+  stereo: { name: 'Car stereo', max: 1, base: 500, built: 0, // stereo.js; no use for speed, so not part of building the car
+            info: () => 'synthwave, made on the spot, on four tapes: tap the lights in the cluster (or M) for the next, or off' },
   engine: { name: 'Engine swap', max: ENGINES.length - 1, base: 4000, growth: 2.5, info: l => ENGINES[l].name },
 };
 const COUNTDOWN = 3, FINISH = 2; // seconds of countdown before a run, and of braking after it
@@ -59,9 +61,10 @@ function applyUpgrades() { // the garage's work on the engines and the car, and 
 const SAVE_KEY = 'car-rev-incremental';
 // off: aids switched off; racing: the race has been revealed; points: race points; finish: best finishing position;
 // damage: % (damage.js), broken: gears it broke; nitro: seconds in the tank; miles: the Fleet's money; parts: Mad
-// Max's, from totals: cars totalled (gang.js); wanted: police heat, 0 to 1 (police.js); tanks: tanks beaten (boss.js)
+// Max's, from totals: cars totalled (gang.js); wanted: police heat, 0 to 1 (police.js); tanks: tanks beaten (boss.js);
+// tape: the one in the stereo (stereo.js)
 const FRESH = () => ({ bank: 0, best: 0, runs: 0, levels: {}, off: {}, engine: 0, racing: false, points: 0, finish: 101,
-                       damage: 0, broken: [], nitro: 0, miles: 0, parts: 0, totals: 0, wanted: 0, tanks: 0 });
+                       damage: 0, broken: [], nitro: 0, miles: 0, parts: 0, totals: 0, wanted: 0, tanks: 0, tape: 0 });
 // debug mode (main.js) plays a save of its own, with wallets that never run out, so testing never touches the game
 const FUNDS = 1e9;
 let debugSave = false;
@@ -378,6 +381,16 @@ const DISTANCE = {
     return true;
   },
   speedo: () => lvl('gear7') ? 540 : 360,
+  stereo: () => lvl('stereo') > 0 && !progress.off.stereo,
+  tape: () => progress.tape,
+  nextTape() { // through the tapes, then off; a tap when off plays the first. The garage's ON/OFF is the same switch
+    if (!lvl('stereo')) return;
+    if (progress.off.stereo) progress.off.stereo = false;
+    else if (progress.tape < TAPES.length - 1) progress.tape++;
+    else Object.assign(progress, { tape: 0, off: { ...progress.off, stereo: true } }); // rewound for next time
+    save();
+    if (run.phase === 'garage') renderGarage();
+  },
   field: () => raceField(), // race.js loads after this file
   key(k) { if (k === 'Enter' && run.phase === 'garage') { drive(); return true; } }, // Enter in the garage: DRIVE
 };

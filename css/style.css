@@ -51,6 +51,26 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
               font: 600 clamp(10px, 2.8vh, 20px) system-ui, sans-serif; text-shadow: 0 0 3px #000, 0 0 6px #000; }
 .low #timer-fill { background: linear-gradient(#ff8a7a, #d33); box-shadow: 0 0 10px #f448; animation: blink 0.5s steps(2) infinite; }
 @keyframes blink { 50% { opacity: 0.45; } }
+/* the car stereo (stereo.js): a row of lights in the cluster's hood that jumps with the beat, tapped for the next
+   tape; on a desktop also a head unit in the dash, left of the cluster: the tape's name, an 8-band equaliser, a button */
+#beat, #beat-hit { display: none; }
+.has-stereo #beat, .has-stereo #beat-hit { display: inline; }
+#beat-hit { pointer-events: fill; cursor: pointer; touch-action: none; }
+#beat rect { fill: #241e1a; }
+#beat .g.on { fill: #5f5; } #beat .a.on { fill: #fb3; } #beat .r.on { fill: #f44; }
+#stereo { display: none; position: fixed; right: calc(50% + 17vw + 1.5vw); top: 67vh; width: 12vw; padding: 6px;
+          flex-direction: column; gap: 4px; border-radius: 6px; background: #121216; border: 1px solid #2c2c36; }
+.has-stereo #stereo { display: flex; }
+.touch #stereo { display: none; } /* on a phone the dash is full: the lights in the cluster do */
+#stereo-lcd { padding: 2px 6px; border-radius: 3px; background: #14200f; color: #8f8; font: 600 11px monospace;
+              letter-spacing: 1px; white-space: nowrap; overflow: hidden; }
+#stereo-eq { display: flex; gap: 3px; height: 34px; }
+#stereo-eq i { flex: 1; display: flex; flex-direction: column-reverse; gap: 2px; }
+#stereo-eq u { flex: 1; border-radius: 1px; background: #241e1a; }
+#stereo-eq u.on { background: #5f5; } #stereo-eq u:nth-child(4).on { background: #fb3; } #stereo-eq u:nth-child(5).on { background: #f44; }
+#stereo-next { align-self: flex-end; background: #1c1c22; color: #ccc; border: 1px solid #444; border-radius: 4px;
+               font: 600 10px system-ui, sans-serif; letter-spacing: 1px; padding: 2px 8px; cursor: pointer; }
+
 /* the police scanner, bolted to the right A-pillar opposite the sonar (from Mad Max on, only on the road) */
 #scanner { display: none; position: fixed; right: 5vw; top: 96px; width: 120px; pointer-events: none; }
 .has-heat #scanner { display: block; }
