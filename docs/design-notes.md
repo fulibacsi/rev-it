@@ -266,12 +266,16 @@ on the horizon, and the guns would fire at nothing else).
   | Armour plating | 3 | 15 | 2.5 | collisions do 25% less damage to your car a level |
   | Spiked hubs | 1 | 60 | | a side-swipe (into a car while moving over) costs you no speed and does 50 more damage; the gang's 30 more |
   | Guns | 3 | 120 | 2 | needs Spiked hubs: 6 damage a shot a level, 4 shots a second, up to 200 m; the gang fires too |
+  | Auto gun | 1 | 150 | | needs Guns: fires for you while the reticle's car is in reach and in sight; the marker reads AUTO; ON/OFF in the garage |
 
 - **Guns,** last: the red marker at the top of the steering wheel becomes the trigger, with FIRE written on it (G on
   the keyboard). Held, it fires 4 shots a second from twin guns on the bonnet at the car in the reticle, if it is
   within 200 m and in sight; yellow tracers and a muzzle flash show each shot, and a miss goes off into the distance.
   The gang fires too: a fleet car shoots a rival up to 80 m ahead of it (or beside it) once a second. Before guns the
   marker is just part of the rim.
+- **Auto gun** (the owner's idea, 14 Oct; Claude's calls: the price, AUTO on the marker): it holds the trigger for
+  you, only while the reticle's car is within reach and in sight, so no shot (and no heat) is wasted. On a phone your
+  thumbs are busy. Your own trigger still works.
 
 - **The gang uses whatever it has.** With a bull bar a fleet car side-swipes a rival beside it, every 3 s at most (20
   damage a level): it lurches across, then drives back into its lane. What it totals pays you the parts, and the rival
@@ -301,8 +305,10 @@ lamp. It shows from Mad Max on, only on the road; the garage's report gives it t
   off a level), with the shot, a jolt and the cracks to show it.
 - You and the gang outgun it: your guns, and the fleet's, which race up to join the fight (40 m/s quicker until
   they are with it) and shoot it from within 200 m. A ram does a fifth of its usual damage.
-- **Destroyed:** the ending. "THE END. You beat the tank: the road is yours", 300 parts, the heat back to 0. Then you
-  play on; the next tank is half as tough again (3,000, then 4,000 ...).
+- **Destroyed:** the ending. GAME OVER on the head-up display ("the road is yours") and the run stops there, held for
+  4 s (the owner, 14 Oct: that's the end state). The garage: "GAME OVER. You beat the tank: the road is yours", 300
+  parts, the heat back to 0. You can still play on, the next tank half as tough again (3,000, then 4,000 ...), until
+  the menus are talked about.
 - **Lost** (wrecked, a head-on, or the bell with the tank still going): a DNF ("the tank held the road"), and the heat
   drops to half, so you have to push for it again.
 - Claude's calls: the tank stayed (the owner's pick; it fits the army being called in when the police can't cope), its

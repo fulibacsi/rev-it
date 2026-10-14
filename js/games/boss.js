@@ -1,8 +1,8 @@
 // The final boss. A race that starts at 100% police heat has a tank in it, sent in by the army: it holds the road
 // about 80 m ahead of you, so you can't get away from it, and fires a shell at you every 2.5 s while you are within
 // 250 m behind it. You and the gang have to outgun it: your guns, and the fleet's, which race up to join the fight.
-// Rams barely scratch it. Destroy it and that is the ending: the road is yours, the heat goes back to 0, and you play
-// on (the next tank is tougher). Lose (wrecked, head-on, or the bell with the tank still going) and it's a DNF, and
+// Rams barely scratch it. Destroy it and that is the ending: GAME OVER, the run stops there, the road is yours and the
+// heat goes back to 0. You can still play on (the next tank is tougher). Lose (wrecked, head-on, or the bell with the tank still going) and it's a DNF, and
 // the heat drops to half, so you have to push again.
 
 // its health, the m it keeps ahead of you, s between shells, the m they reach, % damage a hit, parts for beating it
@@ -41,7 +41,7 @@ function tankDrive(c, dt) {
   if (wrecked()) finishRun('wrecked');
 }
 
-// destroyed (gang.js total): the ending
+// destroyed (gang.js total): the ending. GAME OVER, and the run stops (the owner, 14 Oct: that's the end state)
 function tankDown(c) {
   Object.assign(c, { wreck: true, hp: 0 });
   progress.tanks++;
@@ -49,7 +49,8 @@ function tankDown(c) {
   run.parts += TANK.parts;
   progress.wanted = 0;
   run.beatTank = true;
-  flash('TANK DESTROYED', '#ffd36a', true);
+  finishRun();
+  run.count = 4; // twice a finish: GAME OVER on the head-up display, the tank burning (distance.js renderRun)
 }
 
 // at the bell, or a crash: a boss race lost is a DNF, and the heat drops to half

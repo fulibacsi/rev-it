@@ -20,6 +20,9 @@ Object.assign(UPGRADES, {
   guns: { name: 'Guns', tab: 'madmax', max: 3, base: 120, growth: 2, needs: ['spikes'],
           info: l => l ? `the wheel's red marker (or G) fires at the car in the reticle: ${GUN * l} damage a shot, ` +
             `4 a second, up to ${RANGE} m; the gang fires at rivals once a second` : 'unarmed' },
+  // the owner's idea (14 Oct): on a phone your thumbs are busy steering and on the pedals
+  autogun: { name: 'Auto gun', tab: 'madmax', max: 1, base: 150, needs: ['guns'],
+             info: () => 'fires for you whenever the car in the reticle is in reach and in sight; the marker reads AUTO' },
 });
 const GUN = 6, RANGE = 200; // damage a shot a level; m your guns reach (the gang's: 80)
 const GANG = FIELD / 2 + 1; // fleet cars that make a gang
@@ -46,12 +49,14 @@ function updateGang(dt) { // every frame of a run
 }
 
 // guns: held, the trigger fires 4 shots a second from the bonnet at the car in the reticle, if it is in reach and in
-// sight. The tracers are drawn over the road (renderGang)
+// sight. Auto gun holds it for you, only while there is something to hit. The tracers are drawn over the road
+// (renderGang)
 let reload = 0;
 const tracers = []; // [from, to, when]: from a car's middle on the screen, or null for your bonnet
 function fireGuns(dt) {
   reload = Math.max(0, reload - dt);
-  if (!lvl('guns') || !firing || reload) return;
+  const auto = lvl('autogun') && !progress.off.autogun && target?.seen && target.z - odo < RANGE;
+  if (!lvl('guns') || !(firing || auto) || reload) return;
   reload = 0.25;
   beep(70, 0.04);
   raiseHeat(WANTED.shot);
@@ -107,6 +112,8 @@ function gangwork(c, dt) {
 // the tracers, drawn over the road for 0.1 s each
 function renderGang() {
   document.body.classList.toggle('has-guns', run.phase !== 'garage' && lvl('guns') > 0);
+  const label = lvl('autogun') && !progress.off.autogun ? 'AUTO' : 'FIRE'; // the trigger's marker: Auto gun fires for you
+  if ($('fire').textContent !== label) $('fire').textContent = label;
   drawTracers();
   const t = arOn() && run.phase === 'run' ? target : null, s = t?.seen;
   document.body.classList.toggle('ar-on', !!s);
