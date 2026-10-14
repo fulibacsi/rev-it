@@ -116,7 +116,8 @@ runs. A hidden race is the second act.
 - **The aids** work the same pedals and lever as the player, so you can watch them.
   - They leave a control to you only while you touch it: your foot on the gas (no auto brake, no lift), on the
     clutch or the brake, your hand on the wheel or the lever. The nitro pedal isn't the gas pedal: pushing it,
-    traction control and autocruise's braking carry on.
+    traction control carries on, but autocruise neither brakes nor lifts (the owner, 14 Oct: with every aid on, NOS
+    should go). Reckless auto-drive's own nitro leaves autocruise as it is.
   - With an ECU tune they rev into it in every gear while the engine is cool: the factory map from heat 0.6, until it
     has cooled below 0.4. Your foot on the gas, or nitro, take the tuned map whatever the heat.
   - Autocruise:
@@ -202,8 +203,8 @@ runs. A hidden race is the second act.
 - In the red it damages the engine, up to 2% a second.
 
 **Nitro** pushes the heat into the red, so it does direct damage, but the top places need it. Tanks are refilled
-before each run at 100 m per second of nitro. The NOS pedal floors the gas, but the aids stay on while it is pushed:
-Auto gas's traction control trims it, and autocruise still brakes.
+before each run at 100 m per second of nitro. The NOS pedal floors the gas, and while you push it autocruise neither
+brakes nor lifts; Auto gas's traction control still trims it, so nitro doesn't spin the tyres in the middle gears.
 
 ### Act 3: the fleet
 
