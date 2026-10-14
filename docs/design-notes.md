@@ -150,10 +150,13 @@ runs. A hidden race is the second act.
 - **Target:** a perfect player first passes #100 around run 20 (about 15 min of play), barely, in a run's last
   seconds, after some near misses.
 - **Simulated:** first passed on run 18 (value-buying player) or run 24 (cheapest-first). Before flash charges it was
-  16 and 22; the simulated player spends every metre, including on flashes that add no distance. On 14 Oct the same
-  simulation gives 22 and 33 (the same on every run). Flash recharge, on sale from the start, made it 32 and 36: it
-  took the metres the car needed and counts nothing towards the head start. So it goes on sale with the reveal, and
-  its card isn't shown before (Claude's call).
+  16 and 22; the simulated player spends every metre, including on flashes that add no distance. Flash recharge, on
+  sale from the start, made it later: it took the metres the car needed and counts nothing towards the head start. So
+  it goes on sale with the reveal, and its card isn't shown before (Claude's call).
+- **Rechecked in the balancing pass (14 Oct),** four traffic seeds each: run 18, 20, 19, 27 (value) and 28, 26, 26, 23
+  (cheapest-first), on target, so the head start is unchanged. The 22 and 33 measured earlier that day were the
+  simulation's fault: since the garage split into pages it had skipped the Autopilot page's aids, which are paid in
+  metres and count towards the head start (the 12 Oct code gives 22 and 20 with the same bot).
 - **Never hint** at the white car in the garage ("a clear giveaway").
 
 ### Act 2: the race
@@ -262,11 +265,11 @@ on the horizon, and the guns would fire at nothing else).
 
   | Upgrade | Levels | Base | Growth | Notes |
   |---|---|---|---|---|
-  | Bull bar | 3 | 10 | 2.5 | bumps hurt them 50% more a level; you keep more speed (at 3, you carry on at the car's speed); the gang side-swipes rivals |
-  | Armour plating | 3 | 15 | 2.5 | collisions do 25% less damage to your car a level |
-  | Spiked hubs | 1 | 60 | | a side-swipe (into a car while moving over) costs you no speed and does 50 more damage; the gang's 30 more |
-  | Guns | 3 | 120 | 2 | needs Spiked hubs: 6 damage a shot a level, 4 shots a second, up to 200 m; the gang fires too |
-  | Auto gun | 1 | 150 | | needs Guns: fires for you while the reticle's car is in reach and in sight; the marker reads AUTO; ON/OFF in the garage |
+  | Bull bar | 3 | 20 | 2.5 | bumps hurt them 50% more a level; you keep more speed (at 3, you carry on at the car's speed); the gang side-swipes rivals |
+  | Armour plating | 3 | 30 | 2.5 | collisions do 25% less damage to your car a level |
+  | Spiked hubs | 1 | 150 | | a side-swipe (into a car while moving over) costs you no speed and does 50 more damage; the gang's 30 more |
+  | Guns | 3 | 400 | 2 | needs Spiked hubs: 6 damage a shot a level, 4 shots a second, up to 200 m; the gang fires too |
+  | Auto gun | 1 | 200 | | needs Guns: fires for you while the reticle's car is in reach and in sight; the marker reads AUTO; ON/OFF in the garage |
 
 - **Guns,** last: the red marker at the top of the steering wheel becomes the trigger, with FIRE written on it (G on
   the keyboard). Held, it fires 4 shots a second from twin guns on the bonnet at the car in the reticle, if it is
@@ -285,8 +288,8 @@ on the horizon, and the guns would fire at nothing else).
 **Police heat** (`progress.wanted`, 0 to 100%) shows on a **police scanner** bolted to the right A-pillar, opposite
 the sonar: an LCD ("HEAT 37%", "PURSUIT" while police are on the road), ten lights from green to red, and a red and blue
 lamp. It shows from Mad Max on, only on the road; the garage's report gives it too.
-- **It rises** with every total: 2% for traffic, 3% for a racer, 8% for a police car, 1% for one the gang totals;
-  and 0.05% a shot. Nothing brings it down: it stays between races and can't be bribed down.
+- **It rises** with every total: 1% for traffic, 1.5% for a racer, 4% for a police car, 0.5% for one the gang totals;
+  and 0.025% a shot (half the first guesses: see the balancing pass). Nothing brings it down: it stays between races and can't be bribed down.
 - **Police come with it:** one every 30 s when barely wanted, down to every 6 s at the top (the first one a run after
   that wait), two on the road at most. They never come at you from behind (there is no rear view):
   - from behind they come past you in your other lane, 20 m/s quicker, cut into your lane 30 m ahead and brake hard
@@ -298,16 +301,17 @@ lamp. It shows from Mad Max on, only on the road; the garage's report gives it t
   dash (on a phone the dash is full: shifter, cluster and pedals).
 
 **The final boss, the tank.** At 100% heat the garage warns that the army has sent a tank, and the next race has it
-(not in limp mode).
+(not in limp mode). It waits until you have guns: rams alone can't beat it, so unarmed it was a sure DNF that halved
+the heat. Till then the garage says "the army has a tank ready for when you are armed".
 - It comes into view 250 m up the road and holds the road about 80 m ahead of you, in your lane: you can't get away
-  from it or past it. It is the AR target ("TANK"), with 2,000 health.
+  from it or past it. It is the AR target ("TANK"), with 1,000 health.
 - It fires a shell at you every 2.5 s while you are within 250 m behind it: 8% damage a hit (armour takes a quarter
   off a level), with the shot, a jolt and the cracks to show it.
 - You and the gang outgun it: your guns, and the fleet's, which race up to join the fight (40 m/s quicker until
   they are with it) and shoot it from within 200 m. A ram does a fifth of its usual damage.
 - **Destroyed:** the ending. GAME OVER on the head-up display ("the road is yours") and the run stops there, held for
   4 s (the owner, 14 Oct: that's the end state). The garage: "GAME OVER. You beat the tank: the road is yours", 300
-  parts, the heat back to 0. You can still play on, the next tank half as tough again (3,000, then 4,000 ...), until
+  parts, the heat back to 0. You can still play on, the next tank half as tough again (1,500, then 2,000 ...), until
   the menus are talked about.
 - **Lost** (wrecked, a head-on, or the bell with the tank still going): a DNF ("the tank held the road"), and the heat
   drops to half, so you have to push for it again.
@@ -327,11 +331,30 @@ lamp. It shows from Mad Max on, only on the road; the garage's report gives it t
   After P1 a race still pays 10.
 - **Metres:** they pile up in act 2 (about 65–70k unspent by P1). Metre sinks and the fleet (below) are meant to soak
   them up.
+- **The balancing pass (14 Oct).** The owner's targets: about 25 races for each of acts 3 and 4. The method follows
+  incremental-game practice ([the math of idle games](https://www.gamedeveloper.com/design/the-math-of-idle-games-part-i):
+  prices grow geometrically, income grows as you buy; the first purchases come quickly and there are no long dry
+  spells). Every simulation now draws each race's traffic from a seed of its own, set in the same call as the race
+  (the page's own loop drew on it between calls, so results moved with the machine's load); four seeds each.
+  - Act 1: on target, unchanged (see the hidden race). Act 2: P1 after 24, 22, 21, 23 races, unchanged.
+  - Act 3: 51 fleet cars after 26, 28, 27, 26 races, a fleet car or two bought every race. Unchanged: within 10%.
+  - Act 4 (`act4.py`): the first guesses took 31–36 races, mostly because the reticle stayed on last race's car (fixed
+    the same day). Without that, they took 15–16, the heat sat at 100% for races before guns were affordable, and one
+    level of guns could never beat the 2,000-health tank (854 short at the bell every time; at 1,200, 54 short).
+    Chosen: Mad Max prices 2–3 times the guesses, heat at half, the tank at 1,000 health and waiting for guns. Eight
+    runs: the tank beaten after 22–34 races (median 24.5), at the first go in six. Mad Max purchases every 1–4
+    races up to the spiked hubs, then a 5–6 race save for the guns (fleet cars still bought every race); the heat
+    reaches 100% about 3 races before the guns. The two runs that took longest lost tank fights to head-ons: boxed
+    in behind the tank, Reckless auto-drive takes the oncoming lane, though the tank can't be passed.
+  - The bot fires all race long. A player who doesn't (no Auto gun) can lose the first fight and come back with
+    the second level of guns.
 - **Simulation tools** live in `tests/balance/` and are run from the repo root:
-  - `act1.py [cheapest|value] [head-start curve]`: when #100 is first passed;
+  - `act1.py [cheapest|value] [head-start curve or -] [traffic]`: when #100 is first passed;
   - `act2.py [races] [seed]`: races from the reveal to P1, the bot driving like Reckless auto-drive (`aids.js`). The
     traffic seed alone moves the result by up to 7 races, so compare a few seeds;
   - `act3.py [races] [seed] [order|cheapest]`: races from the first win to 51 fleet cars, buying the Fleet's upgrades;
+  - `act4.py [races] [seed] [overrides]`: races from the gang to beating the tank, the bot ramming the reticle's car
+    and holding the trigger; the overrides are JavaScript to try other numbers (`"TANK.hp = 1200"`);
   - `cruise.py [runs] [plain|reckless]`: autocruise at speed through traffic: metres a run, time on the brake, crashes;
   - `race_test.py` and `race_seq.py`: grid slots and finishing places;
   - `progress.py` and `balance.py`: whole progressions played by a bot;
@@ -430,10 +453,19 @@ All dates are 2026.
 Waiting for the owner. Don't build these on a guess: ask.
 
 - **Autocruise's weave** (see "Also decided"): about 5–7% further a run, but about a third more crashes. Worth it?
-- **For the balancing pass, after the build:** the flash prices moved the simulated reveal about 2 runs later; the
-  prices of Game of chicken and Reckless auto-drive; Speed signs is too easy. All of phase 3's numbers are first
-  guesses: the miles prices and dues (`act3.py`), car health and damage per bump, parts per car and the Mad Max
-  prices, the heat rates and the police, the tank's health and shells.
+- **Reckless auto-drive in a tank fight:** boxed in behind the tank it takes the oncoming lane, though the tank can't
+  be passed, and head-ons lose the fight. Should it stay on your side of the road while the tank is there?
+- **Still open after the balancing pass (14 Oct):** the prices of Game of chicken and Reckless auto-drive, and Speed
+  signs being too easy, weren't looked at; nor were the police numbers, car health and damage per bump. The flash
+  prices can't be judged by `act1.py`: its bot never flashes, so to it flashes add nothing.
+
+## To build later
+
+The owner's list (14 Oct), not started:
+
+- When a new upgrade is unlocked, a yellow exclamation mark on its garage tab.
+- Locked upgrades hidden: at most the card's outline, or the name with what unlocks it instead of what it does.
+- Menus, including what comes after GAME OVER (the tank beaten).
 
 ## Brainstorm waiting for the owner's picks
 

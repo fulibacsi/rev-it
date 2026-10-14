@@ -8,20 +8,21 @@
 // gang shoots at rivals too.
 
 Object.assign(UPGRADES, {
-  // prices: first guesses, in parts (10 a car, 25 a racer)
-  bullbar: { name: 'Bull bar', tab: 'madmax', max: 3, base: 10, growth: 2.5,
+  // prices in parts (10 a car, 25 a racer), from the simulations (tests/balance/act4.py, 14 Oct): about 25 races from
+  // the gang to the tank, something to buy every few races, the guns as the last big save
+  bullbar: { name: 'Bull bar', tab: 'madmax', max: 3, base: 20, growth: 2.5,
              info: l => l ? `bumps hurt them ${50 * l}% more and cost you less speed; the gang side-swipes rivals ` +
                `beside it (${20 * l} damage)` : 'the factory bumper' },
-  armour: { name: 'Armour plating', tab: 'madmax', max: 3, base: 15, growth: 2.5,
+  armour: { name: 'Armour plating', tab: 'madmax', max: 3, base: 30, growth: 2.5,
             info: l => l ? `collisions do ${25 * l}% less damage to your car` : 'factory panels' },
-  spikes: { name: 'Spiked hubs', tab: 'madmax', max: 1, base: 60,
+  spikes: { name: 'Spiked hubs', tab: 'madmax', max: 1, base: 150,
             info: () => 'a side-swipe (into a car while moving over) costs you no speed and does 50 more damage; ' +
               "the gang's swipes do 30 more" },
-  guns: { name: 'Guns', tab: 'madmax', max: 3, base: 120, growth: 2, needs: ['spikes'],
+  guns: { name: 'Guns', tab: 'madmax', max: 3, base: 400, growth: 2, needs: ['spikes'],
           info: l => l ? `the wheel's red marker (or G) fires at the car in the reticle: ${GUN * l} damage a shot, ` +
             `4 a second, up to ${RANGE} m; the gang fires at rivals once a second` : 'unarmed' },
   // the owner's idea (14 Oct): on a phone your thumbs are busy steering and on the pedals
-  autogun: { name: 'Auto gun', tab: 'madmax', max: 1, base: 150, needs: ['guns'],
+  autogun: { name: 'Auto gun', tab: 'madmax', max: 1, base: 200, needs: ['guns'],
              info: () => 'fires for you whenever the car in the reticle is in reach and in sight; the marker reads AUTO' },
 });
 const GUN = 6, RANGE = 200; // damage a shot a level; m your guns reach (the gang's: 80)

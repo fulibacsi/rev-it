@@ -3,7 +3,8 @@
 // hotter, the more police: they never come at you from behind (there is no rear view), they overtake you, cut in
 // and brake; while you drive in the oncoming lanes they floor it at you head-on. Past the top the tank comes (boss.js).
 
-const WANTED = { car: 0.02, racer: 0.03, police: 0.08, gang: 0.01, shot: 0.0005 }; // heat a total (by kind) or a shot
+// heat a total (by kind) or a shot: half the first guesses, so 100% comes about as the guns can be afforded (act4.py)
+const WANTED = { car: 0.01, racer: 0.015, police: 0.04, gang: 0.005, shot: 0.00025 };
 function raiseHeat(by) { // debug mode: ten times quicker, to get to the tank
   if (arOn()) progress.wanted = Math.min(1, progress.wanted + by * (debugSave ? 10 : 1));
 }
