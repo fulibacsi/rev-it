@@ -1,6 +1,7 @@
 """Headlight flash charges: 1-10 a run, auto flash from 5, no flash wasted on racers, autocruise overtakes a racer by
 moving over behind an ordinary car it can flash away, a game of chicken moves oncoming cars, and Auto flash plays it
-once you have it. Extra flashes don't change the reveal's head start."""
+once you have it. In Mad Max it leaves the car in the reticle alone. Extra flashes don't change the reveal's head
+start."""
 from playwright.sync_api import sync_playwright
 from common import URL, launch
 CAR = "power: 10, rev: 4, gears: 3, tyres: 4, time: 6, clutch: 1, gas: 1, shift: 1, engine: 2, steering: 3"
@@ -43,6 +44,12 @@ with sync_playwright() as p:
     js(f"({place})([['car', 80, 0, 40]])"); n0 = js("run.flashes"); pg.wait_for_timeout(2500)
     check("a slow car in front: flashed once, it moved over", js("run.flashes") == n0 - 1 and js("traffic.find(c => c.tag === 0 && c.dir > 0 && !c.racer).lane") == 1,
           f"{n0} -> {js('run.flashes')}, its lane {js('traffic.find(c => c.tag === 0 && c.dir > 0 && !c.racer)?.lane')}")
+    js("traffic.forEach(c => { if (!c.racer) { c.dir = -1; c.x = LANES.oncoming[0]; } }); lane = 0; carX = MY_LANES[0]; progress.totals = 1")  # Mad Max
+    pg.wait_for_timeout(1000); n0 = js("run.flashes"); js(f"({place})([['car', 200, 0, 40]])")  # in the reticle from 300 m
+    pg.wait_for_function("traffic.some(c => c.tag === 0 && c.dir > 0 && !c.racer && c.z - odo < 40)", timeout=15000)
+    got = js("(() => { const c = traffic.find(c => c.tag === 0 && c.dir > 0 && !c.racer); return { flashes: run.flashes, lane: c.lane, target: target === c }; })()")
+    check("Mad Max: the slow car ahead is in the reticle, so no flash: it stays in your lane", got == {"flashes": n0, "lane": 0, "target": True}, {"before": n0, **got})
+    js("progress.totals = 0")
     # 4. autocruise: a racer close in front, a slow ordinary car a bit further in the other lane (on reach alone, staying
     #    behind the racer looks better): with a flash it moves over and flashes the car away; without one it stays
     for flashes, want in [(5, "overtakes"), (0, "stays")]:
