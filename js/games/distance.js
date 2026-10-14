@@ -381,8 +381,8 @@ const DISTANCE = {
     return true;
   },
   speedo: () => lvl('gear7') ? 540 : 360,
-  stereo: () => lvl('stereo') > 0 && !progress.off.stereo,
-  tape: () => progress.tape,
+  stereo: () => lvl('stereo') > 0,
+  tape: () => progress.off.stereo ? null : progress.tape,
   nextTape() { // through the tapes, then off; a tap when off plays the first. The garage's ON/OFF is the same switch
     if (!lvl('stereo')) return;
     if (progress.off.stereo) progress.off.stereo = false;

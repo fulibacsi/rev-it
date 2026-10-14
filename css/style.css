@@ -70,6 +70,10 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 #stereo-eq u.on { background: #5f5; } #stereo-eq u:nth-child(4).on { background: #fb3; } #stereo-eq u:nth-child(5).on { background: #f44; }
 #stereo-next { align-self: flex-end; background: #1c1c22; color: #ccc; border: 1px solid #444; border-radius: 4px;
                font: 600 10px system-ui, sans-serif; letter-spacing: 1px; padding: 2px 8px; cursor: pointer; }
+/* switched off: greyed, still there to be tapped back on */
+.stereo-off #beat rect { fill: #34343a; }
+.stereo-off #stereo-lcd { background: #1a1a1e; color: #66666e; }
+.stereo-off #stereo-eq u { background: #26262c; }
 
 /* the police scanner, bolted to the right A-pillar opposite the sonar (from Mad Max on, only on the road) */
 #scanner { display: none; position: fixed; right: 5vw; top: 96px; width: 120px; pointer-events: none; }

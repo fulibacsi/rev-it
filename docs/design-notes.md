@@ -73,7 +73,9 @@ machine or session. Keep it current: update a section when a decision changes, a
   bass, pads and an arpeggio over a four-chord loop, in 16-bar turns with a break. A row of lights in the cluster's
   hood jumps with the beat (on the phone that is all there is: the dash is full); on a desktop a head unit in the dash,
   left of the cluster, shows the tape and an 8-band equaliser. A tap on the lights or the head unit's TAPE button (or
-  M) plays the next tape, and after the last it goes off; the garage's ON/OFF is the same switch. Distance only. It
+  M) plays the next tape, and after the last it goes off: the lights and the head unit stay, greyed ("OFF"), and a tap
+  plays the first tape again (the owner, 14 Oct: it used to vanish). The garage's ON/OFF is the same switch. Distance
+  only. It
   plays about 6 dB under the engine at 4,000 rpm. (Claude's calls: generated rather than recorded, since no music
   site was reachable from the build; the tapes and the controls.)
 - The run's time left is a bar draining across the widened rear-view mirror. It turns red and blinks under 5 s.
