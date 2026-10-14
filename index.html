@@ -41,6 +41,8 @@
   <g id="scanner-leds"><rect x="14" y="44" width="7" height="18" rx="1.5" fill="#2a2a30"/><rect x="23" y="44" width="7" height="18" rx="1.5" fill="#2a2a30"/><rect x="32" y="44" width="7" height="18" rx="1.5" fill="#2a2a30"/><rect x="41" y="44" width="7" height="18" rx="1.5" fill="#2a2a30"/><rect x="50" y="44" width="7" height="18" rx="1.5" fill="#2a2a30"/><rect x="59" y="44" width="7" height="18" rx="1.5" fill="#2a2a30"/><rect x="68" y="44" width="7" height="18" rx="1.5" fill="#2a2a30"/><rect x="77" y="44" width="7" height="18" rx="1.5" fill="#2a2a30"/><rect x="86" y="44" width="7" height="18" rx="1.5" fill="#2a2a30"/><rect x="95" y="44" width="7" height="18" rx="1.5" fill="#2a2a30"/></g>
   <text x="58" y="82" font-size="8" fill="#778" text-anchor="middle" letter-spacing="2">SCANNER</text>
 </svg>
+<!-- the car stereo's head unit, in the dash on a desktop (stereo.js) -->
+<div id="stereo"><b id="stereo-lcd"></b><span id="stereo-eq"><i><u></u><u></u><u></u><u></u><u></u></i><i><u></u><u></u><u></u><u></u><u></u></i><i><u></u><u></u><u></u><u></u><u></u></i><i><u></u><u></u><u></u><u></u><u></u></i><i><u></u><u></u><u></u><u></u><u></u></i><i><u></u><u></u><u></u><u></u><u></u></i><i><u></u><u></u><u></u><u></u><u></u></i><i><u></u><u></u><u></u><u></u><u></u></i></span><button id="stereo-next" title="next tape (or M)">TAPE ▸</button></div>
 <!-- the gang's AR layer on the windscreen: a reticle and a health bar on the target car (gang.js) -->
 <div id="ar"><i></i><i></i><i></i><i></i><b id="ar-bar"><i></i></b><span id="ar-label"></span></div>
 <svg id="sonar" viewBox="0 0 124 92"> <!-- bolted to the A-pillar: your fleet cars behind you (fleet.js) -->
@@ -81,6 +83,8 @@
   <path d="M20,190 Q20,20 140,14 H420 Q540,20 540,190 Z" fill="#0b0b0f" stroke="#2a2a33" stroke-width="3"/>
   <g id="tach"></g><g id="speedo"></g>
   <circle id="shift-light" cx="280" cy="40" r="9" fill="#330"/>
+  <g id="beat"><rect class="r" x="160" y="16" width="11" height="9" rx="2"/><rect class="r" x="175" y="16" width="11" height="9" rx="2"/><rect class="a" x="190" y="16" width="11" height="9" rx="2"/><rect class="a" x="205" y="16" width="11" height="9" rx="2"/><rect class="a" x="220" y="16" width="11" height="9" rx="2"/><rect class="g" x="235" y="16" width="11" height="9" rx="2"/><rect class="g" x="250" y="16" width="11" height="9" rx="2"/><rect class="g" x="265" y="16" width="11" height="9" rx="2"/><rect class="g" x="280" y="16" width="11" height="9" rx="2"/><rect class="g" x="295" y="16" width="11" height="9" rx="2"/><rect class="g" x="310" y="16" width="11" height="9" rx="2"/><rect class="a" x="325" y="16" width="11" height="9" rx="2"/><rect class="a" x="340" y="16" width="11" height="9" rx="2"/><rect class="a" x="355" y="16" width="11" height="9" rx="2"/><rect class="r" x="370" y="16" width="11" height="9" rx="2"/><rect class="r" x="385" y="16" width="11" height="9" rx="2"/></g> <!-- the car stereo's lights (stereo.js), jumping with the beat -->
+  <rect id="beat-hit" x="200" y="0" width="160" height="110" fill="transparent"><title>next tape (or M)</title></rect>
   <g id="heat" style="display: none"><text x="280" y="62" font-size="8">TEMP</text>
     <rect x="248" y="65" width="64" height="5" rx="2" fill="#222"/><rect x="299.2" y="64" width="1.5" height="7" fill="#f55"/>
     <rect id="heat-fill" x="248" y="65" width="0" height="5" rx="2"/></g>
@@ -199,6 +203,7 @@
 <script src="js/car.js"></script>
 <script src="js/road.js"></script>
 <script src="js/controls.js"></script>
+<script src="js/stereo.js"></script>
 <script src="js/games/levels.js"></script>
 <script src="js/games/rev.js"></script>
 <script src="js/games/signs.js"></script>

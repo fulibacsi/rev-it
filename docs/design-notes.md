@@ -68,6 +68,14 @@ machine or session. Keep it current: update a section when a decision changes, a
   line fills under it while a used flash comes back (up to the run's full count); it shows in full even when the
   telltale is dimmed for none left. (Claude's call: 10, 8, 6, 4, 2 s over five levels, 2,500 m and up, on sale
   once the race is revealed; see the hidden race.)
+- **The car stereo** (Workshop, 500 m, the owner's idea): synthwave made on the spot with Web Audio, on four tapes
+  (Neon Coast, Night Drive, Sunset Grid, Chrome Heart) that differ in key, tempo, chords and patterns. Drums, a driving
+  bass, pads and an arpeggio over a four-chord loop, in 16-bar turns with a break. A row of lights in the cluster's
+  hood jumps with the beat (on the phone that is all there is: the dash is full); on a desktop a head unit in the dash,
+  left of the cluster, shows the tape and an 8-band equaliser. A tap on the lights or the head unit's TAPE button (or
+  M) plays the next tape, and after the last it goes off; the garage's ON/OFF is the same switch. Distance only. It
+  plays about 6 dB under the engine at 4,000 rpm. (Claude's calls: generated rather than recorded, since no music
+  site was reachable from the build; the tapes and the controls.)
 - The run's time left is a bar draining across the widened rear-view mirror. It turns red and blinks under 5 s.
 - Nitro is a smaller red NOS pedal bolted over the gas pedal's top right corner, like a side pedal (the owner's
   design). Pushing it floors the gas, and N does the same. The tank shows as a NOS bar under TEMP on the cluster. It
