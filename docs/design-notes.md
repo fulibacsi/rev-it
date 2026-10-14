@@ -202,14 +202,14 @@ runs. A hidden race is the second act.
 - Payment goes by finishing position, never by places gained. An earlier "points per place gained" rule was farmable:
   starting at the back on purpose, or swapping places with a racer, paid extra.
 
-**Black market** (paid in race points, 5,536 in all):
+**Black market** (paid in race points, 5,761 in all):
 
 | Upgrade | Levels | Base | Growth | Notes |
 |---|---|---|---|---|
 | Bribe the starter (grid) | up to 100 | 1 | 1.035 | slot N needs a finish ahead of #N |
 | Reckless driving | 1 | 100 | | oncoming lanes; from now on collisions damage the car |
 | Game of chicken | 1 | 75 | | flashes work on oncoming cars: they swerve, room permitting; needs Headlight flash |
-| Reckless auto-drive | 1 | 1200 | | autocruise in the oncoming lanes too, with chicken, the tune and nitro; needs Autocruise |
+| Reckless auto-drive | 1 | 600 | | autocruise in the oncoming lanes too, with chicken, the tune and nitro; needs Autocruise |
 | Cooling | 3 | 60 | 2 | heat rises 15% slower a level |
 | ECU: rev limit | 4 | 50 | 1.6 | +300 rpm past the factory redline a level |
 | ECU: power | 4 | 60 | 1.6 | +8% torque a level |
@@ -377,8 +377,10 @@ the heat. Till then the garage says "the army has a tank ready for when you are 
   - The bot fires all race long. A player who doesn't (no Auto gun) can lose the first fight and come back with
     the second level of guns.
   - Rams as hits, with OHKO (14 Oct, the owner's numbers): act 4 after 23, 21, 27, 25 races with the prices above,
-    the tank beaten at the first go every time; act 2 after 24, 22, 20, 20 with Game of chicken at 75 points and
-    Reckless auto-drive at 1,200 (the bot buys the first affordable thing, so it never saves for that one).
+    the tank beaten at the first go every time; act 2 after 24, 22, 20, 20 with Game of chicken at 75 points.
+  - Reckless auto-drive: the owner asked for about Autocruise's price times 1.5 (1,200 points in effort), but that put
+    the Black market at 6,360 points against the ~5,200 act 2 pays (10 a race after P1), so a buyer would go without
+    nitro or 7th gear for about 115 races. 600 (the owner's pick): the dearest item with 7th gear, the market 5,761.
 - **Simulation tools** live in `tests/balance/` and are run from the repo root:
   - `act1.py [cheapest|value] [head-start curve or -] [traffic]`: when #100 is first passed;
   - `act2.py [races] [seed]`: races from the reveal to P1, the bot driving like Reckless auto-drive (`aids.js`). The
