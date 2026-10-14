@@ -106,13 +106,16 @@ with sync_playwright() as p:
         Object.assign(c, { dir: 1, lane: 1, x: MY_LANES[1], z: odo + d, v: speed, want: speed, cool: 99, hp: null, wreck: false }); window.tg = c; lane = fromLane = 0; carX = MY_LANES[0]; target = null; }"""
     js(f"({place})(60)"); pg.wait_for_function("target === tg && tg.seen", timeout=5000)
     fire = lambda secs: js(f"() => new Promise(res => {{ const t0 = run.left; const f = () => run.left > t0 - {secs} ? requestAnimationFrame(f) : res(); requestAnimationFrame(f); }})")
-    pg.mouse.move(*m); pg.mouse.down(); held = js("({ firing, fire: getComputedStyle($('fire')).display, wheel: wheel.held })"); fire(1); pg.screenshot(path=f"{OUT}/gang_guns.png"); pg.mouse.up()
-    hp = js("Math.round(tg.hp ?? 100)")
-    check("guns 2: the marker is the trigger (FIRE on it); a second of fire, 4 or 5 shots of 12", held["firing"] and held["fire"] != "none" and not held["wheel"] and 100 - hp in (36, 48, 60), {"held": held, "hp": hp})
-    pg.wait_for_timeout(500); check("let go: the guns stop", js("[firing, Math.round(tg.hp)]") == [False, hp], js("[firing, Math.round(tg.hp)]"))
+    pg.mouse.move(*m); pg.mouse.down(); held = js("({ firing, fire: getComputedStyle($('fire')).display, wheel: wheel.held })"); fire(1)
+    hp = js("Math.round(tg.hp ?? 100)"); pg.mouse.up(); hp = [hp, js("Math.round(tg.hp ?? 100)")]  # at 1 s, and let go
+    check("guns 2: the marker is the trigger (FIRE on it); a second of fire, 5 shots of 12 (a frame either way)",
+          held["firing"] and held["fire"] != "none" and not held["wheel"] and 100 - hp[0] in (48, 60, 72), {"held": held, "hp": hp})
+    pg.wait_for_timeout(500); check("let go: the guns stop", js("[firing, Math.round(tg.hp)]") == [False, hp[1]], js("[firing, Math.round(tg.hp)]"))
+    hp = hp[1]
     pg.keyboard.down("g"); fire(0.5); pg.keyboard.up("g")
     check("G fires too", js("Math.round(tg.hp)") < hp, [hp, js("Math.round(tg.hp)")])
-    js(f"({place})(250)"); pg.wait_for_function("target === tg", timeout=5000); pg.keyboard.down("g"); fire(0.6); pg.keyboard.up("g")
+    js(f"({place})(250)"); pg.wait_for_function("target === tg", timeout=5000); pg.keyboard.down("g"); fire(0.6)
+    pg.screenshot(path=f"{OUT}/gang_guns.png"); pg.keyboard.up("g")  # firing, out of reach: the tracers miss
     check("out of reach (250 m): no damage", js("tg.hp") is None, js("tg.hp"))
     # 13. the gang shoots: a fleet car with a rival 50 m ahead of it, a shot a second
     got = js("""() => new Promise(res => { const f = racers().find(c => c.fleet), r = rivals().find(c => c.racer === 25);
