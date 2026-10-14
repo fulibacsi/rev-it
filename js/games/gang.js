@@ -107,11 +107,11 @@ function renderGang() {
   drawTracers();
   const t = arOn() && run.phase === 'run' ? target : null, s = t?.seen;
   document.body.classList.toggle('ar-on', !!s);
-  if (!s) return;
+  if (t) $('ar').style.setProperty('--hp', Math.max(0, t.hp ?? health(t)) / health(t)); // right as soon as it shows again
+  if (!s) return; // out of sight: under your bonnet just after a bump, say
   const k = canvas.clientWidth / canvas.width, w = Math.max(26, s[2] * k), h = Math.max(20, s[3] * k);
   Object.assign($('ar').style, { left: `${(s[0] + s[2] / 2) * k - w / 2}px`, top: `${(s[1] + s[3] / 2) * k - h / 2}px`,
                                  width: `${w}px`, height: `${h}px` });
-  $('ar').style.setProperty('--hp', Math.max(0, t.hp ?? health(t)) / health(t));
   $('ar-label').textContent = t.tank ? 'TANK' : !gangOpen() ? 'TOTAL IT' : t.racer ? `#${t.racer}` : '';
 }
 
