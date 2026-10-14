@@ -266,12 +266,16 @@ on the horizon, and the guns would fire at nothing else).
   | Armour plating | 3 | 15 | 2.5 | collisions do 25% less damage to your car a level |
   | Spiked hubs | 1 | 60 | | a side-swipe (into a car while moving over) costs you no speed and does 50 more damage; the gang's 30 more |
   | Guns | 3 | 120 | 2 | needs Spiked hubs: 6 damage a shot a level, 4 shots a second, up to 200 m; the gang fires too |
+  | Auto gun | 1 | 150 | | needs Guns: fires for you while the reticle's car is in reach and in sight; the marker reads AUTO; ON/OFF in the garage |
 
 - **Guns,** last: the red marker at the top of the steering wheel becomes the trigger, with FIRE written on it (G on
   the keyboard). Held, it fires 4 shots a second from twin guns on the bonnet at the car in the reticle, if it is
   within 200 m and in sight; yellow tracers and a muzzle flash show each shot, and a miss goes off into the distance.
   The gang fires too: a fleet car shoots a rival up to 80 m ahead of it (or beside it) once a second. Before guns the
   marker is just part of the rim.
+- **Auto gun** (the owner's idea, 14 Oct; Claude's calls: the price, AUTO on the marker): it holds the trigger for
+  you, only while the reticle's car is within reach and in sight, so no shot (and no heat) is wasted. On a phone your
+  thumbs are busy. Your own trigger still works.
 
 - **The gang uses whatever it has.** With a bull bar a fleet car side-swipes a rival beside it, every 3 s at most (20
   damage a level): it lurches across, then drives back into its lane. What it totals pays you the parts, and the rival

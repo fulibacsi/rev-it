@@ -4,7 +4,8 @@ at 0 health it skids onto the shoulder, out of your way, and pays parts. A total
 first total opens the Mad Max page, paid in parts; a bull bar hurts them more and costs you less speed. Armour takes
 off your damage, spiked hubs make a side-swipe free and harder; with a bull bar the gang side-swipes rivals. Guns,
 last: the wheel's red marker turns into the trigger (FIRE on it), shots hurt the car in the reticle within 200 m, and
-the gang shoots at rivals. The reticle moves to a nearer car when its own is out of reach, and starts afresh each race."""
+the gang shoots at rivals. The reticle moves to a nearer car when its own is out of reach, and starts afresh each race.
+Auto gun fires for you at the reticle's car while it is in reach, and the marker reads AUTO."""
 import re
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -127,7 +128,17 @@ with sync_playwright() as p:
         Object.assign(r, { lane: 0, x: MY_LANES[0], z: odo + 350, v: 30, want: 30, cool: 99, hp: null, wreck: false });
         setTimeout(() => res(Math.round(r.hp ?? 150)), 1500); })""")
     check("the gang shoots at a rival ahead: 12 a second (one or two shots in 1.5 s)", got in (126, 138), got)
-    # 14. the next race: its cars are new, so the reticle doesn't stay on the last one's rival still up the road
+    # 14. Auto gun: it fires by itself at the reticle's car in reach, not out of reach; switched off, it doesn't
+    js("progress.levels.autogun = 1; refreshCar()")
+    js(f"({place})(60)"); pg.wait_for_function("target === tg && tg.seen", timeout=5000); pg.wait_for_timeout(1000)
+    got = js("({ hp: Math.round(tg.hp ?? 100), marker: $('fire').textContent, firing })")
+    check("Auto gun: shoots the car in reach without the trigger; the marker reads AUTO", got["hp"] < 100 and got["marker"] == "AUTO" and not got["firing"], got)
+    js(f"({place})(250)"); pg.wait_for_function("target === tg", timeout=5000); w0 = js("progress.wanted"); pg.wait_for_timeout(800)
+    check("Auto gun: out of reach (250 m), no shots and no heat", js("[tg.hp, progress.wanted]") == [None, w0], js("[tg.hp, progress.wanted - " + str(w0) + "]"))
+    js("progress.off.autogun = true"); js(f"({place})(60)"); pg.wait_for_function("target === tg", timeout=5000); pg.wait_for_timeout(800)
+    check("Auto gun switched off: no shots, the marker reads FIRE", js("[tg.hp, $('fire').textContent]") == [None, "FIRE"], js("[tg.hp, $('fire').textContent]"))
+    js("progress.levels.autogun = 0; delete progress.off.autogun")
+    # 15. the next race: its cars are new, so the reticle doesn't stay on the last one's rival still up the road
     js("""window.tg = rivals().find(c => c.racer === 20); traffic.forEach(c => { if (c !== tg) c.z = c.racer ? odo - 9000 : odo + 5000; });
         Object.assign(tg, { lane: 0, x: MY_LANES[0], z: odo + 120, v: speed, want: speed, cool: 99, hp: null, wreck: false }); target = null""")
     pg.wait_for_function("target === tg", timeout=5000)
