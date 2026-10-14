@@ -57,13 +57,15 @@ window.simRun = (levels, engineIdx = 0, skill = 1, off = {}, withTraffic = false
     if (window.RACER_BOT && run.phase === 'run') racerHabits();
     updateControls(dt); // the app's frame order: controls (the lever moves), aids, physics, the game
     updateAids(dt);
+    window.afterAids?.(); // a bot's own hands after the aids' (act4.py: ramming, the trigger)
     stepCar(dt, updateEngine(dt, now));
     if (stalled) stalled = false;
     if (spinning) spinT += dt;
-    updateRun(dt);
+    if (window.SEE_AHEAD) for (const c of traffic) c.seen = c.z > odo && c.z - odo < 300 ? [0, 0, 1, 1] : null; // nothing is
+    updateRun(dt);                                                                     // drawn: the cars ahead count as in sight
     if (run.revealed && window.passedAt == null) window.passedAt = +(runTime() - run.left).toFixed(1); // the moment #100 fell behind
     if (withTraffic) updateTraffic(dt, now / 1000);
-    if (crashed) { crashed = false; crashes++; }
+    if (crashed) { crashed = false; crashes++; if (window.CRASH_DAMAGE) game.crash?.(impact); } // act4.py: rams hurt
     if (i % TRACE_EVERY === 0 && trace.length < 400) trace.push([+(i * dt).toFixed(2), run.phase, gear, Math.round(rpm), +(speed * 3.6).toFixed(1),
       +gasPedal.toFixed(2), +throttle.toFixed(2), +clutchPedal.toFixed(2), +clutch.toFixed(2), locked, spinning, 0,
       +boost.toFixed(2), lever.path ? 'path' : '', +lever.y.toFixed(2)]);
