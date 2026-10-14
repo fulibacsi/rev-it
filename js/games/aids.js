@@ -139,8 +139,9 @@ function autoFlash() {
 // reckless auto-drive (Black market): autocruise without manners. Boxed in on your side it takes the near oncoming lane
 // when nothing is coming for 6 s, or when whatever comes can be flashed out of the way (Game of chicken and a flash
 // left). It goes home when something it can't flash away comes within 3.5 s (cutting in beside a car only to escape a
-// head-on under 2 s away), or once your side is open again. It pushes the nitro pedal when a racer is close ahead, the
-// tyres grip and it isn't braking.
+// head-on under 2 s away), or once your side is open again. While the tank is on the road it keeps to your side: it
+// can't be passed (the owner, 14 Oct). It pushes the nitro pedal when a racer is close ahead, the tyres grip and it
+// isn't braking.
 let tunedRevs = true; // the aids rev into the tune now (see updateAids)
 // an oncoming car in your lane, under 4.5 s away, that a flash would make swerve: a game of chicken to play
 const facing = () => traffic.find(c => sameLane(c.x, carX) && swerves(c) && (c.z - odo) / Math.max(1, speed + c.v) < 4.5);
@@ -154,15 +155,16 @@ function recklessLanes() {
   if (lane > 1 && cruiseBrake) { brakePedal = 0; cruiseBrake = false; } // autocruise doesn't drive over there
   if (wheel.held || Math.abs(carX - ROAD_LANES[lane]) > 0.3) return; // your hand on the wheel, or already moving over
   const reach = a => a && a.closing > 0 ? a.gap / a.closing : Infinity, brave = chicken && run.flashes > 0;
+  const tank = run.tank && !run.tank.wreck; // boss.js: it can't be passed, so no going round it into the traffic
   if (lane <= 1) {
     const boxed = reach(carAhead(MY_LANES[lane])) < 3 && reach(carAhead(MY_LANES[1 - lane])) < 3;
-    if (lane === 1 && boxed && speed > 15 && (meets(ROAD_LANES[2]) > 6 || brave)) changeLane(-1);
+    if (lane === 1 && boxed && !tank && speed > 15 && (meets(ROAD_LANES[2]) > 6 || brave)) changeLane(-1);
     return;
   }
   if (lane === 3) return changeLane(1); // the far oncoming lane: back towards your side
   if (brave && facing()) flashLights(); // a game of chicken, with or without Auto flash
   const coming = meets(ROAD_LANES[2]), home = laneClear(MY_LANES[1], MY_FRONT + 6);
-  if (coming < 3.5 && (home || coming < 2) || home && reach(carAhead(MY_LANES[1])) > 4) changeLane(1);
+  if (coming < 3.5 && (home || coming < 2) || home && (tank || reach(carAhead(MY_LANES[1])) > 4)) changeLane(1);
 }
 function recklessNitro() {
   const front = nearestRacers().front;

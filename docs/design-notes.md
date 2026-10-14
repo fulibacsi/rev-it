@@ -132,6 +132,8 @@ runs. A hidden race is the second act.
       can be flashed away (Game of chicken and a flash left);
     - it goes home when something it can't flash away comes within 3.5 s, or when your side opens again. It cuts in
       beside a car only to escape a head-on under 2 s away: a bump beats a DNF;
+    - while the tank is on the road it keeps to your side and goes home as soon as it can: the tank can't be passed
+      (the owner, 14 Oct, after the simulations lost tank fights to head-ons);
     - it pushes the nitro pedal when a racer is within 500 m ahead, the tyres grip, it is in 2nd or higher and isn't
       braking.
   - Auto flash only flashes a car that will move over, never a racer, nor the car in Mad Max's reticle (that one is
@@ -348,7 +350,8 @@ the heat. Till then the garage says "the army has a tank ready for when you are 
     runs: the tank beaten after 22–34 races (median 24.5), at the first go in six. Mad Max purchases every 1–4
     races up to the spiked hubs, then a 5–6 race save for the guns (fleet cars still bought every race); the heat
     reaches 100% about 3 races before the guns. The two runs that took longest lost tank fights to head-ons: boxed
-    in behind the tank, Reckless auto-drive takes the oncoming lane, though the tank can't be passed.
+    in behind the tank, Reckless auto-drive took the oncoming lane, though the tank can't be passed (it no longer
+    does).
   - The bot fires all race long. A player who doesn't (no Auto gun) can lose the first fight and come back with
     the second level of guns.
   - Rams as hits, with OHKO (14 Oct, the owner's numbers): act 4 after 23, 21, 27, 25 races with the prices above,
@@ -459,8 +462,6 @@ All dates are 2026.
 Waiting for the owner. Don't build these on a guess: ask.
 
 - **Autocruise's weave** (see "Also decided"): about 5–7% further a run, but about a third more crashes. Worth it?
-- **Reckless auto-drive in a tank fight:** boxed in behind the tank it takes the oncoming lane, though the tank can't
-  be passed, and head-ons lose the fight. Should it stay on your side of the road while the tank is there?
 - **Still open after the balancing pass (14 Oct):** the prices of Game of chicken and Reckless auto-drive, and Speed
   signs being too easy, weren't looked at; nor were the police numbers, car health and damage per bump. The flash
   prices can't be judged by `act1.py`: its bot never flashes, so to it flashes add nothing.
