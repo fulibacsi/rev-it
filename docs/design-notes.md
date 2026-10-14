@@ -244,8 +244,10 @@ racers you beat are open to offers". It is a garage page paid in **miles**.
 
 **The gang:** once 51 of the 100 race for you, your fleet is a gang. The garage gives its first job: total a car. The
 windscreen gains an **AR layer** (red, like a gunsight): a reticle round the nearest car ahead going your way, its
-health bar above it, and "TOTAL IT" until the first job is done (a racer's number after). It stays on that car until
-you pass it or total it, then moves to the next.
+health bar above it, and "TOTAL IT" until the first job is done (a racer's number after). It stays on that car while
+it is within the guns' reach (200 m) until you pass it or total it, then moves to the next; further up the road it
+takes the nearest car ahead. Each race starts afresh (14 Oct fix: the reticle kept last race's car, out of sight
+on the horizon, and the guns would fire at nothing else).
 - **Damage:** a bump takes 0.4 of the speed you hit at (km/h) off the car's health: 100 for traffic, 150 for a racer,
   so two or three rams, or three or four. A head-on is still your DNF, not a total. Your fleet cars can't be hurt.
 - **Totalled** at 0 health, a car skids onto the right shoulder, tipped and smoking, and stops; you collect its parts
@@ -408,6 +410,10 @@ All dates are 2026.
   - Act 4, Mad Max: the AR target, totals and parts, bull bars, armour, spiked hubs, guns on the wheel's marker, the
     gang at work, police heat with the scanner and the police, and the tank.
   - Autocruise's top speed was measured, not changed (see "Also decided").
+- **14 Oct, desktop:** the guns locked on to something far on the horizon, so nothing else could be shot until it was
+  reached: last race's car, kept in the reticle (fixed). With all the aids on, the NOS pedal didn't stop autocruise
+  lifting off the gas. In Mad Max, Auto flash flashed the targets out of the way. Beating the tank should be GAME
+  OVER and stop the run: the end state (menus to be talked about later).
 
 ## Open questions
 
