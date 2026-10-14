@@ -67,8 +67,9 @@ uv run --no-project --with playwright playwright install chromium         # once
   `Input.dispatchTouchEvent` (a `touchEnd` lists the finger that lifts). `Emulation.setSafeAreaInsetsOverride` fakes
   the iPhone's notch and home bar. Force a layout with `settings.layout = 'touch'; applyLayout()`.
 - After changing anything that feeds Distance's economy or the race, run the simulations in `tests/balance/`
-  (`act1.py [cheapest|value]`, `act2.py`) and compare with the targets in the design notes.
+  (`act1.py [cheapest|value]`, `act2.py`, `act3.py` for the Fleet) and compare with the targets in the design notes.
 - Testing is emulation only. Say so when a change depends on how a real phone behaves.
 - **Debug mode**, for playtesting: tap the menu's REV IT title 5 times (then OK). Distance plays a separate save,
-  copied from the game the first time, with unlimited metres and points (shown as ∞); the same again switches it off
-  and the real game comes back as it was. In a test: `settings.debug = true; applyDebug()`.
+  copied from the game the first time, with unlimited metres, points, miles and parts (shown as ∞), every grid slot
+  for sale and police heat rising ten times quicker, so the later acts are quick to reach; the same again switches it
+  off and the real game comes back as it was. In a test: `settings.debug = true; applyDebug()`.

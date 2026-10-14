@@ -1,5 +1,6 @@
 """Debug mode: 5 taps on the menu's title (then OK) switch Distance to a save of its own with unlimited metres,
-points and miles. The real save is never touched and comes back when it is switched off; fewer taps do nothing."""
+points, miles and parts, every grid slot and quicker police heat. The real save is never touched and comes back when
+it is switched off; fewer taps do nothing."""
 import json
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -28,6 +29,8 @@ with sync_playwright() as p:
     s = state()
     check("buying: the levels go up, the wallet stays full", s["power"] == 5 and s["bank"] == 1e9, s)
     check("the real save is untouched", real() == REAL, real())
+    got = js("(() => { progress.racing = true; progress.levels.fleet = 51; const w = progress.wanted; raiseHeat(0.02); const d = progress.wanted - w; progress.wanted = w; progress.levels.fleet = 0; return [maxOf(UPGRADES.grid), +d.toFixed(3)]; })()")
+    check("shortcuts: every grid slot for sale, heat ten times quicker", got == [100, 0.2], got)
     pg.screenshot(path=f"{OUT}/debug_garage.png")
     pg.reload(); pg.wait_for_timeout(300); s = state()
     check("after a reload: still debug mode, on the debug save", s == {"debug": True, "bank": 1e9, "points": 1e9, "miles": 1e9, "power": 5}, s)

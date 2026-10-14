@@ -4,7 +4,9 @@
 // and brake; while you drive in the oncoming lanes they floor it at you head-on. Past the top the tank comes (boss.js).
 
 const WANTED = { car: 0.02, racer: 0.03, police: 0.08, gang: 0.01, shot: 0.0005 }; // heat a total (by kind) or a shot
-function raiseHeat(by) { if (arOn()) progress.wanted = Math.min(1, progress.wanted + by); }
+function raiseHeat(by) { // debug mode: ten times quicker, to get to the tank
+  if (arOn()) progress.wanted = Math.min(1, progress.wanted + by * (debugSave ? 10 : 1));
+}
 
 // a police car every 30 s when barely wanted, every 6 s at the top (the first one too: copClock starts a run at that);
 // two on the road at most. It takes over a car that is out of sight up the road; with no room to come past you, it
