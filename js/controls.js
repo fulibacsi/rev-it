@@ -70,7 +70,8 @@ function updatePedals(dt) {
   if (nitroHeld || nitroByAid) PEDALS.gas.set(1); // the nitro pedal sits on the gas pedal: pushing it floors the gas
 }
 // your own foot (a key, a finger or the mouse button) on a pedal: the aids leave that pedal to you, and only that one.
-// The nitro pedal floors the gas, but it isn't the gas pedal: traction control and autocruise's braking carry on
+// The nitro pedal floors the gas, but it isn't the gas pedal: traction control carries on. Autocruise doesn't brake or
+// lift while you push it (aids.js)
 const touching = id => PEDALS[id].hold !== null || PEDALS[id].down;
 const pushing = () => touching('gas');
 function holdPedal(id, down) { const p = PEDALS[id]; p.hold = down ? 1 : null; if (!down) p.back = p.release; }

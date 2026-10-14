@@ -1,6 +1,7 @@
 """The car stereo: nothing before it is bought in the Workshop; then synthwave plays (measured off the music's own
 analyser: sound, and never clipping), the lights in the cluster jump with the beat, a tap on them (or M) plays the
-next tape and after the last one it goes off; the garage's ON/OFF is the same switch; the menu pauses it. On a desktop
+next tape and after the last one it goes off, greyed but still there to be tapped back on; the garage's ON/OFF is the
+same switch; the menu pauses it. On a desktop
 the head unit sits in the dash, left of the cluster; on the phone (iPhone insets) only the lights, clear of the rest."""
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -37,8 +38,10 @@ with sync_playwright() as p:
     pg.keyboard.press("m"); pg.keyboard.press("m"); pg.wait_for_timeout(150)
     check("M twice: tape 4", js("stereo.tape") == 3, js("stereo.tape"))
     pg.keyboard.press("m"); pg.wait_for_timeout(300)
-    check("after the last tape: off, and the garage's switch says so", js("[stereo.on, getComputedStyle($('beat')).display]") == [False, "none"]
-          and js("document.querySelector('[data-toggle=\"stereo\"]').textContent") == "OFF", js("[stereo.on, document.querySelector('[data-toggle=\"stereo\"]')?.textContent]"))
+    off = "[stereo.on, getComputedStyle($('beat')).display, document.body.classList.contains('stereo-off'), $('stereo-lcd').textContent, document.querySelectorAll('#beat rect.on, #stereo-eq u.on').length]"
+    check("after the last tape: off, greyed but still there, and the garage's switch says so", js(off) == [False, "inline", True, "OFF", 0]
+          and js("document.querySelector('[data-toggle=\"stereo\"]').textContent") == "OFF", [js(off), js("document.querySelector('[data-toggle=\"stereo\"]')?.textContent")])
+    pg.screenshot(path=f"{OUT}/stereo_off_desktop.png")
     pg.click('[data-toggle="stereo"]'); pg.wait_for_timeout(300)
     check("the garage's ON: tape 1 again", js("[stereo.on, stereo.tape]") == [True, 0], js("[stereo.on, stereo.tape]"))
     # 4. the menu pauses it, and it carries on after
@@ -66,7 +69,14 @@ with sync_playwright() as p:
     under = ph.evaluate(f"document.elementFromPoint({x}, {y})?.id")
     cdp.send("Input.dispatchTouchEvent", {"type": "touchStart", "touchPoints": [{"x": x, "y": y, "id": 4}]})
     cdp.send("Input.dispatchTouchEvent", {"type": "touchEnd", "touchPoints": [{"x": x, "y": y, "id": 4}]}); ph.wait_for_timeout(200)
+    tap = lambda: (cdp.send("Input.dispatchTouchEvent", {"type": "touchStart", "touchPoints": [{"x": x, "y": y, "id": 4}]}),
+                   cdp.send("Input.dispatchTouchEvent", {"type": "touchEnd", "touchPoints": [{"x": x, "y": y, "id": 4}]}), ph.wait_for_timeout(200))
     check("phone: a tap on the lights plays the next tape", under == "beat-hit" and ph.evaluate("stereo.tape") == 1, [under, ph.evaluate("stereo.tape")])
+    tap(); tap(); tap()
+    got = ph.evaluate("[stereo.on, getComputedStyle($('beat')).display, document.body.classList.contains('stereo-off')]")
+    check("phone: past the last tape, off, the lights greyed but still there", got == [False, "inline", True], got)
+    ph.screenshot(path=f"{OUT}/stereo_off_phone.png"); tap()
+    check("phone: a tap on the greyed lights plays tape 1", ph.evaluate("[stereo.on, stereo.tape]") == [True, 0], ph.evaluate("[stereo.on, stereo.tape]"))
     ph.wait_for_timeout(300); ph.screenshot(path=f"{OUT}/stereo_phone.png")
     b.close()
 print("ERRORS:", errors or "none", "| FAILS:", fails or "none")

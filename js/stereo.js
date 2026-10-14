@@ -101,9 +101,9 @@ setInterval(() => {
   }
 }, 25);
 
-// what the car has and wants (main loop): the game says whether there is a stereo, on, and which tape it plays
+// what the car has and wants (main loop): the game says whether there is a stereo, and which tape it plays (or none)
 function updateStereo() {
-  const want = !!game.stereo?.() && !!ctx, tape = game.tape?.() ?? 0;
+  const tape = game.tape?.() ?? null, want = !!game.stereo?.() && tape !== null && !!ctx;
   if (want && !stereo.bus) wireStereo();
   if (want && stereo.on && tape === stereo.tape) return;
   if (want === stereo.on && !want) return;
@@ -114,10 +114,17 @@ function updateStereo() {
 const nextTape = () => game.nextTape?.(); // a tap on the lights or the head unit, or M
 
 // the lights: in the cluster, a row that jumps with the beat (a kick lights it all, the snare most of it); on the
-// head unit, the tape's name and eight bands of the music, as on an 80s graphic equaliser
+// head unit, the tape's name and eight bands of the music, as on an 80s graphic equaliser. Switched off, both stay,
+// greyed and dark, for a tap to start it again
 function renderStereo() {
   document.body.classList.toggle('has-stereo', !!game.stereo?.());
-  if (!stereo.on) return;
+  document.body.classList.toggle('stereo-off', !stereo.on);
+  if (!stereo.on) {
+    if ($('stereo-lcd').textContent === 'OFF') return;
+    for (const led of document.querySelectorAll('#beat rect, #stereo-eq u')) led.classList.remove('on');
+    $('stereo-lcd').textContent = 'OFF';
+    return;
+  }
   const now = ctx.currentTime;
   while (stereo.beats.length > 1 && stereo.beats[1][0] <= now) stereo.beats.shift();
   const [t, hit] = stereo.beats[0] ?? [now, 0], level = t <= now ? hit * Math.exp(-(now - t) * 7) : 0;
