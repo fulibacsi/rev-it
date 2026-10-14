@@ -23,7 +23,7 @@ with sync_playwright() as p:
     # ---- mouse ----
     pg = b.new_page(viewport={"width": 1440, "height": 900}); pg.on("pageerror", lambda e: errors.append(str(e)))
     pg.goto(URL); js = pg.evaluate; m = pg.mouse; kb = pg.keyboard
-    pg.click('[data-play="free"]'); kb.press("Enter"); pg.wait_for_timeout(1800)
+    pg.click('[data-show="arcade"]'); pg.click('[data-play="free"]'); kb.press("Enter"); pg.wait_for_timeout(1800)
     js("gear = 4; lever.x = 0; lever.y = 1; speed = 100 / 3.6; locked = false; traffic.forEach(c => { c.dir = -1; c.x = LANES.oncoming[0]; })")
     kb.down(" ")
     print("rim top is the grip:", js(f"document.elementFromPoint({rim(pg, 0)[0]}, {rim(pg, 0)[1]})?.id"))
@@ -36,14 +36,14 @@ with sync_playwright() as p:
     print("turn right 45°:", turn(45)); pg.wait_for_timeout(1500); print("  after:", js(lanes))
     m.move(700, 300); m.down(); m.move(600, 300, steps=6); m.up(); pg.wait_for_timeout(800)
     print("drag on the road (should do nothing now):", js(lanes))
-    kb.up(" "); kb.press("Escape"); pg.click('[data-play="rev"]'); pg.wait_for_timeout(200)
+    kb.up(" "); kb.press("Escape"); pg.click("#to-main"); pg.click('[data-show="arcade"]'); pg.click('[data-play="rev"]'); pg.wait_for_timeout(200)
     print("rev, turn left 40°:", turn(-40)); pg.wait_for_timeout(300); print("  parked:", js("({ lane, carX })"))
     pg.close()
     # ---- touch ----
     ctx = b.new_context(viewport={"width": 844, "height": 390}, device_scale_factor=3, is_mobile=True, has_touch=True)
     pg = ctx.new_page(); pg.on("pageerror", lambda e: errors.append(str(e))); js = pg.evaluate
     cdp = ctx.new_cdp_session(pg); cdp.send("Emulation.setTouchEmulationEnabled", {"enabled": True, "maxTouchPoints": 5})
-    pg.goto(URL); pg.wait_for_timeout(300); pg.tap('[data-play="free"]'); pg.wait_for_timeout(300)
+    pg.goto(URL); pg.wait_for_timeout(300); pg.tap('[data-show="arcade"]'); pg.tap('[data-play="free"]'); pg.wait_for_timeout(300)
     f = Fingers(cdp)
     js("startEngine()"); pg.wait_for_timeout(1800)
     def pedal(id_):  # middle of the pedal, and the pedal box's height (full travel)

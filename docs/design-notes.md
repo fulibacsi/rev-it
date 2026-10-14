@@ -85,6 +85,28 @@ machine or session. Keep it current: update a section when a decision changes, a
   - It sticks out past the gas pedal by no more than the gap kept clear of the screen's edge, and covers only the gas
     pedal's corner (4–8% of its touch area), so a thumb on the gas doesn't fire nitro by accident.
 
+**Menus** (the owner's design, 14 Oct, for playtests): Rev It is an incremental game (Distance) with side gigs.
+- **Main menu:** CONTINUE (NEW GAME without a save; a green tick once the tank is beaten, and it plays on), STATS (once
+  a game has started), SETTINGS, ARCADE (the other games, with the engine pick and their bests), and a small credits
+  link in a corner. On a phone the buttons sit two to a row, so every screen fits without scrolling.
+- **Pause menu** (Esc, ☰, or leaving the app; the game is paused): RESUME, HOW TO DRIVE, END RUN (a Distance run, after
+  "are you sure?": as if the time ran out, so it can't be farmed; in a tank race that is a lost fight), EXIT TO MAIN
+  MENU (the game stays paused behind it, and CONTINUE goes back to it).
+- **SETTINGS:** layout, the car's sounds and the music (each a volume), HOW TO DRIVE, and RESET PROGRESS in red, bottom
+  right, once a game has started (moved here from the main menu: one tap from wiping a game is too close).
+- **STATS:** time played, runs, best run, distance driven; races and best place only after the reveal, the fleet and
+  cars totalled only once their acts open, tanks beaten once one is; never a word of the race before the reveal.
+  SHARE sends them (and the build: when the page was published) by the phone's share sheet, else the clipboard.
+- **The win screen** follows GAME OVER: congratulations, the stats, SHARE, NEW GAME (after "are you sure?") and EXIT TO
+  MAIN MENU.
+- **How to drive:** before the first run the garage says how to get going (start, clutch, 1st, gas); the full controls
+  are under HOW TO DRIVE in the pause menu and the settings. The key help that sat at the foot of a desktop screen
+  went there too.
+- **Credits:** a screen with the sound credits; CC BY 4.0 needs the credit given in a reasonable manner, not on screen
+  all the time, so the credit line in play went.
+- Claude's calls: the first-run help in the garage rather than a pop-up before it (DRIVE stays one tap away), the
+  build in STATS, END RUN's rules, EXIT TO MAIN MENU keeping the run paused, and the stats themselves.
+
 ## Distance
 
 An incremental game. Each run is timed, every metre driven is banked, and metres buy upgrades in the garage between
@@ -466,7 +488,6 @@ The owner's list (14 Oct), not started:
 
 - When a new upgrade is unlocked, a yellow exclamation mark on its garage tab.
 - Locked upgrades hidden: at most the card's outline, or the name with what unlocks it instead of what it does.
-- Menus, including what comes after GAME OVER (the tank beaten).
 
 ## Brainstorm waiting for the owner's picks
 

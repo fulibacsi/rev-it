@@ -164,37 +164,94 @@
   </symbol>
 </svg>
 
-<div id="help">
-  <b>KEYS</b> Enter engine · Space gas · Shift clutch · B brake · ↑ ↓ gears · ← → lanes · 1–3 engine · Esc menu<br>
-  <b>MOUSE</b> drag the key, pedals and gear knob · pedals stay put, double-click lets go ·
-  turn the steering wheel to change lanes<br>
-  <small>Sounds: Freesound recordings by Ears68, Angel_soto, editboy23, dezoris, t33kno (CC0) and iainmccurdy (CC BY 4.0), cut and looped · <a href="https://github.com/fulibacsi/rev-it/blob/main/CREDITS.md" target="_blank" rel="noopener">credits</a></small>
-</div>
 
 <button id="menu-button" title="menu (Esc)">☰</button>
 <div id="rotate">Turn your phone sideways to drive.</div>
 <div id="menu"><div id="menu-panel">
   <h1>REV <span>IT</span></h1>
-  <p>Rev it, shift it, drive it. Pick a game.</p>
-  <div id="game-list"></div>
-  <h2>ENGINE <small>(Distance builds its own in the garage)</small></h2>
-  <div id="engine-pick"></div>
-  <div class="menu-help touch-only">
-    <b>Pedals</b> touch a pedal to press it all the way, slide your finger up to ease off; let go and it springs back ·
-    <b>Gears</b> drag the knob through the H with the clutch held down · <b>Lanes</b> grab the steering wheel and turn it ·
-    <b>Key</b> turn it to START and hold it until the engine runs. Slower cars use your lane: overtake them, a crash
-    costs most of your speed.
-    <span id="ios-tip"><br><b>Full screen</b> on an iPhone: Share → Add to Home Screen, then start it from there.</span>
-  </div>
-  <div class="menu-help desk-only">
-    <b>Keyboard</b> Enter engine on/off · Space gas · Shift clutch · B brake · ↑ ↓ gears · ← → change lanes ·
-    1–3 engine · Esc menu<br>
-    <b>Mouse</b> drag the ignition key to START and hold it · drag the pedals down · drag the gear knob through the H
-    with the clutch down · grab the steering wheel and turn it to change lanes. Slower cars use your lane: overtake them,
-    a crash costs most of your speed.
-  </div>
-  <small class="credits">Sounds: Freesound recordings by Ears68, Angel_soto, editboy23, dezoris, t33kno (CC0) and iainmccurdy (CC BY 4.0), cut and looped · <a href="https://github.com/fulibacsi/rev-it/blob/main/CREDITS.md" target="_blank" rel="noopener">credits</a></small>
-  <div id="menu-foot"><button id="layout"></button><button id="resume" hidden>RESUME ▶</button></div>
+  <!-- one screen at a time (#menu's data-screen, main.js) -->
+  <section data-screen="main">
+    <p>Drive as far as you can, buy upgrades, see where the road takes you.</p>
+    <nav class="menu-buttons">
+      <button data-play="distance" id="continue" class="big">NEW GAME</button>
+      <button data-show="stats" id="to-stats">STATS</button>
+      <button data-show="settings">SETTINGS</button>
+      <button data-show="arcade">ARCADE</button>
+    </nav>
+    <button data-show="credits" class="corner">credits</button>
+  </section>
+  <section data-screen="pause">
+    <p>Paused.</p>
+    <nav class="menu-buttons">
+      <button id="resume" class="big">RESUME ▶</button>
+      <button data-show="help">HOW TO DRIVE</button>
+      <button id="end-run">END RUN</button>
+      <button id="to-main">EXIT TO MAIN MENU</button>
+    </nav>
+  </section>
+  <section data-screen="arcade">
+    <h2>ARCADE <small>side gigs: no garage, just driving</small></h2>
+    <div id="game-list"></div>
+    <h2>ENGINE <small>(the main game builds its own in the garage)</small></h2>
+    <div id="engine-pick"></div>
+    <footer><button data-back>◀ BACK</button></footer>
+  </section>
+  <section data-screen="settings">
+    <h2>SETTINGS</h2>
+    <div class="setting"><span>Layout</span><button id="layout"></button></div>
+    <label class="setting"><span>Car sounds</span><input type="range" id="vol-car" min="0" max="100" step="5"></label>
+    <label class="setting"><span>Music</span><input type="range" id="vol-music" min="0" max="100" step="5"></label>
+    <div class="setting"><span>Controls</span><button data-show="help">HOW TO DRIVE</button></div>
+    <footer><button data-back>◀ BACK</button><button id="reset" class="danger">RESET PROGRESS</button></footer>
+  </section>
+  <section data-screen="stats">
+    <h2>STATS</h2>
+    <dl id="stats-list"></dl>
+    <footer><button data-back>◀ BACK</button><small class="build"></small><button data-share>SHARE</button></footer>
+    <p class="shared"></p>
+  </section>
+  <section data-screen="help">
+    <h2>HOW TO DRIVE</h2>
+    <div class="menu-help touch-only">
+      <b>Key</b> turn it to START and hold it until the engine runs ·
+      <b>Pedals</b> touch a pedal to press it all the way, slide your finger up to ease off; let go and it springs back ·
+      <b>Gears</b> drag the knob through the H with the clutch held down ·
+      <b>Lanes</b> grab the steering wheel and turn it · <b>Lights</b> pull the stalk left of the wheel to flash the
+      car ahead out of your lane. Slower cars use your lane: overtake them, a crash costs most of your speed.
+      <span id="ios-tip"><br><b>Full screen</b> on an iPhone: Share → Add to Home Screen, then start it from there.</span>
+    </div>
+    <div class="menu-help desk-only">
+      <b>Keyboard</b> Enter engine on/off · Space gas · Shift clutch · B brake · ↑ ↓ gears · ← → change lanes ·
+      F flash · N nitro · G fire · M next tape · 1–3 engine · Esc pause<br>
+      <b>Mouse</b> drag the ignition key to START and hold it · drag the pedals down (they stay put, double-click lets
+      go) · drag the gear knob through the H with the clutch down · grab the steering wheel and turn it to change lanes.
+      Slower cars use your lane: overtake them, a crash costs most of your speed.
+    </div>
+    <footer><button data-back>◀ BACK</button></footer>
+  </section>
+  <section data-screen="credits">
+    <h2>CREDITS</h2>
+    <p><b>Rev It</b> by fulibacsi · <a href="https://github.com/fulibacsi/rev-it" target="_blank" rel="noopener">source</a> (MIT)</p>
+    <p><b>Engine sounds</b> from <a href="https://freesound.org" target="_blank" rel="noopener">Freesound</a>, cut and
+      looped: Dynamometer Pulls 1700HP by Ears68, Big Cam C6 Corvette by Angel_soto, Import car revs on Chassis Dyno with
+      Turbo by editboy23, DynoJet Scion FR-S by dezoris, subaru impreza start up-idle-launch limiter by t33kno (all
+      <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noopener">CC0 1.0</a>);
+      <a href="https://freesound.org/s/643126/" target="_blank" rel="noopener">Car Engine Start, Rev, Idle, Switch Off</a>
+      by <a href="https://freesound.org/people/iainmccurdy/" target="_blank" rel="noopener">iainmccurdy</a>
+      (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>), the starter
+      motor: a 1.2 s stretch of cranking, cut and looped.</p>
+    <p><b>Music</b>: the car stereo's synthwave is made on the spot, no recordings.</p>
+    <p><b>Techniques</b>: the road after Jake Gordon's "How to build a racing game", the car after Marco Monster's "Car
+      Physics for Games". Every detail: <a href="https://github.com/fulibacsi/rev-it/blob/main/CREDITS.md" target="_blank" rel="noopener">CREDITS.md</a>.</p>
+    <footer><button data-back>◀ BACK</button></footer>
+  </section>
+  <section data-screen="win">
+    <h2>CONGRATULATIONS</h2>
+    <p>You beat the tank: the road is yours.</p>
+    <dl id="win-stats"></dl>
+    <footer><button id="win-new" class="danger">NEW GAME</button><button data-share>SHARE</button><button id="win-main">EXIT TO MAIN MENU</button></footer>
+    <p class="shared"></p>
+  </section>
 </div></div>
 
 
