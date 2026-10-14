@@ -1,7 +1,8 @@
 """Mad Max: nothing before 51 fleet cars; then the gang's first job (total a car) in the garage and the AR layer on the
 windscreen: a reticle and a health bar on the nearest car ahead, kept until you pass it. Bumps hurt the car you hit;
 at 0 health it skids onto the shoulder, out of your way, and pays parts. A totalled rival is out of the race. The
-first total opens the Mad Max page, paid in parts; a bull bar hurts them more and costs you less speed."""
+first total opens the Mad Max page, paid in parts; a bull bar hurts them more and costs you less speed. Armour takes
+off your damage, spiked hubs make a side-swipe free and harder; with a bull bar the gang side-swipes rivals."""
 import re
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -70,5 +71,27 @@ with sync_playwright() as p:
     js("progress.levels.bullbar = 3; refreshCar()")
     got = js("(() => { const c = { v: 20, hp: null, racer: 0 }; speed = 60; bump(c); const kept = speed; ram(impact); return [Math.round(kept), c.wreck]; })()")
     check("bull bar 3: a bump at 144 km/h leaves you at its 72 km/h and totals it (144 of its 100)", got == [20, True], got)
+    # 9. armour: a quarter off your damage a level
+    got = js("[0, 2].map(l => { progress.levels.armour = l; progress.damage = 0; hurt(100, false); return +progress.damage.toFixed(2); })")
+    check("armour 2: a 100 km/h bump does half the damage", got == [25, 12.5], got)
+    js("progress.damage = 0; progress.levels.armour = 0")
+    # 10. spiked hubs: a side-swipe while moving over costs no speed and does 50 more
+    def swipe(spiked):
+        js(f"progress.levels.spikes = {spiked}; progress.levels.bullbar = 0; refreshCar()")
+        return js("""(() => { const c = { v: 30, hp: null, racer: 0 }; speed = 32; lane = 1; fromLane = 0; carX = 3.5; bump(c);
+            const kept = speed; ram(impact); return { side: impact.side, kept: Math.round(kept), hp: Math.round(c.hp) }; })()""")
+    got = [swipe(0), swipe(1)]
+    check("spiked hubs: a side-swipe keeps your speed and does 50 more", got[0]["side"] and got[1]["kept"] == 32 and got[0]["kept"] < 20 and got[0]["hp"] - got[1]["hp"] == 50, got)
+    # 11. the gang: with a bull bar a fleet car side-swipes a rival beside it, every 3 s; parts are yours
+    pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
+    def gang(bull):
+        js(f"progress.levels.bullbar = {bull}; progress.levels.spikes = 0; refreshCar()")
+        return js("""() => new Promise(res => { const f = racers().find(c => c.fleet), r = rivals().find(c => c.racer === 20);
+            traffic.forEach(c => { if (c !== f && c !== r) c.z = c.racer ? odo - 9000 : odo + 5000; });
+            Object.assign(f, { lane: 0, x: MY_LANES[0], z: odo + 300, v: 30, want: 30, cool: 99, rammed: 0 });
+            Object.assign(r, { lane: 1, x: MY_LANES[1], z: odo + 300, v: 30, want: 30, cool: 99, hp: null, wreck: false });
+            setTimeout(() => res(Math.round(r.hp ?? 150)), 1000); })""")
+    got = [gang(0), gang(2)]
+    check("bull bar 2: the gang side-swipes the rival beside it (40); without one it doesn't", got == [150, 110], got)
     b.close()
 print("ERRORS:", errors or "none", "| FAILS:", fails or "none")
