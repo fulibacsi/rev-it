@@ -258,6 +258,20 @@ you pass it or total it, then moves to the next.
   is out of the race. Ramming hurts your own car (2–25% a bump), so armour is the "illegal part" that makes a
   campaign of it possible.
 
+**Police heat** (`progress.wanted`, 0 to 100%) shows on a **police scanner** bolted to the right A-pillar, opposite
+the sonar: an LCD ("HEAT 37%", "PURSUIT" while police are on the road), ten lights from green to red, and a red and blue
+lamp. It shows from Mad Max on, only on the road; the garage's report gives it too.
+- **It rises** with every total: 2% for traffic, 3% for a racer, 8% for a police car, 1% for one the gang totals;
+  and 0.05% a shot. Nothing brings it down: it stays between races and can't be bribed down.
+- **Police come with it:** one every 30 s when barely wanted, down to every 6 s at the top (the first one a run after
+  that wait), two on the road at most. They never come at you from behind (there is no rear view):
+  - from behind they come past you in your other lane, 20 m/s quicker, cut into your lane 30 m ahead and brake hard
+    for 2.5 s, then drive off up the road;
+  - while you drive in the oncoming lanes one comes at you head-on, flat out (to 250 km/h), steering for you until 1.2 s
+    out, so you can still get out of its way. A head-on is a DNF.
+  - They don't move over for a flash, nor swerve for chicken. They can be totalled (8% heat).
+- Claude's calls: the heat rates, the police numbers and moves, and the scanner on the right A-pillar instead of the
+  dash (on a phone the dash is full: shifter, cluster and pedals).
 - Claude's calls: the AR look, the target rule, 0.4 per km/h, the health and parts numbers, the Mad Max page opening
   with the first total (the job is the way in), the illegal parts (armour and spiked hubs), how the gang uses its
   gear, and the guns' numbers (they aim themselves at the reticle: on a phone your thumbs are busy). All first
@@ -293,9 +307,7 @@ frequent-driver tiers.
 
 **The gang** unlocks once a race has more of your fleet cars than other racers (51 of the 100): built, with its
 upgrades and the guns (see Act 4). The gang uses whatever offensive upgrades it has. No CB radio, no orders.
-- **Police heat,** on a police scanner on the dash: it rises slowly with totalled cars and shots fired, so you have to
-  push for the threshold. It stays between races and can't be bribed down. Police never come from behind (there is no
-  rear view): they overtake you, then brake; in the oncoming lanes they floor it to hit you head-on.
+- **Police heat** and the scanner: built (see Act 4).
 - **The final boss:** past the threshold a tank appears (or a more fitting armoured opponent). It shoots at you, and
   you and the gang have to outgun it. Losing is a DNF, and the heat drops.
 
@@ -307,7 +319,7 @@ upgrades and the guns (see Act 4). The gang uses whatever offensive upgrades it 
   incremental-game practice. The Rev curve is right; Speed signs is too easy, but leave it for now.
 
 **Open, for Claude to decide while building:** the tank or a more fitting opponent; what follows beating it (an
-ending, then play on); how the scanner looks; car health, parts per car and heat rates (first guesses,
+ending, then play on); car health, parts per car and heat rates (first guesses,
 tuned in the balancing pass).
 
 ## Playtest log

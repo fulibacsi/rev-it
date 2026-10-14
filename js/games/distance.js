@@ -56,9 +56,9 @@ function applyUpgrades() { // the garage's work on the engines and the car, and 
 const SAVE_KEY = 'car-rev-incremental';
 // off: aids switched off; racing: the race has been revealed; points: race points; finish: best finishing position;
 // damage: % (damage.js), broken: gears it broke; nitro: seconds in the tank; miles: the Fleet's money; parts: Mad
-// Max's, from totals: cars totalled (gang.js)
+// Max's, from totals: cars totalled (gang.js); wanted: police heat, 0 to 1 (police.js)
 const FRESH = () => ({ bank: 0, best: 0, runs: 0, levels: {}, off: {}, engine: 0, racing: false, points: 0, finish: 101,
-                       damage: 0, broken: [], nitro: 0, miles: 0, parts: 0, totals: 0 });
+                       damage: 0, broken: [], nitro: 0, miles: 0, parts: 0, totals: 0, wanted: 0 });
 // debug mode (main.js) plays a save of its own, with wallets that never run out, so testing never touches the game
 const FUNDS = 1e9;
 let debugSave = false;
@@ -142,6 +142,7 @@ function startRun() { // back to the start line, engine running, in neutral, hel
   resetScene();
   brakePedal = 1;
   coolDown();
+  copClock = copEvery(); // police.js: the first police car after a while
   run.refill = run.limp ? 0 : refillNitro(); // limping: keep the metres for the repair
 }
 
@@ -169,7 +170,7 @@ function updateRun(dt) {
   else if (run.phase === 'run' && (run.left -= dt) <= 0) { run.left = 0; finishRun(); }
   else if (run.phase === 'finish' && (run.count -= dt) <= 0) run.phase = 'garage';
   if (run.phase === 'run' && raceTick()) run.revealed = true;
-  if (run.phase === 'run') { rechargeFlash(dt); updateGang(dt); }
+  if (run.phase === 'run') { rechargeFlash(dt); updateGang(dt); updatePolice(dt); }
   if (run.phase === 'run' && damageOn()) damageTick(dt);
   if (run.phase === 'run' && run.limp && odo >= LIMP) finishRun('limped'); // as far as a wreck gets
 }
@@ -238,6 +239,7 @@ function renderGarage(bought) {
       (run.dues ? ` · fleet dues +${fmt(run.dues)} m` : '') + (run.refill ? ` · nitro refill −${fmt(run.refill)} m` : '') +
       (run.revealed ? '<br><b>That quick car was racer #100. You are in a race: the Black market is open.</b>' : '') +
       (run.totals ? ` · totalled ${run.totals}, +${fmt(run.parts)} parts` : '') +
+      (arOn() ? ` · police heat ${Math.round(progress.wanted * 100)}%` : '') +
       (run.won ? '<br><b>P1! The racers you beat are open to offers: the Fleet is open, paid in miles.</b>' : '') +
       (arOn() && !gangOpen() ? `<br><b>${GANG} of the field race for you: your fleet is a gang now. Its first job for ` +
         'you: total a car.</b> Ram the car in the reticle until its health bar is empty.' : '') +
@@ -356,9 +358,9 @@ const DISTANCE = {
   engine: () => progress.engine, // the garage's engines, not the menu's
   tune: applyUpgrades,
   start() { Object.assign(run, { phase: 'garage', best: progress.best }); shownPhase = null; },
-  stop() { run.phase = 'garage'; document.body.classList.remove('garage', 'low', 'has-flash', 'timing', 'has-fleet', 'ar-on', 'has-guns'); clearDamageView(); }, // earns nothing
+  stop() { run.phase = 'garage'; document.body.classList.remove('garage', 'low', 'has-flash', 'timing', 'has-fleet', 'ar-on', 'has-guns', 'has-heat'); clearDamageView(); }, // earns nothing
   update: updateRun,
-  render() { renderRun(); renderDamage(); renderSonar(); renderGang(); },
+  render() { renderRun(); renderDamage(); renderSonar(); renderGang(); renderPolice(); },
   crash: i => onCollision(i),
   marks: roadMarks,
   useFlash() { // a charge from this run's flashes
