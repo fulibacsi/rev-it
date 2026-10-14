@@ -429,6 +429,14 @@ Waiting for the owner. Don't build these on a guess: ask.
   guesses: the miles prices and dues (`act3.py`), car health and damage per bump, parts per car and the Mad Max
   prices, the heat rates and the police, the tank's health and shells.
 
+## To build later
+
+The owner's list (14 Oct), not started:
+
+- When a new upgrade is unlocked, a yellow exclamation mark on its garage tab.
+- Locked upgrades hidden: at most the card's outline, or the name with what unlocks it instead of what it does.
+- Menus, including what comes after GAME OVER (the tank beaten).
+
 ## Brainstorm waiting for the owner's picks
 
 The owner asked for ideas on the fleet, sinks for the surplus metres and future acts: keep the car theme and the
