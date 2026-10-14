@@ -8,7 +8,7 @@
 // its health, the m it keeps ahead of you, s between shells, the m they reach, % damage a hit, parts for beating it
 const TANK = { hp: 2000, gap: 80, reload: 2.5, reach: 250, hit: 8, parts: 300 };
 const tankHealth = () => TANK.hp * (1 + 0.5 * progress.tanks); // each one beaten, the next is half as tough again
-const bossRace = () => arOn() && progress.wanted >= 1 && !wrecked(); // not in limp mode
+const bossRace = () => arOn() && progress.wanted >= 1 && lvl('guns') > 0 && !wrecked(); // armed, not in limp mode
 
 // the tank takes over a car out of sight up the road once the race is on
 function updateBoss() {
