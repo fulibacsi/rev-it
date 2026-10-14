@@ -6,7 +6,8 @@
 // base · growth^n. info(level) describes what the car has at that level; needs: upgrades it builds on.
 // tab: the garage page it is on, see PAGES; max can depend on
 // progress (then locked says why there is no more yet); gate(level) can hold the next level back with a reason;
-// built: how many levels count towards the car being built (headStart in race.js), when not all of them.
+// built: how many levels count towards the car being built (headStart in race.js), when not all of them; afterReveal:
+// on sale (and shown) only once the race is revealed, so it doesn't hold up the first act.
 const UPGRADES = {
   power:  { name: 'Power', max: 10, base: 80, growth: 1.55, info: l => `+${12 * l}% torque` },
   rev:    { name: 'Rev limit', max: 4, base: 150, growth: 2, info: l => `${limiter(engine, l)} rpm` },
@@ -16,7 +17,9 @@ const UPGRADES = {
   steering: { name: 'Steering', max: 3, base: 300, growth: 2, info: l => l ? `lane changes ${40 * l}% quicker` : 'stock rack' },
   flash:  { name: 'Headlight flash', max: 10, base: 300, growth: 1.25, built: 1,
             info: l => `${l} flash${l === 1 ? '' : 'es'} a run. F or the stalk left of the wheel: the car ahead in your lane moves over (racers won't)` },
-  flashRecharge: { name: 'Flash recharge', max: 5, base: 2500, growth: 1.5, built: 0, needs: ['flash'],
+  // after the reveal: on sale before it, it took the metres the car needed, and the white car fell 3 to 10 runs later
+  // (tests/balance/act1.py, cheapest and value)
+  flashRecharge: { name: 'Flash recharge', max: 5, base: 2500, growth: 1.5, built: 0, afterReveal: true, needs: ['flash'],
                    gate: () => lvl('flash') >= UPGRADES.flash.max || `needs ${UPGRADES.flash.max} flashes`,
                    info: l => l ? `a flash back every ${rechargeTime(l)} s` : 'a flash used is gone for the run' },
   autoflash: { name: 'Auto flash', tab: 'autopilot', max: 1, base: 2000, needs: ['flash'], gate: () => lvl('flash') >= 5 || 'needs 5 flashes',
@@ -107,6 +110,7 @@ function cost(id) {
 }
 function whyNot(id) { // reason an upgrade can't be bought now, or '' if it can
   const u = UPGRADES[id], l = lvl(id);
+  if (u.afterReveal && !progress.racing) return 'after the reveal'; // never shown: the card is left out
   if (l >= maxOf(u)) return u.locked && l < FIELD ? u.locked : 'max';
   const missing = u.needs?.find(n => !lvl(n));
   if (missing) return `needs ${UPGRADES[missing].name}`;
@@ -227,7 +231,8 @@ function renderGarage(bought) {
   if (!pageOpen(garageTab)) garageTab = 'workshop';
   $('bank').textContent = `${money(progress.bank)} m` + (progress.racing ? ` · ${money(progress.points)} pts` : '') +
     (fleetOpen() ? ` · ${money(progress.miles)} mi` : '') + (gangOpen() ? ` · ${money(progress.parts)} parts` : '') + ' to spend';
-  const done = Object.keys(UPGRADES).every(id => !inMetres(UPGRADES[id]) || whyNot(id) === 'max'), r = run.race;
+  const sold = u => !u.afterReveal || progress.racing; // on sale yet
+  const done = Object.entries(UPGRADES).every(([id, u]) => !inMetres(u) || !sold(u) || whyNot(id) === 'max'), r = run.race;
   $('report').innerHTML = !progress.runs
     ? `You get ${runTime()} seconds. Drive as far as you can: every metre is money for upgrades.`
     : (r?.dnf ? `<b>DNF</b>: ${{ 'head-on': 'head-on with oncoming traffic', wrecked: 'the car is wrecked',
@@ -256,7 +261,7 @@ function renderGarage(bought) {
     : i === lvl('engine') + 1
       ? `<button data-buy="engine"${whyNot('engine') ? ' disabled' : ''}>${e.name} · ${fmt(cost('engine'))} m</button>`
       : `<button disabled>${e.name} · locked</button>`).join('');
-  const onTab = ([id, u]) => id !== 'engine' && pageOf(u) === garageTab;
+  const onTab = ([id, u]) => id !== 'engine' && pageOf(u) === garageTab && sold(u);
   const d = progress.damage;
   $('drive').textContent = wrecked() ? `LIMP ${LIMP} m ▶` : 'DRIVE ▶'; // a wreck can always limp: no dead end
   const repairCard = garageTab === 'workshop' && d > 0 ? `<div class="card repair"><b>Repair</b><small>${Math.round(d)}% damage · ` +

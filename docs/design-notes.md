@@ -64,7 +64,8 @@ machine or session. Keep it current: update a section when a decision changes, a
   CRASH) come at full strength. It stays where it is. (Claude's call: 0.65 over 0.92, from screenshots over traffic.)
 - The flashes left show on the head-up display as the blue high-beam telltale and a count. With Flash recharge a
   line fills under it while a used flash comes back (up to the run's full count); it shows in full even when the
-  telltale is dimmed for none left. (Claude's call: 10, 8, 6, 4, 2 s over five levels, 2,500 m and up.)
+  telltale is dimmed for none left. (Claude's call: 10, 8, 6, 4, 2 s over five levels, 2,500 m and up, on sale
+  once the race is revealed; see the hidden race.)
 - The run's time left is a bar draining across the widened rear-view mirror. It turns red and blinks under 5 s.
 - Nitro is a smaller red NOS pedal bolted over the gas pedal's top right corner, like a side pedal (the owner's
   design). Pushing it floors the gas, and N does the same. The tank shows as a NOS bar under TEMP on the cluster. It
@@ -93,7 +94,7 @@ runs. A hidden race is the second act.
   | Time | Workshop | 6 | 200 | 1.9 | +5 s a run |
   | Steering | Workshop | 3 | 300 | 2 | lane changes 40% quicker a level |
   | Headlight flash | Workshop | 10 | 300 | 1.25 | 1–10 flashes a run, refilled free; racers never yield |
-  | Flash recharge | Workshop | 5 | 2500 | 1.5 | a used flash back every 10 s, down to 2 s; needs 10 flashes |
+  | Flash recharge | Workshop | 5 | 2500 | 1.5 | a used flash back every 10 s, down to 2 s; needs 10 flashes; from the reveal on |
   | Auto flash | Autopilot | 1 | 2000 | | needs 5 flashes |
   | Auto clutch | Autopilot | 1 | 700 | | centrifugal: can't stall or bog |
   | Auto gas | Autopilot | 1 | 800 | | launch revs, traction control |
@@ -135,7 +136,10 @@ runs. A hidden race is the second act.
 - **Target:** a perfect player first passes #100 around run 20 (about 15 min of play), barely, in a run's last
   seconds, after some near misses.
 - **Simulated:** first passed on run 18 (value-buying player) or run 24 (cheapest-first). Before flash charges it was
-  16 and 22; the simulated player spends every metre, including on flashes that add no distance.
+  16 and 22; the simulated player spends every metre, including on flashes that add no distance. On 14 Oct the same
+  simulation gives 22 and 33 (the same on every run). Flash recharge, on sale from the start, made it 32 and 36: it
+  took the metres the car needed and counts nothing towards the head start. So it goes on sale with the reveal, and
+  its card isn't shown before (Claude's call).
 - **Never hint** at the white car in the garage ("a clear giveaway").
 
 ### Act 2: the race
