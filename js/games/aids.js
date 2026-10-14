@@ -106,7 +106,8 @@ function autocruise() {
   const further = x => reach(carAhead(x, leaving));
   const escape = roomBeside && further(MY_LANES[1 - lane]) > further(MY_LANES[lane]) + 0.5;
   if (settled() && (escape && reach(mine) < 8 || lane === 1 && roomBeside && reach(mine) > 6 && reach(theirs) > 8)) moveOver();
-  if (pushing()) { if (cruiseBrake) { brakePedal = 0; cruiseBrake = false; } return; } // your foot on the gas: no braking
+  // your foot on the gas, or on NOS (not Reckless auto-drive's): no braking, no lift
+  if (pushing() || nitroHeld) { if (cruiseBrake) { brakePedal = 0; cruiseBrake = false; } return; }
   if (touching('brake')) { cruiseBrake = false; return; } // your foot on the brake: it's yours
   const hardest = CAR.brake / engine.mass; // m/s² the brakes can do
   const keep = 8 + 0.4 * speed; // following distance, m

@@ -1,5 +1,6 @@
 """The aids leave a control to you only while you touch it: your foot on the clutch or the brake keeps Auto clutch and
-autocruise off that pedal, and the nitro pedal (not the gas pedal) leaves every aid on, autocruise's braking too."""
+autocruise off that pedal. The nitro pedal (not the gas pedal) leaves traction control on, but autocruise neither brakes
+nor lifts while you push it."""
 from playwright.sync_api import sync_playwright
 from common import URL, launch
 CAR = "power: 10, rev: 4, gears: 3, tyres: 4, time: 6, clutch: 1, gas: 1, shift: 1, engine: 2, steer: 1, cruise: 1, reckless: 1, ecuPower: 1, nitro: 2"
@@ -23,10 +24,13 @@ with sync_playwright() as p:
     check("your foot on the clutch: Auto clutch leaves it to you", min(got[4:]) == 1, got)
     pg.wait_for_timeout(400)
     check("off the clutch: Auto clutch has it again", js("clutchPedal") < 0.1, js("clutchPedal"))
-    # 2. a slow car close ahead, the other lane blocked too: autocruise brakes. With the nitro key held it still does
+    # 2. a slow car close ahead, the other lane blocked too: autocruise brakes. With the nitro key held it neither
+    #    brakes nor lifts, and lets go of the brake it had on
     block = "(() => { const cs = traffic.filter(c => !c.racer); [[0, 40], [1, 45]].forEach(([l, d], i) => Object.assign(cs[i], { dir: 1, lane: l, x: MY_LANES[l], z: odo + d, v: 15, want: 15, cool: 99 })); })()"
-    js(block); kb.down("n"); got = sample("[+brakePedal.toFixed(2), nitro]", 500); kb.up("n")
-    check("nitro key held: autocruise still brakes for the car ahead", max(r[0] for r in got) > 0.3 and any(r[1] for r in got), got[::3])
+    js(block); pg.wait_for_function("brakePedal > 0.3", timeout=5000)
+    kb.down("n"); got = sample("[+brakePedal.toFixed(2), +gasPedal.toFixed(2), nitro]", 400); kb.up("n")
+    check("nitro key held: autocruise lets go of the brake and keeps off it, the gas stays down", max(r[0] for r in got[2:]) == 0 and min(r[1] for r in got[2:]) > 0.5 and any(r[2] for r in got), got[::2])
+    js("traffic.forEach(c => c.z = odo + 4000)"); pg.wait_for_timeout(300)
     # 3. autocruise braking, then your foot on the brake too, then the road clears: autocruise, which lets its own
     #    braking go once the way is clear, leaves your brake alone
     js(block); pg.wait_for_function("brakePedal > 0.3", timeout=5000); kb.down("b"); pg.wait_for_timeout(200)
