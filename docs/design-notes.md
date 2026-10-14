@@ -295,8 +295,10 @@ lamp. It shows from Mad Max on, only on the road; the garage's report gives it t
   off a level), with the shot, a jolt and the cracks to show it.
 - You and the gang outgun it: your guns, and the fleet's, which race up to join the fight (40 m/s quicker until
   they are with it) and shoot it from within 200 m. A ram does a fifth of its usual damage.
-- **Destroyed:** the ending. "THE END. You beat the tank: the road is yours", 300 parts, the heat back to 0. Then you
-  play on; the next tank is half as tough again (3,000, then 4,000 ...).
+- **Destroyed:** the ending. GAME OVER on the head-up display ("the road is yours") and the run stops there, held for
+  4 s (the owner, 14 Oct: that's the end state). The garage: "GAME OVER. You beat the tank: the road is yours", 300
+  parts, the heat back to 0. You can still play on, the next tank half as tough again (3,000, then 4,000 ...), until
+  the menus are talked about.
 - **Lost** (wrecked, a head-on, or the bell with the tank still going): a DNF ("the tank held the road"), and the heat
   drops to half, so you have to push for it again.
 - Claude's calls: the tank stayed (the owner's pick; it fits the army being called in when the police can't cope), its
