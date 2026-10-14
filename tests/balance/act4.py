@@ -45,15 +45,16 @@ with sync_playwright() as p:
         boss = js("bossRace()")
         js(f"simRun({{ ...progress.levels }}, 2, 1, {{}}, true)")
         r = js("""({ p: run.race && run.race.p, dnf: run.race && run.race.dnf, totals: run.totals, parts: run.parts, heat: Math.round(progress.wanted * 100),
-                  dmg: Math.round(progress.damage), tank: run.tank ? Math.round(Math.max(0, run.tank.hp ?? tankHealth())) : null, beat: run.beatTank })""")
+                  dmg: Math.round(progress.damage), tank: run.tank ? Math.round(Math.max(0, run.tank.hp ?? tankHealth())) : null, beat: run.beatTank,
+                  hit: run.race && run.race.dnf === 'head-on' ? (impact.car.police ? 'police' : 'traffic') : '' })""")
         js("while (repair() && progress.damage > 0);")  # metres pay the repairs
         js(f"convert(Math.max(0, Math.floor((progress.bank - {RESERVE}) / MILE)))")
         bought = js(f"""(() => {{ const b = [], buyAll = (ids, cheapest) => {{ for (;;) {{ const ok = ids.filter(id => !whyNot(id));
             if (!ok.length) return; const id = cheapest ? ok.sort((a, c) => cost(a) - cost(c))[0] : ok[0]; buy(id); b.push(id + lvl(id)); }} }};
             buyAll({json.dumps(MADMAX)}, true); buyAll({json.dumps(FLEET)}, false); return b.filter(x => !x.startsWith('fleet') || x.startsWith('fleetP')); }})()""")
         fleet = js("lvl('fleet')")
-        res = ("P" + str(r["p"])) if r["p"] else r["dnf"]
-        print(f"race {race:2}: {res:8} totals {r['totals']:2} +{r['parts']:3} parts  heat {r['heat']:3}%  dmg {r['dmg']:3}%  fleet {fleet:2}"
+        res = ("P" + str(r["p"])) if r["p"] else r["dnf"] + (f" ({r['hit']})" if r["hit"] else "")
+        print(f"race {race:2}: {res:18} totals {r['totals']:2} +{r['parts']:3} parts  heat {r['heat']:3}%  dmg {r['dmg']:3}%  fleet {fleet:2}"
               + (f"  TANK {'beaten' if r['beat'] else str(r['tank']) + ' left'}" if boss else "") + f"  bought {' '.join(bought)}")
         if r["beat"]: print(f"tank beaten in race {race}"); break
     else: print(f"no tank beaten in {RACES} races")
