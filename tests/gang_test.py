@@ -4,7 +4,7 @@ at 0 health it skids onto the shoulder, out of your way, and pays parts. A total
 first total opens the Mad Max page, paid in parts; a bull bar hurts them more and costs you less speed. Armour takes
 off your damage, spiked hubs make a side-swipe free and harder; with a bull bar the gang side-swipes rivals. Guns,
 last: the wheel's red marker turns into the trigger (FIRE on it), shots hurt the car in the reticle within 200 m, and
-the gang shoots at rivals."""
+the gang shoots at rivals. The reticle moves to a nearer car when its own is out of reach, and starts afresh each race."""
 import re
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -115,8 +115,11 @@ with sync_playwright() as p:
     pg.keyboard.down("g"); fire(0.5); pg.keyboard.up("g")
     check("G fires too", js("Math.round(tg.hp)") < hp, [hp, js("Math.round(tg.hp)")])
     js(f"({place})(250)"); pg.wait_for_function("target === tg", timeout=5000); pg.keyboard.down("g"); fire(0.6)
-    pg.screenshot(path=f"{OUT}/gang_guns.png"); pg.keyboard.up("g")  # firing, out of reach: the tracers miss
+    pg.screenshot(path=f"{OUT}/gang_guns.png")  # firing, out of reach: the tracers miss
     check("out of reach (250 m): no damage", js("tg.hp") is None, js("tg.hp"))
+    js("window.near = traffic.find(c => !c.racer && c !== tg); Object.assign(near, { dir: 1, lane: 0, x: MY_LANES[0], z: odo + 80, v: speed, want: speed, cool: 99, hp: null, wreck: false })")
+    pg.wait_for_timeout(200); pg.keyboard.up("g")
+    check("a nearer car while the reticle's is out of reach: the reticle moves to it", js("target === near"), js("target && Math.round(target.z - odo)"))
     # 13. the gang shoots: a fleet car with a rival 50 m ahead of it, a shot a second
     got = js("""() => new Promise(res => { const f = racers().find(c => c.fleet), r = rivals().find(c => c.racer === 25);
         traffic.forEach(c => { if (c !== f && c !== r) c.z = c.racer ? odo - 9000 : odo + 5000; });
@@ -124,5 +127,13 @@ with sync_playwright() as p:
         Object.assign(r, { lane: 0, x: MY_LANES[0], z: odo + 350, v: 30, want: 30, cool: 99, hp: null, wreck: false });
         setTimeout(() => res(Math.round(r.hp ?? 150)), 1500); })""")
     check("the gang shoots at a rival ahead: 12 a second (one or two shots in 1.5 s)", got in (126, 138), got)
+    # 14. the next race: its cars are new, so the reticle doesn't stay on the last one's rival still up the road
+    js("""window.tg = rivals().find(c => c.racer === 20); traffic.forEach(c => { if (c !== tg) c.z = c.racer ? odo - 9000 : odo + 5000; });
+        Object.assign(tg, { lane: 0, x: MY_LANES[0], z: odo + 120, v: speed, want: speed, cool: 99, hp: null, wreck: false }); target = null""")
+    pg.wait_for_function("target === tg", timeout=5000)
+    js("Object.assign(tg, { z: odo + 2000, v: 60, want: 60 }); run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
+    pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000); pg.wait_for_timeout(200)
+    got = js("({ old: target === tg, onRoad: !target || traffic.includes(target) })")
+    check("the next race: the last one's car is gone from the reticle", got == {"old": False, "onRoad": True}, got)
     b.close()
 print("ERRORS:", errors or "none", "| FAILS:", fails or "none")

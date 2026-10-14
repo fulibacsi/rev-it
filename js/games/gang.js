@@ -28,7 +28,9 @@ const PARTS = { car: 10, racer: 25 }; // parts from a totalled car
 const arOn = () => progress.racing && (fleetSize() >= GANG || progress.totals > 0);
 const gangOpen = () => progress.totals > 0; // the first job done: the Mad Max page
 
-// the target: the nearest car ahead going your way (not one of yours, not a wreck), until you pass it or total it
+// the target: the nearest car ahead going your way (not one of yours, not a wreck), kept while it is in your guns'
+// reach until you pass it or total it; further up the road, the nearest again. Gone when it is off the road (a run
+// starts with new cars: last run's rival stayed the target, out of sight, and the guns could fire at nothing else)
 let target = null;
 function nextTarget() {
   let t = null;
@@ -38,7 +40,8 @@ function nextTarget() {
 function updateGang(dt) { // every frame of a run
   if (!arOn()) { target = null; return; }
   if (run.tank && !run.tank.wreck) target = run.tank; // boss.js: the tank, while it lasts
-  else if (!target || target.wreck || target.dir < 0 || target.z < odo) target = nextTarget();
+  else if (!target || target.wreck || target.dir < 0 || target.z < odo || target.z - odo > RANGE || !traffic.includes(target))
+    target = nextTarget();
   fireGuns(dt);
 }
 
