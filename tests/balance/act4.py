@@ -3,7 +3,8 @@ The bot drives like act2.py's (Reckless auto-drive) with Mad Max habits on top: 
 it takes the wheel, moves into that car's lane and rams it (the aids would brake or steer round), unless its own car is
 past 60% damage; it holds the trigger whenever the reticle's car is in reach (the tank too, which it doesn't ram).
 After each race: metres pay the repairs and the rest becomes miles for the fleet (dues and tuning first, then more
-cars); parts buy the Mad Max upgrades, the cheapest first. Usage: act4.py [races] [seed] [overrides], the overrides
+cars); parts buy the Mad Max upgrades, the cheapest first (Auto gun too: it fires no more than the bot already does,
+but a phone player would buy it). Usage: act4.py [races] [seed] [overrides], the overrides
 some JavaScript run first to try other numbers, such as "PARTS.car = 20; UPGRADES.guns.base = 80"."""
 import json, sys
 from playwright.sync_api import sync_playwright
@@ -17,7 +18,7 @@ START = dict(power=10, rev=4, gears=3, tyres=4, time=6, clutch=1, gas=1, shift=1
              fleet=51, dues=3, fleetPace=3, fleetFlash=1)
 RESERVE = 3000   # metres kept back for the nitro refill and repairs
 FLEET = ["dues", "fleetPace", "fleet"]
-MADMAX = ["bullbar", "armour", "spikes", "guns"]
+MADMAX = ["bullbar", "armour", "spikes", "guns", "autogun"]
 RACES = int(sys.argv[1]) if len(sys.argv) > 1 else 60
 SEED = int(sys.argv[2]) if len(sys.argv) > 2 else None
 OVERRIDES = sys.argv[3] if len(sys.argv) > 3 else ""
