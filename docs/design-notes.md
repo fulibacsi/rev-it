@@ -131,7 +131,8 @@ runs. A hidden race is the second act.
       beside a car only to escape a head-on under 2 s away: a bump beats a DNF;
     - it pushes the nitro pedal when a racer is within 500 m ahead, the tyres grip, it is in 2nd or higher and isn't
       braking.
-  - Auto flash only flashes a car that will move over, never a racer. With Game of chicken it plays chicken too: in
+  - Auto flash only flashes a car that will move over, never a racer, nor the car in Mad Max's reticle (that one is
+    to be rammed; the owner, 14 Oct: it flashed the targets away). With Game of chicken it plays chicken too: in
     an oncoming lane it flashes the car coming at you once a flash would make it swerve (under 4.5 s away). Reckless
     auto-drive plays chicken with or without it, and Auto flash works alongside it when it is on. (Claude's call:
     "uses everything, even Auto flash" read as: everything you own and have switched on; the switch is still yours.)

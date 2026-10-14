@@ -102,7 +102,8 @@ function autocruise() {
   // which lane goes further: with auto flash and a flash left, an ordinary car is no obstacle (it will be flashed out
   // of the way), nor is one already moving out of the lane for a flash; a racer in front, which won't move over, is
   // overtaken in the other lane
-  const leaving = (c, x) => c.yielding ? !sameLane(MY_LANES[c.lane], x) : aid('autoflash') && run.flashes > 0 && yields(c, 1 - c.lane);
+  const leaving = (c, x) => c.yielding ? !sameLane(MY_LANES[c.lane], x)
+    : c !== target && aid('autoflash') && run.flashes > 0 && yields(c, 1 - c.lane);
   const further = x => reach(carAhead(x, leaving));
   const escape = roomBeside && further(MY_LANES[1 - lane]) > further(MY_LANES[lane]) + 0.5;
   if (settled() && (escape && reach(mine) < 8 || lane === 1 && roomBeside && reach(mine) > 6 && reach(theirs) > 8)) moveOver();
@@ -123,13 +124,14 @@ function autocruise() {
 }
 
 // auto flash: flashes the car ahead in your lane when it is slower than you, under 4 s away and would move over: an
-// ordinary car with room in your other lane. Never a racer, so no flash is wasted (autocruise overtakes those). With
-// Game of chicken it plays in the oncoming lanes too: the car coming at you, once a flash would make it swerve
+// ordinary car with room in your other lane. Never a racer, so no flash is wasted (autocruise overtakes those), nor
+// the car in Mad Max's reticle (gang.js): that one is there to be rammed. With Game of chicken it plays in the
+// oncoming lanes too: the car coming at you, once a flash would make it swerve
 function autoFlash() {
   if (!run.flashes) return;
   if (lane > 1) { if (chicken && facing()) flashLights(); return; } // over there only a game of chicken moves them
   const c = nextCar(carX);
-  if (c && c.v < speed - 2 && (c.z - odo) / (speed - c.v) < 4 && yields(c, 1 - lane)) flashLights();
+  if (c && c !== target && c.v < speed - 2 && (c.z - odo) / (speed - c.v) < 4 && yields(c, 1 - lane)) flashLights();
 }
 
 // reckless auto-drive (Black market): autocruise without manners. Boxed in on your side it takes the near oncoming lane
