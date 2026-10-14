@@ -70,7 +70,8 @@ function updatePedals(dt) {
   if (nitroHeld || nitroByAid) PEDALS.gas.set(1); // the nitro pedal sits on the gas pedal: pushing it floors the gas
 }
 // your own foot (a key, a finger or the mouse button) on a pedal: the aids leave that pedal to you, and only that one.
-// The nitro pedal floors the gas, but it isn't the gas pedal: traction control and autocruise's braking carry on
+// The nitro pedal floors the gas, but it isn't the gas pedal: traction control carries on. Autocruise doesn't brake or
+// lift while you push it (aids.js)
 const touching = id => PEDALS[id].hold !== null || PEDALS[id].down;
 const pushing = () => touching('gas');
 function holdPedal(id, down) { const p = PEDALS[id]; p.hold = down ? 1 : null; if (!down) p.back = p.release; }
@@ -211,6 +212,10 @@ $('stalk-hit').onpointerdown = e => { e.preventDefault(); flashLights(); };
 let firing = false;
 drag($('trigger'), () => { firing = true; }, () => { firing = false; });
 
+// ---- the car stereo (Distance, stereo.js): a tap on its lights in the cluster or its head unit, or M: the next tape
+$('beat-hit').onpointerdown = e => { e.preventDefault(); nextTape(); };
+$('stereo-next').onclick = () => nextTape();
+
 // ---- nitro (Distance): push the nitro pedal on top of the gas pedal (mouse or finger), or hold N. It floors the gas,
 // and letting it go puts the gas back where it was (where the mouse left it, or a finger or key still holds it)
 let nitroHeld = false, gasBeforeNitro = 0;
@@ -236,6 +241,7 @@ addEventListener('keydown', e => {
   else if (e.key === 'n' || e.key === 'N') pushNitro(true);
   else if ((e.key === 'f' || e.key === 'F') && !e.repeat) flashLights();
   else if (e.key === 'g' || e.key === 'G') firing = true;
+  else if ((e.key === 'm' || e.key === 'M') && !e.repeat) nextTape();
   else if (n >= 1 && n <= ENGINES.length) pickEngine(n - 1);
 });
 addEventListener('keyup', e => {

@@ -15,7 +15,7 @@ with sync_playwright() as p:
     pg.goto(URL); js = pg.evaluate
     js("localStorage.clear()"); pg.reload(); pg.add_script_tag(path=str(HERE / "sim.js")); pg.click('[data-play="distance"]'); pg.click("#drive"); pg.wait_for_timeout(1500)
     if len(sys.argv) > 2 and sys.argv[2] != "-": js(f"HEAD_START.splice(0, HEAD_START.length, ...{sys.argv[2]})")
-    U = js("Object.fromEntries(Object.entries(UPGRADES).filter(([, u]) => !u.tab && !u.afterReveal).map(([k, u]) => [k, { max: u.max, base: u.base, growth: u.growth ?? 1, needs: u.needs ?? [] }]))")
+    U = js("Object.fromEntries(Object.entries(UPGRADES).filter(([, u]) => !u.tab && !u.afterReveal && u.built !== 0).map(([k, u]) => [k, { max: u.max, base: u.base, growth: u.growth ?? 1, needs: u.needs ?? [] }]))")
     cost = lambda k, l: round(U[k]["base"] * U[k]["growth"] ** l / 10) * 10
     lv, bank, revealed, clock = {}, 0, None, 0
     # every run in the first act (the white car is all there is), its traffic from a seed of its own: the same for each

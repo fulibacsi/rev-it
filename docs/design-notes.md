@@ -68,6 +68,16 @@ machine or session. Keep it current: update a section when a decision changes, a
   line fills under it while a used flash comes back (up to the run's full count); it shows in full even when the
   telltale is dimmed for none left. (Claude's call: 10, 8, 6, 4, 2 s over five levels, 2,500 m and up, on sale
   once the race is revealed; see the hidden race.)
+- **The car stereo** (Workshop, 500 m, the owner's idea): synthwave made on the spot with Web Audio, on four tapes
+  (Neon Coast, Night Drive, Sunset Grid, Chrome Heart) that differ in key, tempo, chords and patterns. Drums, a driving
+  bass, pads and an arpeggio over a four-chord loop, in 16-bar turns with a break. A row of lights in the cluster's
+  hood jumps with the beat (on the phone that is all there is: the dash is full); on a desktop a head unit in the dash,
+  left of the cluster, shows the tape and an 8-band equaliser. A tap on the lights or the head unit's TAPE button (or
+  M) plays the next tape, and after the last it goes off: the lights and the head unit stay, greyed ("OFF"), and a tap
+  plays the first tape again (the owner, 14 Oct: it used to vanish). The garage's ON/OFF is the same switch. Distance
+  only. It
+  plays about 6 dB under the engine at 4,000 rpm. (Claude's calls: generated rather than recorded, since no music
+  site was reachable from the build; the tapes and the controls.)
 - The run's time left is a bar draining across the widened rear-view mirror. It turns red and blinks under 5 s.
 - Nitro is a smaller red NOS pedal bolted over the gas pedal's top right corner, like a side pedal (the owner's
   design). Pushing it floors the gas, and N does the same. The tank shows as a NOS bar under TEMP on the cluster. It
@@ -108,7 +118,8 @@ runs. A hidden race is the second act.
 - **The aids** work the same pedals and lever as the player, so you can watch them.
   - They leave a control to you only while you touch it: your foot on the gas (no auto brake, no lift), on the
     clutch or the brake, your hand on the wheel or the lever. The nitro pedal isn't the gas pedal: pushing it,
-    traction control and autocruise's braking carry on.
+    traction control carries on, but autocruise neither brakes nor lifts (the owner, 14 Oct: with every aid on, NOS
+    should go). Reckless auto-drive's own nitro leaves autocruise as it is.
   - With an ECU tune they rev into it in every gear while the engine is cool: the factory map from heat 0.6, until it
     has cooled below 0.4. Your foot on the gas, or nitro, take the tuned map whatever the heat.
   - Autocruise:
@@ -123,7 +134,8 @@ runs. A hidden race is the second act.
       beside a car only to escape a head-on under 2 s away: a bump beats a DNF;
     - it pushes the nitro pedal when a racer is within 500 m ahead, the tyres grip, it is in 2nd or higher and isn't
       braking.
-  - Auto flash only flashes a car that will move over, never a racer. With Game of chicken it plays chicken too: in
+  - Auto flash only flashes a car that will move over, never a racer, nor the car in Mad Max's reticle (that one is
+    to be rammed; the owner, 14 Oct: it flashed the targets away). With Game of chicken it plays chicken too: in
     an oncoming lane it flashes the car coming at you once a flash would make it swerve (under 4.5 s away). Reckless
     auto-drive plays chicken with or without it, and Auto flash works alongside it when it is on. (Claude's call:
     "uses everything, even Auto flash" read as: everything you own and have switched on; the switch is still yours.)
@@ -194,8 +206,8 @@ runs. A hidden race is the second act.
 - In the red it damages the engine, up to 2% a second.
 
 **Nitro** pushes the heat into the red, so it does direct damage, but the top places need it. Tanks are refilled
-before each run at 100 m per second of nitro. The NOS pedal floors the gas, but the aids stay on while it is pushed:
-Auto gas's traction control trims it, and autocruise still brakes.
+before each run at 100 m per second of nitro. The NOS pedal floors the gas, and while you push it autocruise neither
+brakes nor lifts; Auto gas's traction control still trims it, so nitro doesn't spin the tyres in the middle gears.
 
 ### Act 3: the fleet
 
@@ -236,8 +248,10 @@ racers you beat are open to offers". It is a garage page paid in **miles**.
 
 **The gang:** once 51 of the 100 race for you, your fleet is a gang. The garage gives its first job: total a car. The
 windscreen gains an **AR layer** (red, like a gunsight): a reticle round the nearest car ahead going your way, its
-health bar above it, and "TOTAL IT" until the first job is done (a racer's number after). It stays on that car until
-you pass it or total it, then moves to the next.
+health bar above it, and "TOTAL IT" until the first job is done (a racer's number after). It stays on that car while
+it is within the guns' reach (200 m) until you pass it or total it, then moves to the next; further up the road it
+takes the nearest car ahead. Each race starts afresh (14 Oct fix: the reticle kept last race's car, out of sight
+on the horizon, and the guns would fire at nothing else).
 - **Damage:** a bump takes 0.4 of the speed you hit at (km/h) off the car's health: 100 for traffic, 150 for a racer,
   so two or three rams, or three or four. A head-on is still your DNF, not a total. Your fleet cars can't be hurt.
 - **Totalled** at 0 health, a car skids onto the right shoulder, tipped and smoking, and stops; you collect its parts
@@ -400,6 +414,10 @@ All dates are 2026.
   - Act 4, Mad Max: the AR target, totals and parts, bull bars, armour, spiked hubs, guns on the wheel's marker, the
     gang at work, police heat with the scanner and the police, and the tank.
   - Autocruise's top speed was measured, not changed (see "Also decided").
+- **14 Oct, desktop:** the guns locked on to something far on the horizon, so nothing else could be shot until it was
+  reached: last race's car, kept in the reticle (fixed). With all the aids on, the NOS pedal didn't stop autocruise
+  lifting off the gas. In Mad Max, Auto flash flashed the targets out of the way. Beating the tank should be GAME
+  OVER and stop the run: the end state (menus to be talked about later).
 
 ## Open questions
 
