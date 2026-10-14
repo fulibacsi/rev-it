@@ -16,11 +16,15 @@ with sync_playwright() as p:
     U = js("Object.fromEntries(Object.entries(UPGRADES).filter(([, u]) => !u.tab && !u.afterReveal).map(([k, u]) => [k, { max: u.max, base: u.base, growth: u.growth ?? 1, needs: u.needs ?? [] }]))")
     cost = lambda k, l: round(U[k]["base"] * U[k]["growth"] ** l / 10) * 10
     lv, bank, revealed, clock = {}, 0, None, 0
-    sim = lambda lv: js(f"simRun({json.dumps(lv)}, {lv.get('engine', 0)}, 1, {{}}, true)")
+    # every run in the first act (the white car is all there is), its traffic from a seed of its own: the same for each
+    # upgrade the value player tries then. The page's own loop draws on the seed between runs, so left alone the
+    # results moved with the machine's load
+    seed = 1
+    sim = lambda lv: js(f"rng = {seed}; progress.racing = false; progress.finish = 101; simRun({json.dumps(lv)}, {lv.get('engine', 0)}, 1, {{}}, true)")
     def gap():  # how far ahead the white car was at the bell (negative: behind you)
         return js("(() => { const c = racers().find(c => c.racer === 100); return c ? Math.round(c.z - odo) : null; })()")
     for r in range(1, 81):
-        js("progress.racing = false; progress.finish = 101")  # stay in the first act: the white car is all there is
+        seed = 1000 + r
         head = js("Math.round(headStart())"); m = sim(lv)["m"]; g = gap(); passed = js("progress.racing"); at = js("passedAt"); rt = js("runTime()")
         bank += m
         bought = []
