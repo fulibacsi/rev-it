@@ -27,7 +27,9 @@ machine or session. Keep it current: update a section when a decision changes, a
   (`--edge-l/r/b`: the safe area plus a gap), because a swipe up from the home bar once switched apps mid-run.
 - **Full screen:** add the page to the iPhone home screen.
 - **The notch** pushes everything on the left inwards. The ignition key then shrinks into the room left of the
-  cluster (at least 48 px), and the garage's title moves clear of the menu button.
+  cluster (at least 48 px), and the garage's title moves clear of the menu button. On the right it pushes the pedals
+  in: the brake pedal, once wider than the others, is now the same width (8.5vw) and the gaps a little tighter, so the
+  clutch's depth bar clears the speedometer (the owner's idea, 14 Oct).
 - **Leaving the page:** hiding it pauses into the menu, and RESUME restarts the audio that iOS suspends.
 
 **Pedals.**

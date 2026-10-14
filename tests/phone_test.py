@@ -27,6 +27,9 @@ with sync_playwright() as p:
     pg.tap("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000); pg.wait_for_timeout(300)
     k, d = box("#ignition"), box("#tach")
     print(f"{'ok ' if k[2] <= d[0] else 'FAIL'} the key clear of the rev counter: key to {k[2]:.0f}, dial from {d[0]:.0f}, key {k[2] - k[0]:.0f} px wide")
+    c = js("(() => { const r = document.querySelector('#clutch').parentNode.querySelector('.depth').getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; })()")
+    s = box("#speedo")
+    print(f"{'ok ' if c[0] >= s[2] else 'FAIL'} the clutch's depth bar clear of the speedometer: bar from {c[0]:.0f}, dial to {s[2]:.0f}")
     W, H = 852, 393
     for sel in ["#shifter", "#pedals", "#ignition", "#stalk-hit", "#timer", "#menu-button"]:
         r = js(f"(() => {{ const r = document.querySelector('{sel}').getBoundingClientRect(); return [r.left, r.right, r.top, r.bottom]; }})()")
