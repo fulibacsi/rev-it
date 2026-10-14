@@ -57,6 +57,14 @@ with sync_playwright() as p:
     rep = js("$('report').innerText")
     check("the ending, then play on (a result, not a DNF)", "GAME OVER" in rep and "Play on" in rep and "DNF" not in rep, rep[-160:])
     check("the next tank is half as tough again", js("tankHealth()") == 1500, js("tankHealth()"))
+    got = js("({ menu: menuOpen, screen, text: $('menu').innerText })")
+    check("then the win screen: congratulations, the stats, a tank beaten", got["menu"] and got["screen"] == "win" and "CONGRATULATIONS" in got["text"]
+          and "Tanks beaten\n1" in got["text"], {k: v for k, v in got.items() if k != "text"})
+    pg.screenshot(path=f"{OUT}/boss_win.png")
+    pg.click("#win-main"); got = js("[screen, $('continue').textContent, $('continue').classList.contains('done')]")
+    check("exit to the main menu: CONTINUE with the tick, and it plays on in the garage", got == ["main", "CONTINUE", True], got)
+    pg.click("#continue"); pg.wait_for_timeout(100)
+    check("CONTINUE: back in the garage, playing on", js("[menuOpen, run.phase]") == [False, "garage"], js("[menuOpen, run.phase]"))
     # 6. lost at the bell: a DNF, the heat down to half
     garage(1); race(); pg.wait_for_function("run.tank", timeout=5000); js("run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
     got = js("({ dnf: run.race && run.race.dnf, wanted: progress.wanted, report: $('report').innerText })")

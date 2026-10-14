@@ -14,7 +14,7 @@ with sync_playwright() as p:
     ctx = b.new_context(viewport={"width": 844, "height": 390}, is_mobile=True, has_touch=True); pg = ctx.new_page(); pg.on("pageerror", lambda e: errors.append(str(e)))
     cdp = ctx.new_cdp_session(pg); cdp.send("Emulation.setTouchEmulationEnabled", {"enabled": True, "maxTouchPoints": 5}); f = Fingers(cdp)
     pg.goto(URL); pg.wait_for_timeout(300); js = pg.evaluate
-    pg.tap('[data-play="free"]'); pg.wait_for_timeout(200); js("startEngine()"); pg.wait_for_timeout(1800)
+    pg.tap('[data-show="arcade"]'); pg.tap('[data-play="free"]'); pg.wait_for_timeout(200); js("startEngine()"); pg.wait_for_timeout(1800)
     js("traffic.length = 0")
     def to_px(gx, gy):  # gate units -> page pixels
         bb = pg.locator("#shifter").bounding_box(); w = 4.2 if js("gateGears()") >= 7 else 3.2

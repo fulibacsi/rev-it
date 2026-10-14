@@ -62,9 +62,11 @@ const SAVE_KEY = 'car-rev-incremental';
 // off: aids switched off; racing: the race has been revealed; points: race points; finish: best finishing position;
 // damage: % (damage.js), broken: gears it broke; nitro: seconds in the tank; miles: the Fleet's money; parts: Mad
 // Max's, from totals: cars totalled (gang.js); wanted: police heat, 0 to 1 (police.js); tanks: tanks beaten (boss.js);
-// tape: the one in the stereo (stereo.js)
+// tape: the one in the stereo (stereo.js); time: seconds played, driven: metres in all, races: runs raced (the
+// menu's STATS)
 const FRESH = () => ({ bank: 0, best: 0, runs: 0, levels: {}, off: {}, engine: 0, racing: false, points: 0, finish: 101,
-                       damage: 0, broken: [], nitro: 0, miles: 0, parts: 0, totals: 0, wanted: 0, tanks: 0, tape: 0 });
+                       damage: 0, broken: [], nitro: 0, miles: 0, parts: 0, totals: 0, wanted: 0, tanks: 0, tape: 0,
+                       time: 0, driven: 0, races: 0 });
 // debug mode (main.js) plays a save of its own, with wallets that never run out, so testing never touches the game
 const FUNDS = 1e9;
 let debugSave = false;
@@ -159,8 +161,10 @@ function finishRun(dnf) { // dnf: why the run ended early (a crash), if it did
   progress.bank += run.gain;
   progress.best = Math.max(progress.best, run.gain);
   progress.runs++;
+  progress.driven += run.gain;
   const was = progress.finish;
   run.race = raceFinish(bossLost(dnf)); // boss.js: a boss race lost is a DNF
+  if (run.race) progress.races++;
   run.dues = fleetDues(); // fleet.js
   progress.bank += run.dues;
   run.won = was > 1 && progress.finish === 1; // the first win opens the Fleet
@@ -171,6 +175,7 @@ function finishRun(dnf) { // dnf: why the run ended early (a crash), if it did
 }
 
 function updateRun(dt) {
+  progress.time += dt; // played, garage included (the menu pauses it)
   if (run.phase === 'starting' || run.phase === 'countdown') { speed = odo = 0; holdRacers(); } // held at the line
   if (run.phase === 'starting' && state === 'running') run.phase = 'countdown';
   else if (run.phase === 'countdown' && (run.count -= dt) <= 0) { run.phase = 'run'; brakePedal = 0; raceGo(); }
@@ -236,8 +241,12 @@ function renderGarage(bought) {
     (fleetOpen() ? ` · ${money(progress.miles)} mi` : '') + (gangOpen() ? ` · ${money(progress.parts)} parts` : '') + ' to spend';
   const sold = u => !u.afterReveal || progress.racing; // on sale yet
   const done = Object.entries(UPGRADES).every(([id, u]) => !inMetres(u) || !sold(u) || whyNot(id) === 'max'), r = run.race;
-  $('report').innerHTML = !progress.runs
-    ? `You get ${runTime()} seconds. Drive as far as you can: every metre is money for upgrades.`
+  $('report').innerHTML = !progress.runs // the first run: how to get going (the rest: the menu's HOW TO DRIVE)
+    ? `You get ${runTime()} seconds. Drive as far as you can: every metre is money for upgrades.<br>` + (touchLayout()
+      ? 'Hold the key at START until the engine runs, push the clutch down, drag the knob up into 1st, then gas and ' +
+        'let the clutch up. Everything else: ☰ → HOW TO DRIVE.'
+      : 'Enter starts the engine. Hold Shift (the clutch), ↑ for 1st, then Space (gas) and let Shift go. Everything ' +
+        'else: Esc → HOW TO DRIVE.')
     : (r?.dnf ? `<b>DNF</b>: ${{ 'head-on': 'head-on with oncoming traffic', wrecked: 'the car is wrecked',
         limped: `limped ${LIMP} m in the wreck`, tank: 'the tank held the road' }[r.dnf]} · no points · ` : '') +
       (r && !r.dnf ? `Started ${r.start > FIELD ? 'at the back' : 'P' + r.start}, finished <b>P${r.p}</b> · <b>+${r.points} pts</b>` +
@@ -323,6 +332,7 @@ function renderRun() {
     if (run.phase === 'run') { flash('GO!', '#5f5', true); beep(1320, 0.5); }
     if (run.phase === 'finish') { flash(run.beatTank ? 'GAME OVER' : 'TIME!', '#ec4', true); beep(880, 0.8); }
     if (run.phase === 'garage') renderGarage();
+    if (run.phase === 'garage' && run.beatTank) openMenu('win'); // GAME OVER, then the win screen (main.js)
     document.body.classList.toggle('garage', run.phase === 'garage');
     shownPhase = run.phase;
   }
@@ -372,6 +382,17 @@ const DISTANCE = {
   engine: () => progress.engine, // the garage's engines, not the menu's
   tune: applyUpgrades,
   start() { Object.assign(run, { phase: 'garage', best: progress.best }); shownPhase = null; },
+  pause: () => save(), // the menu opened: the time played so far is kept
+  endRun() { if (run.phase === 'run') finishRun(); }, // the pause menu's END RUN: as if the time ran out
+  stats() { // STATS and SHARE: an act's numbers only once it is open (never a word of the race before the reveal)
+    const time = Math.floor(progress.time / 60), s = [['Time played', time < 60 ? `${time} min` : `${Math.floor(time / 60)} h ${time % 60} min`],
+      ['Runs', fmt(progress.runs)], ['Best run', `${fmt(progress.best)} m`], ['Distance driven', `${fmt(progress.driven)} m`]];
+    if (progress.racing) s.push(['Races', fmt(progress.races)], ['Best place', `P${progress.finish}`]);
+    if (fleetOpen()) s.push(['Fleet', `${fleetSize()} cars`]);
+    if (gangOpen()) s.push(['Cars totalled', fmt(progress.totals)]);
+    if (progress.tanks) s.push(['Tanks beaten', fmt(progress.tanks)]);
+    return s;
+  },
   stop() { run.phase = 'garage'; document.body.classList.remove('garage', 'low', 'has-flash', 'timing', 'has-fleet', 'ar-on', 'has-guns', 'has-heat'); clearDamageView(); }, // earns nothing
   update: updateRun,
   render() { renderRun(); renderDamage(); renderSonar(); renderGang(); renderPolice(); },

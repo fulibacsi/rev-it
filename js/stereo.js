@@ -13,7 +13,7 @@ const TAPES = [ // key: MIDI note of the bass's root; chords: semitones above it
 ];
 const MUSIC = 0.4; // the stereo's level: about 6 dB under the engine at 4,000 rpm
 const hz = n => 440 * 2 ** ((n - 69) / 12);
-const stereo = { on: false, tape: 0, step: 0, next: 0, bus: null, verb: null, echo: null, eq: null, beats: [] };
+const stereo = { on: false, tape: 0, step: 0, next: 0, bus: null, verb: null, echo: null, eq: null, beats: [], volume: 1 }; // volume: the settings' (main.js)
 
 // the sound chain, built once the audio has started: everything through a compressor to the stereo's level; a
 // reverb (decaying noise) for the snare and pads, an echo for the arpeggio, and an analyser for the equaliser
@@ -21,7 +21,7 @@ function wireStereo() {
   const s = stereo, comp = ctx.createDynamicsCompressor();
   s.bus = ctx.createGain();
   s.out = ctx.createGain();
-  s.out.gain.value = MUSIC;
+  s.out.gain.value = MUSIC * s.volume;
   s.eq = ctx.createAnalyser();
   s.eq.fftSize = 256;
   s.bus.connect(comp).connect(s.out).connect(ctx.destination);
@@ -109,7 +109,7 @@ function updateStereo() {
   if (want === stereo.on && !want) return;
   Object.assign(stereo, { on: want, tape, step: 0, next: 0 }); // a new tape starts from the top
   stereo.beats.length = 0;
-  stereo.out?.gain.setTargetAtTime(want ? MUSIC : 0, ctx.currentTime, 0.05); // what was scheduled fades out
+  stereo.out?.gain.setTargetAtTime(want ? MUSIC * stereo.volume : 0, ctx.currentTime, 0.05); // what was scheduled fades out
 }
 const nextTape = () => game.nextTape?.(); // a tap on the lights or the head unit, or M
 

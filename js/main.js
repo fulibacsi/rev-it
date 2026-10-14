@@ -5,18 +5,20 @@
 //   engine() / tune() when it chooses and tunes the car itself, key(k) to take a key press, crash(impact) to hear of a collision, speedo() for the
 //   speedometer's top (km/h), field() for
 //   cars it places on the road itself (racers), useFlash() to allow a headlight flash (and count it), stereo() whether
-//   the car has a stereo, tape() the tape it plays (null: off) and nextTape() to change it (stereo.js) }
+//   the car has a stereo, tape() the tape it plays (null: off) and nextTape() to change it (stereo.js); the main game
+//   (Distance) also: pause() as the menu opens over it, endRun() for the pause menu's END RUN, stats() for STATS }
 const fmt = n => Math.round(n).toLocaleString('en-US');
 
-// settings kept between visits: the engine for the games that let you choose, best scores
+// settings kept between visits: the engine for the games that let you choose, best scores, the layout, the volumes
 const SETTINGS_KEY = 'car-rev-settings';
-const settings = Object.assign({ engine: 0, best: {}, layout: 'auto' }, (() => {
+const settings = Object.assign({ engine: 0, best: {}, layout: 'auto', volume: { car: 1, music: 1 } }, (() => {
   try { return JSON.parse(localStorage.getItem(SETTINGS_KEY)) ?? {}; } catch { return {}; }
 })());
 function saveSettings() { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch { /* not saved */ } }
 
 const FREE = { id: 'free', name: 'Free drive', blurb: 'No targets, no clock: just the coast road.', gears: () => 6 };
 const GAMES = [REV, SIGNS, DISTANCE, FREE];
+const ARCADE = [REV, SIGNS, FREE]; // the side gigs; the main game, Distance, is the menu's CONTINUE / NEW GAME
 let game = FREE, menuOpen = false, playing = false;
 
 function selectEngine(i) {
@@ -72,23 +74,46 @@ function leaveGame() { // keep the best score, let the game tidy up
   document.body.classList.remove('hit', 'garage', 'low');
 }
 
-// ---- menu ----
-function renderMenu() {
-  const best = g => g === DISTANCE ? (progress.racing ? `best P${progress.finish}` : progress.best ? `best ${fmt(progress.best)} m` : '')
-    : settings.best[g.id] ? `best ${fmt(settings.best[g.id].points)} pts · level ${settings.best[g.id].level + 1}` : '';
-  const saved = g => g === DISTANCE && progress.runs > 0; // a Distance save: continue it, or start over
-  $('game-list').innerHTML = GAMES.map(g => `<div class="game-item"><button data-play="${g.id}"${g === game && playing ? ' class="on"' : ''}>` +
-    `<b>${g.name}</b><small>${g.blurb}</small><i>${saved(g) ? 'continue · ' : ''}${best(g)}</i></button>` +
-    (saved(g) ? '<button class="new-game" data-newgame>new game</button>' : '') + '</div>').join('');
-  $('engine-pick').innerHTML = ENGINES.map((e, i) => `<button data-engine="${i}"${i === settings.engine ? ' class="on"' : ''}>${e.name}</button>`).join('');
-  $('resume').hidden = !playing;
-  $('layout').textContent = `Layout: ${settings.layout}` + (settings.layout === 'auto' ? ` (${touchDevice ? 'touch' : 'mouse and keys'})` : '');
+// ---- menu: one screen at a time, the game paused while it shows. main: CONTINUE (or NEW GAME, without a save), STATS,
+// SETTINGS, ARCADE (the side gigs), a small credits link; pause, over a game: RESUME, HOW TO DRIVE, END RUN (a Distance
+// run), EXIT TO MAIN MENU (the game stays paused behind it, and CONTINUE goes back to it); win: the tank beaten (the
+// owner's design, 14 Oct). BACK goes to the screen it came from
+let screen = 'main', screenFrom = [];
+const started = () => progress.runs > 0; // a game of Distance under way (in debug mode, its own save)
+// the build a playtester has: when the page was published (GitHub Pages' Last-Modified), said in STATS and SHARE
+const BUILD = 'build ' + new Date(document.lastModified).toLocaleString('en-GB', { day: 'numeric', month: 'short',
+  year: 'numeric', hour: '2-digit', minute: '2-digit' });
+function showScreen(name, back = false) {
+  if (!back && name !== screen) screenFrom.push(screen);
+  screen = name;
+  for (const s of $('menu').querySelectorAll('section')) s.hidden = s.dataset.screen !== name;
+  for (const s of $('menu').querySelectorAll('.shared')) s.textContent = '';
+  renderMenu();
 }
-function openMenu() {
+function renderMenu() {
+  $('continue').textContent = started() ? 'CONTINUE' : 'NEW GAME';
+  $('continue').classList.toggle('done', progress.tanks > 0); // the tank beaten: a green tick
+  $('to-stats').hidden = !started();
+  $('end-run').hidden = !(game === DISTANCE && run.phase === 'run');
+  const best = g => settings.best[g.id] ? `best ${fmt(settings.best[g.id].points)} pts · level ${settings.best[g.id].level + 1}` : '';
+  $('game-list').innerHTML = ARCADE.map(g => `<button data-play="${g.id}"${g === game && playing ? ' class="on"' : ''}>` +
+    `<b>${g.name}</b><small>${g.blurb}</small><i>${best(g)}</i></button>`).join('');
+  $('engine-pick').innerHTML = ENGINES.map((e, i) => `<button data-engine="${i}"${i === settings.engine ? ' class="on"' : ''}>${e.name}</button>`).join('');
+  $('layout').textContent = settings.layout + (settings.layout === 'auto' ? ` (${touchDevice ? 'touch' : 'mouse and keys'})` : '');
+  $('vol-car').value = Math.round(settings.volume.car * 100);
+  $('vol-music').value = Math.round(settings.volume.music * 100);
+  $('reset').hidden = !started();
+  const rows = DISTANCE.stats().map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+  $('stats-list').innerHTML = $('win-stats').innerHTML = rows;
+  for (const b of $('menu').querySelectorAll('.build')) b.textContent = BUILD;
+}
+function openMenu(name) {
   menuOpen = true;
   document.body.classList.add('menu');
   ctx?.suspend(); // paused: the engine falls silent too
-  renderMenu();
+  game.pause?.();
+  screenFrom = [];
+  showScreen(name ?? (playing ? 'pause' : 'main'), true);
 }
 function closeMenu() {
   menuOpen = false;
@@ -96,20 +121,58 @@ function closeMenu() {
   ctx?.resume();
 }
 function toggleMenu() { if (!menuOpen) openMenu(); else if (playing) closeMenu(); }
+function resetGame() { // RESET PROGRESS, or a new game after the win: Distance from scratch, back at the main menu
+  resetProgress();
+  if (game === DISTANCE) { leaveGame(); game = FREE; playing = false; resetScene(); refreshCar(); }
+  screenFrom = [];
+  showScreen('main', true);
+}
+function applyVolume() { // the settings' sliders: the car's sounds (engine.js) and the stereo's music (stereo.js)
+  carVolume = settings.volume.car;
+  if (carBus) carBus.gain.value = carVolume;
+  stereo.volume = settings.volume.music;
+  if (stereo.on && stereo.out) stereo.out.gain.value = MUSIC * stereo.volume;
+}
+async function shareStats(out) { // STATS' SHARE: the phone's share sheet, else the clipboard, else text to copy by hand
+  const text = ['Rev It: my game', ...DISTANCE.stats().map(([k, v]) => `${k}: ${v}`), BUILD, location.href.split(/[?#]/)[0]].join('\n');
+  try {
+    if (navigator.share && touchDevice) { await navigator.share({ text }); out.textContent = 'Shared, thank you!'; return; }
+    await navigator.clipboard.writeText(text);
+    out.textContent = 'Copied: paste it into a message.';
+  } catch (e) {
+    if (e?.name === 'AbortError') return; // the share sheet closed
+    out.innerHTML = 'Copy it from here:<textarea readonly></textarea>';
+    out.querySelector('textarea').value = text;
+  }
+}
 $('menu').onclick = e => {
   const b = e.target.closest('button');
   if (!b) return;
   loading ??= start(); // any click is a user gesture: audio can start
-  if (b.dataset.play) play(GAMES.find(g => g.id === b.dataset.play));
-  if ('newgame' in b.dataset && confirm('Start Distance over? This clears every metre, point and upgrade.')) { resetProgress(); play(DISTANCE); }
+  if (b.dataset.play === 'distance' && game === DISTANCE && playing) { closeMenu(); goFullscreen(); } // back to it
+  else if (b.dataset.play) play(GAMES.find(g => g.id === b.dataset.play));
+  if (b.dataset.show) showScreen(b.dataset.show);
+  if ('back' in b.dataset) showScreen(screenFrom.pop() ?? (playing ? 'pause' : 'main'), true);
+  if ('share' in b.dataset) shareStats(b.closest('section').querySelector('.shared'));
   if (b.dataset.engine) pickEngine(+b.dataset.engine);
   if (b.id === 'resume') { closeMenu(); goFullscreen(); }
+  if (b.id === 'to-main' || b.id === 'win-main') showScreen('main');
+  if (b.id === 'end-run' && confirm('End this run now? It counts as if the time had run out.')) { closeMenu(); game.endRun?.(); }
+  if (b.id === 'reset' && confirm('Reset your progress? Every metre, point and upgrade is gone, and the game starts over.')) resetGame();
+  if (b.id === 'win-new' && confirm('Start a new game? Everything from this one is gone, its stats too.')) { resetGame(); play(DISTANCE); }
   if (b.id === 'layout') {
     settings.layout = LAYOUTS[(LAYOUTS.indexOf(settings.layout) + 1) % LAYOUTS.length];
     saveSettings(); applyLayout(); renderMenu();
   }
 };
-$('menu-button').onclick = openMenu;
+$('menu').oninput = e => { // the volume sliders, as they move
+  const v = { 'vol-car': 'car', 'vol-music': 'music' }[e.target.id];
+  if (!v) return;
+  settings.volume[v] = e.target.value / 100;
+  saveSettings();
+  applyVolume();
+};
+$('menu-button').onclick = () => openMenu();
 addEventListener('click', e => e.target.closest('button')?.blur()); // keys stay with the car, not a focused button
 
 // leaving the page (another app, another tab) pauses the game; phones suspend its sound meanwhile, and only a tap
@@ -262,6 +325,7 @@ document.querySelector('#menu h1').onclick = () => {
 
 if (settings.debug) applyDebug();
 applyLayout();
+applyVolume();
 refreshCar();
 openMenu();
 drawRoad(g2d, canvas.width, canvas.height, 0); // the view behind the menu
