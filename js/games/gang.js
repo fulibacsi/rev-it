@@ -23,7 +23,7 @@ Object.assign(UPGRADES, {
 });
 const GUN = 6, RANGE = 200; // damage a shot a level; m your guns reach (the gang's: 80)
 const GANG = FIELD / 2 + 1; // fleet cars that make a gang
-const health = c => c.racer ? 150 : 100; // full health: racers are built tougher
+const health = c => c.tank ? tankHealth() : c.racer ? 150 : 100; // full health: racers are built tougher (the tank: boss.js)
 const PARTS = { car: 10, racer: 25 }; // parts from a totalled car
 const arOn = () => progress.racing && (fleetSize() >= GANG || progress.totals > 0);
 const gangOpen = () => progress.totals > 0; // the first job done: the Mad Max page
@@ -37,7 +37,8 @@ function nextTarget() {
 }
 function updateGang(dt) { // every frame of a run
   if (!arOn()) { target = null; return; }
-  if (!target || target.wreck || target.dir < 0 || target.z < odo) target = nextTarget();
+  if (run.tank && !run.tank.wreck) target = run.tank; // boss.js: the tank, while it lasts
+  else if (!target || target.wreck || target.dir < 0 || target.z < odo) target = nextTarget();
   fireGuns(dt);
 }
 
@@ -61,13 +62,14 @@ function fireGuns(dt) {
 function ram(i) {
   const c = i.car;
   if (!c || c.wreck || c.fleet || i.headOn) return;
-  hurtCar(c, 0.4 * i.kmh * (1 + 0.5 * lvl('bullbar')) + (i.side && spikes ? 50 : 0));
+  hurtCar(c, (0.4 * i.kmh * (1 + 0.5 * lvl('bullbar')) + (i.side && spikes ? 50 : 0)) * (c.tank ? 0.2 : 1)); // armour
 }
 function hurtCar(c, hp, gang) {
   c.hp = (c.hp ?? health(c)) - hp;
   if (c.hp <= 0) total(c, gang);
 }
 function total(c, gang) { // the parts are yours, whoever did it; the heat too (police.js)
+  if (c.tank) return tankDown(c); // boss.js
   const parts = c.racer ? PARTS.racer : PARTS.car;
   raiseHeat(gang ? WANTED.gang : c.police ? WANTED.police : c.racer ? WANTED.racer : WANTED.car);
   Object.assign(c, { wreck: true, hp: 0 });
@@ -84,8 +86,9 @@ function total(c, gang) { // the parts are yours, whoever did it; the heat too (
 function gangwork(c, dt) {
   c.rammed = Math.max(0, (c.rammed ?? 0) - dt);
   c.gun = Math.max(0, (c.gun ?? 0) - dt);
-  if (lvl('guns') && !c.gun) { // a rival up to 80 m ahead of it, or beside it: a shot a second
-    const o = traffic.find(o => o.racer && !o.fleet && !o.wreck && o.z > c.z - CAR_LEN && o.z - c.z < 80);
+  if (lvl('guns') && !c.gun) { // a rival up to 80 m ahead of it, or beside it, or the tank within 200 m: a shot a second
+    const o = run.tank && !run.tank.wreck && Math.abs(run.tank.z - c.z) < 200 ? run.tank
+      : traffic.find(o => o.racer && !o.fleet && !o.wreck && o.z > c.z - CAR_LEN && o.z - c.z < 80);
     if (o) { c.gun = 1; tracers.push([c, o, performance.now()]); hurtCar(o, GUN * lvl('guns'), true); }
   }
   if (!lvl('bullbar') || c.rammed) return;
@@ -109,7 +112,7 @@ function renderGang() {
   const k = canvas.clientWidth / canvas.width, w = Math.max(26, s[2] * k), h = Math.max(20, s[3] * k);
   Object.assign($('ar').style, { left: `${(s[0] + s[2] / 2) * k - w / 2}px`, top: `${(s[1] + s[3] / 2) * k - h / 2}px`,
                                  width: `${w}px`, height: `${h}px` });
-  $('ar-label').textContent = !gangOpen() ? 'TOTAL IT' : t.racer ? `#${t.racer}` : '';
+  $('ar-label').textContent = t.tank ? 'TANK' : !gangOpen() ? 'TOTAL IT' : t.racer ? `#${t.racer}` : '';
 }
 
 const middle = s => [s[0] + s[2] / 2, s[1] + s[3] / 2];
@@ -119,12 +122,15 @@ function drawTracers() {
   for (const [from, to, when] of tracers) {
     const side = Math.round(when / 250) % 2 ? 1 : -1; // twin guns on the bonnet, in turn
     const [x1, y1] = from ? from.seen && middle(from.seen) || [] : [w / 2 + side * w * 0.08, h * 0.64];
-    const [x2, y2] = to?.seen ? middle(to.seen) : [x1 + side * w * 0.02, h * 0.42]; // a miss: off into the distance
+    const [x2, y2] = to === 'you' ? [w / 2, h * 0.66] : to?.seen ? middle(to.seen) // the tank at you; a miss: off
+      : [x1 + side * w * 0.02, h * 0.42];                                          // into the distance
     if (x1 === undefined) continue;
     g2d.globalAlpha = 1 - (now - when) / 100;
     g2d.strokeStyle = '#ffd36a'; g2d.lineWidth = Math.max(2, w / 500);
     g2d.beginPath(); g2d.moveTo(x1, y1); g2d.lineTo(x2, y2); g2d.stroke();
-    if (!from) { g2d.fillStyle = '#fff3c0'; g2d.beginPath(); g2d.arc(x1, y1, w / 120, 0, 2 * Math.PI); g2d.fill(); } // muzzle
+    if (!from || from.tank) { // a muzzle flash
+      g2d.fillStyle = '#fff3c0'; g2d.beginPath(); g2d.arc(x1, y1, w / (from ? 50 : 120), 0, 2 * Math.PI); g2d.fill();
+    }
   }
   g2d.globalAlpha = 1;
 }

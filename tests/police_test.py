@@ -48,6 +48,8 @@ with sync_playwright() as p:
     got = js("({ v: Math.round(cop.v), x: +cop.x.toFixed(2), ahead: Math.round(cop.z - odo), swerve: cop.swerve })")
     check("head-on: flat out, steering into your lane, no swerve for a flash", got["v"] > 28 and got["x"] > -5.25 + 1 and got["swerve"] is None, got)
     js("lane = fromLane = 0; carX = MY_LANES[0]")  # out of its way
+    js("traffic.forEach(c => { if (c.police) total(c); }); copClock = 99"); pg.wait_for_timeout(150)
+    check("police totalled: the scanner calms down", js("$('scanner-lcd').textContent").startswith("HEAT"), js("$('scanner-lcd').textContent"))
     pg.screenshot(path=f"{OUT}/police_desktop.png")
     # 5. the heat stays between races
     js("progress.wanted = 0.5; run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)

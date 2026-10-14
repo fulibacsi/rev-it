@@ -14,8 +14,8 @@ let copClock = 0;
 function updatePolice(dt) {
   if (!arOn() || !progress.wanted) return;
   copClock -= dt;
-  if (copClock > 0 || traffic.filter(c => c.police).length >= 2) return;
-  const c = traffic.find(c => !c.racer && !c.police && c !== target && c.z - odo > 600), other = 1 - lane;
+  if (copClock > 0 || traffic.filter(c => c.police && !c.wreck).length >= 2) return;
+  const c = traffic.find(c => !c.racer && !c.police && !c.tank && c !== target && c.z - odo > 600), other = 1 - lane;
   if (!c || lane <= 1 && !laneClear(MY_LANES[other], 10)) return;
   copClock = copEvery();
   const reset = { police: true, hp: null, wreck: false, swerve: null, warned: false, beams: 0, d: NaN, hit: -Infinity };
@@ -51,7 +51,7 @@ function renderPolice() {
   const on = run.phase !== 'garage' && arOn();
   document.body.classList.toggle('has-heat', on);
   if (!on) return;
-  const lit = Math.round(progress.wanted * 10), cops = traffic.some(c => c.police), now = performance.now();
+  const lit = Math.round(progress.wanted * 10), cops = traffic.some(c => c.police && !c.wreck), now = performance.now();
   [...$('scanner-leds').children].forEach((r, i) => r.setAttribute('fill', i >= lit ? '#2a2a30' : i < 5 ? '#4c4' : i < 8 ? '#fb3' : '#f33'));
   $('scanner-lcd').textContent = cops ? (now % 600 < 400 ? 'PURSUIT' : '') : `HEAT ${Math.round(progress.wanted * 100)}%`;
   $('scanner-light').setAttribute('fill', cops ? (now % 500 < 250 ? '#f33' : '#36f') : '#333');

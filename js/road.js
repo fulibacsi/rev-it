@@ -112,6 +112,15 @@ function policeSprite(front, lit) { // black and white, the light bar on the roo
   });
 }
 const POLICE = [0, 1].map(lit => ({ rear: policeSprite(false, lit), front: policeSprite(true, lit), beams: policeSprite(true, lit) }));
+const TANK_SPRITE = sprite(300, 230, (g, w, h) => { // the final boss (Distance), from behind: hull, tracks, turret, gun
+  g.fillStyle = '#1b1d17'; g.fillRect(0, h * 0.6, w * 0.2, h * 0.4); g.fillRect(w * 0.8, h * 0.6, w * 0.2, h * 0.4); // tracks
+  g.fillStyle = '#4b5320'; g.beginPath(); g.roundRect(w * 0.06, h * 0.42, w * 0.88, h * 0.4, 10); g.fill(); // hull
+  g.fillStyle = '#3d4419'; g.beginPath(); g.roundRect(w * 0.26, h * 0.14, w * 0.48, h * 0.32, 18); g.fill(); // turret
+  g.fillStyle = '#2b3011'; g.fillRect(w * 0.47, 0, w * 0.06, h * 0.2); // the gun, turned back at you
+  g.fillStyle = '#111'; g.beginPath(); g.arc(w / 2, h * 0.04, w * 0.035, 0, 2 * Math.PI); g.fill();
+  g.fillStyle = '#ddd'; g.font = `bold ${h * 0.16}px sans-serif`; g.textAlign = 'center'; g.fillText('★', w / 2, h * 0.7);
+  g.fillStyle = '#a22'; g.fillRect(w * 0.12, h * 0.5, w * 0.08, h * 0.05); g.fillRect(w * 0.8, h * 0.5, w * 0.08, h * 0.05);
+});
 const RACERS = new Map(); // racers' rear views by number: a racing stripe, and the number once the race is revealed
 function racerSprite(n, numbered, team) { // team: one of your fleet, black with gold stripes
   const key = numbered ? (team ? -n : n) : 0;
@@ -181,6 +190,7 @@ function spawnCar(car, d) {
     swerve: null, // an oncoming car flashed out of your way (a game of chicken): the lane it is moving to
     wreck: false, hp: null, // totalled (Distance's Mad Max), and its health when hurt (null: unhurt)
     police: false, stage: null, passing: false, // a police car (Distance's Mad Max, police.js), how far into its move
+    tank: false, w: undefined, h: undefined, // the final boss (boss.js), and its size, m
   });
 }
 const sameLane = (a, x) => Math.abs(a - x) < CAR_W; // two lateral positions close enough to touch
@@ -232,7 +242,7 @@ function driveCar(c, dt) { // follow at a safe distance, or pull out and pass
 // flashed: an ordinary car ahead of you in your lane (within 250 m) moves over to your other lane if there is room.
 // Racers don't care.
 // yields: whether car c would move over into lane `to` for a flash now (racers never do)
-const yields = (c, to) => !c.racer && !c.police && !c.yielding && c.dir > 0 && c.z > odo && c.z - odo <= 250 && roomAt(c, MY_LANES[to], 12, 25);
+const yields = (c, to) => !c.racer && !c.police && !c.tank && !c.yielding && c.dir > 0 && c.z > odo && c.z - odo <= 250 && roomAt(c, MY_LANES[to], 12, 25);
 // Playing chicken (Distance's upgrade), an oncoming car in your lane within 250 m swerves into its other lane, if
 // nobody is there within 25 m of it
 let chicken = false;
@@ -259,13 +269,14 @@ function updateTraffic(dt, clock) {
   for (const c of traffic) {
     if (c.wreck) skid(c, dt);
     else if (c.police) policeDrive(c, dt); // police.js
+    else if (c.tank) tankDrive(c, dt); // boss.js
     else if (c.dir > 0) driveCar(c, dt);
     else { c.z -= c.v * dt; if (c.swerve != null) c.x += clamp(c.swerve - c.x, -3.5 * dt, 3.5 * dt); } // as brisk as yielding
     const d = c.z - odo;
     if (c.d > 0 && d <= 0) whoosh(Math.abs(speed - c.dir * c.v) * 3.6, c.x < carX ? -0.7 : 0.7); // went past the driver
     c.d = d;
-    if (c.racer || c.passing) { /* racers stay where they are, however far: their places are the race; a police car
-      comes up from behind */ }
+    if (c.racer || c.passing || c.tank) { /* racers stay where they are, however far: their places are the race; a
+      police car comes up from behind; the tank holds the road */ }
     else if (d < -40 || c.dir > 0 && d < -8 && c.v < speed - 1) spawnAhead(c); // left behind: back to the horizon
     else if (d > ROAD.draw * ROAD.segment + 100) { // pulled away: comes up from behind instead, in a lane you're not in
       spawnCar(c, -30);
@@ -355,7 +366,7 @@ function drawRoad(g, w, h, dt) {
     sign: { z: m.z, x: ROAD.half + 2, w: 1.5, h: 4.1, img: signSprite(m.value) },
   })[m.kind]);
   const look = c => c.wreck ? wreckSprite(c.look.rear) : c.dir > 0 ? c.look.rear : c.beams ? c.look.beams : c.look.front;
-  const ahead = [...traffic.map(c => ({ z: c.z, x: c.x, w: 1.8, h: 1.4, img: look(c), car: c })), ...marks]
+  const ahead = [...traffic.map(c => ({ z: c.z, x: c.x, w: c.w ?? 1.8, h: c.h ?? 1.4, img: look(c), car: c })), ...marks]
     .map(o => ({ ...o, d: o.z - odo })).filter(o => o.d > 2 && o.d < (ROAD.draw - 2) * ROAD.segment).sort((p, q) => q.d - p.d);
   for (const c of traffic) c.seen = null; // where each car is on the screen (canvas px), when it is to be seen
   let t = 0;
