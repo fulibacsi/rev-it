@@ -39,7 +39,8 @@ function autoClutch(dt) {
 function autoGas() {
   if (pushing()) return; // your own foot on the gas: it's yours (the nitro pedal only floors it, then this trims it)
   if (speed < 1 && (!gear || clutch < 0.05)) gasPedal = clamp(0.5 + (launchRpm() - rpm) / 800, 0, 1);
-  else if (!locked && !spinning) gasPedal = 1;
+  // in neutral (mid-shift, or a gear knocked out while the tyres spin) the grip sum would divide by a ratio of 0
+  else if (!gear || !locked && !spinning) gasPedal = 1;
   else {
     const a0 = engineAccel(engine, rpm, 0), a1 = engineAccel(engine, rpm, 1); // the pull is linear in the throttle
     const most = (gripTorque() / engine.inertia / RAD - a0) / (a1 - a0);
