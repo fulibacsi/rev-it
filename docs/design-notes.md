@@ -306,12 +306,13 @@ lamp. It shows from Mad Max on, only on the road; the garage's report gives it t
   - `act2.py [races] [seed]`: races from the reveal to P1, the bot driving like Reckless auto-drive (`aids.js`). The
     traffic seed alone moves the result by up to 7 races, so compare a few seeds;
   - `act3.py [races] [seed] [order|cheapest]`: races from the first win to 51 fleet cars, buying the Fleet's upgrades;
+  - `cruise.py [runs] [plain|reckless]`: autocruise at speed through traffic: metres a run, time on the brake, crashes;
   - `race_test.py` and `race_seq.py`: grid slots and finishing places;
   - `progress.py` and `balance.py`: whole progressions played by a bot;
   - `accel.py`: stock acceleration;
   - `sim.js`: the in-page bot they share.
 
-### Phase 3: the fleet, then Mad Max (decided 13 Oct, being built)
+### Phase 3: the fleet, then Mad Max (decided 13 Oct, built overnight 13–14 Oct)
 
 The owner's answers of 13 Oct. Where a detail is still open, Claude decides while building and notes it here. The
 order of work is in [phase-3-build-plan.md](phase-3-build-plan.md).
@@ -326,7 +327,17 @@ upgrades and the guns (see Act 4). The gang uses whatever offensive upgrades it 
 - **The final boss,** the tank: built (see Act 4).
 
 **Also decided (13 Oct), to build:**
-- Autocruise aims for top speed: it brakes a lot at 300+ km/h when both lanes are blocked.
+- Autocruise aims for top speed: it brakes a lot at 300+ km/h when both lanes are blocked. **Looked into, not changed
+  yet** (14 Oct, `cruise.py`, 24 traffic seeds each, the car act 2 ends with):
+  - It spends 28–30% of a run on the brake, plain or reckless. At speed it starts braking for a car 300+ m ahead in
+    its lane because the other lane has a slower car nearer; it never plans to pass that one and move over before
+    reaching its own. The following itself is not the problem (gentler following changed nothing).
+  - Weaving instead of braking (move over once past the nearer car, if that lane is clearer beyond): 2,481 → 2,605 m a
+    run plain, 2,577 → 2,753 reckless (+5–7%, about one standard error each), but crashes up from 32 → 44 and
+    36 → 48. The simulations don't charge crash damage; play does.
+  - The same weave only when full braking could still stop you behind your own car: crashes as before, and no
+    measurable gain (2,491 and 2,654 m).
+  - Not kept: not proven. The owner's call whether the faster, crashier weave is worth it.
 - Dropped: reverse gear and a handbrake (we go fast and forward; there is no room left on the dash). Kept: the V8
   creeping off in 1st without gas.
 - Balancing waits until everything is built and the bugs are fixed. Then the prices come from simulations that follow
@@ -374,15 +385,25 @@ All dates are 2026.
   - The garage split into pages: Workshop, Autopilot and the Black market (the owner's picks of the proposed names),
     with the illegal automation (Reckless auto-drive) on the Black market. Grid and Rolling start became Bribe the
     starter and Jump the start. Time keeps its name: a fuel tank would have to burn more in a faster car.
+- **13–14 Oct, the overnight build** (Claude, while the owner slept, from the answers of 13 Oct; every open detail is
+  marked "Claude's call" above):
+  - Fixes: the iPhone overlaps (key over the rev counter, menu button over GARAGE); the aids leave a control only
+    while you touch it (nitro is not the gas pedal); the ECU tune in every gear.
+  - The head-up display see-through; Flash recharge; Auto flash plays chicken.
+  - Act 3, the Fleet: miles and the Exchange, paying racers off, their teamwork, the fleet's upgrades, the sonar.
+  - Act 4, Mad Max: the AR target, totals and parts, bull bars, armour, spiked hubs, guns on the wheel's marker, the
+    gang at work, police heat with the scanner and the police, and the tank.
+  - Autocruise's top speed was measured, not changed (see "Also decided").
 
 ## Open questions
 
 Waiting for the owner. Don't build these on a guess: ask.
 
-- None right now: the answers of 13 Oct settled them (phase 3, above).
+- **Autocruise's weave** (see "Also decided"): about 5–7% further a run, but about a third more crashes. Worth it?
 - **For the balancing pass, after the build:** the flash prices moved the simulated reveal about 2 runs later; the
-  prices of Game of chicken and Reckless auto-drive; the miles rate, car health, parts per car and heat rates; Speed
-  signs is too easy.
+  prices of Game of chicken and Reckless auto-drive; Speed signs is too easy. All of phase 3's numbers are first
+  guesses: the miles prices and dues (`act3.py`), car health and damage per bump, parts per car and the Mad Max
+  prices, the heat rates and the police, the tank's health and shells.
 
 ## Brainstorm waiting for the owner's picks
 

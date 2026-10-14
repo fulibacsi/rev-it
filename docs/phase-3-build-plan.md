@@ -1,5 +1,8 @@
 # Phase 3 build plan: the overnight push to feature complete
 
+**Done (14 Oct):** steps 1 to 16 are built; step 16 (autocruise top speed) was measured and not changed. What was
+built and the calls made are in [design-notes.md](design-notes.md).
+
 A working prompt for Claude, written 13 Oct before the context was compressed. Read it, then `CLAUDE.md` and
 `docs/design-notes.md` (the "Phase 3" section holds every decision), and start building.
 
