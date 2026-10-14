@@ -221,9 +221,9 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
                    top: 62vh; top: 62dvh; /* as wide as the room left of the cluster (its left edge at 36vw), at least
                    48px: the notch pushes the shifter in, and the key once covered the rev counter */
                    width: max(48px, min(10vw, 90px, calc(36vw - var(--edge-l) - var(--shifter-h) * 3.2 / 3.5 - 14px))); }
-.touch #pedals { right: var(--edge-r); bottom: var(--edge-b); gap: 2vw; }
+.touch #pedals { right: var(--edge-r); bottom: var(--edge-b); gap: 1.5vw; }
 .touch .pedal { width: 8.5vw; }
-.touch #brake { width: 10vw; }
+.touch #brake { width: 8.5vw; } /* no bigger than the others: with the notch the clutch's bar once covered the speedo */
 .touch .depth { height: calc(100% - 16px); }
 .touch #garage { top: 2vh; width: 94vw; max-height: 96vh; max-height: 96dvh; font-size: 12px; }
 .touch #garage header { padding-left: calc(var(--edge-l) + 30px - 3vw); } /* clear of the menu button (38px wide at
