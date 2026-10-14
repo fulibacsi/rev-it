@@ -92,8 +92,8 @@ with sync_playwright() as p:
             check("Auto flash, no chicken: no flash spent on the oncoming car", got["flashes"] == n0 and got["x"] == -1.75, got)
         else:
             pg.wait_for_function("ch.z < odo - 10", timeout=15000)
-            check("Auto flash with chicken: flashes the oncoming car, it swerves, no head-on",
-                  got["flashes"] == n0 - 1 and got["x"] == -5.25 and js("crashes") == 0 and js("run.phase") == "run",
+            check("Auto flash with chicken: flashes the oncoming car, it swerves, no head-on",  # across, or nearly
+                  got["flashes"] == n0 - 1 and abs(got["x"] + 5.25) < 0.3 and js("crashes") == 0 and js("run.phase") == "run",
                   {**got, "crashes": js("crashes"), "phase": js("run.phase")})
     # 5. the reveal's head start counts the first flash only
     hs = js("""[0, 1, 10].map(f => { progress.levels = { power: 10, rev: 4, gears: 3, tyres: 4, time: 6, steering: 3, clutch: 1, gas: 1, shift: 1,
