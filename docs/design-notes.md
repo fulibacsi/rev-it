@@ -245,6 +245,13 @@ you pass it or total it, then moves to the next.
   | Bull bar | 3 | 10 | 2.5 | bumps hurt them 50% more a level; you keep more speed (at 3, you carry on at the car's speed); the gang side-swipes rivals |
   | Armour plating | 3 | 15 | 2.5 | collisions do 25% less damage to your car a level |
   | Spiked hubs | 1 | 60 | | a side-swipe (into a car while moving over) costs you no speed and does 50 more damage; the gang's 30 more |
+  | Guns | 3 | 120 | 2 | needs Spiked hubs: 6 damage a shot a level, 4 shots a second, up to 200 m; the gang fires too |
+
+- **Guns,** last: the red marker at the top of the steering wheel becomes the trigger, with FIRE written on it (G on
+  the keyboard). Held, it fires 4 shots a second from twin guns on the bonnet at the car in the reticle, if it is
+  within 200 m and in sight; yellow tracers and a muzzle flash show each shot, and a miss goes off into the distance.
+  The gang fires too: a fleet car shoots a rival up to 80 m ahead of it (or beside it) once a second. Before guns the
+  marker is just part of the rim.
 
 - **The gang uses whatever it has.** With a bull bar a fleet car side-swipes a rival beside it, every 3 s at most (20
   damage a level): it lurches across, then drives back into its lane. What it totals pays you the parts, and the rival
@@ -252,8 +259,9 @@ you pass it or total it, then moves to the next.
   campaign of it possible.
 
 - Claude's calls: the AR look, the target rule, 0.4 per km/h, the health and parts numbers, the Mad Max page opening
-  with the first total (the job is the way in), and the illegal parts (armour and spiked hubs) and how the gang uses
-  its gear. All first guesses for the balancing pass.
+  with the first total (the job is the way in), the illegal parts (armour and spiked hubs), how the gang uses its
+  gear, and the guns' numbers (they aim themselves at the reticle: on a phone your thumbs are busy). All first
+  guesses for the balancing pass.
 
 ### Balance targets and results
 
@@ -283,12 +291,8 @@ order of work is in [phase-3-build-plan.md](phase-3-build-plan.md).
 frequent-driver tiers.
 - **Fleet cars** and their upgrades: built, see Act 3.
 
-**The gang** unlocks once a race has more of your fleet cars than other racers (51 of the 100): its first job, the AR
-layer, damage, totals, parts and the Mad Max page with bull bars are built (see Act 4).
-- **Upgrades:** guns, last. With guns fitted, the red marker at the top of the steering
-  wheel becomes the trigger, with FIRE written on it (by then you are mostly auto-cruising).
-- **The gang** (your fleet cars) uses whatever offensive upgrades it has (built for the bull bar and spikes). No CB
-  radio, no orders.
+**The gang** unlocks once a race has more of your fleet cars than other racers (51 of the 100): built, with its
+upgrades and the guns (see Act 4). The gang uses whatever offensive upgrades it has. No CB radio, no orders.
 - **Police heat,** on a police scanner on the dash: it rises slowly with totalled cars and shots fired, so you have to
   push for the threshold. It stays between races and can't be bribed down. Police never come from behind (there is no
   rear view): they overtake you, then brake; in the oncoming lanes they floor it to hit you head-on.

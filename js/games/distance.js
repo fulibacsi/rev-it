@@ -169,7 +169,7 @@ function updateRun(dt) {
   else if (run.phase === 'run' && (run.left -= dt) <= 0) { run.left = 0; finishRun(); }
   else if (run.phase === 'finish' && (run.count -= dt) <= 0) run.phase = 'garage';
   if (run.phase === 'run' && raceTick()) run.revealed = true;
-  if (run.phase === 'run') { rechargeFlash(dt); updateGang(); }
+  if (run.phase === 'run') { rechargeFlash(dt); updateGang(dt); }
   if (run.phase === 'run' && damageOn()) damageTick(dt);
   if (run.phase === 'run' && run.limp && odo >= LIMP) finishRun('limped'); // as far as a wreck gets
 }
@@ -356,7 +356,7 @@ const DISTANCE = {
   engine: () => progress.engine, // the garage's engines, not the menu's
   tune: applyUpgrades,
   start() { Object.assign(run, { phase: 'garage', best: progress.best }); shownPhase = null; },
-  stop() { run.phase = 'garage'; document.body.classList.remove('garage', 'low', 'has-flash', 'timing', 'has-fleet', 'ar-on'); clearDamageView(); }, // earns nothing
+  stop() { run.phase = 'garage'; document.body.classList.remove('garage', 'low', 'has-flash', 'timing', 'has-fleet', 'ar-on', 'has-guns'); clearDamageView(); }, // earns nothing
   update: updateRun,
   render() { renderRun(); renderDamage(); renderSonar(); renderGang(); },
   crash: i => onCollision(i),

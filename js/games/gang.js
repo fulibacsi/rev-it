@@ -4,7 +4,8 @@
 // two or three rams for a car, three or four for a racer); at 0 health it skids off onto the shoulder (road.js) and you
 // collect its parts. A totalled rival is out of the race (race.js position). The first total opens the Mad Max page,
 // paid in parts: it is to the Fleet what the Black market is to the Workshop. Its gear is yours and the gang's: with
-// a bull bar a fleet car side-swipes a rival beside it.
+// a bull bar a fleet car side-swipes a rival beside it; with guns (last) the wheel's red marker is your trigger and the
+// gang shoots at rivals too.
 
 Object.assign(UPGRADES, {
   // prices: first guesses, in parts (10 a car, 25 a racer)
@@ -16,7 +17,11 @@ Object.assign(UPGRADES, {
   spikes: { name: 'Spiked hubs', tab: 'madmax', max: 1, base: 60,
             info: () => 'a side-swipe (into a car while moving over) costs you no speed and does 50 more damage; ' +
               "the gang's swipes do 30 more" },
+  guns: { name: 'Guns', tab: 'madmax', max: 3, base: 120, growth: 2, needs: ['spikes'],
+          info: l => l ? `the wheel's red marker (or G) fires at the car in the reticle: ${GUN * l} damage a shot, ` +
+            `4 a second, up to ${RANGE} m; the gang fires at rivals once a second` : 'unarmed' },
 });
+const GUN = 6, RANGE = 200; // damage a shot a level; m your guns reach (the gang's: 80)
 const GANG = FIELD / 2 + 1; // fleet cars that make a gang
 const health = c => c.racer ? 150 : 100; // full health: racers are built tougher
 const PARTS = { car: 10, racer: 25 }; // parts from a totalled car
@@ -30,9 +35,24 @@ function nextTarget() {
   for (const c of traffic) if (c.dir > 0 && !c.fleet && !c.wreck && c.z > odo && c.z - odo < 300 && (!t || c.z < t.z)) t = c;
   return t;
 }
-function updateGang() { // every frame of a run
+function updateGang(dt) { // every frame of a run
   if (!arOn()) { target = null; return; }
   if (!target || target.wreck || target.dir < 0 || target.z < odo) target = nextTarget();
+  fireGuns(dt);
+}
+
+// guns: held, the trigger fires 4 shots a second from the bonnet at the car in the reticle, if it is in reach and in
+// sight. The tracers are drawn over the road (renderGang)
+let reload = 0;
+const tracers = []; // [from, to, when]: from a car's middle on the screen, or null for your bonnet
+function fireGuns(dt) {
+  reload = Math.max(0, reload - dt);
+  if (!lvl('guns') || !firing || reload) return;
+  reload = 0.25;
+  beep(70, 0.04);
+  const hit = target?.seen && target.z - odo < RANGE ? target : null;
+  tracers.push([null, hit, performance.now()]);
+  if (hit) hurtCar(hit, GUN * lvl('guns'));
 }
 
 // you hit car c (impact from car.js): it takes 0.4 of the speed you hit it at, more with a bull bar. A head-on is your
@@ -61,6 +81,11 @@ function total(c, gang) { // the parts are yours, whoever did it
 // it lurches across, then drives back into its lane
 function gangwork(c, dt) {
   c.rammed = Math.max(0, (c.rammed ?? 0) - dt);
+  c.gun = Math.max(0, (c.gun ?? 0) - dt);
+  if (lvl('guns') && !c.gun) { // a rival up to 80 m ahead of it, or beside it: a shot a second
+    const o = traffic.find(o => o.racer && !o.fleet && !o.wreck && o.z > c.z - CAR_LEN && o.z - c.z < 80);
+    if (o) { c.gun = 1; tracers.push([c, o, performance.now()]); hurtCar(o, GUN * lvl('guns'), true); }
+  }
   if (!lvl('bullbar') || c.rammed) return;
   const o = traffic.find(o => o.racer && !o.fleet && !o.wreck && Math.abs(o.z - c.z) < CAR_LEN && Math.abs(o.x - c.x) > 1 &&
     Math.abs(o.x - c.x) < 4.5);
@@ -70,8 +95,11 @@ function gangwork(c, dt) {
   hurtCar(o, 20 * lvl('bullbar') + (spikes ? 30 : 0), true);
 }
 
-// the AR layer: the reticle round the target where it is on the screen (road.js keeps c.seen), its health above it
+// the AR layer: the reticle round the target where it is on the screen (road.js keeps c.seen), its health above it;
+// the tracers, drawn over the road for 0.1 s each
 function renderGang() {
+  document.body.classList.toggle('has-guns', run.phase !== 'garage' && lvl('guns') > 0);
+  drawTracers();
   const t = arOn() && run.phase === 'run' ? target : null, s = t?.seen;
   document.body.classList.toggle('ar-on', !!s);
   if (!s) return;
@@ -80,4 +108,21 @@ function renderGang() {
                                  width: `${w}px`, height: `${h}px` });
   $('ar').style.setProperty('--hp', Math.max(0, t.hp ?? health(t)) / health(t));
   $('ar-label').textContent = !gangOpen() ? 'TOTAL IT' : t.racer ? `#${t.racer}` : '';
+}
+
+const middle = s => [s[0] + s[2] / 2, s[1] + s[3] / 2];
+function drawTracers() {
+  const now = performance.now(), w = canvas.width, h = canvas.height;
+  while (tracers.length && now - tracers[0][2] > 100) tracers.shift();
+  for (const [from, to, when] of tracers) {
+    const side = Math.round(when / 250) % 2 ? 1 : -1; // twin guns on the bonnet, in turn
+    const [x1, y1] = from ? from.seen && middle(from.seen) || [] : [w / 2 + side * w * 0.08, h * 0.64];
+    const [x2, y2] = to?.seen ? middle(to.seen) : [x1 + side * w * 0.02, h * 0.42]; // a miss: off into the distance
+    if (x1 === undefined) continue;
+    g2d.globalAlpha = 1 - (now - when) / 100;
+    g2d.strokeStyle = '#ffd36a'; g2d.lineWidth = Math.max(2, w / 500);
+    g2d.beginPath(); g2d.moveTo(x1, y1); g2d.lineTo(x2, y2); g2d.stroke();
+    if (!from) { g2d.fillStyle = '#fff3c0'; g2d.beginPath(); g2d.arc(x1, y1, w / 120, 0, 2 * Math.PI); g2d.fill(); } // muzzle
+  }
+  g2d.globalAlpha = 1;
 }

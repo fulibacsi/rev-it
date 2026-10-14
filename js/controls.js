@@ -206,6 +206,11 @@ function flashLights() {
 }
 $('stalk-hit').onpointerdown = e => { e.preventDefault(); flashLights(); };
 
+// ---- guns (Distance's Mad Max): with guns fitted the red marker at the top of the wheel is the trigger, FIRE on it;
+// hold it, or G, to fire. What gets hit is the game's business (gang.js)
+let firing = false;
+drag($('trigger'), () => { firing = true; }, () => { firing = false; });
+
 // ---- nitro (Distance): push the nitro pedal on top of the gas pedal (mouse or finger), or hold N. It floors the gas,
 // and letting it go puts the gas back where it was (where the mouse left it, or a finger or key still holds it)
 let nitroHeld = false, gasBeforeNitro = 0;
@@ -230,11 +235,13 @@ addEventListener('keydown', e => {
   else if (e.key === 'Enter' && !e.repeat) state === 'off' ? startEngine() : stopEngine();
   else if (e.key === 'n' || e.key === 'N') pushNitro(true);
   else if ((e.key === 'f' || e.key === 'F') && !e.repeat) flashLights();
+  else if (e.key === 'g' || e.key === 'G') firing = true;
   else if (n >= 1 && n <= ENGINES.length) pickEngine(n - 1);
 });
 addEventListener('keyup', e => {
   if (HELD_KEYS[e.key]) holdPedal(HELD_KEYS[e.key], false);
   if (e.key === 'n' || e.key === 'N') pushNitro(false);
+  if (e.key === 'g' || e.key === 'G') firing = false;
 });
 addEventListener('blur', () => {
   for (const id of Object.keys(PEDALS)) if (PEDALS[id].hold !== null) holdPedal(id, false);
