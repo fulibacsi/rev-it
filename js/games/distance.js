@@ -255,7 +255,8 @@ function renderGarage(bought) {
       (run.beatTank ? `<br><b>GAME OVER. You beat the tank: the road is yours, and the police have given up (heat 0%).</b> ` +
         `+${TANK.parts} parts. Play on: the race, the fleet and the gang carry on, and the next tank is tougher.`
         : run.boss ? '<br><b>The tank held the road.</b> The heat is down to half: push for it again.'
-        : bossRace() ? '<br><b>Police heat 100%: the army has sent a tank. It is waiting up the road: outgun it.</b>' : ''),
+        : bossRace() ? '<br><b>Police heat 100%: the army has sent a tank. It is waiting up the road: outgun it.</b>'
+        : arOn() && progress.wanted >= 1 ? '<br><b>Police heat 100%.</b> The army has a tank ready for when you are armed.' : ''),
   $('tabs').innerHTML = PAGES.filter(([id]) => pageOpen(id))
     .map(([id, name]) => `<button data-tab="${id}"${id === garageTab ? ' class="on"' : ''}>${name}</button>`).join('');
   $('engine-row').hidden = garageTab !== 'workshop';

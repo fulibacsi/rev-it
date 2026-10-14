@@ -18,7 +18,7 @@ with sync_playwright() as p:
     # 1. what raises the heat
     got = js("""(() => { const d = []; for (const [c, gang] of [[{}, false], [{ racer: 5 }, false], [{ police: true }, false], [{ racer: 6 }, true]]) {
         const w = progress.wanted; total(c, gang); d.push(+(progress.wanted - w).toFixed(4)); } progress.wanted = 0; return d; })()""")
-    check("a total: traffic 0.02, a racer 0.03, police 0.08, the gang's 0.01", got == [0.02, 0.03, 0.08, 0.01], got)
+    check("a total: traffic 0.01, a racer 0.015, police 0.04, the gang's 0.005", got == [0.01, 0.015, 0.04, 0.005], got)
     # 2. on the road: the scanner shows it; a shot adds a little
     js("progress.wanted = 0.37; progress.levels.guns = 1; refreshCar()"); pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     js("traffic.forEach(c => { if (!c.racer) Object.assign(c, { dir: -1, x: LANES.oncoming[1], z: odo + 700 + 60 * (c.n = (window.k = (window.k || 0) + 1)), police: false, passing: false }); else c.z = odo - (c.fleet ? 3000 : 9000); }); copClock = 99")
@@ -26,8 +26,8 @@ with sync_playwright() as p:
     got = js("({ on: getComputedStyle($('scanner')).display, lcd: $('scanner-lcd').textContent, lit: [...$('scanner-leds').children].filter(r => r.getAttribute('fill') !== '#2a2a30').length })")
     check("the scanner shows the heat: HEAT 37%, 4 lights", got == {"on": "block", "lcd": "HEAT 37%", "lit": 4}, got)
     w0 = js("progress.wanted"); pg.keyboard.down("g"); pg.wait_for_timeout(600); pg.keyboard.up("g")
-    shots = round((js("progress.wanted") - w0) / 0.0005)
-    check("each shot adds 0.0005", 2 <= shots <= 4, shots)
+    shots = round((js("progress.wanted") - w0) / 0.00025)
+    check("each shot adds 0.00025", 2 <= shots <= 4, shots)
     # 3. from behind: past you in your other lane, in ahead of you, then a hard stop
     pg.wait_for_function("speed > 20", timeout=20000)
     js("lane = fromLane = 0; carX = MY_LANES[0]; progress.wanted = 0.9; copClock = 0")

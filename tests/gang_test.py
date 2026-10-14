@@ -66,9 +66,9 @@ with sync_playwright() as p:
     rep = js("$('report').innerText")
     check("the garage: the first job done, Mad Max open", "Mad Max page is open" in rep and "Mad Max" in tabs() and "parts to spend" in js("$('bank').textContent"), [rep[-120:], tabs()])
     pg.click('[data-tab="madmax"]'); pg.wait_for_timeout(100)
-    check("the Bull bar, paid in parts", js("document.querySelector('[data-buy=\"bullbar\"]').textContent") == "10 parts", js("document.querySelector('[data-buy=\"bullbar\"]')?.textContent"))
+    check("the Bull bar, paid in parts", js("document.querySelector('[data-buy=\"bullbar\"]').textContent") == "20 parts", js("document.querySelector('[data-buy=\"bullbar\"]')?.textContent"))
     js("progress.parts = 100"); pg.click('[data-buy="bullbar"]'); pg.wait_for_timeout(100)
-    check("bought: bull bar 1", js("[lvl('bullbar'), bullBar, progress.parts]") == [1, 1, 90], js("[lvl('bullbar'), bullBar, progress.parts]"))
+    check("bought: bull bar 1", js("[lvl('bullbar'), bullBar, progress.parts]") == [1, 1, 80], js("[lvl('bullbar'), bullBar, progress.parts]"))
     pg.screenshot(path=f"{OUT}/gang_garage.png")
     # 8. the bull bar at 3: you carry on at the car's speed, and it takes 2.5 times the damage
     js("progress.levels.bullbar = 3; refreshCar()")

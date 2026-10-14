@@ -2,11 +2,13 @@
 // about 80 m ahead of you, so you can't get away from it, and fires a shell at you every 2.5 s while you are within
 // 250 m behind it. You and the gang have to outgun it: your guns, and the fleet's, which race up to join the fight.
 // Rams barely scratch it. Destroy it and that is the ending: GAME OVER, the run stops there, the road is yours and the
-// heat goes back to 0. You can still play on (the next tank is tougher). Lose (wrecked, head-on, or the bell with the tank still going) and it's a DNF, and
-// the heat drops to half, so you have to push again.
+// heat goes back to 0. You can still play on (the next tank is tougher). Lose (wrecked, head-on, or the bell with the
+// tank still going) and it's a DNF, and the heat drops to half, so you have to push again. It comes only once you have
+// guns (unarmed, rams alone can't beat it).
 
 // its health, the m it keeps ahead of you, s between shells, the m they reach, % damage a hit, parts for beating it
-const TANK = { hp: 2000, gap: 80, reload: 2.5, reach: 250, hit: 8, parts: 300 };
+// (1,000 health: the first level of guns, firing all race, just wins; act4.py)
+const TANK = { hp: 1000, gap: 80, reload: 2.5, reach: 250, hit: 8, parts: 300 };
 const tankHealth = () => TANK.hp * (1 + 0.5 * progress.tanks); // each one beaten, the next is half as tough again
 const bossRace = () => arOn() && progress.wanted >= 1 && lvl('guns') > 0 && !wrecked(); // armed, not in limp mode
 

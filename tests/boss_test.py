@@ -25,6 +25,9 @@ with sync_playwright() as p:
     # 1. 99%: no tank; 100%: the garage warns of it
     garage(0.99); check("99% heat: no tank", not js("bossRace()") and "tank" not in js("$('report').innerText"))
     garage(1); check("100% heat: the garage warns of the tank", js("bossRace()") and "the army has sent a tank" in js("$('report').innerText"), js("$('report').innerText")[-100:])
+    js("progress.levels.guns = 0; renderGarage()")
+    check("100% heat but no guns: no tank yet, the garage says it waits", not js("bossRace()") and "a tank ready for when you are armed" in js("$('report').innerText"), js("$('report').innerText")[-100:])
+    js("progress.levels.guns = 3; refreshCar(); renderGarage()")
     # 2. the race: the tank appears up the road, comes back to about 80 m ahead, in your lane, the AR on it
     race(); pg.wait_for_function("run.tank", timeout=5000)
     pg.wait_for_function("speed > 25", timeout=20000); pg.wait_for_timeout(5000)
@@ -36,7 +39,7 @@ with sync_playwright() as p:
     check("it shells you: 8% damage a hit", round(d1 - d0) in (8, 16), round(d1 - d0, 1))
     # 4. a ram barely scratches it; guns wear it down
     got = js("(() => { const t = run.tank, h0 = t.hp ?? health(t); ram({ car: t, kmh: 100, headOn: false, side: false }); return [Math.round(h0), Math.round(h0 - t.hp)]; })()")
-    check("a 100 km/h ram: a fifth of the damage (12 of its 2,000; the gang may have shot it already)", got[1] == 12, got)
+    check("a 100 km/h ram: a fifth of the damage (12 of its 1,000; the gang may have shot it already)", got[1] == 12, got)
     js("progress.damage = 0"); h0 = js("run.tank.hp"); pg.keyboard.down("g"); pg.wait_for_timeout(1000); pg.keyboard.up("g")
     check("guns 3: about 18 a shot, 4 a second", 50 <= h0 - js("run.tank.hp") <= 95, h0 - js("run.tank.hp"))
     # 5. destroyed: the ending
@@ -51,7 +54,7 @@ with sync_playwright() as p:
     pg.wait_for_function("run.phase === 'garage'", timeout=5000)
     rep = js("$('report').innerText")
     check("the ending, then play on (a result, not a DNF)", "GAME OVER" in rep and "Play on" in rep and "DNF" not in rep, rep[-160:])
-    check("the next tank is half as tough again", js("tankHealth()") == 3000, js("tankHealth()"))
+    check("the next tank is half as tough again", js("tankHealth()") == 1500, js("tankHealth()"))
     # 6. lost at the bell: a DNF, the heat down to half
     garage(1); race(); pg.wait_for_function("run.tank", timeout=5000); js("run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
     got = js("({ dnf: run.race && run.race.dnf, wanted: progress.wanted, report: $('report').innerText })")
