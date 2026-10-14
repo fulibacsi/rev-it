@@ -1,8 +1,9 @@
 """The garage's pages: Workshop (the car) and Autopilot (the aids) in metres from the start; the Black market (the
-illegal and forbidden) in race points, only once the race is revealed, and not a word about it before."""
+illegal and forbidden) in race points, only once the race is revealed, and not a word about it before. Flash recharge
+joins the Workshop with the reveal."""
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
-WORKSHOP = ["Power", "Rev limit", "Gearbox", "Tyres", "Time", "Steering", "Headlight flash", "Flash recharge"]
+WORKSHOP = ["Power", "Rev limit", "Gearbox", "Tyres", "Time", "Steering", "Headlight flash"]
 AUTOPILOT = ["Auto flash", "Auto clutch", "Auto gas", "Auto shift", "Lane assist", "Autocruise"]
 BLACK = ["Bribe the starter", "Reckless driving", "Game of chicken", "Reckless auto-drive", "Cooling", "ECU: rev limit",
          "ECU: power", "Nitro", "7th gear", "Daredevil", "Jump the start"]
@@ -34,6 +35,8 @@ with sync_playwright() as p:
     # after the reveal: the third page, in race points
     js("Object.assign(progress, { racing: true, finish: 50, points: 3000, levels: { flash: 1, steer: 1, gas: 1, shift: 1, clutch: 1, cruise: 1 } }); renderGarage()")
     check("after the reveal: three pages", tabs() == ["Workshop", "Autopilot", "Black market"], tabs())
+    page("workshop")
+    check("Workshop: Flash recharge on sale now", cards() == WORKSHOP + ["Flash recharge"], cards())
     page("black")
     check("Black market: the illegal and forbidden", cards() == BLACK, cards())
     check("Black market: paid in race points", set(prices()) == {"pts"}, prices())

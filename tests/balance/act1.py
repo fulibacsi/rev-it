@@ -13,7 +13,7 @@ with sync_playwright() as p:
     pg.goto(URL); js = pg.evaluate
     js("localStorage.clear()"); pg.reload(); pg.add_script_tag(path=str(HERE / "sim.js")); pg.click('[data-play="distance"]'); pg.click("#drive"); pg.wait_for_timeout(1500)
     if len(sys.argv) > 2: js(f"HEAD_START.splice(0, HEAD_START.length, ...{sys.argv[2]})")
-    U = js("Object.fromEntries(Object.entries(UPGRADES).filter(([, u]) => !u.tab).map(([k, u]) => [k, { max: u.max, base: u.base, growth: u.growth ?? 1, needs: u.needs ?? [] }]))")
+    U = js("Object.fromEntries(Object.entries(UPGRADES).filter(([, u]) => !u.tab && !u.afterReveal).map(([k, u]) => [k, { max: u.max, base: u.base, growth: u.growth ?? 1, needs: u.needs ?? [] }]))")
     cost = lambda k, l: round(U[k]["base"] * U[k]["growth"] ** l / 10) * 10
     lv, bank, revealed, clock = {}, 0, None, 0
     sim = lambda lv: js(f"simRun({json.dumps(lv)}, {lv.get('engine', 0)}, 1, {{}}, true)")

@@ -1,6 +1,6 @@
-"""Flash recharge: for sale once Headlight flash is maxed; a used flash comes back after 10 s at level 1 and 2 s at
-level 5, never past the run's full count; the refill shows as a line under the high-beam telltale; it doesn't change
-the reveal's head start."""
+"""Flash recharge: on sale once the race is revealed (before, it held up the first act) and Headlight flash is maxed;
+a used flash comes back after 10 s at level 1 and 2 s at level 5, never past the run's full count; the refill shows as
+a line under the high-beam telltale; it doesn't change the reveal's head start."""
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
 CAR = "power: 10, rev: 4, gears: 3, tyres: 4, time: 6, clutch: 1, gas: 1, shift: 1, engine: 2, flash: 10"
@@ -13,7 +13,9 @@ with sync_playwright() as p:
     pg = b.new_page(viewport={"width": 1440, "height": 900}); pg.on("pageerror", lambda e: errors.append(str(e)))
     pg.goto(URL); js = pg.evaluate
     # 1. the shop: only after 10 flashes, 10 s down to 2 s, the head start untouched
-    js("localStorage.clear(); Object.assign(progress, { bank: 9e6, levels: { flash: 9 } })")
+    js("localStorage.clear(); Object.assign(progress, { bank: 9e6, levels: { flash: 10 } })")
+    check("before the reveal: not on sale", js("whyNot('flashRecharge')") == "after the reveal", js("whyNot('flashRecharge')"))
+    js("progress.racing = true; progress.levels.flash = 9")
     check("locked with 9 flashes", js("whyNot('flashRecharge')") == "needs 10 flashes", js("whyNot('flashRecharge')"))
     js("progress.levels.flash = 10")
     check("for sale with 10 flashes", js("whyNot('flashRecharge')") == "", js("whyNot('flashRecharge')"))
