@@ -1,8 +1,8 @@
 // Mad Max, Distance's fourth act. Once your fleet outnumbers the rivals (51 of the 100 race for you) it is a gang, and
 // the windscreen gains an AR layer: a reticle and a health bar on the car ahead, kept on it until you pass it or total
-// it. Its first job for you: total a car. A bump hurts the car you hit by 0.4 of the speed you hit it at (in km/h:
-// two or three rams for a car, three or four for a racer); at 0 health it skids off onto the shoulder (road.js) and you
-// collect its parts. A totalled rival is out of the race (race.js position). The first total opens the Mad Max page,
+// it. Its first job for you: total a car. A ram is a hit (three for a car, five for a racer, six for the police; a bull
+// bar makes them count up to three times), and one closing at over 200 km/h totals it outright; at 0 health it skids
+// off onto the shoulder (road.js) and you collect its parts. A totalled rival is out of the race (race.js position). The first total opens the Mad Max page,
 // paid in parts: it is to the Fleet what the Black market is to the Workshop. Its gear is yours and the gang's: with
 // a bull bar a fleet car side-swipes a rival beside it; with guns (last) the wheel's red marker is your trigger and the
 // gang shoots at rivals too.
@@ -11,12 +11,12 @@ Object.assign(UPGRADES, {
   // prices in parts (10 a car, 25 a racer), from the simulations (tests/balance/act4.py, 14 Oct): about 25 races from
   // the gang to the tank, something to buy every few races, the guns as the last big save
   bullbar: { name: 'Bull bar', tab: 'madmax', max: 3, base: 20, growth: 2.5,
-             info: l => l ? `bumps hurt them ${50 * l}% more and cost you less speed; the gang side-swipes rivals ` +
-               `beside it (${20 * l} damage)` : 'the factory bumper' },
+             info: l => l ? `a hit hurts them ${Math.round(200 * l / 3)}% more and costs you less speed; the gang ` +
+               `side-swipes rivals beside it (${20 * l} damage)` : 'the factory bumper' },
   armour: { name: 'Armour plating', tab: 'madmax', max: 3, base: 30, growth: 2.5,
             info: l => l ? `collisions do ${25 * l}% less damage to your car` : 'factory panels' },
   spikes: { name: 'Spiked hubs', tab: 'madmax', max: 1, base: 150,
-            info: () => 'a side-swipe (into a car while moving over) costs you no speed and does 50 more damage; ' +
+            info: () => 'a side-swipe (into a car while moving over) costs you no speed and counts one more hit; ' +
               "the gang's swipes do 30 more" },
   guns: { name: 'Guns', tab: 'madmax', max: 3, base: 400, growth: 2, needs: ['spikes'],
           info: l => l ? `the wheel's red marker (or G) fires at the car in the reticle: ${GUN * l} damage a shot, ` +
@@ -27,7 +27,7 @@ Object.assign(UPGRADES, {
 });
 const GUN = 6, RANGE = 200; // damage a shot a level; m your guns reach (the gang's: 80)
 const GANG = FIELD / 2 + 1; // fleet cars that make a gang
-const health = c => c.tank ? tankHealth() : c.racer ? 150 : 100; // full health: racers are built tougher (the tank: boss.js)
+const health = c => c.tank ? tankHealth() : c.police ? 200 : c.racer ? 150 : 100; // full health (the tank: boss.js)
 const PARTS = { car: 10, racer: 25 }; // parts from a totalled car
 const arOn = () => progress.racing && (fleetSize() >= GANG || progress.totals > 0);
 const gangOpen = () => progress.totals > 0; // the first job done: the Mad Max page
@@ -66,18 +66,23 @@ function fireGuns(dt) {
   if (hit) hurtCar(hit, GUN * lvl('guns'));
 }
 
-// you hit car c (impact from car.js): it takes 0.4 of the speed you hit it at, more with a bull bar. A head-on is your
-// DNF, not a total
+// you hit car c (impact from car.js): a hit, HIT off its health. The owner's numbers (14 Oct): traffic goes down in 3,
+// racers in 5, police in 6; with a full bull bar (3 times a hit) in 1, 2 and 2. Spiked hubs add a hit to a side-swipe.
+// From behind, a bump closing at under NUDGE km/h does nothing, and one at over OHKO km/h totals it outright ("OHKO!");
+// a side-swipe always counts. The tank takes a fifth of a hit and is never knocked out. A head-on is your DNF, not a
+// total
+const HIT = 34, NUDGE = 30, OHKO = 200;
 function ram(i) {
   const c = i.car;
-  if (!c || c.wreck || c.fleet || i.headOn) return;
-  hurtCar(c, (0.4 * i.kmh * (1 + 0.5 * lvl('bullbar')) + (i.side && spikes ? 50 : 0)) * (c.tank ? 0.2 : 1)); // armour
+  if (!c || c.wreck || c.fleet || i.headOn || !i.side && i.kmh < NUDGE) return;
+  if (i.kmh > OHKO && !c.tank) return total(c, false, true);
+  hurtCar(c, HIT * (1 + 2 / 3 * lvl('bullbar') + (i.side && spikes ? 1 : 0)) * (c.tank ? 0.2 : 1));
 }
 function hurtCar(c, hp, gang) {
   c.hp = (c.hp ?? health(c)) - hp;
   if (c.hp <= 0) total(c, gang);
 }
-function total(c, gang) { // the parts are yours, whoever did it; the heat too (police.js)
+function total(c, gang, ohko) { // the parts are yours, whoever did it; the heat too (police.js)
   if (c.tank) return tankDown(c); // boss.js
   const parts = c.racer ? PARTS.racer : PARTS.car;
   raiseHeat(gang ? WANTED.gang : c.police ? WANTED.police : c.racer ? WANTED.racer : WANTED.car);
@@ -87,7 +92,7 @@ function total(c, gang) { // the parts are yours, whoever did it; the heat too (
   run.parts += parts;
   run.totals++;
   if (progress.totals === 1) run.firstTotal = true;
-  flash(`${gang ? `THE GANG TOTALLED #${c.racer}` : 'TOTALLED'} +${parts} PARTS`, '#ff6a4a', true);
+  flash(`${gang ? `THE GANG TOTALLED #${c.racer}` : ohko ? 'OHKO!' : 'TOTALLED'} +${parts} PARTS`, '#ff6a4a', true);
 }
 
 // the gang at work (fleet.js teamwork): with a bull bar a fleet car side-swipes a rival beside it, every 3 s at most;

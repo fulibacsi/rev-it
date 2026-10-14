@@ -39,7 +39,9 @@ with sync_playwright() as p:
     check("it shells you: 8% damage a hit", round(d1 - d0) in (8, 16), round(d1 - d0, 1))
     # 4. a ram barely scratches it; guns wear it down
     got = js("(() => { const t = run.tank, h0 = t.hp ?? health(t); ram({ car: t, kmh: 100, headOn: false, side: false }); return [Math.round(h0), Math.round(h0 - t.hp)]; })()")
-    check("a 100 km/h ram: a fifth of the damage (12 of its 1,000; the gang may have shot it already)", got[1] == 12, got)
+    check("a 100 km/h ram: a fifth of a hit (11 of its 1,000 with bull bar 1; the gang may have shot it already)", got[1] == 11, got)
+    got = js("(() => { const t = run.tank, h0 = t.hp; ram({ car: t, kmh: 300, headOn: false, side: false }); return [!!t.wreck, Math.round(h0 - t.hp)]; })()")
+    check("no OHKO for the tank: a 300 km/h ram is still a fifth of a hit", got == [False, 11], got)
     js("progress.damage = 0"); h0 = js("run.tank.hp"); pg.keyboard.down("g"); pg.wait_for_timeout(1000); pg.keyboard.up("g")
     check("guns 3: about 18 a shot, 4 a second", 50 <= h0 - js("run.tank.hp") <= 95, h0 - js("run.tank.hp"))
     # 5. destroyed: the ending
