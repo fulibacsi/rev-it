@@ -66,7 +66,7 @@ const SAVE_KEY = 'car-rev-incremental';
 // menu's STATS)
 const FRESH = () => ({ bank: 0, best: 0, runs: 0, levels: {}, off: {}, engine: 0, racing: false, points: 0, finish: 101,
                        damage: 0, broken: [], nitro: 0, miles: 0, parts: 0, totals: 0, wanted: 0, tanks: 0, tape: 0,
-                       time: 0, driven: 0, races: 0 });
+                       time: 0, driven: 0, races: 0, seen: [] }); // seen: upgrades seen unlocked (the tabs' !)
 // debug mode (main.js) plays a save of its own, with wallets that never run out, so testing never touches the game
 const FUNDS = 1e9;
 let debugSave = false;
@@ -123,6 +123,10 @@ function whyNot(id) { // reason an upgrade can't be bought now, or '' if it can
   if (typeof gate === 'string') return gate;
   return progress[wallet(u)] < cost(id) ? 'short' : '';
 }
+// a card is locked while none of it is bought and something else comes first: it shows only its name and what that is.
+// A tab gets a yellow ! while it has an upgrade unlocked that you haven't looked at yet (the owner, 14 Oct)
+const isLocked = id => !lvl(id) && !['', 'short', 'max'].includes(whyNot(id));
+const unseen = id => !isLocked(id) && !progress.seen.includes(id);
 function buy(id) {
   if (whyNot(id)) return false;
   progress[wallet(UPGRADES[id])] -= cost(id);
@@ -265,9 +269,12 @@ function renderGarage(bought) {
         `+${TANK.parts} parts. Play on: the race, the fleet and the gang carry on, and the next tank is tougher.`
         : run.boss ? '<br><b>The tank held the road.</b> The heat is down to half: push for it again.'
         : bossRace() ? '<br><b>Police heat 100%: the army has sent a tank. It is waiting up the road: outgun it.</b>'
-        : arOn() && progress.wanted >= 1 ? '<br><b>Police heat 100%.</b> The army has a tank ready for when you are armed.' : ''),
-  $('tabs').innerHTML = PAGES.filter(([id]) => pageOpen(id))
-    .map(([id, name]) => `<button data-tab="${id}"${id === garageTab ? ' class="on"' : ''}>${name}</button>`).join('');
+        : arOn() && progress.wanted >= 1 ? '<br><b>Police heat 100%.</b> The army has a tank ready for when you are armed.' : '');
+  const onPage = page => Object.keys(UPGRADES).filter(id => id !== 'engine' && pageOf(UPGRADES[id]) === page && sold(UPGRADES[id]));
+  const fresh = onPage(garageTab).filter(unseen); // on the page you're looking at: seen now
+  if (fresh.length) { progress.seen.push(...fresh); save(); }
+  $('tabs').innerHTML = PAGES.filter(([id]) => pageOpen(id)).map(([id, name]) => `<button data-tab="${id}" class="` +
+    `${id === garageTab ? 'on' : ''}${onPage(id).some(unseen) ? ' new' : ''}">${name}</button>`).join('');
   $('engine-row').hidden = garageTab !== 'workshop';
   $('engine-row').innerHTML = ENGINES.map((e, i) => i <= lvl('engine')
     ? `<button data-engine="${i}"${i === progress.engine ? ' class="on"' : ''}>${e.name}</button>`
@@ -282,6 +289,7 @@ function renderGarage(bought) {
     `<button data-repair${progress.bank >= REPAIR ? '' : ' disabled'}>${progress.bank >= repairCost() ? 'Repair all' : 'Repair what I can'}` +
     ` · ${fmt(Math.min(repairCost(), Math.floor(progress.bank / REPAIR) * REPAIR))} m</button></div>` : '';
   $('cards').innerHTML = repairCard + (garageTab === 'fleet' ? exchangeCard() : '') + Object.entries(UPGRADES).filter(onTab).map(([id, u]) => {
+    if (isLocked(id)) return `<div class="card locked"><b>${u.name}</b><small>${whyNot(id)}</small></div>`;
     const l = lvl(id), why = whyNot(id), max = maxOf(u), steps = typeof u.max === 'function' ? 0 : max;
     const pips = steps > 1 ? `<i>${'■'.repeat(l)}${'□'.repeat(steps - l)}</i>` : '';
     const info = max > 1 || steps === 0 ? u.info(l) + (why !== 'max' && !why.startsWith('finish') ? ` → ${u.info(l + 1)}` : '') : u.info();

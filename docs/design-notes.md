@@ -118,6 +118,10 @@ runs. A hidden race is the second act.
 - **The garage's pages:** **Workshop** (the car itself) and **Autopilot** (the robot driver), paid in metres; the
   **Black market** (the illegal and forbidden, paid in race points) opens with the reveal. The price is
   `base × growth^level`, rounded to tens of metres.
+  - A locked upgrade (none of it bought, something else needed first) shows only its name and what it needs, in a
+    dimmed, dashed card: what it does stays a surprise. A tab with an upgrade newly unlocked that you haven't looked at
+    yet has a yellow ! until you open it (the owner's list, 14 Oct; what you've seen is kept in the save). Nothing on
+    a page that isn't open yet counts, so neither gives the race away.
 
   | Upgrade | Page | Levels | Base | Growth | Notes |
   |---|---|---|---|---|---|
@@ -420,7 +424,7 @@ upgrades and the guns (see Act 4). The gang uses whatever offensive upgrades it 
     36 → 48. The simulations don't charge crash damage; play does.
   - The same weave only when full braking could still stop you behind your own car: crashes as before, and no
     measurable gain (2,491 and 2,654 m).
-  - Not kept: not proven. The owner's call whether the faster, crashier weave is worth it.
+  - Not kept: not proven, and the owner dropped it (14 Oct).
 - Dropped: reverse gear and a handbrake (we go fast and forward; there is no room left on the dash). Kept: the V8
   creeping off in 1st without gas.
 - Balancing waits until everything is built and the bugs are fixed. Then the prices come from simulations that follow
@@ -486,17 +490,13 @@ All dates are 2026.
 
 Waiting for the owner. Don't build these on a guess: ask.
 
-- **Autocruise's weave** (see "Also decided"): about 5–7% further a run, but about a third more crashes. Worth it?
-- **Still open after the balancing pass (14 Oct):** the prices of Game of chicken and Reckless auto-drive, and Speed
-  signs being too easy, weren't looked at; nor were the police numbers, car health and damage per bump. The flash
-  prices can't be judged by `act1.py`: its bot never flashes, so to it flashes add nothing.
+- None right now.
 
-## To build later
+## Known issues (won't fix)
 
-The owner's list (14 Oct), not started:
+Closed by the owner, so don't reopen them without asking.
 
-- When a new upgrade is unlocked, a yellow exclamation mark on its garage tab.
-- Locked upgrades hidden: at most the card's outline, or the name with what unlocks it instead of what it does.
+- **Speed signs is too easy** (14 Oct: one game mode balanced at a time, and that is Distance; it stays as it is).
 
 ## Brainstorm waiting for the owner's picks
 

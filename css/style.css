@@ -193,6 +193,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 #tabs { display: flex; gap: 6px; margin-bottom: 10px; }
 #tabs:empty { display: none; }
 #tabs button { flex: 1; padding: 5px 8px; font-weight: 600; }
+#tabs button.new::after { content: '!'; margin-left: 6px; color: #ffd23f; font-weight: 800; } /* something new unlocked */
 #engine-row button { flex: 1; }
 #cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
 .card { display: flex; flex-direction: column; gap: 3px; padding: 7px 9px; border: 1px solid #262a36;
@@ -202,6 +203,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 .card small { min-height: 2.6em; color: #9ab; }
 .card.bought { animation: bought 0.6s ease-out; }
 .card.repair { border-color: #a33; }
+.card.locked { border-style: dashed; opacity: 0.5; } /* only its name and what it needs: what it does is a surprise */
 .card.exchange { grid-column: span 2; border-color: #3a5a8a; }
 .card.exchange input { width: 100%; margin: 2px 0; accent-color: var(--accent); touch-action: pan-x; }
 @keyframes bought { from { background: #3a3410; } }
