@@ -57,7 +57,8 @@ machine or session. Keep it current: update a section when a decision changes, a
     until 1.2 s out as the police do, and won't swerve for a game of chicken; back on your side it leaves you be. A
     head-on with one isn't the end of the run (the owner, 18 Oct): a hard crash, most of your speed gone and a
     head-on's damage (50%, less the armour), and the mad car totalled for its double parts ("HEAD-ON!"). With a sane
-    driver a head-on still ends it. `oncoming_test.py` checks it;
+    driver a head-on still ends it. `oncoming_test.py` checks it; `act4.py` to the tank: 13, 17, 12, 15 races (14.25 on
+    average, as before it: 15, 15, 13, 14), Reckless auto-drive taking the oncoming lanes;
   - the indicator blinks over the outer half of each car's own tail light.
   The tank, palms and signs stay as they were.
 - **Crashes:** hitting a slower car in your lane drops you to the lower of 35% of your speed and 40% of its speed.
