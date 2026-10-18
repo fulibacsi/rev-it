@@ -260,7 +260,10 @@ driving is act 1's game, and the robot takes over as the fantasy moves on.
     starts braking for the car: closing at 150-190 km/h in act 4, autocruise braked from about 5 s out, and the gap it
     kept never came within 4 s (the owner, 18 Oct: it "stopped using the flash and slowed down instead"). An act 4
     run on Reckless auto-drive with Hunter and Fuel madness braked 3.6 s a race instead of 7.3 (6 races, same seeds),
-    with as many rear-ends as before (3). With Game of chicken it plays chicken too: in
+    with as many rear-ends as before (3). The simulations, against the code before: `act2.py` P1 after 14, 20, 15,
+    18, 13, 20, 16, 16 races (16.5 on average; before 16.0, two seeds slower by 3 and 1: the flashes go sooner, so
+    fewer are left for the last pass on #1), `act3.py` the same, `act4.py` the tank in 14, 15, 12, 13 (before 13, 17,
+    12, 15). With Game of chicken it plays chicken too: in
     an oncoming lane it flashes the car coming at you once a flash would make it swerve (under 4.5 s away). Reckless
     auto-drive plays chicken with or without it, and Auto flash works alongside it when it is on. (Claude's call:
     "uses everything, even Auto flash" read as: everything you own and have switched on; the switch is still yours.)
@@ -462,7 +465,12 @@ on the horizon, and the guns would fire at nothing else).
   auto-drive keeps to your side). From as far as the reticle takes it (300 m): it hunted within 150 m at first, so
   autocruise steered round the car before that and Hunter swung back into its lane (the owner, 18 Oct: it "changes
   lanes to avoid traffic"). Nor do the aids steer round or brake for a wreck, which can't be hit and skids off: they
-  swerved round each car Hunter had just totalled. Not the tank (the guns are for that), not an oncoming car, and not past 60% damage, so it doesn't wreck you;
+  swerved round each car Hunter had just totalled; and the reticle moves on the moment its car is totalled (for a
+  frame Hunter had nothing to hunt, and autocruise steered away from the car it would hunt next). An act 4 run on
+  Reckless auto-drive (6 races, same seeds): lane changes other than Hunter's 0-3 a race (keep-right with nothing in
+  reach, backing off past 60% damage), from 3-7; about as many cars totalled (60, 64 before), about a tenth less road
+  a race (it stays behind its prey rather than passing in the oncoming lane: Hunter is a switch). `act4.py`: the tank
+  in races 14, 16, 13, 14 (14, 15, 12, 13 before). Not the tank (the guns are for that), not an oncoming car, and not past 60% damage, so it doesn't wreck you;
   your hand on the wheel overrides it. It is what `act4.py`'s bot did by hand, so the simulation now leaves the hunting
   to the aid once it has it. `hunter_test.py` checks all of it.
 - **The kit shows on your car** (the owner, 18 Oct), drawn in the cockpit's frame as bought, each part from its level

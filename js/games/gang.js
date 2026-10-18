@@ -115,6 +115,8 @@ function total(c, gang, how) { // the parts are yours, whoever did it; the heat 
   const parts = (c.racer ? PARTS.racer : PARTS.car) * (mad(c) ? 2 : 1); // a mad driver's stolen fuel (Fuel madness)
   raiseHeat(gang ? WANTED.gang : c.police ? WANTED.police : c.racer ? WANTED.racer : WANTED.car);
   Object.assign(c, { wreck: true, hp: 0 });
+  if (c === target) target = nextTarget(); // the reticle moves on at once: for a frame Hunter had nothing to hunt, and
+                                           // autocruise steered away from the car it would hunt next
   progress.totals++;
   progress.parts += parts;
   run.parts += parts;
