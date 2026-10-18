@@ -249,11 +249,15 @@ function levelFlash(step) { flash(step > 0 ? '▲ LEVEL UP' : '▼ LEVEL DOWN', 
 
 // ---- main loop ----
 const canvas = $('world'), g2d = canvas.getContext('2d');
-function resize() { const s = Math.min(devicePixelRatio, 1.5); canvas.width = innerWidth * s; canvas.height = innerHeight * s; }
+function resize() { const s = Math.min(devicePixelRatio, 1.5); canvas.width = innerWidth * s; canvas.height = innerHeight * s; canvas.px = s; }
 addEventListener('resize', resize);
 resize();
 
 let last = performance.now(), steer = 0, shake = 0;
+// the gas pedal's size, kept as the browser lays it out: read each frame after the pedals moved, it forced a layout
+const gasBox = { w: 0, h: 0 };
+new ResizeObserver(() => Object.assign(gasBox, { w: $('gas').clientWidth, h: $('gas').clientHeight })).observe($('gas'));
+const text = (id, v) => { const e = $(id); if (e.textContent !== String(v)) e.textContent = v; }; // only when it changes
 function tick(now) {
   const dt = Math.min(0.05, (now - last) / 1000); // a background tab can stall the loop: don't jump
   last = now;
@@ -284,10 +288,10 @@ function tick(now) {
   lamp('lamp-batt', ignitionOn && state !== 'running', '#f44'); lamp('lamp-oil', ignitionOn && state !== 'running', '#f44');
   lamp('lamp-brake', brakePedal > 0.05, '#f44'); lamp('lamp-clutch', clutchPedal > CAR.bite[0], '#fb3');
   lamp('lamp-slip', spinning, '#fb3');
-  $('cluster-gear').textContent = $('hud-gear').textContent = gear || 'N';
+  text('cluster-gear', gear || 'N'); text('hud-gear', gear || 'N');
   const [value, unit] = game.readout?.() ?? [Math.round(kmh), 'km/h']; // the big number: speed, unless the game says
-  $('hud-speed').textContent = value;
-  $('hud-unit').textContent = unit;
+  text('hud-speed', value);
+  text('hud-unit', unit);
   $('fill').style.width = Math.min(100, shown / tachMax * 100) + '%';
 
   // controls follow their state: key angle, pedal depth, lever position
@@ -299,11 +303,11 @@ function tick(now) {
   }
   // the nitro pedal is bolted to the gas pedal's top corner, which comes down and in as the gas pedal tilts away (35°,
   // seen through a 300px perspective: the top edge shrinks by `far`)
-  const g = $('gas'), a = gasPedal * 35 * Math.PI / 180, far = 300 / (300 + g.clientHeight * Math.sin(a));
-  const down = g.clientHeight * (1 - Math.cos(a) * far), inward = g.clientWidth * (1 - far) / 2;
+  const a = gasPedal * 35 * Math.PI / 180, far = 300 / (300 + gasBox.h * Math.sin(a));
+  const down = gasBox.h * (1 - Math.cos(a) * far), inward = gasBox.w * (1 - far) / 2;
   $('nos').style.transform = `translate(${-inward}px, ${down}px) perspective(300px) rotateX(${nitroHeld || nitroByAid ? 25 : 0}deg)`;
   $('knob').setAttribute('transform', `translate(${lever.x} ${lever.y})`);
-  $('knob-gear').textContent = gear || 'N';
+  text('knob-gear', gear || 'N');
 
   game.render?.();
   updateStereo();

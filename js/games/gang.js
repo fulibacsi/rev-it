@@ -123,11 +123,11 @@ function gangwork(c, dt) {
   c.gun = Math.max(0, (c.gun ?? 0) - dt);
   if (lvl('guns') && !c.gun) { // a rival up to 80 m ahead of it, or beside it, or the tank within 200 m: a shot a second
     const o = run.tank && !run.tank.wreck && Math.abs(run.tank.z - c.z) < 200 ? run.tank
-      : traffic.find(o => o.racer && !o.fleet && !o.wreck && o.z > c.z - CAR_LEN && o.z - c.z < 80);
+      : RIVALS.find(o => !o.wreck && o.z > c.z - CAR_LEN && o.z - c.z < 80);
     if (o) { c.gun = 1; tracers.push([c, o, performance.now()]); hurtCar(o, GUN * lvl('guns'), true); }
   }
   if (!lvl('bullbar') || c.rammed) return;
-  const o = traffic.find(o => o.racer && !o.fleet && !o.wreck && Math.abs(o.z - c.z) < CAR_LEN && Math.abs(o.x - c.x) > 1 &&
+  const o = RIVALS.find(o => !o.wreck && Math.abs(o.z - c.z) < CAR_LEN && Math.abs(o.x - c.x) > 1 &&
     Math.abs(o.x - c.x) < 4.5);
   if (!o) return;
   c.rammed = 3;
@@ -147,10 +147,10 @@ function renderGang() {
   document.body.classList.toggle('ar-on', !!s);
   if (t) $('ar').style.setProperty('--hp', Math.max(0, t.hp ?? health(t)) / health(t)); // right as soon as it shows again
   if (!s) return; // out of sight: under your bonnet just after a bump, say
-  const k = canvas.clientWidth / canvas.width, w = Math.max(26, s[2] * k), h = Math.max(20, s[3] * k);
+  const k = 1 / canvas.px, w = Math.max(26, s[2] * k), h = Math.max(20, s[3] * k); // canvas px to page px (main.js resize)
   Object.assign($('ar').style, { left: `${(s[0] + s[2] / 2) * k - w / 2}px`, top: `${(s[1] + s[3] / 2) * k - h / 2}px`,
                                  width: `${w}px`, height: `${h}px` });
-  $('ar-label').textContent = t.tank ? 'TANK' : !gangOpen() ? 'TOTAL IT' : t.racer ? `#${t.racer}` : '';
+  text('ar-label', t.tank ? 'TANK' : !gangOpen() ? 'TOTAL IT' : t.racer ? `#${t.racer}` : '');
 }
 
 // your car's war kit, seen from the seat (index.html #kit): each part shows from its level up, the Auto gun's red lamps

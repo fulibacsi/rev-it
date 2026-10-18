@@ -387,7 +387,11 @@ function skid(c, dt) {
   c.x += clamp(SHOULDER - c.x, -4 * dt, 4 * dt);
 }
 
+// this frame's racers not in your fleet, and the cars not in the race, in the road's own order: what your fleet looks
+// for (fleet.js, gang.js) a frame, each of its cars searching the whole road was most of the traffic's work in act 4
+let RIVALS = [], ORDINARY = [];
 function updateTraffic(dt, clock) {
+  RIVALS = traffic.filter(o => o.racer && !o.fleet); ORDINARY = traffic.filter(o => !o.racer);
   for (const c of traffic) {
     if (c.wreck) skid(c, dt);
     else if (c.police) policeDrive(c, dt); // police.js
@@ -428,6 +432,13 @@ function roadSlope(pos) { return elevation(pos + 0.5) - elevation(pos - 0.5); }
 // from afar (the owner left the look to Claude, 18 Oct)
 const lookOf = c => mad(c) && c.look.spec ? madLook(c.look) : c.look;
 const weave = c => mad(c) && !c.wreck ? 0.3 * Math.sin(performance.now() / 250 + c.serial) : 0; // m, about every 1.6 s
+// the game's marks by kind, each sprite made only for its own kind (all three were, for every mark: the best banner,
+// a 640 px canvas, was redrawn for each distance board ahead, every frame, and a speed sign kept for each distance)
+const MARKS = {
+  best: v => ({ x: 0, w: 2 * (ROAD.half + ROAD.rumble), h: 5.6, img: bannerSprite(v) }),
+  board: v => ({ x: ROAD.half + 2, w: 1.6, h: 3, img: boardSprite(v) }),
+  sign: v => ({ x: ROAD.half + 2, w: 1.5, h: 4.1, img: signSprite(v) }),
+};
 function drawRoad(g, w, h, dt) {
   const depth = 1 / Math.tan(ROAD.fov / 2 * Math.PI / 180), horizon = h * ROAD.horizon, k0 = w / 2;
   const pos = odo % (ROAD.count * ROAD.segment), base = Math.floor(pos / ROAD.segment);
@@ -457,9 +468,13 @@ function drawRoad(g, w, h, dt) {
   const clip = []; // per segment: screen y below which its sprites are hidden
   for (let n = 0; n < ROAD.draw; n++) {
     let a = proj[n];
-    const b = proj[n + 1];
     clip[n] = maxy;
-    if (b.y >= maxy || a.y <= b.y) continue; // hidden behind a crest, or sloping away from us
+    if (proj[n + 1].y >= maxy || a.y <= proj[n + 1].y) continue; // hidden behind a crest, or sloping away from us
+    // beyond about 70 m a segment is under a pixel tall: they go in one slice until it is a pixel tall (or bends 4 px
+    // sideways), the first one's colours for all; 300 slices of nine shapes a frame were most of a phone's work
+    let m = n + 1;
+    while (m < ROAD.draw && a.y - proj[m + 1].y < 1 && proj[m + 1].y < proj[m].y && Math.abs(proj[m + 1].x - a.x) < 4) clip[m++] = maxy;
+    const b = proj[m];
     if (a.y > maxy) { // partly hidden: start the slice at the crest line
       const f = (a.y - maxy) / (a.y - b.y);
       a = { x: a.x + (b.x - a.x) * f, y: maxy, k: a.k + (b.k - a.k) * f };
@@ -478,6 +493,7 @@ function drawRoad(g, w, h, dt) {
     quad(a, b, -0.25, -0.1, '#f2c12e'); quad(a, b, 0.1, 0.25, '#f2c12e'); // double yellow centre line
     if (Math.floor(i / 3) % 2) { quad(a, b, -3.6, -3.4, '#eee'); quad(a, b, 3.4, 3.6, '#eee'); } // lane dashes
     maxy = b.y;
+    n = m - 1;
   }
   const drawClipped = (img, x, y, dw, dh, clipY) => { // the part below clipY is behind a crest
     if (y >= clipY) return;
@@ -487,11 +503,7 @@ function drawRoad(g, w, h, dt) {
   };
 
   // sprites, far to near: palms, traffic and the game's marks (x: metres from the centre line, w/h: metres)
-  const marks = (game.marks?.() ?? []).map(m => ({
-    best: { z: m.z, x: 0, w: 2 * (ROAD.half + ROAD.rumble), h: 5.6, img: bannerSprite(m.value) },
-    board: { z: m.z, x: ROAD.half + 2, w: 1.6, h: 3, img: boardSprite(m.value) },
-    sign: { z: m.z, x: ROAD.half + 2, w: 1.5, h: 4.1, img: signSprite(m.value) },
-  })[m.kind]);
+  const marks = (game.marks?.() ?? []).map(m => ({ z: m.z, ...MARKS[m.kind](m.value) }));
   const look = c => c.wreck ? wreckSprite(lookOf(c).rear) : c.dir > 0 ? lookOf(c).rear : c.beams ? c.look.beams : c.look.front;
   const placed = c => { const img = look(c), w = c.w ?? (img.pixel ? CAR_M : 1.8); // a car's art sets its height
     return { z: c.z, x: c.x + weave(c), w, h: c.h ?? (img.pixel ? w * img.height / img.width : 1.4), img, car: c }; };
@@ -505,12 +517,12 @@ function drawRoad(g, w, h, dt) {
     g.globalAlpha = fog;
     for (const sp of s.sprites) {
       const ph = 11 * sp.size * a.k, pw = ph / 2;
-      drawClipped(PALM, a.x + sp.x * a.k - pw / 2, a.y - ph, pw, ph, clip[n]);
+      if (ph > 1.5) drawClipped(PALM, a.x + sp.x * a.k - pw / 2, a.y - ph, pw, ph, clip[n]); // a far one is a dot: skipped
     }
     while (t < ahead.length && ahead[t].d >= a.z) { // cars and signs within this segment
       const o = ahead[t++], f = (o.d - a.z) / ROAD.segment, b = proj[n + 1] || a;
       const k = a.k + (b.k - a.k) * f, cx = a.x + (b.x - a.x) * f, cy = a.y + (b.y - a.y) * f;
-      drawClipped(o.img, cx + (o.x - o.w / 2) * k, cy - o.h * k, o.w * k, o.h * k, clip[n]);
+      if (o.h * k > 1) drawClipped(o.img, cx + (o.x - o.w / 2) * k, cy - o.h * k, o.w * k, o.h * k, clip[n]); // not a dot far off
       if (o.car && cy - o.h * k < clip[n]) o.car.seen = [cx + (o.x - o.w / 2) * k, cy - o.h * k, o.w * k, o.h * k];
       const side = o.car && indicator(o.car); // over the outer half of a tail light (the art's, else where a car's is)
       const L = side && (o.img.lamps?.[side < 0 ? 0 : 1] ?? (side < 0 ? [0.03, 0.5, 0.25, 0.64] : [0.75, 0.5, 0.97, 0.64]));

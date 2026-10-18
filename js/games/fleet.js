@@ -46,7 +46,7 @@ function teamwork(c, dt) {
     : run.tank.v + (c.z < run.tank.z - 60 ? 40 : 0);                 // quicker, then alongside it; after it, own pace
   // its flash, for you (Fleet flash): a slower car in your lane up to 100 m ahead of it moves over, every 3 s at most
   if (lvl('fleetFlash') && !progress.off.fleetFlash && lane <= 1 && !c.flashed) {
-    const t = traffic.find(o => !o.racer && sameLane(o.x, MY_LANES[lane]) && o.z > c.z && o.z - c.z < 100 &&
+    const t = ORDINARY.find(o => sameLane(o.x, MY_LANES[lane]) && o.z > c.z && o.z - c.z < 100 &&
       o.v < speed - 2 && yields(o, 1 - lane));
     if (t) { Object.assign(t, { lane: 1 - lane, yielding: true, cool: LANE_GAP.car + 2 }); c.flashed = 3; }
   }
@@ -57,7 +57,7 @@ function teamwork(c, dt) {
   }
   // a rival close behind, faster, in (or heading for) the other lane: it moves across in front of it. It waits 2 s
   // between moves and a racer 5 s, so a blocked rival rarely gets past
-  const rival = traffic.find(o => o.racer && !o.fleet && !o.wreck && MY_LANES[o.lane] === other && o.z < c.z && c.z - o.z < 60 && o.want > c.v);
+  const rival = RIVALS.find(o => !o.wreck && MY_LANES[o.lane] === other && o.z < c.z && c.z - o.z < 60 && o.want > c.v);
   const yours = sameLane(carX, other) && you > 0 && you < 250; // that lane is yours behind it: never block you
   if (rival && !yours && roomAt(c, other, 8, 25)) Object.assign(c, { lane: 1 - c.lane, cool: 2 });
 }
