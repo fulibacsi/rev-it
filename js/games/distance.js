@@ -185,6 +185,7 @@ function updateRun(dt) {
   else if (run.phase === 'countdown' && (run.count -= dt) <= 0) { run.phase = 'run'; brakePedal = 0; raceGo(); }
   else if (run.phase === 'run' && (run.left -= dt) <= 0) { run.left = 0; finishRun(); }
   else if (run.phase === 'finish' && (run.count -= dt) <= 0) run.phase = 'garage';
+  run.still = run.phase === 'run' && speed < 1 ? (run.still ?? 0) + dt : 0; // s standing still in the run (stuck?)
   if (run.phase === 'run' && raceTick()) run.revealed = true;
   if (run.phase === 'run') { rechargeFlash(dt); updateGang(dt); updatePolice(dt); updateBoss(); }
   if (run.phase === 'run' && damageOn()) damageTick(dt);
@@ -358,7 +359,8 @@ function renderRun() {
     starting: ['', 'starting the engine…'],
     countdown: ['GET READY', [!aid('clutch') && 'clutch down', !aid('shift') && '1st gear', !aid('gas') && 'gas']
       .filter(Boolean).join(' · ') || 'sit back: the car does it all'],
-    run: run.limp ? ['LIMP MODE', `${Math.floor(odo)} of ${LIMP} m`] // the time left is in the mirror
+    run: stuck() ? nextStep()
+      : run.limp ? ['LIMP MODE', `${Math.floor(odo)} of ${LIMP} m`] // the time left is in the mirror
       : progress.racing ? [`P${position()}`, `${fmt(odo)} m` + gaps()]
       : [`${fmt(odo)} m`, run.best ? `best ${fmt(run.best)} m` : ''],
     finish: run.beatTank ? ['GAME OVER', 'the road is yours'] // boss.js: the tank destroyed
@@ -376,6 +378,20 @@ function renderRun() {
   $('hud-flashes').textContent = run.phase === 'garage' ? lvl('flash') : run.flashes;
   $('hud-beam').classList.toggle('empty', run.phase !== 'garage' && !run.flashes);
   $('hud-beam').style.setProperty('--charge', run.phase === 'run' ? run.recharge / rechargeTime() : 0); // the refill
+}
+
+// stalled, or standing still for 1.5 s in a run: the windscreen says what to do next, in the words of the layout you
+// drive with, until the car moves (the playtests of 18 Oct: one player couldn't get off the start line for three runs,
+// another skipped the first run's how-to). Nothing to say when the aids do it all
+const stuck = () => (state === 'off' || run.still > 1.5) && !!nextStep();
+function nextStep() {
+  const touch = touchLayout(), clutchDown = aid('clutch') || clutch <= 0.3;
+  if (state === 'off') return ['START THE ENGINE', touch ? 'hold the key at START' : 'Enter, or the key to START'];
+  if (gear !== 1 && !aid('shift')) return !clutchDown ? ['CLUTCH DOWN', touch ? 'the left pedal, all the way' : 'hold Shift']
+    : ['INTO 1ST', touch ? 'drag the knob into 1' : gear ? '↓ down to 1st' : '↑ for 1st'];
+  if (!aid('gas') || !aid('clutch')) return ['GAS, CLUTCH UP', [!aid('gas') && (touch ? 'gas pedal' : 'hold Space'),
+    !aid('clutch') && (touch ? 'ease the clutch pedal up' : 'let Shift go')].filter(Boolean).join(', then ')];
+  return null;
 }
 
 function gaps() { // the racers just ahead and just behind you
