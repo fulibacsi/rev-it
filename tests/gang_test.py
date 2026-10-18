@@ -184,13 +184,13 @@ with sync_playwright() as p:
         ord.forEach((c, i) => Object.assign(c, { dir: 1, z: odo + 2000 + 60 * i, lane: 0, x: MY_LANES[0], v: 20, want: 20 }));
         const m = ord.find(mad), s = ord.find(c => !mad(c));
         if (!m || !s) return 'no mad and sane pair: ' + ord.map(c => c.serial);
-        window.m = m; Object.assign(m, { z: odo + 45, lane: 1 - lane, x: MY_LANES[lane], cool: 99, jumped: true });
+        window.m = m; Object.assign(m, { z: odo + 45, lane: 1 - lane, x: MY_LANES[lane], cool: 99, jumped: true, v: speed, want: speed });
         Object.assign(s, { z: odo + 70, lane: lane, x: MY_LANES[lane], cool: 99 });
         return { madLook: MAD.includes(lookOf(m)), saneLook: lookOf(s) === s.look, signals: indicator(m), weave: weave(m), still: weave(s) }; })()""")
     pg.wait_for_timeout(300)
-    w2 = js("window.m ? weave(m) : null")
+    ws = [js("window.m ? weave(m) : null")] + [pg.wait_for_timeout(200) or js("window.m ? weave(m) : null") for _ in range(5)]  # over a second
     check("a mad car: rust, no indicator as it moves over, weaving; a sane one as it was", isinstance(got, dict) and got["madLook"] and got["saneLook"]
-          and got["signals"] == 0 and got["still"] == 0 and abs(got["weave"]) <= 0.3 and abs(w2 - got["weave"]) > 0.01, [got, w2])
+          and got["signals"] == 0 and got["still"] == 0 and all(w is not None and abs(w) <= 0.3 for w in ws) and max(ws) - min(ws) > 0.1, [got, ws])
     pg.screenshot(path=f"{OUT}/fuel_madness.png")
     got = aside("""(() => { Object.assign(m, { z: odo + 30, hp: null, wreck: false }); total(m); const r = [m.wreck, $('flash').textContent]; m.wreck = false; m.z = odo + 5000; return r; })()""")
     check("a mad car's stolen fuel: double parts", got == [True, "TOTALLED +44 PARTS"], got)
