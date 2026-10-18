@@ -19,7 +19,7 @@ with sync_playwright() as p:
         else: js("run.left = 0.1"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
         js("refreshCar()"); pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000); pg.wait_for_timeout(200)
         js("traffic.forEach(c => { if (!c.racer) { c.dir = -1; c.x = LANES.oncoming[0]; } else c.z = odo - 9000; }); window.crashes = 0; "
-           "if (!DISTANCE.crash0) { DISTANCE.crash0 = DISTANCE.crash; DISTANCE.crash = i => { crashes++; DISTANCE.crash0(i); }; }")
+           "if (!DISTANCE.crash0) { DISTANCE.crash0 = DISTANCE.crash; DISTANCE.crash = i => { crashes++; DISTANCE.crash0(i); }; } 0")
     # 1. prices, and auto flash from 5 flashes
     js("Object.assign(progress, { bank: 9e6, levels: { flash: 4 } })")
     check("auto flash locked with 4 flashes", js("whyNot('autoflash')") == "needs 5 flashes", js("whyNot('autoflash')"))
