@@ -1,5 +1,6 @@
 """Headlight flash charges: 1-10 a run, auto flash from 5, no flash wasted on racers, autocruise overtakes a racer by
-moving over behind an ordinary car it can flash away, a game of chicken moves oncoming cars, and Auto flash plays it
+moving over behind an ordinary car it can flash away (and flashes one it is closing on fast rather than braking for it),
+a game of chicken moves oncoming cars, and Auto flash plays it
 once you have it. In the War Rig act it leaves the car in the reticle alone. Extra flashes don't change the reveal's head
 start."""
 from playwright.sync_api import sync_playwright
@@ -19,7 +20,7 @@ with sync_playwright() as p:
         else: js("run.left = 0.1"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
         js("refreshCar()"); pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000); pg.wait_for_timeout(200)
         js("traffic.forEach(c => { if (!c.racer) { c.dir = -1; c.x = LANES.oncoming[0]; } else c.z = odo - 9000; }); window.crashes = 0; "
-           "if (!DISTANCE.crash0) { DISTANCE.crash0 = DISTANCE.crash; DISTANCE.crash = i => { crashes++; DISTANCE.crash0(i); }; }")
+           "if (!DISTANCE.crash0) { DISTANCE.crash0 = DISTANCE.crash; DISTANCE.crash = i => { crashes++; DISTANCE.crash0(i); }; } 0")
     # 1. prices, and auto flash from 5 flashes
     js("Object.assign(progress, { bank: 9e6, levels: { flash: 4 } })")
     check("auto flash locked with 4 flashes", js("whyNot('autoflash')") == "needs 5 flashes", js("whyNot('autoflash')"))
@@ -66,6 +67,16 @@ with sync_playwright() as p:
         if want == "overtakes": check("with a flash: moves over, flashes the car away, passes the racer", moved and not back and trace[-1][2] == 0 and passed_r and js("crashes") == 0,
                                       f"moved {moved}, back behind {back}, car lane {trace[-1][2]}, racer {trace[-1][4]} m, crashes {js('crashes')}")
         else: check("no flash left: stays behind the racer while the car is ahead (as before)", not moved and js("crashes") == 0, f"moved {moved}, crashes {js('crashes')}")
+    # 4b. closing fast (250 km/h on a car at 80, as in act 4), autocruise would start braking about 5 s out, before auto
+    #     flash's 4 s: the owner saw it slow down instead of flashing (18 Oct). It flashes the car away and keeps its speed
+    start(CAR + ", steer: 1, cruise: 1, rolling: 6, flash: 5, autoflash: 1")
+    js("lane = 0; carX = MY_LANES[0]; speed = 250 / 3.6"); n0 = js("run.flashes")
+    js(f"({place})([['car', 320, 0, 80], ['car', 300, 1, 80]])")  # the other lane no better: it stays in its own
+    got = js("""() => new Promise(res => { const O = traffic.find(c => !c.racer && c.tag === 0 && c.dir > 0), v0 = speed; let low = speed;
+        const f = () => { low = Math.min(low, speed); O.z > odo ? requestAnimationFrame(f)
+          : res({ flashes: run.flashes, lane: O.lane, kept: +(low / v0).toFixed(2), crashes }); }; requestAnimationFrame(f); })""")
+    check("closing fast: flashes the car away, no slowing down for it", got["flashes"] == n0 - 1 and got["lane"] == 1 and got["kept"] > 0.95
+          and got["crashes"] == 0, {"before": n0, **got})
     # 6. a game of chicken: in an oncoming lane a flash spends a charge and moves nobody, unless you have the upgrade;
     #    then the oncoming car in your lane swerves into its other lane, and there is no head-on
     js("Object.assign(progress, { levels: { flash: 3 } })")

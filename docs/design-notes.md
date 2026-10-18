@@ -240,7 +240,10 @@ driving is act 1's game, and the robot takes over as the fantasy moves on.
     has cooled below 0.4. Your foot on the gas, or nitro, take the tuned map whatever the heat.
   - Autocruise:
     - picks the lane that goes further and keeps right;
-    - brakes behind traffic it can't pass;
+    - brakes behind traffic it can't pass: for the first car you would hit, not one already moving out of your lane,
+      and nothing while that one is a car to ram (Hunter's, or a mad driver's cut-in with a bull bar: the ram slows
+      you to its speed). It braked for the car beyond the one Hunter was ramming (the owner, 18 Oct: it "slowed down
+      instead");
     - overtakes a racer by moving over behind an ordinary car that Auto flash can move out of the way;
     - never drives in the oncoming lanes (Reckless auto-drive does).
   - Reckless auto-drive (Black market) is autocruise without manners:
@@ -253,7 +256,11 @@ driving is act 1's game, and the robot takes over as the fantasy moves on.
     - it pushes the nitro pedal when a racer is within 500 m ahead, the tyres grip, it is in 2nd or higher and isn't
       braking.
   - Auto flash only flashes a car that will move over, never a racer, nor the car in the War Rig's reticle (that one is
-    to be rammed; the owner, 14 Oct: it flashed the targets away). With Game of chicken it plays chicken too: in
+    to be rammed; the owner, 14 Oct: it flashed the targets away). It flashes under 4 s away, or as soon as autocruise
+    starts braking for the car: closing at 150-190 km/h in act 4, autocruise braked from about 5 s out, and the gap it
+    kept never came within 4 s (the owner, 18 Oct: it "stopped using the flash and slowed down instead"). An act 4
+    run on Reckless auto-drive with Hunter and Fuel madness braked 3.6 s a race instead of 7.3 (6 races, same seeds),
+    with as many rear-ends as before (3). With Game of chicken it plays chicken too: in
     an oncoming lane it flashes the car coming at you once a flash would make it swerve (under 4.5 s away). Reckless
     auto-drive plays chicken with or without it, and Auto flash works alongside it when it is on. (Claude's call:
     "uses everything, even Auto flash" read as: everything you own and have switched on; the switch is still yours.)
@@ -399,7 +406,7 @@ on the horizon, and the guns would fire at nothing else).
   | Auto gun | 1 | 200 | | needs Guns: fires for you while the reticle's car is in reach and in sight; the marker reads AUTO; ON/OFF in the garage |
   | Fuel madness | 4 | 30 | 2.5 | 25% of ordinary drivers mad a level, 90% at the top: rusty, weaving, no mirror check or indicator, and each jumps in front of you once; ram one that cut in and it's totalled; a mad car pays double parts; ON/OFF in the garage |
   | War Rig radio | 1 | 100 | | needs the Car stereo: it plays the War Rig's own four tapes instead of synthwave; ON/OFF in the garage |
-  | Hunter | 1 | 100 | | needs Autocruise: it hunts the car in the reticle within 150 m, into its lane and into it (not the tank; it backs off past 60% damage); ON/OFF in the garage |
+  | Hunter | 1 | 100 | | needs Autocruise: it hunts the car in the reticle, into its lane and into it (not the tank; it backs off past 60% damage); ON/OFF in the garage |
 
 - **Bad drivers** (the owner's idea, 18 Oct): the playtesters hated cars cutting in (fixed: traffic passes the way
   drivers do), but in the War Rig a car jumping in front of you is a ram, worth parts and heat. Bought, ordinary
@@ -450,9 +457,12 @@ on the horizon, and the guns would fire at nothing else).
     ones to hunt. The cap made no difference to the simulation: the top level costs more than the guns, so it comes
     after the tank. As built (90% at the top): the tank in races 15, 15, 13, 14, the bot at 75% by then.
 - **Hunter** (the owner's idea, 18 Oct: "an auto driver that hunts down cars"): autocruise hunts the car in the
-  reticle while it is within 150 m, going your way: it moves into that car's lane and drives into it, without braking
-  or swerving for it (autocruise leaves the lanes to it meanwhile, or its keep-right habit pulled it off the prey's
-  lane). Not the tank (the guns are for that), not an oncoming car, and not past 60% damage, so it doesn't wreck you;
+  reticle, going your way: it moves into that car's lane and drives into it, without braking or swerving for it
+  (autocruise leaves the lanes to it meanwhile, or its keep-right habit pulled it off the prey's lane; Reckless
+  auto-drive keeps to your side). From as far as the reticle takes it (300 m): it hunted within 150 m at first, so
+  autocruise steered round the car before that and Hunter swung back into its lane (the owner, 18 Oct: it "changes
+  lanes to avoid traffic"). Nor do the aids steer round or brake for a wreck, which can't be hit and skids off: they
+  swerved round each car Hunter had just totalled. Not the tank (the guns are for that), not an oncoming car, and not past 60% damage, so it doesn't wreck you;
   your hand on the wheel overrides it. It is what `act4.py`'s bot did by hand, so the simulation now leaves the hunting
   to the aid once it has it. `hunter_test.py` checks all of it.
 - **The kit shows on your car** (the owner, 18 Oct), drawn in the cockpit's frame as bought, each part from its level
