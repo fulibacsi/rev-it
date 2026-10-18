@@ -5,7 +5,6 @@ const CAR = {
   gears: [0, 3.5, 2.1, 1.45, 1.1, 0.9, 0.75, 0.62], // gearbox ratios; index 0 is neutral; 7th: Distance's overdrive
   drag: 0.42,                                   // air drag, N per (m/s)²  (½ · air density · Cd · frontal area)
   roll: 200,                                    // rolling resistance, N
-  brake: 11000,                                 // brake force, N
   grip: 0.9,                                    // tyre friction: drive force tops out at grip · weight (wheelspin)
   slide: 0.7,                                   // a spinning tyre only grips this share of that until it hooks up again
   bite: [0.25, 0.75],                           // clutch pedal travel: fully engaged above / free below this range
@@ -80,8 +79,11 @@ function engage(g) {
   return true;
 }
 
+// m/s² the brakes can do: as much as the tyres grip, as with ABS (the Tyres upgrade's 0.8 to 1.2 g), whatever the car
+// weighs. A fixed 11,000 N had the heavier engines stopping worse (0.68 g in the V8) as the speeds went up
+const brakeDecel = () => CAR.grip * 9.81;
 // N holding the car back: air, tyres, brakes and gravity along the slope (negative downhill)
-function resistance() { return CAR.drag * speed * speed + CAR.roll + brakePedal * CAR.brake + engine.mass * 9.81 * roadSlope(odo); }
+function resistance() { return CAR.drag * speed * speed + CAR.roll + brakePedal * brakeDecel() * engine.mass + engine.mass * 9.81 * roadSlope(odo); }
 // torque at the crank that would just break the tyres loose in this gear while engine and wheels turn together
 function gripTorque() {
   const e = engine, G = ratio(), Jc = e.mass * (CAR.wheel / G) ** 2, tyres = CAR.grip * e.mass * 9.81 * CAR.wheel / G;

@@ -18,6 +18,11 @@ machine or session. Keep it current: update a section when a decision changes, a
 
 - **Torque** is a flat curve, so power peaks near the redline. The rev limiter is a short fuel cut.
 - **Drivetrain:** the clutch and tyres slip, with tyre sliding friction at 0.7 of grip.
+- **Brakes** stop as hard as the tyres grip, as with ABS: 0.8 g on stock tyres to 1.2 g with Tyres maxed (0.9 g in
+  the other games), whatever the engine weighs. A fixed 11,000 N had the heavier engines braking worse (0.70 g in the
+  V8) as the speeds went up; playtesters found the brakes weak (18 Oct). From 300 km/h, maxed tyres now stop in about
+  270 m (it was 345–455 m); the stock boxer on stock tyres needs 48 m from 100 km/h (43 m before), back to 43 m with
+  one level of Tyres. Not a new upgrade: the Tyres card says it covers braking.
 - **Crashes:** hitting a slower car in your lane drops you to the lower of 35% of your speed and 40% of its speed.
   That's harsh on purpose, so you don't hit the same car again.
 - **Traffic passes the way drivers do** (after the playtests of 15–18 Oct, where cars cut in just as you got there

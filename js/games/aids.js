@@ -111,7 +111,7 @@ function autocruise() {
   // your foot on the gas, or on NOS (not Reckless auto-drive's): no braking, no lift
   if (pushing() || nitroHeld) { if (cruiseBrake) { brakePedal = 0; cruiseBrake = false; } return; }
   if (touching('brake')) { cruiseBrake = false; return; } // your foot on the brake: it's yours
-  const hardest = CAR.brake / engine.mass; // m/s² the brakes can do
+  const hardest = brakeDecel(); // m/s² the brakes can do
   const keep = 8 + 0.4 * speed; // following distance, m
   const closing = mine ? mine.closing : 0, room = mine ? mine.gap - keep : Infinity;
   const needed = closing > 0 ? closing ** 2 / (2 * Math.max(1, room)) : 0; // to match its speed at that distance
