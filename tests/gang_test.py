@@ -192,6 +192,10 @@ with sync_playwright() as p:
     check("a mad car: its own car gone to rust, no indicator as it moves over, weaving; a sane one as it was", isinstance(got, dict) and got["madLook"] and got["saneLook"]
           and got["signals"] == 0 and got["still"] == 0 and all(w is not None and abs(w) <= 0.3 for w in ws) and max(ws) - min(ws) > 0.1, [got, ws])
     pg.screenshot(path=f"{OUT}/fuel_madness.png")
+    got = js("""(() => { const o = traffic.find(c => !c.racer && !c.police && !c.wreck && !c.fleet && !c.tank && c !== m && mad(c));
+        if (!o) return 'no other mad car'; o.dir = -1; const r = { mad: mad(o), own: lookOf(o) === madLook(o.look), front: lookOf(o).front.pixel && lookOf(o).front !== o.look.front };
+        o.dir = 1; return r; })()""")
+    check("an oncoming mad driver: its own car's mad front", got == {"mad": True, "own": True, "front": True}, got)
     got = aside("""(() => { Object.assign(m, { z: odo + 30, hp: null, wreck: false }); total(m); const r = [m.wreck, $('flash').textContent]; m.wreck = false; m.z = odo + 5000; return r; })()""")
     check("a mad car's stolen fuel: double parts", got == [True, "TOTALLED +44 PARTS"], got)
     js("progress.levels.baddrivers = 0; 0")

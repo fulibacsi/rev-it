@@ -51,7 +51,9 @@ machine or session. Keep it current: update a section when a decision changes, a
   - Fuel madness: a mad driver's own car, morphed (the owner: "morph them to become mad cars"): the same model, bumper
     and wing, the paint mostly rust (a quarter of its old colour left, so mad cars differ), a primer panel, rust holes
     with orange edges, one tail light out, bars over the rear window, and a bolted pipe bar with steel spikes along
-    it and on the roof, shaded the pack's way (a lit side, a dark side);
+    it and on the roof, shaded the pack's way (a lit side, a dark side). Oncoming traffic goes mad too (the owner, 18
+    Oct: it had none): its front view in rust, bars over the windscreen, a spiked bull bar, one headlight out, and
+    its high beams flashed from the one it has left. They drive as they did: only the cars going your way jump in;
   - the indicator blinks over the outer half of each car's own tail light.
   The tank, palms and signs stay as they were.
 - **Crashes:** hitting a slower car in your lane drops you to the lower of 35% of your speed and 40% of its speed.
@@ -410,7 +412,7 @@ on the horizon, and the guns would fire at nothing else).
   from 0.8 to 2 s behind, swerves across into your lane, briskly, about one car in two, once each. `lanes_test.py`:
   11 cut-ins in 16 km at 160 km/h.
 - **Fuel madness** (the owner, 18 Oct: Bad drivers renamed for the wasteland, "fuel psychosis" made "madness"; and a
-  scale, so only some drivers go mad): 25% of ordinary drivers going your way a level, picked by the order they came
+  scale, so only some drivers go mad): 25% of ordinary drivers a level, picked by the order they came
   onto the road (golden-ratio steps of their serial: an even spread, and no draw on the traffic's seeded dice, so
   every other game's road is as it was). A mad driver drives as a bad driver did, without its indicator even as it
   swerves, and always jumps in front of you once when it lines up; the sane ones keep their manners, so the road
