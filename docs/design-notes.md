@@ -368,7 +368,7 @@ on the horizon, and the guns would fire at nothing else).
   | Spiked hubs | 1 | 150 | | a side-swipe (into a car while moving over) costs you no speed and counts one more hit; the gang's 30 more damage |
   | Guns | 3 | 400 | 2 | needs Spiked hubs: 6 damage a shot a level, 4 shots a second, up to 200 m; the gang fires too |
   | Auto gun | 1 | 200 | | needs Guns: fires for you while the reticle's car is in reach and in sight; the marker reads AUTO; ON/OFF in the garage |
-  | Bad drivers | 1 | 60 | | ordinary traffic stops checking its mirrors and indicating, and pulls out whenever it is quicker; ram one that cut in and it's totalled; ON/OFF in the garage |
+  | Fuel madness | 4 | 60 | 2.5 | 25% of ordinary drivers mad a level: rusty, weaving, no mirror check or indicator, and each jumps in front of you once; ram one that cut in and it's totalled; ON/OFF in the garage |
   | War Rig radio | 1 | 100 | | needs the Car stereo: it plays the War Rig's own four tapes instead of synthwave; ON/OFF in the garage |
   | Hunter | 1 | 100 | | needs Autocruise: it hunts the car in the reticle within 150 m, into its lane and into it (not the tank; it backs off past 60% damage); ON/OFF in the garage |
 
@@ -387,6 +387,17 @@ on the horizon, and the guns would fire at nothing else).
   in the owner's words, they now "jump in front of the player": a bad driver in your other lane, as you close on it
   from 0.8 to 2 s behind, swerves across into your lane, briskly, about one car in two, once each. `lanes_test.py`:
   11 cut-ins in 16 km at 160 km/h.
+- **Fuel madness** (the owner, 18 Oct: Bad drivers renamed for the wasteland, "fuel psychosis" made "madness"; and a
+  scale, so only some drivers go mad): 25% of ordinary drivers going your way a level, picked by the order they came
+  onto the road (golden-ratio steps of their serial: an even spread, and no draw on the traffic's seeded dice, so
+  every other game's road is as it was). A mad driver drives as a bad driver did, without its indicator even as it
+  swerves, and always jumps in front of you once when it lines up; the sane ones keep their manners, so the road
+  reads. `lanes_test.py` at 160 km/h, 16 km: 3 cut-ins at 25%, 14 at 50% (about Bad drivers' 11), 14 at 75%, 22 at
+  100%; no sane driver changes lanes without its indicator. Through the game interface's `madness()` (the share).
+  - **The tell** (the owner left it to Claude): rust for paint (three shades), the right tail light dead, rust holes
+    and a spiked roof, and a weave in its lane (0.3 m, about every 1.6 s), drawn only: its place on the road stays
+    put. The paint and the weave read from afar on a phone; the rest close up. The card shows the next level and,
+    once bought, the switch beside it.
 - **Hunter** (the owner's idea, 18 Oct: "an auto driver that hunts down cars"): autocruise hunts the car in the
   reticle while it is within 150 m, going your way: it moves into that car's lane and drives into it, without braking
   or swerving for it (autocruise leaves the lanes to it meanwhile, or its keep-right habit pulled it off the prey's
