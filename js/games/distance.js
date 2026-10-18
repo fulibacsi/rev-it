@@ -335,6 +335,9 @@ function drive() {
   startEngine(); // the key turns itself
 }
 
+// the tapes the stereo plays (stereo.js): the War Rig radio's while it is bought and switched on (gang.js), or synthwave
+const onRadio = () => TAPES.filter(t => !!t.war === (lvl('warradio') > 0 && !progress.off.warradio));
+
 // ---- head-up display: the run ----
 let shownPhase, shownCount, passedBest = false, shownReveal = false;
 function renderRun() {
@@ -431,11 +434,11 @@ const DISTANCE = {
   },
   speedo: () => lvl('gear7') ? 540 : 360,
   stereo: () => lvl('stereo') > 0,
-  tape: () => progress.off.stereo ? null : progress.tape,
+  tape: () => progress.off.stereo ? null : TAPES.indexOf(onRadio()[progress.tape] ?? onRadio()[0]),
   nextTape() { // through the tapes, then off; a tap when off plays the first. The garage's ON/OFF is the same switch
     if (!lvl('stereo')) return;
     if (progress.off.stereo) progress.off.stereo = false;
-    else if (progress.tape < TAPES.length - 1) progress.tape++;
+    else if (progress.tape < onRadio().length - 1) progress.tape++;
     else Object.assign(progress, { tape: 0, off: { ...progress.off, stereo: true } }); // rewound for next time
     save();
     if (run.phase === 'garage') renderGarage();

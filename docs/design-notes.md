@@ -106,6 +106,20 @@ machine or session. Keep it current: update a section when a decision changes, a
   | Sunset Grid | 112 | D major, I V vi IV | disco open hats, clap | syncopated square pluck | bell |
   | Chrome Heart | 124 | E minor, i VII VI VII | sixteenth hats, tight snare | hard sixteenths | square in octaves |
 
+  **The War Rig radio** (War Rig page; the owner's idea and pick, 18 Oct: both styles) swaps in four tapes of its own,
+  original riffs written down the same way, with new sounds: a fuzz (a waveshaper and a speaker's top end) for guitars
+  and darksynth's bass and leads, power chords (palm-muted chugs and chords let ring), war drums (low and high), and
+  lead notes that slide up into themselves, a wail.
+
+  | Tape | Tempo | Key and chords | What it is |
+  |---|---|---|---|
+  | War Drums | 90 | D minor with a flat second, i bII i VII | war drums, chugging fuzz guitar, a wailing lead |
+  | Iron Convoy | 106 | E minor, i VI VII i | a galloping guitar riff, tom fills, a guitar-like lead |
+  | No Law | 132 | C minor, i VI VII i | darksynth: fuzz bass in sixteenths, a harsh square lead, an arpeggio |
+  | Black Sun | 118 | B minor, i VII VI V | darksynth: pumping offbeat fuzz bass, a wailing saw lead |
+
+  Its switch off, the stereo plays synthwave again (the same slot). Rendered offline, the war choruses peak at 0.41 at
+  most and sit about 2 dB above the synthwave ones (the fuzz and the war drums were turned down to get there).
   The echo on the arpeggio and lead is a dotted eighth at the tape's tempo (it had no delay time set, so it was a
   3 ms comb). Rendered offline, every chorus peaks at 0.39 at most and they sit within 3 dB of each other. Whether
   they sound good is the owner's ear: the tests can only show they differ. A row of lights in the cluster's
@@ -355,6 +369,7 @@ on the horizon, and the guns would fire at nothing else).
   | Guns | 3 | 400 | 2 | needs Spiked hubs: 6 damage a shot a level, 4 shots a second, up to 200 m; the gang fires too |
   | Auto gun | 1 | 200 | | needs Guns: fires for you while the reticle's car is in reach and in sight; the marker reads AUTO; ON/OFF in the garage |
   | Bad drivers | 1 | 60 | | ordinary traffic stops checking its mirrors and indicating, and pulls out whenever it is quicker; ram one that cut in and it's totalled; ON/OFF in the garage |
+  | War Rig radio | 1 | 100 | | needs the Car stereo: it plays the War Rig's own four tapes instead of synthwave; ON/OFF in the garage |
 
 - **Bad drivers** (the owner's idea, 18 Oct): the playtesters hated cars cutting in (fixed: traffic passes the way
   drivers do), but in the War Rig a car jumping in front of you is a ram, worth parts and heat. Bought, ordinary
