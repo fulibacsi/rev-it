@@ -186,10 +186,10 @@ with sync_playwright() as p:
         if (!m || !s) return 'no mad and sane pair: ' + ord.map(c => c.serial);
         window.m = m; Object.assign(m, { z: odo + 45, lane: 1 - lane, x: MY_LANES[lane], cool: 99, jumped: true, v: speed, want: speed });
         Object.assign(s, { z: odo + 70, lane: lane, x: MY_LANES[lane], cool: 99 });
-        return { madLook: MAD.includes(lookOf(m)), saneLook: lookOf(s) === s.look, signals: indicator(m), weave: weave(m), still: weave(s) }; })()""")
+        return { madLook: lookOf(m).madOf === m.look, saneLook: lookOf(s) === s.look, signals: indicator(m), weave: weave(m), still: weave(s) }; })()""")
     pg.wait_for_timeout(300)
     ws = [js("window.m ? weave(m) : null")] + [pg.wait_for_timeout(200) or js("window.m ? weave(m) : null") for _ in range(5)]  # over a second
-    check("a mad car: rust, no indicator as it moves over, weaving; a sane one as it was", isinstance(got, dict) and got["madLook"] and got["saneLook"]
+    check("a mad car: its own car gone to rust, no indicator as it moves over, weaving; a sane one as it was", isinstance(got, dict) and got["madLook"] and got["saneLook"]
           and got["signals"] == 0 and got["still"] == 0 and all(w is not None and abs(w) <= 0.3 for w in ws) and max(ws) - min(ws) > 0.1, [got, ws])
     pg.screenshot(path=f"{OUT}/fuel_madness.png")
     got = aside("""(() => { Object.assign(m, { z: odo + 30, hp: null, wreck: false }); total(m); const r = [m.wreck, $('flash').textContent]; m.wreck = false; m.z = odo + 5000; return r; })()""")

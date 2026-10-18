@@ -41,10 +41,11 @@ allowed." So the pack itself is not in this repository, and the art in `assets/c
 Rev It.
 
 **Changes made.** [`tools/make_cars.py`](tools/make_cars.py), run on a copy of the pack, puts each car together
-(tyres, the interior and glass over a dark cabin, the body, a bumper, and for the racers a body kit and a wing) and
-writes it as a palette and runs of pixels. The game repaints each car in its traffic colours, the racers' and
-police's liveries and the rust of Fuel madness, and draws on top the racers' stripes and numbers, the police light
-bar, and the mad drivers' bars, spikes and dead tail light (`js/road.js`).
+(tyres, the interior and glass over a dark cabin, the body) and keeps its bumpers, body kits and spoilers as layers,
+written as palettes and runs of pixels. The game fits the parts at random, repaints each car in its traffic colours,
+the racers' and police's liveries and the rust of Fuel madness, and draws on top the racers' stripes and numbers,
+the police light bar, and the mad drivers' primer, rust holes, bars, pipe bar, spikes and dead tail light
+(`js/road.js`).
 
 ## Techniques
 
