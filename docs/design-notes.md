@@ -482,7 +482,11 @@ on the horizon, and the guns would fire at nothing else).
   if any, fire on its prey too. It never moves into your lane in front of you (it gives way first, as ever). The
   totals are yours: parts (double for a mad driver) and the gang's heat, with "THE GANG TOTALLED A CAR" (or the
   racer's number, or A POLICE CAR) on the head-up display. A fleet car looks for prey twice a second, the whole road
-  for half the field being a lot of looking. `pack_test.py` checks it.
+  for half the field being a lot of looking. `pack_test.py` checks it. Price, `act4.py` (cheapest first): at 150
+  parts it is bought in races 8-12 and the tank falls in races 14, 16, 12, 12 (14, 16, 13, 14 without it); the race
+  after buying it pays two or three times the parts (10 cars for 462 parts on one seed, 5 for 132 without). At 300
+  it came in races 11-14, a race or two before the tank (14.0 on average), and at 600 never before it (the guns,
+  400, come first).
 - **The kit shows on your car** (the owner, 18 Oct), drawn in the cockpit's frame as bought, each part from its level
   up: armour as riveted plates up the A-pillars, then a visor under the roof (clear of the mirror), then slats; the
   bull bar's hoop over the bonnet's front edge, then uprights, then spikes; twin guns on the bonnet aimed down the

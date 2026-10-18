@@ -41,7 +41,8 @@ Object.assign(UPGRADES, {
   warradio: { name: 'War Rig radio', tab: 'warrig', max: 1, base: 100, needs: ['stereo'],
               info: () => "the stereo tunes in to the War Rig's own: war drums and fuzz guitar, and darksynth" },
   // the owner's idea (18 Oct: "Fleet should have an attack upgrade so they hunt just like you"): each fleet car hunts
-  // the nearest car ahead of it, rivals and traffic alike (prowl, road.js driveCar). Price: see act4.py
+  // the nearest car ahead of it, rivals and traffic alike (prowl, road.js driveCar). Price: act4.py, bought a few
+  // races before the tank (at 300 it came a race or two before it, at 600 after the guns)
   pack: { name: 'Hunting pack', tab: 'warrig', max: 1, base: 150,
           info: () => `fleet cars hunt as you do: the nearest car ahead of each, within ${PACK} m, into its lane and ` +
             'into it; and their guns, if any, on it' },
