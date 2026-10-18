@@ -260,7 +260,10 @@ driving is act 1's game, and the robot takes over as the fantasy moves on.
     starts braking for the car: closing at 150-190 km/h in act 4, autocruise braked from about 5 s out, and the gap it
     kept never came within 4 s (the owner, 18 Oct: it "stopped using the flash and slowed down instead"). An act 4
     run on Reckless auto-drive with Hunter and Fuel madness braked 3.6 s a race instead of 7.3 (6 races, same seeds),
-    with as many rear-ends as before (3). With Game of chicken it plays chicken too: in
+    with as many rear-ends as before (3). The simulations, against the code before: `act2.py` P1 after 14, 20, 15,
+    18, 13, 20, 16, 16 races (16.5 on average; before 16.0, two seeds slower by 3 and 1: the flashes go sooner, so
+    fewer are left for the last pass on #1), `act3.py` the same, `act4.py` the tank in 14, 15, 12, 13 (before 13, 17,
+    12, 15). With Game of chicken it plays chicken too: in
     an oncoming lane it flashes the car coming at you once a flash would make it swerve (under 4.5 s away). Reckless
     auto-drive plays chicken with or without it, and Auto flash works alongside it when it is on. (Claude's call:
     "uses everything, even Auto flash" read as: everything you own and have switched on; the switch is still yours.)
