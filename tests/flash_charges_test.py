@@ -82,6 +82,8 @@ with sync_playwright() as p:
             js("lane = fromLane = 0; carX = ROAD_LANES[0]")  # out of its way before it arrives
             check("no chicken: the flash is spent, the oncoming car stays in your lane", got["flashes"] == n0 - 1 and got["x"] == -1.75, got)
         else:
+            # the swerve takes about a second of game time: wait for it, not the clock (a busy machine runs the game slower)
+            pg.wait_for_function("Math.abs(ch.x - LANES.oncoming[1]) < 0.05 || ch.z < odo", timeout=15000); got["x"] = js("ch.x")
             pg.wait_for_function("ch.z < odo - 10", timeout=15000)
             check("chicken: the oncoming car swerves into its other lane and passes, no head-on",
                   got["flashes"] == n0 - 1 and got["x"] == -5.25 and js("crashes") == 0 and js("run.phase") == "run",
@@ -98,6 +100,8 @@ with sync_playwright() as p:
             js("lane = fromLane = 0; carX = ROAD_LANES[0]")
             check("Auto flash, no chicken: no flash spent on the oncoming car", got["flashes"] == n0 and got["x"] == -1.75, got)
         else:
+            # the swerve takes about a second of game time: wait for it, not the clock (a busy machine runs the game slower)
+            pg.wait_for_function("Math.abs(ch.x - LANES.oncoming[1]) < 0.05 || ch.z < odo", timeout=15000); got["x"] = js("ch.x")
             pg.wait_for_function("ch.z < odo - 10", timeout=15000)
             check("Auto flash with chicken: flashes the oncoming car, it swerves, no head-on",  # across, or nearly
                   got["flashes"] == n0 - 1 and abs(got["x"] + 5.25) < 0.3 and js("crashes") == 0 and js("run.phase") == "run",
