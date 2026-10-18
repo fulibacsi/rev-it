@@ -1,9 +1,9 @@
 """The fourth act, simulated: from the gang (51 fleet cars, the car and fleet as act 3 leaves them) to beating the tank.
-The bot drives like act2.py's (Reckless auto-drive) with Mad Max habits on top: within 150 m of the car in the reticle
+The bot drives like act2.py's (Reckless auto-drive) with War Rig habits on top: within 150 m of the car in the reticle
 it takes the wheel, moves into that car's lane and rams it (the aids would brake or steer round), unless its own car is
 past 60% damage; it holds the trigger whenever the reticle's car is in reach (the tank too, which it doesn't ram).
 After each race: metres pay the repairs and the rest becomes miles for the fleet (dues and tuning first, then more
-cars); parts buy the Mad Max upgrades, the cheapest first (Auto gun too: it fires no more than the bot already does,
+cars); parts buy the War Rig upgrades, the cheapest first (Auto gun too: it fires no more than the bot already does,
 but a phone player would buy it). Usage: act4.py [races] [seed] [overrides], the overrides
 some JavaScript run first to try other numbers, such as "PARTS.car = 20; UPGRADES.guns.base = 80"."""
 import json, sys
@@ -18,11 +18,11 @@ START = dict(power=10, rev=4, gears=3, tyres=4, time=6, clutch=1, gas=1, shift=1
              fleet=51, dues=3, fleetPace=3, fleetFlash=1)
 RESERVE = 3000   # metres kept back for the nitro refill and repairs
 FLEET = ["dues", "fleetPace", "fleet"]
-MADMAX = ["bullbar", "armour", "spikes", "guns", "autogun"]
+WARRIG = ["bullbar", "armour", "spikes", "guns", "autogun"]
 RACES = int(sys.argv[1]) if len(sys.argv) > 1 else 60
 SEED = int(sys.argv[2]) if len(sys.argv) > 2 else None
 OVERRIDES = sys.argv[3] if len(sys.argv) > 3 else ""
-HABITS = """window.afterAids = () => { // the bot's Mad Max habits, after the aids have had their say
+HABITS = """window.afterAids = () => { // the bot's War Rig habits, after the aids have had their say
   firing = false; wheel.held = false;
   if (run.phase !== 'run' || !target || target.wreck) return;
   const d = target.z - odo;
@@ -53,7 +53,7 @@ with sync_playwright() as p:
         js(f"convert(Math.max(0, Math.floor((progress.bank - {RESERVE}) / MILE)))")
         bought = js(f"""(() => {{ const b = [], buyAll = (ids, cheapest) => {{ for (;;) {{ const ok = ids.filter(id => !whyNot(id));
             if (!ok.length) return; const id = cheapest ? ok.sort((a, c) => cost(a) - cost(c))[0] : ok[0]; buy(id); b.push(id + lvl(id)); }} }};
-            buyAll({json.dumps(MADMAX)}, true); buyAll({json.dumps(FLEET)}, false); return b.filter(x => !x.startsWith('fleet') || x.startsWith('fleetP')); }})()""")
+            buyAll({json.dumps(WARRIG)}, true); buyAll({json.dumps(FLEET)}, false); return b.filter(x => !x.startsWith('fleet') || x.startsWith('fleetP')); }})()""")
         fleet = js("lvl('fleet')")
         res = ("P" + str(r["p"])) if r["p"] else r["dnf"] + (f" ({r['hit']})" if r["hit"] else "")
         print(f"race {race:2}: {res:18} totals {r['totals']:2} +{r['parts']:3} parts  heat {r['heat']:3}%  dmg {r['dmg']:3}%  fleet {fleet:2}"

@@ -90,7 +90,7 @@ function carSprite(color, front, beams) { // rear view (same direction) or front
   });
 }
 const CARS = CAR_COLORS.map(c => ({ rear: carSprite(c, false), front: carSprite(c, true), beams: carSprite(c, true, true) }));
-const WRECKS = new Map(); // a totalled car's rear view (Distance's Mad Max): tipped over, burnt, smoking
+const WRECKS = new Map(); // a totalled car's rear view (Distance's War Rig): tipped over, burnt, smoking
 function wreckSprite(img) {
   if (!WRECKS.has(img)) WRECKS.set(img, sprite(180, 140, (g, w, h) => {
     g.save(); g.translate(w / 2, h * 0.6); g.rotate(-0.35); g.drawImage(img, -w / 2, -h * 0.6, w, h); g.restore();
@@ -188,8 +188,8 @@ function spawnCar(car, d) {
     hit: -Infinity, // when you last ran into it (s on the clock): one crash per bump
     warned: false, beams: 0, // an oncoming car: has it flashed and honked at you yet, and for how much longer
     swerve: null, // an oncoming car flashed out of your way (a game of chicken): the lane it is moving to
-    wreck: false, hp: null, // totalled (Distance's Mad Max), and its health when hurt (null: unhurt)
-    police: false, stage: null, passing: false, // a police car (Distance's Mad Max, police.js), how far into its move
+    wreck: false, hp: null, // totalled (Distance's War Rig), and its health when hurt (null: unhurt)
+    police: false, stage: null, passing: false, // a police car (Distance's War Rig, police.js), how far into its move
     tank: false, w: undefined, h: undefined, // the final boss (boss.js), and its size, m
   });
 }
@@ -278,7 +278,7 @@ function flashAhead() {
   for (const c of traffic) if (sameLane(c.x, carX) && yields(c, to)) Object.assign(c, { lane: to, yielding: true, cool: LANE_GAP.car + 2 });
 }
 
-// a totalled car (Distance's Mad Max) skids off onto the right shoulder and stops there
+// a totalled car (Distance's War Rig) skids off onto the right shoulder and stops there
 function skid(c, dt) {
   c.v = Math.max(0, c.v - 14 * dt);
   c.z += c.v * dt;

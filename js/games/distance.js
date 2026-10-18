@@ -96,13 +96,13 @@ const money = n => debugSave ? '∞' : fmt(n); // a debug wallet shows as bottom
 
 // the garage's pages: the car itself and the robot driver, paid in metres; the illegal and forbidden, paid in race
 // points, open once the race is revealed (race.js fills it); the Fleet, paid in miles, open once you have won a race
-// (fleet.js); Mad Max, paid in parts, open once you have totalled a car (gang.js). Each page's currency: the key in
+// (fleet.js); War Rig, paid in parts, open once you have totalled a car (gang.js). Each page's currency: the key in
 // progress, and its unit
 const PAGES = [['workshop', 'Workshop'], ['autopilot', 'Autopilot'], ['black', 'Black market'], ['fleet', 'Fleet'],
-               ['madmax', 'Mad Max']];
-const WALLETS = { workshop: 'bank', autopilot: 'bank', black: 'points', fleet: 'miles', madmax: 'parts' };
+               ['warrig', 'War Rig']];
+const WALLETS = { workshop: 'bank', autopilot: 'bank', black: 'points', fleet: 'miles', warrig: 'parts' };
 const UNITS = { bank: 'm', points: 'pts', miles: 'mi', parts: 'parts' };
-const pageOpen = id => id === 'black' ? progress.racing : id === 'fleet' ? fleetOpen() : id === 'madmax' ? gangOpen() : true;
+const pageOpen = id => id === 'black' ? progress.racing : id === 'fleet' ? fleetOpen() : id === 'warrig' ? gangOpen() : true;
 const fleetOpen = () => progress.finish === 1;
 const pageOf = u => u.tab ?? 'workshop';
 const wallet = u => WALLETS[pageOf(u)];     // which of progress's currencies it costs
@@ -265,7 +265,8 @@ function renderGarage(bought) {
       (run.won ? '<br><b>P1! The racers you beat are open to offers: the Fleet is open, paid in miles.</b>' : '') +
       (arOn() && !gangOpen() ? `<br><b>${GANG} of the field race for you: your fleet is a gang now. Its first job for ` +
         'you: total a car.</b> Ram the car in the reticle until its health bar is empty.' : '') +
-      (run.firstTotal ? '<br><b>Totalled! The gang is yours: the Mad Max page is open, paid in parts.</b>' : '') +
+      (run.firstTotal ? '<br><b>Totalled! No law out here any more. The gang is yours, and your car becomes a war rig: the War Rig page ' +
+        'is open, paid in parts.</b>' : '') +
       (run.beatTank ? `<br><b>GAME OVER. You beat the tank: the road is yours, and the police have given up (heat 0%).</b> ` +
         `+${TANK.parts} parts. Play on: the race, the fleet and the gang carry on, and the next tank is tougher.`
         : run.boss ? '<br><b>The tank held the road.</b> The heat is down to half: push for it again.'

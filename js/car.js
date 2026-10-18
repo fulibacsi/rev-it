@@ -21,7 +21,7 @@ let spinning = false;
 // into a car this step, impact: how ({ kmh, headOn, car }); brokenGears: gears that won't go in (Distance's damage)
 let lane = 0, fromLane = 0, carX = 0, slide = 0, crashed = false, impact = null, openLanes = 2, brokenGears = [];
 let steering = 1; // how quickly the car moves over (Distance's steering upgrade)
-let bullBar = 0, spikes = false; // Distance's Mad Max: a bump costs you less speed; a side-swipe costs you none
+let bullBar = 0, spikes = false; // Distance's War Rig: a bump costs you less speed; a side-swipe costs you none
 
 // the car as it left the factory (only the Distance garage tunes it)
 const STOCK_GRIP = CAR.grip;

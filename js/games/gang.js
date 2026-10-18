@@ -1,28 +1,27 @@
-// Mad Max, Distance's fourth act. Once your fleet outnumbers the rivals (51 of the 100 race for you) it is a gang, and
-// the windscreen gains an AR layer: a reticle and a health bar on the car ahead, kept on it until you pass it or total
-// it. Its first job for you: total a car. A ram is a hit (three for a car, five for a racer, six for the police; a bull
-// bar makes them count up to three times), and one closing at over 200 km/h totals it outright; at 0 health it skids
-// off onto the shoulder (road.js) and you collect its parts. A totalled rival is out of the race (race.js position). The first total opens the Mad Max page,
-// paid in parts: it is to the Fleet what the Black market is to the Workshop. Its gear is yours and the gang's: with
-// a bull bar a fleet car side-swipes a rival beside it; with guns (last) the wheel's red marker is your trigger and the
-// gang shoots at rivals too.
-
+// The War Rig, Distance's fourth act (called Mad Max until 18 Oct). Once your fleet outnumbers the rivals (51 of the
+// 100 race for you) it is a gang, and the windscreen gains an AR layer: a reticle and a health bar on the car ahead,
+// kept on it until you pass it or total it. Its first job for you: total a car. A ram is a hit (three for a car, five
+// for a racer, six for the police; a bull bar makes them count up to three times), and one closing at over 200 km/h
+// totals it outright; at 0 health it skids off onto the shoulder (road.js) and you collect its parts. A totalled rival
+// is out of the race (race.js position). The first total opens the War Rig page, paid in parts: it is to the Fleet
+// what the Black market is to the Workshop. Its gear is yours and the gang's: with a bull bar a fleet car side-swipes
+// a rival beside it; with guns (last) the wheel's red marker is your trigger and the gang shoots at rivals too.
 Object.assign(UPGRADES, {
   // prices in parts (10 a car, 25 a racer), from the simulations (tests/balance/act4.py, 14 Oct): about 25 races from
   // the gang to the tank, something to buy every few races, the guns as the last big save
-  bullbar: { name: 'Bull bar', tab: 'madmax', max: 3, base: 20, growth: 2.5,
+  bullbar: { name: 'Bull bar', tab: 'warrig', max: 3, base: 20, growth: 2.5,
              info: l => l ? `a hit hurts them ${Math.round(200 * l / 3)}% more and costs you less speed; the gang ` +
                `side-swipes rivals beside it (${20 * l} damage)` : 'the factory bumper' },
-  armour: { name: 'Armour plating', tab: 'madmax', max: 3, base: 30, growth: 2.5,
+  armour: { name: 'Armour plating', tab: 'warrig', max: 3, base: 30, growth: 2.5,
             info: l => l ? `collisions do ${25 * l}% less damage to your car` : 'factory panels' },
-  spikes: { name: 'Spiked hubs', tab: 'madmax', max: 1, base: 150,
+  spikes: { name: 'Spiked hubs', tab: 'warrig', max: 1, base: 150,
             info: () => 'a side-swipe (into a car while moving over) costs you no speed and counts one more hit; ' +
               "the gang's swipes do 30 more" },
-  guns: { name: 'Guns', tab: 'madmax', max: 3, base: 400, growth: 2, needs: ['spikes'],
+  guns: { name: 'Guns', tab: 'warrig', max: 3, base: 400, growth: 2, needs: ['spikes'],
           info: l => l ? `the wheel's red marker (or G) fires at the car in the reticle: ${GUN * l} damage a shot, ` +
             `4 a second, up to ${RANGE} m; the gang fires at rivals once a second` : 'unarmed' },
   // the owner's idea (14 Oct): on a phone your thumbs are busy steering and on the pedals
-  autogun: { name: 'Auto gun', tab: 'madmax', max: 1, base: 200, needs: ['guns'],
+  autogun: { name: 'Auto gun', tab: 'warrig', max: 1, base: 200, needs: ['guns'],
              info: () => 'fires for you whenever the car in the reticle is in reach and in sight; the marker reads AUTO' },
 });
 const GUN = 6, RANGE = 200; // damage a shot a level; m your guns reach (the gang's: 80)
@@ -30,7 +29,7 @@ const GANG = FIELD / 2 + 1; // fleet cars that make a gang
 const health = c => c.tank ? tankHealth() : c.police ? 200 : c.racer ? 150 : 100; // full health (the tank: boss.js)
 const PARTS = { car: 10, racer: 25 }; // parts from a totalled car
 const arOn = () => progress.racing && (fleetSize() >= GANG || progress.totals > 0);
-const gangOpen = () => progress.totals > 0; // the first job done: the Mad Max page
+const gangOpen = () => progress.totals > 0; // the first job done: the War Rig page
 
 // the target: the nearest car ahead going your way (not one of yours, not a wreck), kept while it is in your guns'
 // reach until you pass it or total it; further up the road, the nearest again. Gone when it is off the road (a run

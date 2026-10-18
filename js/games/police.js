@@ -1,7 +1,8 @@
-// Police heat, the end of Mad Max. Totals and shots raise the heat (progress.wanted, 0 to 1), slowly, so you have to
-// push for it; it stays between races and can't be bribed down. The police scanner on the right A-pillar shows it. The
-// hotter, the more police: they never come at you from behind (there is no rear view), they overtake you, cut in
-// and brake; while you drive in the oncoming lanes they floor it at you head-on. Past the top the tank comes (boss.js).
+// Police heat, the end of the War Rig act. Totals and shots raise the heat (progress.wanted, 0 to 1), slowly, so you
+// have to push for it; it stays between races and can't be bribed down. The police scanner on the right A-pillar shows
+// it. The hotter, the more police: they never come at you from behind (there is no rear view), they overtake you, cut
+// in and brake; while you drive in the oncoming lanes they floor it at you head-on. Past the top the tank comes
+// (boss.js).
 
 // heat a total (by kind) or a shot: half the first guesses, so 100% comes about as the guns can be afforded (act4.py)
 const WANTED = { car: 0.01, racer: 0.015, police: 0.04, gang: 0.005, shot: 0.00025 };

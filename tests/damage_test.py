@@ -21,7 +21,8 @@ with sync_playwright() as p:
     pg.screenshot(path=f"{OUT}/dmg_gate.png")
     js("progress.damage = 95")
     for _ in range(4): pg.wait_for_timeout(1000); print("   at 95%:", js("({ gear, locked, thr: +throttle.toFixed(2), gasP: +gasPedal.toFixed(2), rpm: Math.round(rpm), red: engine.redline, kmh: Math.round(speed * 3.6), state, clutchP: +clutchPedal.toFixed(2) })"))
-    pg.wait_for_function("popped > 0", timeout=20000); print("popped out at 95%:", st(), "| flash:", js("document.getElementById('flash').textContent"))
+    # about one pop in 6 s of game time: a minute of the clock, as a busy machine runs the game slower
+    pg.wait_for_function("popped > 0", timeout=60000); print("popped out at 95%:", st(), "| flash:", js("document.getElementById('flash').textContent"))
     # over the double yellow, into an oncoming car
     js("progress.damage = 30; applyUpgrades(); buildGate()")
     kb.press("ArrowLeft"); pg.wait_for_timeout(1200); kb.press("ArrowLeft"); pg.wait_for_timeout(1500)
