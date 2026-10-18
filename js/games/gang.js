@@ -34,12 +34,13 @@ Object.assign(UPGRADES, {
   // the owner's idea (18 Oct): autocruise hunts the car in the reticle (aids.js hunt), as act4.py's bot did by hand; a
   // switch. Price: a first guess, see act4.py
   hunter: { name: 'Hunter', tab: 'warrig', max: 1, base: 100, needs: ['cruise'],
-            info: () => 'autocruise hunts the car in the reticle: into its lane and into it. Not the tank, and it ' +
-              'backs off past 60% damage' },
-  // the owner's idea (18 Oct): the stereo plays the War Rig's own music instead of synthwave (stereo.js, the war tapes);
+            info: () => 'adds to Autocruise (and Reckless auto-drive): it hunts the car in the reticle, into its lane ' +
+              'and into it. Not the tank, and it backs off past 60% damage' },
+  // the owner's idea (18 Oct): the stereo plays the War Rig's own music instead of synthwave (stereo.js: three tapes, the
+  // owner's, made with Suno);
   // a switch, so synthwave is a tap away. No use for speed. Price: a first guess, see act4.py
   warradio: { name: 'War Rig radio', tab: 'warrig', max: 1, base: 100, needs: ['stereo'],
-              info: () => "the stereo tunes in to the War Rig's own: war drums and fuzz guitar, and darksynth" },
+              info: () => "the stereo tunes in to the War Rig's own: three tapes of war rig anthems and darksynth" },
   // the owner's idea (18 Oct: "Fleet should have an attack upgrade so they hunt just like you"): each fleet car hunts
   // the nearest car ahead of it, rivals and traffic alike (prowl, road.js driveCar). Price: act4.py, bought a few
   // races before the tank (at 300 it came a race or two before it, at 600 after the guns)

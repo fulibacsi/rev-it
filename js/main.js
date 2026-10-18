@@ -5,7 +5,8 @@
 //   engine() / tune() when it chooses and tunes the car itself, key(k) to take a key press, crash(impact) to hear of a collision, speedo() for the
 //   speedometer's top (km/h), field() for
 //   cars it places on the road itself (racers), useFlash() to allow a headlight flash (and count it), stereo() whether
-//   the car has a stereo, tape() the tape it plays (null: off) and nextTape() to change it (stereo.js), madness() the
+//   the car has a stereo, tape() the tape it plays (null: off) and nextTape(round) to change it (round: a tape ended,
+//   so the next, round to the first; stereo.js), madness() the
 //   share of ordinary drivers gone mad, 0 to 1: no look, no signal, they jump in front of you (road.js); the main game
 //   (Distance) also:
 //   pause() as the menu opens over it, endRun() for the pause menu's END RUN, stats() for STATS }
@@ -105,6 +106,7 @@ function renderMenu() {
   $('vol-car').value = Math.round(settings.volume.car * 100);
   $('vol-music').value = Math.round(settings.volume.music * 100);
   $('reset').hidden = !started();
+  if (DISTANCE.stereo() && DISTANCE.tape() !== null) loadTape(DISTANCE.tape()); // ready when you drive (stereo.js)
   const rows = DISTANCE.stats().map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
   $('stats-list').innerHTML = $('win-stats').innerHTML = rows;
   for (const b of $('menu').querySelectorAll('.build')) b.textContent = BUILD;
@@ -133,7 +135,7 @@ function applyVolume() { // the settings' sliders: the car's sounds (engine.js) 
   carVolume = settings.volume.car;
   if (carBus) carBus.gain.value = carVolume;
   stereo.volume = settings.volume.music;
-  if (stereo.on && stereo.out) stereo.out.gain.value = MUSIC * stereo.volume;
+  if (stereo.out) stereo.out.gain.value = MUSIC * stereo.volume;
 }
 async function shareStats(out) { // STATS' SHARE: the phone's share sheet, else the clipboard, else text to copy by hand
   const text = ['Rev It: my game', ...DISTANCE.stats().map(([k, v]) => `${k}: ${v}`), BUILD, location.href.split(/[?#]/)[0]].join('\n');
