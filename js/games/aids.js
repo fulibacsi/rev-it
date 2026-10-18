@@ -95,6 +95,11 @@ function laneAssist() {
 // past, it is adaptive cruise control: it brakes, late and firmly, to match the car ahead's speed before reaching it
 // (from 300 km/h that still takes a couple of hundred metres), then follows until there is a way past.
 let cruiseBrake = false; // it has its foot on the brake (so it knows to take it off again)
+// m/s² of braking a stop would take before it starts braking, and while it keeps on: firm, as adaptive cruise control
+// is, whatever the brakes could do. They are what it was tuned with (3/4 and 1/2 of the I6's old 0.75 g brakes):
+// planned on 3/4 of the stronger brakes (18 Oct, up to 1.2 g) it braked later, got boxed in more often, and Reckless
+// auto-drive took the oncoming lane into three times the head-ons
+const CRUISE_BRAKE = 5.5, CRUISE_HOLD = 3.7;
 function autocruise() {
   if (wheel.held || lane > 1) return; // it keeps to its side of the road; over there you are on your own
   const reach = a => a && a.closing > 0 ? a.gap / a.closing : Infinity; // s until you'd hit it
@@ -115,7 +120,7 @@ function autocruise() {
   const keep = 8 + 0.4 * speed; // following distance, m
   const closing = mine ? mine.closing : 0, room = mine ? mine.gap - keep : Infinity;
   const needed = closing > 0 ? closing ** 2 / (2 * Math.max(1, room)) : 0; // to match its speed at that distance
-  if (!escape && (needed > (cruiseBrake ? 0.5 : 0.75) * hardest || room < 0 && closing > 0)) { // brake: firmly, or
+  if (!escape && (needed > (cruiseBrake ? CRUISE_HOLD : CRUISE_BRAKE) || room < 0 && closing > 0)) { // brake: firmly, or
     gasPedal = 0;                                                                            // inside the gap
     brakePedal = clamp(needed / hardest, room < 0 ? 0.3 : 0.5, 1);
     cruiseBrake = true;
