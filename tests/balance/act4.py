@@ -18,7 +18,7 @@ START = dict(power=10, rev=4, gears=3, tyres=4, time=6, clutch=1, gas=1, shift=1
              fleet=51, dues=3, fleetPace=3, fleetFlash=1)
 RESERVE = 3000   # metres kept back for the nitro refill and repairs
 FLEET = ["dues", "fleetPace", "fleet"]
-WARRIG = ["bullbar", "armour", "spikes", "guns", "autogun", "baddrivers", "hunter"]
+WARRIG = ["bullbar", "armour", "spikes", "guns", "autogun", "baddrivers", "hunter", "pack"]
 RACES = int(sys.argv[1]) if len(sys.argv) > 1 else 60
 SEED = int(sys.argv[2]) if len(sys.argv) > 2 else None
 OVERRIDES = sys.argv[3] if len(sys.argv) > 3 else ""
