@@ -34,8 +34,8 @@ Object.assign(UPGRADES, {
   // the owner's idea (18 Oct): autocruise hunts the car in the reticle (aids.js hunt), as act4.py's bot did by hand; a
   // switch. Price: a first guess, see act4.py
   hunter: { name: 'Hunter', tab: 'warrig', max: 1, base: 100, needs: ['cruise'],
-            info: () => 'autocruise hunts the car in the reticle: into its lane and into it. Not the tank, and it ' +
-              'backs off past 60% damage' },
+            info: () => 'adds to Autocruise (and Reckless auto-drive): it hunts the car in the reticle, into its lane ' +
+              'and into it. Not the tank, and it backs off past 60% damage' },
   // the owner's idea (18 Oct): the stereo plays the War Rig's own music instead of synthwave (stereo.js: three tapes, the
   // owner's, made with Suno);
   // a switch, so synthwave is a tap away. No use for speed. Price: a first guess, see act4.py

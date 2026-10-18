@@ -33,8 +33,8 @@ Object.assign(UPGRADES, { // the Black market (distance.js PAGES), paid in race 
   // doesn't make the car any quicker). A gate, not needs: one already bought keeps working without 7th gear
   recklessCruise: { name: 'Reckless auto-drive', tab: 'black', max: 1, base: 600, needs: ['cruise', 'reckless'],
                     gate: () => lvl('gear7') > 0 || 'needs 7th gear',
-                    info: () => 'autocruise without manners: the oncoming lanes, chicken, the ECU tune and nitro, ' +
-                      'as far as the car has them' },
+                    info: () => 'adds to Autocruise: the oncoming lanes, chicken, the ECU tune and nitro, as far as ' +
+                      'the car has them' },
   cooling: { name: 'Cooling', tab: 'black', max: 3, base: 60, growth: 2, needs: ['reckless'],
              info: l => l ? `the engine heats up ${15 * l}% slower` : 'factory radiator' },
   ecuRev: { name: 'ECU: rev limit', tab: 'black', max: 4, base: 50, growth: 1.6, needs: ['reckless'],
