@@ -21,6 +21,11 @@ Object.assign(UPGRADES, {
           info: l => l ? `the wheel's red marker (or G) fires at the car in the reticle: ${GUN * l} damage a shot, ` +
             `4 a second, up to ${RANGE} m; the gang fires at rivals once a second` : 'unarmed' },
   // the owner's idea (14 Oct): on a phone your thumbs are busy steering and on the pedals
+  // the owner's idea (18 Oct): ordinary traffic drops its manners (road.js driveCar) and jumps in front of you, so a
+  // cut-in is a ram, not a crash to avoid; a switch, like the aids. Price: a first guess, see act4.py
+  baddrivers: { name: 'Bad drivers', tab: 'warrig', max: 1, base: 60,
+                info: () => 'panic on the road: drivers stop checking their mirrors and pull out in front of you. Ram one ' +
+                  'that does: totalled, it had it coming' },
   autogun: { name: 'Auto gun', tab: 'warrig', max: 1, base: 200, needs: ['guns'],
              info: () => 'fires for you whenever the car in the reticle is in reach and in sight; the marker reads AUTO' },
 });
@@ -74,14 +79,15 @@ const HIT = 34, NUDGE = 30, OHKO = 200;
 function ram(i) {
   const c = i.car;
   if (!c || c.wreck || c.fleet || i.headOn || !i.side && i.kmh < NUDGE) return;
-  if (i.kmh > OHKO && !c.tank) return total(c, false, true);
+  if (i.kmh > OHKO && !c.tank) return total(c, false, 'OHKO!');
+  if (c.cut > 0) return total(c, false, 'HAD IT COMING!'); // Bad drivers: it cut in on you, it's totalled (road.js c.cut)
   hurtCar(c, HIT * (1 + 2 / 3 * lvl('bullbar') + (i.side && spikes ? 1 : 0)) * (c.tank ? 0.2 : 1));
 }
 function hurtCar(c, hp, gang) {
   c.hp = (c.hp ?? health(c)) - hp;
   if (c.hp <= 0) total(c, gang);
 }
-function total(c, gang, ohko) { // the parts are yours, whoever did it; the heat too (police.js)
+function total(c, gang, how) { // the parts are yours, whoever did it; the heat too (police.js); how: the HUD's word for it
   if (c.tank) return tankDown(c); // boss.js
   const parts = c.racer ? PARTS.racer : PARTS.car;
   raiseHeat(gang ? WANTED.gang : c.police ? WANTED.police : c.racer ? WANTED.racer : WANTED.car);
@@ -91,7 +97,7 @@ function total(c, gang, ohko) { // the parts are yours, whoever did it; the heat
   run.parts += parts;
   run.totals++;
   if (progress.totals === 1) run.firstTotal = true;
-  flash(`${gang ? `THE GANG TOTALLED #${c.racer}` : ohko ? 'OHKO!' : 'TOTALLED'} +${parts} PARTS`, '#ff6a4a', true);
+  flash(`${gang ? `THE GANG TOTALLED #${c.racer}` : how ?? 'TOTALLED'} +${parts} PARTS`, '#ff6a4a', true);
 }
 
 // the gang at work (fleet.js teamwork): with a bull bar a fleet car side-swipes a rival beside it, every 3 s at most;

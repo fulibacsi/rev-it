@@ -5,8 +5,9 @@
 //   engine() / tune() when it chooses and tunes the car itself, key(k) to take a key press, crash(impact) to hear of a collision, speedo() for the
 //   speedometer's top (km/h), field() for
 //   cars it places on the road itself (racers), useFlash() to allow a headlight flash (and count it), stereo() whether
-//   the car has a stereo, tape() the tape it plays (null: off) and nextTape() to change it (stereo.js); the main game
-//   (Distance) also: pause() as the menu opens over it, endRun() for the pause menu's END RUN, stats() for STATS }
+//   the car has a stereo, tape() the tape it plays (null: off) and nextTape() to change it (stereo.js), badDrivers()
+//   when ordinary traffic should pull out without a look or a signal (road.js); the main game (Distance) also:
+//   pause() as the menu opens over it, endRun() for the pause menu's END RUN, stats() for STATS }
 const fmt = n => Math.round(n).toLocaleString('en-US');
 
 // settings kept between visits: the engine for the games that let you choose, best scores, the layout, the volumes

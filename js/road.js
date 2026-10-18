@@ -184,6 +184,7 @@ function spawnCar(car, d) {
     z: odo + d, dir: oncoming ? -1 : 1, lane, look: CARS[Math.floor(rand() * CARS.length)],
     x: oncoming ? LANES.oncoming[rand() < 0.5 ? 0 : 1] : MY_LANES[lane],
     v: kmh / 3.6, want: kmh / 3.6, signal: 0, // m/s now, and what it cruises at; s of indicator before it pulls out
+    cut: 0, jumped: false, // a bad driver: s it counts as having just cut in on you; whether it has had its chance to
     d: NaN, // distance last frame: unknown for a fresh car, so it can't trigger a pass-by sound
     hit: -Infinity, // when you last ran into it (s on the clock): one crash per bump
     warned: false, beams: 0, // an oncoming car: has it flashed and honked at you yet, and for how much longer
@@ -231,12 +232,24 @@ function driveCar(c, dt) { // follow at a safe distance, or pull out and pass
   const lead = leader(c), gap = lead ? lead.z - c.z - CAR_LEN : Infinity, safe = 8 + 1.2 * c.v;
   let aim = c.want;
   c.cool = Math.max(0, (c.cool ?? 0) - dt);
+  c.cut = Math.max(0, (c.cut ?? 0) - dt); // s it still counts as having just cut in (a bad driver: aids.js takeRam)
   if (c.fleet) teamwork(c, dt); // one of your fleet (fleet.js)
+  // a bad driver (the game's badDrivers(), Distance's War Rig): no look in the mirror, no indicator, out whenever quicker;
+  // and it jumps in front of you: you closing on it in its other lane, 0.8-2 s behind, it swerves across into your lane,
+  // briskly, about one car in two, once each (the owner, 18 Oct: "jump in front of the player")
+  const bad = !c.racer && !c.fleet && !!game.badDrivers?.();
+  const mine = MY_LANES.findIndex(x => sameLane(x, carX)), reach = (c.z - odo - MY_FRONT) / Math.max(0.1, speed - c.v);
+  if (bad && !c.jumped && mine >= 0 && mine !== c.lane && Math.abs(c.x - MY_LANES[c.lane]) < 0.2 && reach > 0.8 && reach < 2) {
+    c.jumped = true; // one roll of the dice a car: a 50/50 chance it jumps
+    if (rand() < 0.5) Object.assign(c, { lane: mine, yielding: true, cut: 3, cool: LANE_GAP.car });
+  }
   if (lead && gap < 2 * safe && lead.v < c.want) {
-    const other = 1 - c.lane, clear = () => roomAt(c, MY_LANES[other], 20, 30, MIRROR);
+    const [pass, mirror, signal] = bad ? [0, 0, 0] : [PASS, MIRROR, SIGNAL];
+    const other = 1 - c.lane, clear = () => roomAt(c, MY_LANES[other], 20, 30, mirror);
     let moved = false;
-    if (lead.v > c.want - PASS || c.cool || Math.abs(c.x - MY_LANES[c.lane]) > 0.2) c.signal = 0; // follows; settled first
-    else if (!c.signal) c.signal = clear() ? SIGNAL : 0;
+    if (lead.v > c.want - pass || c.cool || Math.abs(c.x - MY_LANES[c.lane]) > 0.2) c.signal = 0; // follows; settled first
+    else if (!c.signal && !signal) { if (clear()) { c.lane = other; c.cool = LANE_GAP.car; c.cut = 3; moved = true; } } // straight out
+    else if (!c.signal) c.signal = clear() ? signal : 0;
     else if ((c.signal = Math.max(0, c.signal - dt)) === 0 && clear()) { // moves over if the lane is still clear
       c.lane = other;
       c.cool = c.racer ? LANE_GAP.racer : LANE_GAP.car;

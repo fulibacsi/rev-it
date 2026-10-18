@@ -70,6 +70,9 @@ function nextCar(x, past = () => false) {
   for (const c of traffic) if (c.dir > 0 && sameLane(c.x, x) && c.z > odo && !past(c, x) && (!near || c.z < near.z)) near = c;
   return near;
 }
+// Bad drivers (the War Rig page) with a bull bar: a car that has just cut in is a ram to take, not one to avoid (the
+// owner, 18 Oct): lane assist doesn't swerve round it, autocruise doesn't brake for it or take it for a blocked lane
+const takeRam = c => c.cut > 0 && lvl('bullbar') > 0 && !!game.badDrivers?.();
 // ... how far its back is from your front, and how fast you close on it
 function carAhead(x, past) {
   const near = nextCar(x, past);
@@ -86,7 +89,7 @@ const moveOver = () => changeLane(lane ? 1 : -1); // to the other lane
 // clear. It doesn't brake: boxed in, you still have to.
 function laneAssist() {
   if (wheel.held || lane > 1 || !settled()) return; // on the wrong side of the road you are on your own
-  const a = carAhead(MY_LANES[lane]);
+  const a = carAhead(MY_LANES[lane], takeRam);
   if (a && a.closing > 0 && a.gap / a.closing < 1.8 && laneClear(MY_LANES[1 - lane], a.gap + 20)) moveOver();
 }
 
@@ -103,13 +106,13 @@ const CRUISE_BRAKE = 5.5, CRUISE_HOLD = 3.7;
 function autocruise() {
   if (wheel.held || lane > 1) return; // it keeps to its side of the road; over there you are on your own
   const reach = a => a && a.closing > 0 ? a.gap / a.closing : Infinity; // s until you'd hit it
-  const mine = carAhead(MY_LANES[lane]), theirs = carAhead(MY_LANES[1 - lane]);
+  const mine = carAhead(MY_LANES[lane], takeRam), theirs = carAhead(MY_LANES[1 - lane], takeRam);
   const roomBeside = laneClear(MY_LANES[1 - lane], MY_FRONT + 6) && reach(theirs) > 2.5; // can move over now, safely
   // which lane goes further: with auto flash and a flash left, an ordinary car is no obstacle (it will be flashed out
   // of the way), nor is one already moving out of the lane for a flash; a racer in front, which won't move over, is
   // overtaken in the other lane
-  const leaving = (c, x) => c.yielding ? !sameLane(MY_LANES[c.lane], x)
-    : c !== target && aid('autoflash') && run.flashes > 0 && yields(c, 1 - c.lane);
+  const leaving = (c, x) => takeRam(c) || (c.yielding ? !sameLane(MY_LANES[c.lane], x)
+    : c !== target && aid('autoflash') && run.flashes > 0 && yields(c, 1 - c.lane));
   const further = x => reach(carAhead(x, leaving));
   const escape = roomBeside && further(MY_LANES[1 - lane]) > further(MY_LANES[lane]) + 0.5;
   if (settled() && (escape && reach(mine) < 8 || lane === 1 && roomBeside && reach(mine) > 6 && reach(theirs) > 8)) moveOver();
@@ -162,7 +165,7 @@ function recklessLanes() {
   const reach = a => a && a.closing > 0 ? a.gap / a.closing : Infinity, brave = chicken && run.flashes > 0;
   const tank = run.tank && !run.tank.wreck; // boss.js: it can't be passed, so no going round it into the traffic
   if (lane <= 1) {
-    const boxed = reach(carAhead(MY_LANES[lane])) < 3 && reach(carAhead(MY_LANES[1 - lane])) < 3;
+    const boxed = reach(carAhead(MY_LANES[lane], takeRam)) < 3 && reach(carAhead(MY_LANES[1 - lane], takeRam)) < 3;
     if (lane === 1 && boxed && !tank && speed > 15 && (meets(ROAD_LANES[2]) > 6 || brave)) changeLane(-1);
     return;
   }
