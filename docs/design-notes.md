@@ -350,6 +350,13 @@ on the horizon, and the guns would fire at nothing else).
   | Guns | 3 | 400 | 2 | needs Spiked hubs: 6 damage a shot a level, 4 shots a second, up to 200 m; the gang fires too |
   | Auto gun | 1 | 200 | | needs Guns: fires for you while the reticle's car is in reach and in sight; the marker reads AUTO; ON/OFF in the garage |
 
+- **The kit shows on your car** (the owner, 18 Oct), drawn in the cockpit's frame as bought, each part from its level
+  up: armour as riveted plates up the A-pillars, then a visor under the roof (clear of the mirror), then slats; the
+  bull bar's hoop over the bonnet's front edge, then uprights, then spikes; twin guns on the bonnet aimed down the
+  road (the tracers leave their muzzles), then cooling jackets, then a second barrel each side; red lamps on the guns
+  while Auto gun is on. Spiked hubs can't be seen from the seat. Placed to show either side of the cluster and above
+  the shifter on the phone (checked at 844x390 and 1440x900); Distance only.
+
 - **Guns,** last: the red marker at the top of the steering wheel becomes the trigger, with FIRE written on it (G on
   the keyboard). Held, it fires 4 shots a second from twin guns on the bonnet at the car in the reticle, if it is
   within 200 m and in sight; yellow tracers and a muzzle flash show each shot, and a miss goes off into the distance.
