@@ -41,7 +41,8 @@ Object.assign(UPGRADES, {
 const GUN = 6, RANGE = 200; // damage a shot a level; m your guns reach (the gang's: 80)
 const GANG = FIELD / 2 + 1; // fleet cars that make a gang
 const health = c => c.tank ? tankHealth() : c.police ? 200 : c.racer ? 150 : 100; // full health (the tank: boss.js)
-const PARTS = { car: 10, racer: 25 }; // parts from a totalled car
+// parts from a totalled car: 2.2 times the first guesses (with the heat), so act 4 takes about 15 races (act4.py)
+const PARTS = { car: 22, racer: 55 };
 const arOn = () => progress.racing && (fleetSize() >= GANG || progress.totals > 0);
 const gangOpen = () => progress.totals > 0; // the first job done: the War Rig page
 

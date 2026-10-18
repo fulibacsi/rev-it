@@ -18,7 +18,7 @@ with sync_playwright() as p:
     # 1. what raises the heat
     got = js("""(() => { const d = []; for (const [c, gang] of [[{}, false], [{ racer: 5 }, false], [{ police: true }, false], [{ racer: 6 }, true]]) {
         const w = progress.wanted; total(c, gang); d.push(+(progress.wanted - w).toFixed(4)); } progress.wanted = 0; return d; })()""")
-    check("a total: traffic 0.01, a racer 0.015, police 0.04, the gang's 0.005", got == [0.01, 0.015, 0.04, 0.005], got)
+    check("a total: traffic 0.022, a racer 0.033, police 0.088, the gang's 0.011", got == [0.022, 0.033, 0.088, 0.011], got)
     # 2. on the road: the scanner shows it; a shot adds a little
     js("progress.wanted = 0.37; progress.levels.guns = 1; refreshCar()"); pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     js("traffic.forEach(c => { if (!c.racer) Object.assign(c, { dir: -1, x: LANES.oncoming[1], z: odo + 700 + 60 * (c.n = (window.k = (window.k || 0) + 1)), police: false, passing: false }); else c.z = odo - (c.fleet ? 3000 : 9000); }); copClock = 99")

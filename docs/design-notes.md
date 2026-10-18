@@ -356,8 +356,8 @@ on the horizon, and the guns would fire at nothing else).
   idea). A side-swipe always counts. A head-on is still your DNF, not a total. Your fleet cars can't be hurt. (It used
   to be 0.4 of the closing speed in km/h a ram: the simulations rammed at 130–300 km/h, so one ram often did it.)
 - **Totalled** at 0 health, a car skids onto the right shoulder, tipped and smoking, and stops; you collect its parts
-  (10 from traffic, 25 from a racer). A totalled rival is out of the race and you move up; results still pay by
-  finishing position only, so wrecking can't be farmed for points.
+  (22 from traffic, 55 from a racer: see the balance results). A totalled rival is out of the race and you move up;
+  results still pay by finishing position only, so wrecking can't be farmed for points.
 - **The War Rig page** opens with the first total, paid in parts. It is to the Fleet what the Black market is to the
   Workshop.
 
@@ -417,15 +417,16 @@ on the horizon, and the guns would fire at nothing else).
 **Police heat** (`progress.wanted`, 0 to 100%) shows on a **police scanner** bolted to the right A-pillar, opposite
 the sonar: an LCD ("HEAT 37%", "PURSUIT" while police are on the road), ten lights from green to red, and a red and blue
 lamp. It shows from the War Rig act on, only on the road; the garage's report gives it too.
-- **It rises** with every total: 1% for traffic, 1.5% for a racer, 4% for a police car, 0.5% for one the gang totals;
-  and 0.025% a shot (half the first guesses: see the balancing pass). Nothing brings it down: it stays between races and can't be bribed down.
+- **It rises** with every total: 2.2% for traffic, 3.3% for a racer, 8.8% for a police car, 1.1% for one the gang
+  totals; and 0.025% a shot (see the balance results). Nothing brings it down: it stays between races and can't be
+  bribed down.
 - **Police come with it:** one every 30 s when barely wanted, down to every 6 s at the top (the first one a run after
   that wait), two on the road at most. They never come at you from behind (there is no rear view):
   - from behind they come past you in your other lane, 20 m/s quicker, cut into your lane 30 m ahead and brake hard
     for 2.5 s, then drive off up the road;
   - while you drive in the oncoming lanes one comes at you head-on, flat out (to 250 km/h), steering for you until 1.2 s
     out, so you can still get out of its way. A head-on is a DNF.
-  - They don't move over for a flash, nor swerve for chicken. They can be totalled (4% heat).
+  - They don't move over for a flash, nor swerve for chicken. They can be totalled (8.8% heat).
 - Claude's calls: the heat rates, the police numbers and moves, and the scanner on the right A-pillar instead of the
   dash (on a phone the dash is full: shifter, cluster and pedals).
 
@@ -503,6 +504,23 @@ the heat. Till then the garage says "the army has a tank ready for when you are 
     was 3.8). Scaling the parts and heat a total up 10–30% gave 20–27 at 6%; but with the Fleet at 3.5%, act 4's
     fleet grows to its 99 cars and the bigger gang totals more, so the old numbers already give 24, 25, 23, 23 (10%
     more: 20–23). Parts and heat are unchanged.
+- **Act 4 to about 15 races (18 Oct),** the owner's target for acts 3 and 4 alike. With Bad drivers and Hunter on the
+  War Rig page (the bot buys both, cheapest first), the old numbers took 29, 30, 25, 28 races to beat the tank. Parts
+  and heat a total scaled up together (a shot's heat unchanged), four seeds each:
+
+  | Parts and heat | Tank beaten in race |
+  |---|---|
+  | as before (10 a car) | 29, 30, 25, 28 |
+  | ×1.4 | 20, 21, 19, 21 |
+  | ×1.6 | 20, 20, 19, 22 |
+  | ×1.8 | 19, 16, 16, 19 |
+  | ×2.0 | 16, 17, 15, 17 |
+  | ×2.2 | 15, 15, 15, 17 |
+  | ×2.4 | 15, 15, 14, 16 |
+
+  Chosen: ×2.2, 22 parts a car and 55 a racer, the heat 2.2% a car. A War Rig upgrade every one to four races, the
+  heat at 100% one to three races before the guns, and the tank beaten at the first go every time. The prices are as
+  they were: income grows, so everything comes sooner, in the same order.
 - **Simulation tools** live in `tests/balance/` and are run from the repo root:
   - `act1.py [cheapest|value] [head-start curve or -] [traffic]`: when #100 is first passed;
   - `act2.py [races] [seed]`: races from the reveal to P1, the bot driving like Reckless auto-drive (`aids.js`). The

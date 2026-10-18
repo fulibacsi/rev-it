@@ -61,7 +61,7 @@ with sync_playwright() as p:
     trace = js("""() => new Promise(res => { const out = []; const f = () => { if (cs[0].wreck) out.push([+cs[0].x.toFixed(2), +cs[0].v.toFixed(2), Math.round(cs[0].z - odo)]);
         out.length < 12 ? requestAnimationFrame(f) : res(out); }; requestAnimationFrame(f); })""")
     got = js("({ parts: progress.parts, totals: progress.totals, run: run.parts, next: target === cs[1] })")
-    check("totalled: 10 parts, the next car in the reticle", got == {"parts": 10, "totals": 1, "run": 10, "next": True}, got)
+    check("totalled: 22 parts, the next car in the reticle", got == {"parts": 22, "totals": 1, "run": 22, "next": True}, got)
     xs, vs = [t[0] for t in trace], [t[1] for t in trace]
     check("the wreck skids towards the shoulder, slowing (then falls behind and is gone)", all(a < b for a, b in zip(xs, xs[1:])) and all(a >= b for a, b in zip(vs, vs[1:])) and js("crashes") <= 3,
           {"x": xs[::3], "v": vs[::3], "shoulder": js("+SHOULDER.toFixed(2)")})
@@ -174,7 +174,7 @@ with sync_playwright() as p:
     check("a cut-in, with a bull bar: the aids take the ram (not without one, nor once it has settled)", got == [False, True, True], got)
     got = aside("""(() => { const c = traffic.find(c => !c.racer && !c.police && !c.wreck); Object.assign(c, { dir: 1, z: odo + 30, cut: 2, hp: null });
         ram({ car: c, kmh: 60, side: false, headOn: false }); const r = [c.wreck, $('flash').textContent]; c.wreck = false; c.z = odo + 5000; return r; })()""")
-    check("Bad drivers: ram a car that cut in, it's totalled", got == [True, "HAD IT COMING! +10 PARTS"], got)
+    check("Bad drivers: ram a car that cut in, it's totalled", got == [True, "HAD IT COMING! +22 PARTS"], got)
     # 17. the war kit shows on your car as bought, each part from its level up (the owner, 18 Oct); not in other games
     kit = "[...document.querySelectorAll('#kit > g')].filter(g => getComputedStyle(g).display !== 'none').map(g => g.dataset.kit)"
     js("Object.assign(progress.levels, { bullbar: 0, armour: 0, guns: 0, autogun: 0 }); renderKit(); 0")  # drawn now, not next frame
