@@ -12,7 +12,7 @@ const UPGRADES = {
   power:  { name: 'Power', max: 10, base: 80, growth: 1.55, info: l => `+${12 * l}% torque` },
   rev:    { name: 'Rev limit', max: 4, base: 150, growth: 2, info: l => `${limiter(engine, l)} rpm` },
   gears:  { name: 'Gearbox', max: 3, base: 250, growth: 2.5, info: l => `${3 + l} gears` },
-  tyres:  { name: 'Tyres', max: 4, base: 400, growth: 1.8, info: l => `${tyreGrip(l).toFixed(1)} g grip` },
+  tyres:  { name: 'Tyres', max: 4, base: 400, growth: 1.8, info: l => `${tyreGrip(l).toFixed(1)} g grip: launches and braking` },
   time:   { name: 'Time', max: 6, base: 200, growth: 1.9, info: l => `${runTime(l)} s a run` },
   steering: { name: 'Steering', max: 3, base: 300, growth: 2, info: l => l ? `lane changes ${40 * l}% quicker` : 'stock rack' },
   flash:  { name: 'Headlight flash', max: 10, base: 300, growth: 1.25, built: 1,
