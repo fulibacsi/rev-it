@@ -368,7 +368,7 @@ on the horizon, and the guns would fire at nothing else).
   | Spiked hubs | 1 | 150 | | a side-swipe (into a car while moving over) costs you no speed and counts one more hit; the gang's 30 more damage |
   | Guns | 3 | 400 | 2 | needs Spiked hubs: 6 damage a shot a level, 4 shots a second, up to 200 m; the gang fires too |
   | Auto gun | 1 | 200 | | needs Guns: fires for you while the reticle's car is in reach and in sight; the marker reads AUTO; ON/OFF in the garage |
-  | Fuel madness | 4 | 60 | 2.5 | 25% of ordinary drivers mad a level: rusty, weaving, no mirror check or indicator, and each jumps in front of you once; ram one that cut in and it's totalled; ON/OFF in the garage |
+  | Fuel madness | 4 | 30 | 2.5 | 25% of ordinary drivers mad a level, 90% at the top: rusty, weaving, no mirror check or indicator, and each jumps in front of you once; ram one that cut in and it's totalled; a mad car pays double parts; ON/OFF in the garage |
   | War Rig radio | 1 | 100 | | needs the Car stereo: it plays the War Rig's own four tapes instead of synthwave; ON/OFF in the garage |
   | Hunter | 1 | 100 | | needs Autocruise: it hunts the car in the reticle within 150 m, into its lane and into it (not the tank; it backs off past 60% damage); ON/OFF in the garage |
 
@@ -393,12 +393,33 @@ on the horizon, and the guns would fire at nothing else).
   every other game's road is as it was). A mad driver drives as a bad driver did, without its indicator even as it
   swerves, and always jumps in front of you once when it lines up; the sane ones keep their manners, so the road
   reads. `lanes_test.py` at 160 km/h, 16 km: 3 cut-ins at 25%, 14 at 50% (about Bad drivers' 11), 14 at 75%, 22 at
-  100%; no sane driver changes lanes without its indicator. Through the game interface's `madness()` (the share).
+  90%; no sane driver changes lanes without its indicator. Through the game interface's `madness()` (the share).
+  The top level is 90%, not 100% (the owner: "there should be still an occasional sane person").
   - **The tell** (the owner left it to Claude): rust for paint (three shades), the right tail light dead, rust holes,
     and a weave in its lane (0.3 m, about every 1.6 s), drawn only: its place on the road stays put. And, the owner's
     addition, bars and spikes: bars welded over the rear window, a pipe bar across the back, and steel spikes on the
-    roof and along the bar. The paint and the weave read from afar on a phone; the rest close up. The card shows the next level and,
-    once bought, the switch beside it.
+    roof and along the bar. The paint and the weave read from afar on a phone; the rest close up. The card shows the
+    next level and, once bought, the switch beside it.
+  - **Stolen fuel: double parts.** As first built (60 parts, 2.5 times a level), buying it made act 4 longer: mad
+    drivers added about half a total a race (3.0 to 3.5), some 11 parts, while the levels cost hundreds and put the
+    guns off. `act4.py`, four seeds each:
+
+    | Variant | Tank beaten in race |
+    |---|---|
+    | never bought | 16, 16, 16, 16 |
+    | 60 parts, ×2.5 (to 100%; capped at 75%: 18, 19, 18, 20) | 18, 19, 18, 21 |
+    | 60 parts, ×2 | 17, 20, 19, 22 |
+    | 30 parts, ×2 | 18, 19, 18, 20 |
+    | 30 parts, ×2.5 | 16, 19, 16, 18 |
+    | double parts for a mad car, 60 parts, ×2.5 | 17, 17, 16, 20 |
+    | double parts, 30 parts, ×2 | 15, 17, 14, 15 |
+    | **double parts, 30 parts, ×2.5** | **15, 16, 13, 15** |
+
+    The owner's pick: a mad car carries stolen fuel and pays double parts when totalled (44, "+44 PARTS"), however it
+    is totalled; the heat is a car's. 30 parts, 2.5 times a level (30, 75, 188, 469). Bought, act 4 is back at about
+    15 races and quicker than without it, as an incremental game's purchases should be; and the rusty cars are the
+    ones to hunt. The cap made no difference to the simulation: the top level costs more than the guns, so it comes
+    after the tank.
 - **Hunter** (the owner's idea, 18 Oct: "an auto driver that hunts down cars"): autocruise hunts the car in the
   reticle while it is within 150 m, going your way: it moves into that car's lane and drives into it, without braking
   or swerving for it (autocruise leaves the lanes to it meanwhile, or its keep-right habit pulled it off the prey's
