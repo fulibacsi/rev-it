@@ -209,7 +209,7 @@ driving is act 1's game, and the robot takes over as the fantasy moves on.
       (the owner, 14 Oct, after the simulations lost tank fights to head-ons);
     - it pushes the nitro pedal when a racer is within 500 m ahead, the tyres grip, it is in 2nd or higher and isn't
       braking.
-  - Auto flash only flashes a car that will move over, never a racer, nor the car in Mad Max's reticle (that one is
+  - Auto flash only flashes a car that will move over, never a racer, nor the car in the War Rig's reticle (that one is
     to be rammed; the owner, 14 Oct: it flashed the targets away). With Game of chicken it plays chicken too: in
     an oncoming lane it flashes the car coming at you once a flash would make it swerve (under 4.5 s away). Reckless
     auto-drive plays chicken with or without it, and Auto flash works alongside it when it is on. (Claude's call:
@@ -323,7 +323,12 @@ racers you beat are open to offers". It is a garage page paid in **miles**.
 - **Simulated** (`act3.py`, seed 11, from P1 with act 2's car and 57k m): 51 fleet cars after 26 races buying dues
   first, 71 buying the cheapest first (dues came only at race 46).
 
-### Act 4: Mad Max
+### Act 4: the War Rig
+
+**The name** (the owner, 18 Oct; Mad Max before, a trademark): War Rig. It is the tanker in *Mad Max: Fury
+Road*, and the nod is wanted: an apocalypse turning ordinary people into savages. The owner: it isn't a registered
+trademark. The page opens with an outlaw's line: "No law out here any more. The gang is yours, and your
+car becomes a war rig."
 
 **The gang:** once 51 of the 100 race for you, your fleet is a gang. The garage gives its first job: total a car. The
 windscreen gains an **AR layer** (red, like a gunsight): a reticle round the nearest car ahead going your way, its
@@ -339,7 +344,7 @@ on the horizon, and the guns would fire at nothing else).
 - **Totalled** at 0 health, a car skids onto the right shoulder, tipped and smoking, and stops; you collect its parts
   (10 from traffic, 25 from a racer). A totalled rival is out of the race and you move up; results still pay by
   finishing position only, so wrecking can't be farmed for points.
-- **The Mad Max page** opens with the first total, paid in parts. It is to the Fleet what the Black market is to the
+- **The War Rig page** opens with the first total, paid in parts. It is to the Fleet what the Black market is to the
   Workshop.
 
   | Upgrade | Levels | Base | Growth | Notes |
@@ -373,7 +378,7 @@ on the horizon, and the guns would fire at nothing else).
 
 **Police heat** (`progress.wanted`, 0 to 100%) shows on a **police scanner** bolted to the right A-pillar, opposite
 the sonar: an LCD ("HEAT 37%", "PURSUIT" while police are on the road), ten lights from green to red, and a red and blue
-lamp. It shows from Mad Max on, only on the road; the garage's report gives it too.
+lamp. It shows from the War Rig act on, only on the road; the garage's report gives it too.
 - **It rises** with every total: 1% for traffic, 1.5% for a racer, 4% for a police car, 0.5% for one the gang totals;
   and 0.025% a shot (half the first guesses: see the balancing pass). Nothing brings it down: it stays between races and can't be bribed down.
 - **Police come with it:** one every 30 s when barely wanted, down to every 6 s at the top (the first one a run after
@@ -403,7 +408,7 @@ the heat. Till then the garage says "the army has a tank ready for when you are 
   drops to half, so you have to push for it again.
 - Claude's calls: the tank stayed (the owner's pick; it fits the army being called in when the police can't cope), its
   numbers, the ending as a garage message rather than a screen of its own, and play on with a tougher tank.
-- Claude's calls: the AR look, the target rule, the hit (34) and the nudge (30 km/h), the parts numbers, the Mad Max page opening
+- Claude's calls: the AR look, the target rule, the hit (34) and the nudge (30 km/h), the parts numbers, the War Rig page opening
   with the first total (the job is the way in), the illegal parts (armour and spiked hubs), how the gang uses its
   gear, and the guns' numbers (they aim themselves at the reticle: on a phone your thumbs are busy). All first
   guesses for the balancing pass.
@@ -427,8 +432,8 @@ the heat. Till then the garage says "the army has a tank ready for when you are 
   - Act 4 (`act4.py`): the first guesses took 31–36 races, mostly because the reticle stayed on last race's car (fixed
     the same day). Without that, they took 15–16, the heat sat at 100% for races before guns were affordable, and one
     level of guns could never beat the 2,000-health tank (854 short at the bell every time; at 1,200, 54 short).
-    Chosen: Mad Max prices 2–3 times the guesses, heat at half, the tank at 1,000 health and waiting for guns. Eight
-    runs: the tank beaten after 22–34 races (median 24.5), at the first go in six. Mad Max purchases every 1–4
+    Chosen: War Rig prices 2–3 times the guesses, heat at half, the tank at 1,000 health and waiting for guns. Eight
+    runs: the tank beaten after 22–34 races (median 24.5), at the first go in six. War Rig purchases every 1–4
     races up to the spiked hubs, then a 5–6 race save for the guns (fleet cars still bought every race); the heat
     reaches 100% about 3 races before the guns. The two runs that took longest lost tank fights to head-ons: boxed
     in behind the tank, Reckless auto-drive took the oncoming lane, though the tank can't be passed (it no longer
@@ -586,10 +591,7 @@ All dates are 2026.
 
 Waiting for the owner. Don't build these on a guess: ask.
 
-- **The fourth act's name** (18 Oct): the owner likes War Rig, but it is the tanker in *Mad Max: Fury Road*, so it
-  points at Mad Max as much as the old name. No registration was found (web searches only: the trademark databases
-  weren't reachable from the session); worth a search on tmsearch.uspto.gov and tmview.org (classes 9 and 41)
-  before anything is sold.
+- None right now.
 
 ## Known issues (won't fix)
 
@@ -608,7 +610,7 @@ these proposals are still open.
   - tyres as a per-race consumable;
   - cockpit cosmetics;
   - an escalating metres-to-points exchange.
-- **Acts after Mad Max:**
+- **Acts after the War Rig:**
   - Cannonball run across the country (its police heat went into phase 3).
   - Manufacturer: the Rev game returns as dyno engine design, and the traffic becomes your cars.
   - Extreme: land speed records, then a road off the planet.

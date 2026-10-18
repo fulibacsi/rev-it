@@ -207,7 +207,7 @@ function flashLights() {
 }
 $('stalk-hit').onpointerdown = e => { e.preventDefault(); flashLights(); };
 
-// ---- guns (Distance's Mad Max): with guns fitted the red marker at the top of the wheel is the trigger, FIRE on it;
+// ---- guns (Distance's War Rig): with guns fitted the red marker at the top of the wheel is the trigger, FIRE on it;
 // hold it, or G, to fire. What gets hit is the game's business (gang.js)
 let firing = false;
 drag($('trigger'), () => { firing = true; }, () => { firing = false; });

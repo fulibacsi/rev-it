@@ -78,7 +78,7 @@ body:not([data-game="distance"]) #kit { display: none; }
 .stereo-off #stereo-lcd { background: #1a1a1e; color: #66666e; }
 .stereo-off #stereo-eq u { background: #26262c; }
 
-/* the police scanner, bolted to the right A-pillar opposite the sonar (from Mad Max on, only on the road) */
+/* the police scanner, bolted to the right A-pillar opposite the sonar (from the War Rig act on, only on the road) */
 #scanner { display: none; position: fixed; right: 5vw; top: 96px; width: 120px; pointer-events: none; }
 .has-heat #scanner { display: block; }
 .garage #scanner { display: none; }

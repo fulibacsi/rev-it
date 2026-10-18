@@ -132,7 +132,7 @@ function autocruise() {
 
 // auto flash: flashes the car ahead in your lane when it is slower than you, under 4 s away and would move over: an
 // ordinary car with room in your other lane. Never a racer, so no flash is wasted (autocruise overtakes those), nor
-// the car in Mad Max's reticle (gang.js): that one is there to be rammed. With Game of chicken it plays in the
+// the car in the War Rig's reticle (gang.js): that one is there to be rammed. With Game of chicken it plays in the
 // oncoming lanes too: the car coming at you, once a flash would make it swerve
 function autoFlash() {
   if (!run.flashes) return;

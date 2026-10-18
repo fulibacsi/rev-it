@@ -39,7 +39,7 @@ Design decisions, balance targets, the playtest history and the open questions a
   **The interface a game implements is documented at the top of `main.js`.**
 - `js/games/`: `levels.js` (adaptive levels for Rev and Speed signs), `rev.js`, `signs.js`, `distance.js` (garage,
   upgrades, runs, save), `race.js` (the hidden race, the Black market's upgrades, scoring), `fleet.js` (the Fleet:
-  paid-off racers and their teamwork), `gang.js` (Mad Max: the AR target, totals, parts, guns), `police.js` (police
+  paid-off racers and their teamwork), `gang.js` (War Rig: the AR target, totals, parts, guns), `police.js` (police
   heat, the scanner, police cars), `boss.js` (the tank, the ending), `damage.js` (damage, heat, nitro), `aids.js`
   (Distance's driver aids: robot feet and hands working the same pedals and lever as the player).
 - Saves: `localStorage` keys `car-rev-settings` and `car-rev-incremental` (Distance progress). Keep these names so
@@ -72,7 +72,7 @@ uv run --no-project --with playwright playwright install chromium         # once
   `Input.dispatchTouchEvent` (a `touchEnd` lists the finger that lifts). `Emulation.setSafeAreaInsetsOverride` fakes
   the iPhone's notch and home bar. Force a layout with `settings.layout = 'touch'; applyLayout()`.
 - After changing anything that feeds Distance's economy or the race, run the simulations in `tests/balance/`
-  (`act1.py [cheapest|value]`, `act2.py`, `act3.py` for the Fleet, `act4.py` for Mad Max to the tank) and compare
+  (`act1.py [cheapest|value]`, `act2.py`, `act3.py` for the Fleet, `act4.py` for the War Rig, to the tank) and compare
   with the targets in the design notes.
 - Testing is emulation only. Say so when a change depends on how a real phone behaves.
 - The menu: the main game starts from `[data-play="distance"]` (NEW GAME, or CONTINUE with a save); the other games

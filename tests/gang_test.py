@@ -1,7 +1,7 @@
-"""Mad Max: nothing before 51 fleet cars; then the gang's first job (total a car) in the garage and the AR layer on the
+"""War Rig: nothing before 51 fleet cars; then the gang's first job (total a car) in the garage and the AR layer on the
 windscreen: a reticle and a health bar on the nearest car ahead, kept until you pass it. Bumps hurt the car you hit;
 at 0 health it skids onto the shoulder, out of your way, and pays parts. A totalled rival is out of the race. The
-first total opens the Mad Max page, paid in parts; a bull bar hurts them more and costs you less speed. Armour takes
+first total opens the War Rig page, paid in parts; a bull bar hurts them more and costs you less speed. Armour takes
 off your damage, spiked hubs make a side-swipe free and harder; with a bull bar the gang side-swipes rivals. Guns,
 last: the wheel's red marker turns into the trigger (FIRE on it), shots hurt the car in the reticle within 200 m, and
 the gang shoots at rivals. The reticle moves to a nearer car when its own is out of reach, and starts afresh each race.
@@ -25,10 +25,10 @@ with sync_playwright() as p:
     tabs = lambda: js("[...document.querySelectorAll('#tabs button')].map(b => b.textContent)")
     # 1. 50 fleet cars: no gang, no word of it
     start(50)
-    check("50 fleet cars: no Mad Max, no task", "Mad Max" not in tabs() and not re.search(r"gang|total|parts", js("$('garage').innerText"), re.I), tabs())
+    check("50 fleet cars: no War Rig, no task", "War Rig" not in tabs() and not re.search(r"gang|total|parts", js("$('garage').innerText"), re.I), tabs())
     # 2. 51: the gang's first job, in the garage; still no page
     start(51)
-    check("51 fleet cars: the gang's first job in the garage", "total a car" in js("$('report').innerText") and "Mad Max" not in tabs(), js("$('report').innerText")[-140:])
+    check("51 fleet cars: the gang's first job in the garage", "total a car" in js("$('report').innerText") and "War Rig" not in tabs(), js("$('report').innerText")[-140:])
     # 3. on the road: the reticle on the nearest car ahead, at full health, labelled
     pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     js("""traffic.forEach(c => { if (!c.racer) { c.dir = -1; c.x = LANES.oncoming[0]; c.z = odo + 4000; } else if (!c.fleet) c.z = odo - 9000; else c.z = odo - 3000; });
@@ -70,11 +70,11 @@ with sync_playwright() as p:
     js("window.r = rivals().find(c => c.racer === 30); Object.assign(r, { z: odo + 400, lane: 1, x: MY_LANES[1] })")
     p0 = js("position()"); js("total(r)"); p1 = js("position()")
     check("a totalled rival is out of the race: up a place", p1 == p0 - 1, f"P{p0} -> P{p1}")
-    # 7. the first total opens Mad Max, paid in parts
+    # 7. the first total opens War Rig, paid in parts
     js("run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
     rep = js("$('report').innerText")
-    check("the garage: the first job done, Mad Max open", "Mad Max page is open" in rep and "Mad Max" in tabs() and "parts to spend" in js("$('bank').textContent"), [rep[-120:], tabs()])
-    pg.click('[data-tab="madmax"]'); pg.wait_for_timeout(100)
+    check("the garage: the first job done, War Rig open", "War Rig page is open" in rep and "War Rig" in tabs() and "parts to spend" in js("$('bank').textContent"), [rep[-120:], tabs()])
+    pg.click('[data-tab="warrig"]'); pg.wait_for_timeout(100)
     check("the Bull bar, paid in parts", js("document.querySelector('[data-buy=\"bullbar\"]').textContent") == "20 parts", js("document.querySelector('[data-buy=\"bullbar\"]')?.textContent"))
     js("progress.parts = 100"); pg.click('[data-buy="bullbar"]'); pg.wait_for_timeout(100)
     check("bought: bull bar 1", js("[lvl('bullbar'), bullBar, progress.parts]") == [1, 1, 80], js("[lvl('bullbar'), bullBar, progress.parts]"))
