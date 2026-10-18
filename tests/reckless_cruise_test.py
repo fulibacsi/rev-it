@@ -32,6 +32,11 @@ with sync_playwright() as p:
     check("needs Autocruise", js("whyNot('recklessCruise')") == "needs Autocruise", js("whyNot('recklessCruise')"))
     js("Object.assign(progress, { levels: { steer: 1, gas: 1, shift: 1, clutch: 1, cruise: 1 } })")
     check("needs Reckless driving", js("whyNot('recklessCruise')") == "needs Reckless driving", js("whyNot('recklessCruise')"))
+    js("Object.assign(progress, { levels: { steer: 1, gas: 1, shift: 1, clutch: 1, cruise: 1, reckless: 1 } })")
+    check("needs 7th gear (18 Oct)", js("whyNot('recklessCruise')") == "needs 7th gear", js("whyNot('recklessCruise')"))
+    js("progress.levels.gear7 = 1")
+    check("with 7th gear, on sale", js("whyNot('recklessCruise')") in ("", "short"), js("whyNot('recklessCruise')"))
+    # the car below has no 7th gear: one bought before the gate keeps working (the checks that follow)
     # 2. boxed in on your side, nothing coming: over the line, past, and home again
     # up to speed on its own first, then two slow cars close ahead: under 3 s away at once, before autocruise has
     # braked to their speed (behind them at their speed it would stay: it is only boxed in while closing)
