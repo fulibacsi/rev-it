@@ -65,18 +65,18 @@ function autoShift() {
 }
 
 // ---- steering: a robot hand on the wheel (it turns by itself as the car moves over) ----
-// the nearest car going your way ahead in lane x, leaving out any that past(c, x) says won't be in your way there
+// the nearest car going your way ahead in lane x, leaving out any that past(c, x) says won't be in your way there. A
+// wreck is never in the way: it can't be hit, and skids off (the aids swerved round the cars Hunter had just totalled)
 function nextCar(x, past = () => false) {
   let near = null;
-  for (const c of traffic) if (c.dir > 0 && sameLane(c.x, x) && c.z > odo && !past(c, x) && (!near || c.z < near.z)) near = c;
+  for (const c of traffic) if (c.dir > 0 && !c.wreck && sameLane(c.x, x) && c.z > odo && !past(c, x) && (!near || c.z < near.z)) near = c;
   return near;
 }
-// Hunter (the War Rig page, the owner's idea, 18 Oct): autocruise hunts the car in the reticle (gang.js target) within
-// HUNT m: into its lane and into it. Not the tank (the guns are for that), not a car coming the other way, and not past
-// 60% damage, so it doesn't wreck you. act4.py's bot drove like this before it was an aid
-const HUNT = 150;
-const hunted = c => !!c && c === target && aid('hunter') && !c.tank && !c.wreck && c.dir > 0 && c.z > odo && c.z - odo < HUNT &&
-  progress.damage <= 60;
+// Hunter (the War Rig page, the owner's idea, 18 Oct): autocruise hunts the car in the reticle (gang.js target): into
+// its lane and into it, from as far as the reticle takes it (300 m). Within 150 m only, autocruise first steered round
+// it, then Hunter swung back into its lane (the owner, 18 Oct: it "changes lanes to avoid traffic"). Not the tank (the
+// guns are for that), not a car coming the other way, and not past 60% damage, so it doesn't wreck you
+const hunted = c => !!c && c === target && aid('hunter') && !c.tank && !c.wreck && c.dir > 0 && c.z > odo && progress.damage <= 60;
 // a car to ram, not to avoid: lane assist doesn't swerve round it, autocruise doesn't brake for it or take it for a
 // blocked lane. The one Hunter hunts; and, with a bull bar, a mad driver that has just cut in (Fuel madness, road.js)
 const takeRam = c => hunted(c) || c.cut > 0 && lvl('bullbar') > 0;
@@ -87,7 +87,7 @@ function carAhead(x, past) {
 }
 // room in lane x to move over into: nobody alongside, and nobody slower within `ahead` metres
 function laneClear(x, ahead) {
-  return !traffic.some(c => c.dir > 0 && sameLane(c.x, x) && c.z + CAR_LEN > odo - MY_REAR - 3 && c.z < odo + ahead);
+  return !traffic.some(c => c.dir > 0 && !c.wreck && sameLane(c.x, x) && c.z + CAR_LEN > odo - MY_REAR - 3 && c.z < odo + ahead);
 }
 const settled = () => Math.abs(carX - MY_LANES[lane]) < 0.3; // not already moving over
 const moveOver = () => changeLane(lane ? 1 : -1); // to the other lane
@@ -168,7 +168,7 @@ function autoFlash() {
 // when nothing is coming for 6 s, or when whatever comes can be flashed out of the way (Game of chicken and a flash
 // left). It goes home when something it can't flash away comes within 3.5 s (cutting in beside a car only to escape a
 // head-on under 2 s away), or once your side is open again. While the tank is on the road it keeps to your side: it
-// can't be passed (the owner, 14 Oct). It pushes the nitro pedal when a racer is close ahead, the tyres grip and it
+// can't be passed (the owner, 14 Oct); and while Hunter hunts, it leaves your side to it. It pushes the nitro pedal when a racer is close ahead, the tyres grip and it
 // isn't braking.
 let tunedRevs = true; // the aids rev into the tune now (see updateAids)
 // an oncoming car in your lane, under 4.5 s away, that a flash would make swerve: a game of chicken to play
@@ -186,7 +186,7 @@ function recklessLanes() {
   const tank = run.tank && !run.tank.wreck; // boss.js: it can't be passed, so no going round it into the traffic
   if (lane <= 1) {
     const boxed = reach(carAhead(MY_LANES[lane], takeRam)) < 3 && reach(carAhead(MY_LANES[1 - lane], takeRam)) < 3;
-    if (lane === 1 && boxed && !tank && speed > 15 && (meets(ROAD_LANES[2]) > 6 || brave)) changeLane(-1);
+    if (lane === 1 && boxed && !tank && !hunted(target) && speed > 15 && (meets(ROAD_LANES[2]) > 6 || brave)) changeLane(-1);
     return;
   }
   if (lane === 3) return changeLane(1); // the far oncoming lane: back towards your side
