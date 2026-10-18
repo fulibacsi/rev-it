@@ -20,6 +20,15 @@ machine or session. Keep it current: update a section when a decision changes, a
 - **Drivetrain:** the clutch and tyres slip, with tyre sliding friction at 0.7 of grip.
 - **Crashes:** hitting a slower car in your lane drops you to the lower of 35% of your speed and 40% of its speed.
   That's harsh on purpose, so you don't hit the same car again.
+- **Traffic passes the way drivers do** (after the playtests of 15–18 Oct, where cars cut in just as you got there
+  and pairs drove side by side):
+  - only when 10 km/h or more quicker than the car ahead; otherwise it follows;
+  - after a mirror check for anything closing on it within 4 s, you included (it used to be 20 m, under a second when
+    you come up 80 km/h quicker);
+  - with its indicator on for a second first (amber, with a glow so it reads on a phone), checking again before it
+    moves.
+  - `lanes_test.py` checks it: a steering player at 160–220 km/h met 12 cut-ins in 38 km before, none after; cars
+    now change lanes about an eighth as often.
 
 **Touch layout.**
 - **Detection:** a coarse pointer plus `maxTouchPoints > 1`. The menu can force either layout.
@@ -111,6 +120,11 @@ machine or session. Keep it current: update a section when a decision changes, a
 
 An incremental game. Each run is timed, every metre driven is banked, and metres buy upgrades in the garage between
 runs. A hidden race is the second act.
+
+**Each act's fantasy** (the owner, 18 Oct): act 1 is driving a car by hand; act 2 is switching lanes and enjoying the
+speed; act 3 is a collect-a-thon, the weakest fantasy; act 4 is the strongest switch, the war theme with the tank at
+the end. So there is no reward for shifting well by hand (a perfect-shift bonus was proposed and turned down): manual
+driving is act 1's game, and the robot takes over as the fantasy moves on.
 
 ### Act 1: build the car
 
@@ -386,6 +400,16 @@ the heat. Till then the garage says "the army has a tank ready for when you are 
     the Black market at 6,360 points against the ~5,200 act 2 pays (10 a race after P1), so a buyer would go without
     nitro or 7th gear for about 115 races. 600 (the owner's pick): the dearest item with 7th gear, the market 5,761.
     Act 2 then: P1 after 24, 22, 21, 19 races, Reckless auto-drive bought along the way (races 12–22).
+- **After the traffic fix (18 Oct),** same seeds: fewer crashes everywhere, so the first three acts went quicker and
+  act 4 slower (traffic no longer cuts in front of the bot to be rammed: about 3 totals a race instead of 4, so the
+  heat and the parts for guns come later).
+  - Act 1: #100 first passed on run 17, 18, 18, 19 (value) and 22, 21, 21, 23 (cheapest-first): on target, and less
+    spread. Act 2: P1 after 16, 17, 14, 17 races (was 19–24), with 43–47k metres in the bank (was 50–61k). Act 3:
+    51 fleet cars after 26, 24, 25, 26. Act 4: the tank beaten in races 28, 30, 26, 29 (was 21–27).
+  - `cruise.py`, 24 runs: autocruise 2,881 m a run (was 2,451), 20 crashes (was 35), 32% of the run on the brake
+    (was 29%); Reckless auto-drive 2,975 m (was 2,577), 20 crashes (was 36), 32% (was 28%).
+  - Acts 3 and 4 are retuned after the brakes change (act 3 to about 15 races, act 4 back to about 25). Act 2 has no
+    target of its own; it is left shorter unless the owner wants it back.
 - **Simulation tools** live in `tests/balance/` and are run from the repo root:
   - `act1.py [cheapest|value] [head-start curve or -] [traffic]`: when #100 is first passed;
   - `act2.py [races] [seed]`: races from the reveal to P1, the bot driving like Reckless auto-drive (`aids.js`). The
@@ -485,12 +509,37 @@ All dates are 2026.
   reached: last race's car, kept in the reticle (fixed). With all the aids on, the NOS pedal didn't stop autocruise
   lifting off the gas. In Mad Max, Auto flash flashed the targets out of the way. Beating the tank should be GAME
   OVER and stop the run: the end state (menus to be talked about later).
+- **15–18 Oct, the friends' playtest** (the 14 Oct build; six players from 29 min to 2 h, from act 2 to the tank,
+  feedback through the menu's SHARE and in person):
+  - Most failed runs were a car cutting in at the last moment, too fast to do anything about; two cars side by side
+    ahead meant a crash (fixed: see "Traffic passes the way drivers do"). The brakes could do more; is the brake
+    even worth using in a timed run?
+  - Too complicated at first: one couldn't get off the start line for three runs, another skipped the first run's
+    text. One asked for a tutorial for the hidden features; others named the surprises (the Black market, the acts
+    that open later) as the best part.
+  - One liked it more before buying the whole Autopilot; another's favourite upgrade was Auto shift. One regretted
+    spending race points on Reckless auto-drive instead of 7th gear. Autocruise drives too timidly (nicknamed after a
+    famous slow co-driver).
+  - The Fleet felt slow: full races to push through before driving mattered again in Mad Max.
+  - Liked: the synthwave mood, the boxer's sound, shifting as a skill ("TIL my gear shifting is not efficient"). One
+    expected the turbo to flutter on lift-off ("stututu").
+  - The owner: the stereo's tapes sound too alike; Mad Max needs a name of its own; guns and armour should show.
+- **Decided (18 Oct), to build in this order, a PR each:** traffic (done above); brakes limited by tyre grip, not a
+  new upgrade; act 3 down to about 15 races (from 25); prompts on the windscreen for getting off the line; Reckless
+  auto-drive only after 7th gear; turbo flutter; tapes that differ in hook, groove, sounds, chords and form; the
+  bonnet with the weapons on it in view; the fourth act's new name. Then a research round on nicer sprites (with
+  what they add to the download). Not now: a perfect-shift reward (see each act's fantasy, under Distance), a
+  tutorial beyond the first runs (the surprises are the point), a port to an engine such as Godot (the web build
+  stays; Steam and the app stores take a wrapped web game, consoles would need an engine).
 
 ## Open questions
 
 Waiting for the owner. Don't build these on a guess: ask.
 
-- None right now.
+- **The fourth act's name** (18 Oct): the owner likes War Rig, but it is the tanker in *Mad Max: Fury Road*, so it
+  points at Mad Max as much as the old name. No registration was found (web searches only: the trademark databases
+  weren't reachable from the session); worth a search on tmsearch.uspto.gov and tmview.org (classes 9 and 41)
+  before anything is sold.
 
 ## Known issues (won't fix)
 

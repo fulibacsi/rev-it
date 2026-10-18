@@ -183,7 +183,7 @@ function spawnCar(car, d) {
   Object.assign(car, {
     z: odo + d, dir: oncoming ? -1 : 1, lane, look: CARS[Math.floor(rand() * CARS.length)],
     x: oncoming ? LANES.oncoming[rand() < 0.5 ? 0 : 1] : MY_LANES[lane],
-    v: kmh / 3.6, want: kmh / 3.6, // m/s now, and what it cruises at
+    v: kmh / 3.6, want: kmh / 3.6, signal: 0, // m/s now, and what it cruises at; s of indicator before it pulls out
     d: NaN, // distance last frame: unknown for a fresh car, so it can't trigger a pass-by sound
     hit: -Infinity, // when you last ran into it (s on the clock): one crash per bump
     warned: false, beams: 0, // an oncoming car: has it flashed and honked at you yet, and for how much longer
@@ -194,9 +194,13 @@ function spawnCar(car, d) {
   });
 }
 const sameLane = (a, x) => Math.abs(a - x) < CAR_W; // two lateral positions close enough to touch
-function roomAt(car, x, back, front) { // nobody going this way, you included, within back..front metres of car in x
-  for (const o of traffic) if (o !== car && o.dir > 0 && sameLane(o.x, x) && o.z > car.z - back && o.z < car.z + front) return false;
-  return !(sameLane(carX, x) && odo + MY_FRONT > car.z - back && odo - MY_REAR < car.z + front);
+// nobody going this way, you included, within back..front metres of car in x; with a mirror check (mirror s), nobody
+// further back who would close those metres on it in that time either: 20 m is under a second when you come up
+// 100 km/h quicker
+function roomAt(car, x, back, front, mirror = 0) {
+  const behind = v => back + Math.max(0, v - car.v) * mirror;
+  for (const o of traffic) if (o !== car && o.dir > 0 && sameLane(o.x, x) && o.z > car.z - behind(o.v) && o.z < car.z + front) return false;
+  return !(sameLane(carX, x) && odo + MY_FRONT > car.z - behind(speed) && odo - MY_REAR < car.z + front);
 }
 function spawnAhead(car, d = 900 + rand() * 600) { // over the horizon, with room around it in both your lanes, so
   for (let tries = 0; tries < 6; tries++, d += 60) { // it never appears beside another car as a wall nobody can pass
@@ -219,24 +223,40 @@ function leader(car) { // the nearest thing ahead in its lane: a car, or you
   return lead;
 }
 const LANE_GAP = { racer: 5, car: 2 }; // seconds a car waits between lane changes: racers don't weave to block you
+// passing, as drivers do (the playtests of 15-18 Oct: cars cut in just as you got there, and pairs drove side by side):
+// only when clearly quicker than the car ahead (PASS m/s, 10 km/h), or it follows; after a look in the mirror for
+// anything closing in under MIRROR s; and with SIGNAL s of indicator first
+const PASS = 10 / 3.6, MIRROR = 4, SIGNAL = 1;
 function driveCar(c, dt) { // follow at a safe distance, or pull out and pass
   const lead = leader(c), gap = lead ? lead.z - c.z - CAR_LEN : Infinity, safe = 8 + 1.2 * c.v;
   let aim = c.want;
   c.cool = Math.max(0, (c.cool ?? 0) - dt);
   if (c.fleet) teamwork(c, dt); // one of your fleet (fleet.js)
   if (lead && gap < 2 * safe && lead.v < c.want) {
-    const other = 1 - c.lane;
-    if (!c.cool && Math.abs(c.x - MY_LANES[c.lane]) < 0.2 && roomAt(c, MY_LANES[other], 20, 30)) { // settled first
+    const other = 1 - c.lane, clear = () => roomAt(c, MY_LANES[other], 20, 30, MIRROR);
+    let moved = false;
+    if (lead.v > c.want - PASS || c.cool || Math.abs(c.x - MY_LANES[c.lane]) > 0.2) c.signal = 0; // follows; settled first
+    else if (!c.signal) c.signal = clear() ? SIGNAL : 0;
+    else if ((c.signal = Math.max(0, c.signal - dt)) === 0 && clear()) { // moves over if the lane is still clear
       c.lane = other;
       c.cool = c.racer ? LANE_GAP.racer : LANE_GAP.car;
-    } else aim = Math.min(aim, lead.v * (gap < safe ? 0.9 : 1));
-  }
+      moved = true;
+    }
+    if (!moved) aim = Math.min(aim, lead.v * (gap < safe ? 0.9 : 1));
+  } else c.signal = 0;
   c.v += clamp(aim - c.v, -6 * dt, 2 * dt);
   const lat = c.yielding ? 3.5 : 1.6; // m/s sideways; briskly when getting out of your way
   c.x += clamp(MY_LANES[c.lane] - c.x, -lat * dt, lat * dt);
   if (Math.abs(c.x - MY_LANES[c.lane]) < 0.05) c.yielding = false;
   c.z += c.v * dt;
   if (lead && c.z > lead.z - CAR_LEN - 0.5) { c.z = lead.z - CAR_LEN - 0.5; c.v = Math.min(c.v, lead.v); } // never into it
+}
+
+// the side a car going your way indicates (-1 left, 1 right, 0 not): while it waits to pull out, and as it moves over
+function indicator(c) {
+  if (c.dir < 0 || c.wreck || c.tank) return 0;
+  const d = MY_LANES[c.signal ? 1 - c.lane : c.lane] - c.x;
+  return Math.abs(d) > 0.3 ? Math.sign(d) : 0;
 }
 
 // flashed: an ordinary car ahead of you in your lane (within 250 m) moves over to your other lane if there is room.
@@ -369,6 +389,7 @@ function drawRoad(g, w, h, dt) {
   const ahead = [...traffic.map(c => ({ z: c.z, x: c.x, w: c.w ?? 1.8, h: c.h ?? 1.4, img: look(c), car: c })), ...marks]
     .map(o => ({ ...o, d: o.z - odo })).filter(o => o.d > 2 && o.d < (ROAD.draw - 2) * ROAD.segment).sort((p, q) => q.d - p.d);
   for (const c of traffic) c.seen = null; // where each car is on the screen (canvas px), when it is to be seen
+  const blinkOn = performance.now() % 660 < 330; // indicators: about 1.5 flashes a second
   let t = 0;
   for (let n = ROAD.draw - 1; n > 0; n--) {
     const a = proj[n], s = segments[(base + n) % ROAD.count], fog = Math.min(1, 1.6 - n / ROAD.draw * 1.6);
@@ -382,6 +403,15 @@ function drawRoad(g, w, h, dt) {
       const k = a.k + (b.k - a.k) * f, cx = a.x + (b.x - a.x) * f, cy = a.y + (b.y - a.y) * f;
       drawClipped(o.img, cx + (o.x - o.w / 2) * k, cy - o.h * k, o.w * k, o.h * k, clip[n]);
       if (o.car && cy - o.h * k < clip[n]) o.car.seen = [cx + (o.x - o.w / 2) * k, cy - o.h * k, o.w * k, o.h * k];
+      const side = o.car && indicator(o.car), lampY = cy - 0.5 * o.h * k; // over the outer half of a tail light
+      if (side && blinkOn && lampY + 0.14 * o.h * k < clip[n]) {
+        const lx = cx + (o.x - o.w / 2 + (side < 0 ? 0.03 : 0.86) * o.w) * k, r = Math.max(3, 0.3 * o.w * k);
+        const glow = g.createRadialGradient(lx + 0.055 * o.w * k, lampY + 0.07 * o.h * k, 0, lx + 0.055 * o.w * k, lampY + 0.07 * o.h * k, r);
+        glow.addColorStop(0, '#ffa31acc'); glow.addColorStop(1, '#ffa31a00'); // a glow, so it reads far off on a phone
+        g.fillStyle = glow; g.fillRect(lx + 0.055 * o.w * k - r, lampY + 0.07 * o.h * k - r, 2 * r, 2 * r);
+        g.fillStyle = '#ffb23a';
+        g.fillRect(lx, lampY, 0.11 * o.w * k, 0.14 * o.h * k);
+      }
     }
   }
   g.globalAlpha = 1;
