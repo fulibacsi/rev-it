@@ -17,6 +17,8 @@ machine or session. Keep it current: update a section when a decision changes, a
   | Turbo I6 | 3.27 | 5.2 s |
 
 - **Torque** is a flat curve, so power peaks near the redline. The rev limiter is a short fuel cut.
+- **The turbo I6 flutters** when you lift off on boost ("stu-tu-tu", a dozen puffs slowing over about 0.6 s, as loud as
+  the blow-off valve's hiss it replaced): a playtester expected it of a JDM turbo (18 Oct).
 - **Drivetrain:** the clutch and tyres slip, with tyre sliding friction at 0.7 of grip.
 - **Crashes:** hitting a slower car in your lane drops you to the lower of 35% of your speed and 40% of its speed.
   That's harsh on purpose, so you don't hit the same car again.

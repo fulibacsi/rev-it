@@ -1,4 +1,4 @@
-// Engine: recorded sound loops, starter motor, blow-off valve and the rpm model.
+// Engine: recorded sound loops, starter motor, turbo flutter and the rpm model.
 // Classic script: shares globals with the other scripts index.html loads, in that order.
 
 // loops: [rpm, base64 WAV] recorded at a steady rpm, built by tools/make_sounds.py into assets/sounds.js
@@ -15,7 +15,7 @@ const ENGINES = [ // weakest first: the garage unlocks them in this order
   // big-cam V8, heavy flywheel: lumpy idle, steady but slow to rev and slow to drop; lots of torque
   { name: 'Muscle V8', loops: SOUNDS.v8, idle: 825, redline: 7000, drive: 5000, tauDown: 1.3, lope: 40,
     inertia: 0.76, mass: 1650, final: 3.42 },
-  // Supra 2JZ with a big turbo: lazy off idle, then pulls hard once spooled, blow-off on lift
+  // Supra 2JZ with a big turbo: lazy off idle, then pulls hard once spooled, flutters on lift
   { name: 'JDM Turbo I6', loops: SOUNDS.supra, idle: 1000, redline: 8000, drive: 7000, tauDown: 0.9, turbo: true,
     inertia: 0.57, mass: 1500, final: 3.27 },
 ];
@@ -47,7 +47,7 @@ async function start() {
   filter.frequency.value = 12000;
   filter.connect(master);
 
-  // one second of white noise for the blow-off valve
+  // one second of white noise: the turbo's flutter, the wind, passing cars
   noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
   const d = noise.getChannelData(0);
   for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
@@ -117,18 +117,27 @@ function loopGains(r) {
   return g;
 }
 
-function blowOff() { // turbo blow-off valve "pssh"
+// the turbo's flutter on lift-off, "stu-tu-tu-tu" (the 18 Oct playtest expected it of a JDM turbo): with no blow-off
+// valve the boost has nowhere to go but back through the compressor, which chops it into a burst of puffs. A dozen of
+// them, slowing and fading, through a band of noise that falls in pitch as the pressure drops
+function flutter() {
   if (!ctx) return;
   const src = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g = ctx.createGain(), t = ctx.currentTime;
   src.buffer = noise;
   bp.type = 'bandpass';
-  bp.frequency.setValueAtTime(4000, t);
-  bp.frequency.exponentialRampToValueAtTime(1500, t + 0.5);
-  g.gain.setValueAtTime(boost, t);
-  g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+  bp.Q.value = 2.5;
+  bp.frequency.setValueAtTime(2400, t);
+  bp.frequency.exponentialRampToValueAtTime(900, t + 0.7);
+  g.gain.setValueAtTime(0.0001, t);
+  let at = t + 0.01, gap = 0.035, level = 3.5 * boost; // its puffs peak about as loud as a blow-off valve's hiss
+  for (let i = 0; i < 12; i++, at += gap, gap *= 1.07, level *= 0.8) { // a puff: in fast, out over most of the gap
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.exponentialRampToValueAtTime(level, at + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + 0.75 * gap);
+  }
   src.connect(bp).connect(g).connect(master);
-  src.start();
-  src.stop(t + 0.5);
+  src.start(t);
+  src.stop(at + 0.05);
 }
 
 function whoosh(relSpeed, side) { // a car passing (side -1 left, 1 right); louder the faster you pass each other
@@ -247,17 +256,17 @@ function updateEngine(dt, now) {
   const want = state === 'running' ? gasPedal : 0;
   throttle = want > throttle ? Math.min(want, throttle + dt / PEDAL_IN) : Math.max(want, throttle - dt / PEDAL_OUT);
   hang = Math.max(0, hang - dt);
-  if (gasPedal > 0.4) lifted = false; // lifting off: turbo blow-off valve, and the boxer's rev hang
+  if (gasPedal > 0.4) lifted = false; // lifting off: the turbo's flutter, and the boxer's rev hang
   else if (gasPedal < 0.15 && !lifted) {
     lifted = true;
-    if (e.turbo && boost > 0.5) blowOff();
+    if (e.turbo && boost > 0.5) flutter();
     if (e.revHang) hang = e.revHang;
   }
   if (state === 'cranking') {
     rpm = 250 + 80 * Math.sin(now / 40); // starter motor chugging
     if (now > crankUntil) { state = 'running'; rpm = e.idle + 1000; } // catches, flares, settles to idle
   }
-  // boost follows the throttle above 3000 rpm: spools up slowly (lag), dumps fast through the blow-off valve
+  // boost follows the throttle above 3000 rpm: spools up slowly (lag), dumps fast (the flutter)
   const boostAim = state === 'running' && rpm > 3000 ? throttle : 0;
   boost += (boostAim - boost) * Math.min(1, dt / (boostAim > boost ? 0.7 : 0.15));
   cutLeft = Math.max(0, cutLeft - dt); // rev limiter: a short fuel cut each time the redline is reached
