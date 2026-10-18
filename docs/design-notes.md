@@ -419,7 +419,7 @@ on the horizon, and the guns would fire at nothing else).
     is totalled; the heat is a car's. 30 parts, 2.5 times a level (30, 75, 188, 469). Bought, act 4 is back at about
     15 races and quicker than without it, as an incremental game's purchases should be; and the rusty cars are the
     ones to hunt. The cap made no difference to the simulation: the top level costs more than the guns, so it comes
-    after the tank.
+    after the tank. As built (90% at the top): the tank in races 15, 15, 13, 14, the bot at 75% by then.
 - **Hunter** (the owner's idea, 18 Oct: "an auto driver that hunts down cars"): autocruise hunts the car in the
   reticle while it is within 150 m, going your way: it moves into that car's lane and drives into it, without braking
   or swerving for it (autocruise leaves the lanes to it meanwhile, or its keep-right habit pulled it off the prey's
