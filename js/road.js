@@ -379,7 +379,7 @@ const yields = (c, to) => !c.racer && !c.police && !c.tank && !c.yielding && c.d
 // nobody is there within 25 m of it
 let chicken = false;
 const across = x => sameLane(x, LANES.oncoming[0]) ? LANES.oncoming[1] : LANES.oncoming[0];
-const swerves = c => c.dir < 0 && !c.police && c.swerve == null && c.z > odo && c.z - odo <= 250 && !(sameLane(carX, across(c.x)) ||
+const swerves = c => c.dir < 0 && !c.police && !mad(c) && c.swerve == null && c.z > odo && c.z - odo <= 250 && !(sameLane(carX, across(c.x)) ||
   traffic.some(o => o !== c && sameLane(o.swerve ?? o.x, across(c.x)) && Math.abs(o.z - c.z) < 25));
 function flashAhead() {
   if (lane > 1) { // over there they are coming at you: only a game of chicken moves them
@@ -400,6 +400,14 @@ function skid(c, dt) {
 // this frame's racers not in your fleet, and the cars not in the race, in the road's own order: what your fleet looks
 // for (fleet.js, gang.js) a frame, each of its cars searching the whole road was most of the traffic's work in act 4
 let RIVALS = [], ORDINARY = [];
+// a head-on with a mad driver (Fuel madness) isn't the end of your run (the owner, 18 Oct): you lose most of your speed
+// and the game hears of a hard crash (Distance: heavy damage, and the mad car totalled); it ends up spun round, stopped
+function madHeadOn(c) {
+  impact = { kmh: (speed + c.v) * 3.6, headOn: true, mad: true, car: c };
+  speed *= 0.25;
+  crashed = true;
+  Object.assign(c, { dir: 1, v: 0, want: 0, swerve: null });
+}
 function updateTraffic(dt, clock) {
   RIVALS = traffic.filter(o => o.racer && !o.fleet); ORDINARY = traffic.filter(o => !o.racer);
   for (const c of traffic) {
@@ -407,7 +415,11 @@ function updateTraffic(dt, clock) {
     else if (c.police) policeDrive(c, dt); // police.js
     else if (c.tank) tankDrive(c, dt); // boss.js
     else if (c.dir > 0) driveCar(c, dt);
-    else { c.z -= c.v * dt; if (c.swerve != null) c.x += clamp(c.swerve - c.x, -3.5 * dt, 3.5 * dt); } // as brisk as yielding
+    else { // oncoming: a mad driver steers for you while you are on its side, until 1.2 s out (as the police do)
+      if (mad(c) && lane > 1 && (c.z - odo) / Math.max(1, speed + c.v) > 1.2) c.x += clamp(carX - c.x, -3 * dt, 3 * dt);
+      c.z -= c.v * dt;
+      if (c.swerve != null) c.x += clamp(c.swerve - c.x, -3.5 * dt, 3.5 * dt); // as brisk as yielding
+    }
     const d = c.z - odo;
     if (c.d > 0 && d <= 0) whoosh(Math.abs(speed - c.dir * c.v) * 3.6, c.x < carX ? -0.7 : 0.7); // went past the driver
     c.d = d;
@@ -421,7 +433,7 @@ function updateTraffic(dt, clock) {
     }
     // you ran into it: your front into its back, sideways into it while changing lanes, or head-on
     const touching = !c.wreck && sameLane(c.x, carX) && c.z < odo + MY_FRONT && c.z + CAR_LEN > odo - MY_REAR && clock - c.hit > 1.5;
-    if (touching) { c.hit = clock; c.dir > 0 ? bump(c) : headOn(c); }
+    if (touching) { c.hit = clock; c.dir > 0 ? bump(c) : mad(c) ? madHeadOn(c) : headOn(c); }
     // an oncoming car with you in its lane: flashes its lights and sounds its horn, once, about 3 s out
     c.beams = Math.max(0, (c.beams ?? 0) - dt);
     if (c.dir < 0 && !c.warned && sameLane(c.x, carX) && c.d > 0 && c.d < 3 * (speed + c.v)) { c.warned = true; c.beams = 2; horn(); }

@@ -53,7 +53,11 @@ machine or session. Keep it current: update a section when a decision changes, a
     with orange edges, one tail light out, bars over the rear window, and a bolted pipe bar with steel spikes along
     it and on the roof, shaded the pack's way (a lit side, a dark side). Oncoming traffic goes mad too (the owner, 18
     Oct: it had none): its front view in rust, bars over the windscreen, a spiked bull bar, one headlight out, and
-    its high beams flashed from the one it has left. They drive as they did: only the cars going your way jump in;
+    its high beams flashed from the one it has left. While you drive on its side it comes at you, steering for you
+    until 1.2 s out as the police do, and won't swerve for a game of chicken; back on your side it leaves you be. A
+    head-on with one isn't the end of the run (the owner, 18 Oct): a hard crash, most of your speed gone and a
+    head-on's damage (50%, less the armour), and the mad car totalled for its double parts ("HEAD-ON!"). With a sane
+    driver a head-on still ends it. `oncoming_test.py` checks it;
   - the indicator blinks over the outer half of each car's own tail light.
   The tank, palms and signs stay as they were.
 - **Crashes:** hitting a slower car in your lane drops you to the lower of 35% of your speed and 40% of its speed.

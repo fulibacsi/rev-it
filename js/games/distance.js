@@ -198,12 +198,15 @@ function rechargeFlash(dt) {
   if ((run.recharge += dt) >= rechargeTime()) { run.recharge = 0; run.flashes++; }
 }
 
-// a collision (once you drive recklessly): damage; a head-on, or the damage that wrecks the car, ends the run
+// a collision (once you drive recklessly): damage; a head-on, or the damage that wrecks the car, ends the run. A
+// head-on with a mad driver (Fuel madness) doesn't: it hurts as much, and the mad car is totalled
 function onCollision(i) {
   if (run.phase !== 'run') return;
   if (arOn()) ram(i); // gang.js: the car you hit takes it too
+  if (i.mad) total(i.car, false, 'HEAD-ON!'); // gang.js
   if (!damageOn()) return;
   hurt(i.kmh, i.headOn);
+  if (i.mad) { if (wrecked() && !run.limp) finishRun('wrecked'); return; }
   if (i.headOn) finishRun('head-on'); else if (wrecked() && !run.limp) finishRun('wrecked');
 }
 
