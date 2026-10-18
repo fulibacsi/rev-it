@@ -341,7 +341,9 @@ function driveCar(c, dt) { // follow at a safe distance, or pull out and pass
   const mine = MY_LANES.findIndex(x => sameLane(x, carX)), reach = (c.z - odo - MY_FRONT) / Math.max(0.1, speed - c.v);
   if (bad && !c.jumped && mine >= 0 && mine !== c.lane && Math.abs(c.x - MY_LANES[c.lane]) < 0.2 && reach > 0.8 && reach < 2)
     Object.assign(c, { jumped: true, lane: mine, yielding: true, cut: 3, cool: LANE_GAP.car });
-  if (lead && gap < 2 * safe && lead.v < c.want) {
+  const hunting = lead && lead === c.prey; // a fleet car on the hunt (gang.js prowl): no passing it, no backing off
+  if (hunting) { aim = Math.max(aim, lead.v + 3); c.signal = 0; }
+  else if (lead && gap < 2 * safe && lead.v < c.want) {
     const [pass, mirror, signal] = bad ? [0, 0, 0] : [PASS, MIRROR, SIGNAL];
     const other = 1 - c.lane, clear = () => roomAt(c, MY_LANES[other], 20, 30, mirror);
     let moved = false;
@@ -360,7 +362,10 @@ function driveCar(c, dt) { // follow at a safe distance, or pull out and pass
   c.x += clamp(MY_LANES[c.lane] - c.x, -lat * dt, lat * dt);
   if (Math.abs(c.x - MY_LANES[c.lane]) < 0.05) c.yielding = false;
   c.z += c.v * dt;
-  if (lead && c.z > lead.z - CAR_LEN - 0.5) { c.z = lead.z - CAR_LEN - 0.5; c.v = Math.min(c.v, lead.v); } // never into it
+  if (lead && c.z > lead.z - CAR_LEN - 0.5) { // never into it, unless hunting it
+    if (hunting) gangRam(c, lead);
+    c.z = lead.z - CAR_LEN - 0.5; c.v = Math.min(c.v, lead.v);
+  }
 }
 
 // the side a car going your way indicates (-1 left, 1 right, 0 not): while it waits to pull out, and as it moves over;
