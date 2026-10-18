@@ -17,6 +17,8 @@ machine or session. Keep it current: update a section when a decision changes, a
   | Turbo I6 | 3.27 | 5.2 s |
 
 - **Torque** is a flat curve, so power peaks near the redline. The rev limiter is a short fuel cut.
+- **The turbo I6 flutters** when you lift off on boost ("stu-tu-tu", a dozen puffs slowing over about 0.6 s, as loud as
+  the blow-off valve's hiss it replaced): a playtester expected it of a JDM turbo (18 Oct).
 - **Drivetrain:** the clutch and tyres slip, with tyre sliding friction at 0.7 of grip.
 - **Brakes** stop as hard as the tyres grip, as with ABS: 0.8 g on stock tyres to 1.2 g with Tyres maxed (0.9 g in
   the other games), whatever the engine weighs. A fixed 11,000 N had the heavier engines braking worse (0.70 g in the
