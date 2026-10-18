@@ -1,6 +1,7 @@
 """Hunter (the War Rig page): autocruise hunts the car in the reticle within 150 m, into its lane and into it, instead
 of steering round it or braking for it. Not the tank, not past 60% damage, and your hand on the wheel overrides it;
-switched off, autocruise is itself again. (The aids taking a mad driver's cut-in as a ram: gang_test.py.)"""
+switched off, autocruise is itself again. Nor does autocruise brake for a slower car beyond the one it hunts (the ram
+slows you to that one's speed). (The aids taking a mad driver's cut-in as a ram: gang_test.py.)"""
 from playwright.sync_api import sync_playwright
 from common import URL, launch
 CAR = ("power: 10, rev: 4, gears: 3, tyres: 4, time: 6, clutch: 1, gas: 1, shift: 1, steer: 1, cruise: 1, engine: 2, "
@@ -38,6 +39,13 @@ with sync_playwright() as p:
     # 2. Hunter: into its lane and into it, without braking for it
     js(f"({SETUP})(1)"); got = js(f"({WATCH})(8)")
     check("Hunter: into the reticle car's lane and into it, no braking for it", got["lane"] == 1 and got["hit"] and got["brake"] < 0.3, got)
+    # 2b. a slower car 40 m beyond it, and one in your other lane (no way round): no braking for the one beyond before
+    #     the ram either (autocruise did, 18 Oct)
+    js(f"({SETUP})(1); speed = 60; Object.assign(prey, {{ v: 45, want: 45 }}); "
+       "traffic.filter(c => !c.racer && !c.police && c !== prey).slice(0, 2).forEach((c, i) => Object.assign(c, { dir: 1, lane: 1 - i, "
+       "x: MY_LANES[1 - i], z: prey.z + 40 - 10 * i, v: 30, want: 30, cool: 99, hp: null, wreck: false, tank: false, hit: -Infinity, d: 160 })); 0")
+    got = js(f"({WATCH})(10)")
+    check("a slower car beyond it: no braking before the ram", got["lane"] == 1 and got["hit"] and got["brake"] < 0.3, got)
     # 3. past 60% damage it backs off: autocruise is itself again
     js(f"({SETUP})(1); progress.damage = 70; 0"); got = js(f"({WATCH})(6)")
     check("past 60% damage: no hunting", got["lane"] == 0 and not got["hit"], got)

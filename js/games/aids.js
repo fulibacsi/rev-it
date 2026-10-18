@@ -103,8 +103,10 @@ function laneAssist() {
 // autocruise: drives the whole run like a good driver. It takes whichever lane lets it go further before catching
 // a slower car, moves over only when nobody is alongside, and keeps right when that costs nothing. When it can't get
 // past, it is adaptive cruise control: it brakes, late and firmly, to match the car ahead's speed before reaching it
-// (from 300 km/h that still takes a couple of hundred metres), then follows until there is a way past.
-let cruiseBrake = false; // it has its foot on the brake (so it knows to take it off again)
+// (from 300 km/h that still takes a couple of hundred metres), then follows until there is a way past. It brakes for
+// the first car you would hit: not one already moving out of your lane (for a flash, say), and nothing while that is
+// a car to ram (the ram slows you to its speed; it braked for the car beyond the one Hunter was ramming).
+let cruiseBrake = false; // the car it has its foot on the brake for, or false (so it knows to take it off again)
 // m/s² of braking a stop would take before it starts braking, and while it keeps on: firm, as adaptive cruise control
 // is, whatever the brakes could do. They are what it was tuned with (3/4 and 1/2 of the I6's old 0.75 g brakes):
 // planned on 3/4 of the stronger brakes (18 Oct, up to 1.2 g) it braked later, got boxed in more often, and Reckless
@@ -129,12 +131,14 @@ function autocruise() {
   if (touching('brake')) { cruiseBrake = false; return; } // your foot on the brake: it's yours
   const hardest = brakeDecel(); // m/s² the brakes can do
   const keep = 8 + 0.4 * speed; // following distance, m
-  const closing = mine ? mine.closing : 0, room = mine ? mine.gap - keep : Infinity;
+  const first = nextCar(MY_LANES[lane], (c, x) => c.yielding && !sameLane(MY_LANES[c.lane], x));
+  const block = first && !takeRam(first) ? { gap: first.z - odo - MY_FRONT, closing: speed - first.v } : null;
+  const closing = block ? block.closing : 0, room = block ? block.gap - keep : Infinity;
   const needed = closing > 0 ? closing ** 2 / (2 * Math.max(1, room)) : 0; // to match its speed at that distance
   if (!escape && (needed > (cruiseBrake ? CRUISE_HOLD : CRUISE_BRAKE) || room < 0 && closing > 0)) { // brake: firmly, or
     gasPedal = 0;                                                                            // inside the gap
     brakePedal = clamp(needed / hardest, room < 0 ? 0.3 : 0.5, 1);
-    cruiseBrake = true;
+    cruiseBrake = first;
   } else {
     if (cruiseBrake) { brakePedal = 0; cruiseBrake = false; }
     if (!escape && room < 0) gasPedal = 0; // inside the gap but not closing: coast
@@ -147,15 +151,17 @@ function hunt() { // into the hunted car's lane, on your side of the road; your 
   if (to >= 0 && to !== lane) changeLane(lane < to ? -1 : 1);
 }
 
-// auto flash: flashes the car ahead in your lane when it is slower than you, under 4 s away and would move over: an
-// ordinary car with room in your other lane. Never a racer, so no flash is wasted (autocruise overtakes those), nor
-// the car in the War Rig's reticle (gang.js): that one is there to be rammed. With Game of chicken it plays in the
-// oncoming lanes too: the car coming at you, once a flash would make it swerve
+// auto flash: flashes the car ahead in your lane when it is slower than you, under 4 s away (or as soon as autocruise
+// starts braking for it: closing at 150-190 km/h in act 4 it braked from 5 s out, and slowed down instead of flashing,
+// the owner, 18 Oct) and would move over: an ordinary car with room in your other lane. Never a racer, so no flash is
+// wasted (autocruise overtakes those), nor the car in the War Rig's reticle (gang.js): that one is there to be
+// rammed. With Game of chicken it plays in the oncoming lanes too: the car coming at you, once a flash would make it
+// swerve
 function autoFlash() {
   if (!run.flashes) return;
   if (lane > 1) { if (chicken && facing()) flashLights(); return; } // over there only a game of chicken moves them
   const c = nextCar(carX);
-  if (c && c !== target && c.v < speed - 2 && (c.z - odo) / (speed - c.v) < 4 && yields(c, 1 - lane)) flashLights();
+  if (c && c !== target && c.v < speed - 2 && ((c.z - odo) / (speed - c.v) < 4 || c === cruiseBrake) && yields(c, 1 - lane)) flashLights();
 }
 
 // reckless auto-drive (Black market): autocruise without manners. Boxed in on your side it takes the near oncoming lane

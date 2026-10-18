@@ -240,7 +240,10 @@ driving is act 1's game, and the robot takes over as the fantasy moves on.
     has cooled below 0.4. Your foot on the gas, or nitro, take the tuned map whatever the heat.
   - Autocruise:
     - picks the lane that goes further and keeps right;
-    - brakes behind traffic it can't pass;
+    - brakes behind traffic it can't pass: for the first car you would hit, not one already moving out of your lane,
+      and nothing while that one is a car to ram (Hunter's, or a mad driver's cut-in with a bull bar: the ram slows
+      you to its speed). It braked for the car beyond the one Hunter was ramming (the owner, 18 Oct: it "slowed down
+      instead");
     - overtakes a racer by moving over behind an ordinary car that Auto flash can move out of the way;
     - never drives in the oncoming lanes (Reckless auto-drive does).
   - Reckless auto-drive (Black market) is autocruise without manners:
@@ -253,7 +256,11 @@ driving is act 1's game, and the robot takes over as the fantasy moves on.
     - it pushes the nitro pedal when a racer is within 500 m ahead, the tyres grip, it is in 2nd or higher and isn't
       braking.
   - Auto flash only flashes a car that will move over, never a racer, nor the car in the War Rig's reticle (that one is
-    to be rammed; the owner, 14 Oct: it flashed the targets away). With Game of chicken it plays chicken too: in
+    to be rammed; the owner, 14 Oct: it flashed the targets away). It flashes under 4 s away, or as soon as autocruise
+    starts braking for the car: closing at 150-190 km/h in act 4, autocruise braked from about 5 s out, and the gap it
+    kept never came within 4 s (the owner, 18 Oct: it "stopped using the flash and slowed down instead"). An act 4
+    run on Reckless auto-drive with Hunter and Fuel madness braked 3.6 s a race instead of 7.3 (6 races, same seeds),
+    with as many rear-ends as before (3). With Game of chicken it plays chicken too: in
     an oncoming lane it flashes the car coming at you once a flash would make it swerve (under 4.5 s away). Reckless
     auto-drive plays chicken with or without it, and Auto flash works alongside it when it is on. (Claude's call:
     "uses everything, even Auto flash" read as: everything you own and have switched on; the switch is still yours.)
