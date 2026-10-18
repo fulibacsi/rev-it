@@ -20,6 +20,9 @@ Object.assign(UPGRADES, { // the Black market (distance.js PAGES), paid in race 
   grid: { name: 'Bribe the starter', tab: 'black', base: 1, growth: 1.035, // debug mode: every slot, to test what comes after
           max: () => debugSave ? FIELD : FIELD + 1 - progress.finish,
           info: l => l ? `start P${FIELD + 1 - l}` : 'start at the back', locked: 'finish higher to unlock' },
+  rolling: { name: 'Jump the start', tab: 'black', max: ROLLING.length, base: 5, growth: 2.3,
+             gate: l => ROLLING[l][0] <= topGear() || 'needs Gearbox',
+             info: l => l ? `${ROLLING[l - 1][1]} km/h in ${ordinal(ROLLING[l - 1][0])}` : 'standing start' },
   reckless: { name: 'Reckless driving', tab: 'black', max: 1, base: 100,
               info: () => 'the oncoming lanes are yours too. From now on, collisions damage the car' },
   chicken: { name: 'Game of chicken', tab: 'black', max: 1, base: 75, needs: ['reckless', 'flash'], // the flash's next step: cheap
@@ -45,9 +48,6 @@ Object.assign(UPGRADES, { // the Black market (distance.js PAGES), paid in race 
            info: () => 'a tall overdrive: hundreds more km/h, if nitro gets you there' },
   daredevil: { name: 'Daredevil', tab: 'black', max: 1, base: 200, gate: () => everythingElse() || 'max everything else first',
                info: () => 'every second in the oncoming lanes puts 0.5 s back in the nitro tank' },
-  rolling: { name: 'Jump the start', tab: 'black', max: ROLLING.length, base: 5, growth: 2.3,
-             gate: l => ROLLING[l][0] <= topGear() || 'needs Gearbox',
-             info: l => l ? `${ROLLING[l - 1][1]} km/h in ${ordinal(ROLLING[l - 1][0])}` : 'standing start' },
 });
 
 // the car and the Black market maxed, but for the grid and Daredevil itself (the Fleet and later pages don't count)

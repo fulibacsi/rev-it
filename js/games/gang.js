@@ -21,6 +21,8 @@ Object.assign(UPGRADES, {
           info: l => l ? `the wheel's red marker (or G) fires at the car in the reticle: ${GUN * l} damage a shot, ` +
             `4 a second, up to ${RANGE} m; the gang fires at rivals once a second` : 'unarmed' },
   // the owner's idea (14 Oct): on a phone your thumbs are busy steering and on the pedals
+  autogun: { name: 'Auto gun', tab: 'warrig', max: 1, base: 200, needs: ['guns'],
+             info: () => 'fires for you whenever the car in the reticle is in reach and in sight; the marker reads AUTO' },
   // the owner's idea (18 Oct; first called Bad drivers, the id kept so saves keep it): a share of ordinary traffic goes
   // mad for fuel, drops its manners and jumps in front of you (road.js mad), so a cut-in is a ram, not a crash to
   // avoid; MADNESS more of it a level, up to MAD_TOP; a switch, like the aids. A mad car carries stolen fuel: double
@@ -37,8 +39,6 @@ Object.assign(UPGRADES, {
   // a switch, so synthwave is a tap away. No use for speed. Price: a first guess, see act4.py
   warradio: { name: 'War Rig radio', tab: 'warrig', max: 1, base: 100, needs: ['stereo'],
               info: () => "the stereo tunes in to the War Rig's own: war drums and fuzz guitar, and darksynth" },
-  autogun: { name: 'Auto gun', tab: 'warrig', max: 1, base: 200, needs: ['guns'],
-             info: () => 'fires for you whenever the car in the reticle is in reach and in sight; the marker reads AUTO' },
 });
 const GUN = 6, RANGE = 200; // damage a shot a level; m your guns reach (the gang's: 80)
 // the share of drivers gone mad a level of Fuel madness, up to 90% (the owner, 18 Oct: "there should be still an

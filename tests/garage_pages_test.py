@@ -6,8 +6,8 @@ from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
 WORKSHOP = ["Power", "Rev limit", "Gearbox", "Tyres", "Time", "Steering", "Headlight flash", "Car stereo"]
 AUTOPILOT = ["Auto flash", "Auto clutch", "Auto gas", "Auto shift", "Lane assist", "Autocruise"]
-BLACK = ["Bribe the starter", "Reckless driving", "Game of chicken", "Reckless auto-drive", "Cooling", "ECU: rev limit",
-         "ECU: power", "Nitro", "7th gear", "Daredevil", "Jump the start"]
+BLACK = ["Bribe the starter", "Jump the start", "Reckless driving", "Game of chicken", "Reckless auto-drive", "Cooling",
+         "ECU: rev limit", "ECU: power", "Nitro", "7th gear", "Daredevil"]
 errors, fails = [], []
 def check(name, ok, got=""):
     print(f"{'ok ' if ok else 'FAIL'} {name}" + (f": {got}" if got != "" else ""))
