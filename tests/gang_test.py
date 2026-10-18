@@ -151,7 +151,7 @@ with sync_playwright() as p:
     check("Auto gun switched off: no shots, the marker reads FIRE", js("[tg.hp, $('fire').textContent]") == [None, "FIRE"], js("[tg.hp, $('fire').textContent]"))
     js("progress.levels.autogun = 0; delete progress.off.autogun")
     # 15. the next race: its cars are new, so the reticle doesn't stay on the last one's rival still up the road
-    js("""window.tg = rivals().find(c => c.racer === 20); traffic.forEach(c => { if (c !== tg) c.z = c.racer ? odo - 9000 : odo + 5000; });
+    js("""window.tg = rivals().find(c => c.racer === 20 && !c.wreck) ?? rivals().find(c => !c.wreck); /* the gang may have totalled #20 */ traffic.forEach(c => { if (c !== tg) c.z = c.racer ? odo - 9000 : odo + 5000; });
         Object.assign(tg, { lane: 0, x: MY_LANES[0], z: odo + 120, v: speed, want: speed, cool: 99, hp: null, wreck: false }); target = null""")
     pg.wait_for_function("target === tg", timeout=5000)
     js("Object.assign(tg, { z: odo + 2000, v: 60, want: 60 }); run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
@@ -160,18 +160,18 @@ with sync_playwright() as p:
     check("the next race: the last one's car is gone from the reticle", got == {"old": False, "onRoad": True}, got)
     # 16. the war kit shows on your car as bought, each part from its level up (the owner, 18 Oct); not in other games
     kit = "[...document.querySelectorAll('#kit > g')].filter(g => getComputedStyle(g).display !== 'none').map(g => g.dataset.kit)"
-    js("Object.assign(progress.levels, { bullbar: 0, armour: 0, guns: 0, autogun: 0 }); 0"); pg.wait_for_timeout(100)
+    js("Object.assign(progress.levels, { bullbar: 0, armour: 0, guns: 0, autogun: 0 }); renderKit(); 0")  # drawn now, not next frame
     check("no kit bought: none shows", js(kit) == [], js(kit))
-    js("Object.assign(progress.levels, { bullbar: 2, armour: 1, guns: 1 }); 0"); pg.wait_for_timeout(100)
+    js("Object.assign(progress.levels, { bullbar: 2, armour: 1, guns: 1 }); renderKit(); 0")
     check("bull bar 2, armour 1, guns 1: those parts", js(kit) == ["armour 1", "bullbar 1", "bullbar 2", "guns 1"], js(kit))
-    js("Object.assign(progress.levels, { bullbar: 3, armour: 3, guns: 3, autogun: 1 }); 0"); pg.wait_for_timeout(100)
+    js("Object.assign(progress.levels, { bullbar: 3, armour: 3, guns: 3, autogun: 1 }); renderKit(); 0")
     check("all of it, and the Auto gun's lamps", len(js(kit)) == 10, js(kit))
     pg.screenshot(path=f"{OUT}/war_kit.png")
-    js("progress.off.autogun = true; 0"); pg.wait_for_timeout(100)
+    js("progress.off.autogun = true; renderKit(); 0")
     check("Auto gun switched off: its lamps go out", "autogun 1" not in js(kit), js(kit))
-    js("tracers.length = 0; firing = true; reload = 0; 0")
-    pg.wait_for_function("tracers.some(t => !t[0]) || run.phase !== 'run'", timeout=5000); js("firing = false; 0")
-    got = js("(() => { const t = tracers.find(t => !t[0]); if (!t) return null; const side = Math.round(t[2] / 250) % 2 ? 1 : -1; return MUZZLES[side]; })()")
+    # one shot, fired in the same call (a tracer lives 100 ms: a busy machine's next frame can miss it)
+    got = js("""(() => { tracers.length = 0; firing = true; reload = 0; fireGuns(0.016); firing = false; const t = tracers.find(t => !t[0]);
+        if (!t) return null; const side = Math.round(t[2] / 250) % 2 ? 1 : -1; return MUZZLES[side]; })()""")
     check("a shot leaves a drawn muzzle", got is not None and abs(got[1] - 512 / 900) < 0.01, got)
     js("play(FREE); 0"); pg.wait_for_timeout(100)
     check("Free drive: no kit", js("getComputedStyle($('kit')).display") == "none", js("getComputedStyle($('kit')).display"))
