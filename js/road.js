@@ -165,17 +165,22 @@ const POLICE = [0, 1].map(lit => ({ rear: policeSprite('rear', lit), front: poli
 // the back with spikes along it and on the roof, in the pack's way of shading (a lit side, a dark side)
 const RUST = ['#8b4a2b', '#6b3a22', '#9a6a44'];
 function madLook(look) {
-  return look.mad ??= lazyLook({ rear: () => madSprite(look.spec) }, { madOf: look });
+  const { spec } = look;
+  return look.mad ??= lazyLook({ rear: () => madSprite(spec, 'rear'), front: () => madSprite(spec, 'front'),
+    beams: () => madSprite(spec, 'front', true) }, { madOf: look });
 }
-function madSprite(spec) {
-  const v = CAR_ART[spec.model].rear, pad = 4, [gx0, gy0, gx1, gy1] = v.glass, [bx0, , bx1, by1] = v.body, bw = bx1 - bx0, low = by1 - gy1;
+function madSprite(spec, side, beams) { // from behind, or in front (bars over the windscreen, a spiked bull bar)
+  const v = CAR_ART[spec.model][side], pad = 4, [gx0, gy0, gx1, gy1] = v.glass, [bx0, , bx1, by1] = v.body, bw = bx1 - bx0, low = by1 - gy1;
   const primer = (x, y) => y > gy1 && x - bx0 > bw * (spec.k % 2 ? 0.64 : 0.14) && x - bx0 < bw * (spec.k % 2 ? 0.84 : 0.34) && '#7c7a70';
-  const c = pixelSprite(v, [v.car, v.bumpers[spec.bumper], v.spoilers[spec.spoiler]], mix(spec.paint, RUST[spec.k % 3], 0.75), { pad, mask: primer });
+  const parts = side === 'rear' ? [v.car, v.bumpers[spec.bumper], v.spoilers[spec.spoiler]] : [v.car, v.bumpers[spec.front]];
+  const c = pixelSprite(v, parts, mix(spec.paint, RUST[spec.k % 3], 0.75), { pad, mask: primer });
   const at = (...b) => dab(c, pad, ...b);
   for (const [x, y, w] of [[0.16, 0.7, 3], [0.62, 0.3, 2], [0.86, 0.75, 2], [0.4, 0.55, 2]]) { // rust holes, their edges orange
     at('#b0602e', bx0 + x * bw - 1, gy1 + y * low - 1, w + 2, 3); at('#3a1a0c', bx0 + x * bw, gy1 + y * low, w, 1);
   }
-  const dead = v.lamps[1]; if (dead) at('#2a0c0c', (dead[0] + dead[2]) / 2, dead[1], (dead[2] - dead[0]) / 2, dead[3] - dead[1]); // its outer half
+  const dead = (v.lamps ?? v.lights)[1]; // the right tail light's outer half, or the right headlight, out
+  if (dead && v.lamps) at('#2a0c0c', (dead[0] + dead[2]) / 2, dead[1], (dead[2] - dead[0]) / 2, dead[3] - dead[1]);
+  else if (dead) at('#24242a', dead[0], dead[1], dead[2] - dead[0], dead[3] - dead[1]);
   for (const f of [0.25, 0.5, 0.75]) { at('#1e1e22', gx0 + f * (gx1 - gx0), gy0, 2, gy1 - gy0); at('#6a6a72', gx0 + f * (gx1 - gx0), gy0, 1, gy1 - gy0); } // bars
   at('#1e1e22', gx0 + 2, (gy0 + gy1) / 2, gx1 - gx0 - 4, 2); at('#6a6a72', gx0 + 2, (gy0 + gy1) / 2, gx1 - gx0 - 4, 1);
   const spike = (x, y) => { at('#e2e2ea', x, y - 4, 1, 4); at('#8c8c96', x + 1, y - 3, 1, 3); at('#55555c', x - 1, y - 1, 1, 1); }; // steel, lit on its left
@@ -185,6 +190,11 @@ function madSprite(spec) {
   at('#3c3c42', bx0, py, bw, 4); at('#a4a4ae', bx0, py, bw, 1); at('#1e1e22', bx0, py + 3, bw, 1);
   for (let i = 1; i < 8; i++) at('#c8c8d0', bx0 + i * bw / 8, py + 2);
   for (let i = 0; i < 6; i++) spike(bx0 + (i + 0.5) * bw / 6 - 1, py); // spikes along it
+  if (beams) { // flashing you with the one headlight it has left
+    const l = v.lights[0] ?? [bw * 0.1, (v.glass[3] + by1) / 2, bw * 0.3, (v.glass[3] + by1) / 2 + 4], g = c.getContext('2d');
+    const x = (l[0] + l[2]) / 2, y = (l[1] + l[3]) / 2 + pad, glow = g.createRadialGradient(x, y, 1, x, y, c.width * 0.3);
+    glow.addColorStop(0, '#ffffff'); glow.addColorStop(1, '#fff6c800'); g.fillStyle = glow; g.fillRect(0, 0, c.width, c.height);
+  }
   return c;
 }
 const TANK_SPRITE = sprite(300, 230, (g, w, h) => { // the final boss (Distance), from behind: hull, tracks, turret, gun
@@ -314,9 +324,9 @@ const LANE_GAP = { racer: 5, car: 2 }; // seconds a car waits between lane chang
 // anything closing in under MIRROR s; and with SIGNAL s of indicator first
 const PASS = 10 / 3.6, MIRROR = 4, SIGNAL = 1;
 // Fuel madness (the game's madness(), Distance's War Rig: the share of drivers gone mad, 0 to 1): which ordinary cars
-// going your way are mad. Picked by serial in golden-ratio steps: an even spread, and no draw on the traffic's seeded
+// are mad, going your way or coming at you (the owner, 18 Oct: the oncoming traffic had none). Picked by serial in golden-ratio steps: an even spread, and no draw on the traffic's seeded
 // dice, so the road is the same as before for everyone else
-const mad = c => c.dir > 0 && !c.racer && !c.fleet && !c.police && !c.tank &&
+const mad = c => !c.racer && !c.fleet && !c.police && !c.tank &&
   c.serial * 0.6180339887 % 1 < (game.madness?.() ?? 0);
 function driveCar(c, dt) { // follow at a safe distance, or pull out and pass
   const lead = leader(c), gap = lead ? lead.z - c.z - CAR_LEN : Infinity, safe = 8 + 1.2 * c.v;
@@ -369,7 +379,7 @@ const yields = (c, to) => !c.racer && !c.police && !c.tank && !c.yielding && c.d
 // nobody is there within 25 m of it
 let chicken = false;
 const across = x => sameLane(x, LANES.oncoming[0]) ? LANES.oncoming[1] : LANES.oncoming[0];
-const swerves = c => c.dir < 0 && !c.police && c.swerve == null && c.z > odo && c.z - odo <= 250 && !(sameLane(carX, across(c.x)) ||
+const swerves = c => c.dir < 0 && !c.police && !mad(c) && c.swerve == null && c.z > odo && c.z - odo <= 250 && !(sameLane(carX, across(c.x)) ||
   traffic.some(o => o !== c && sameLane(o.swerve ?? o.x, across(c.x)) && Math.abs(o.z - c.z) < 25));
 function flashAhead() {
   if (lane > 1) { // over there they are coming at you: only a game of chicken moves them
@@ -390,6 +400,14 @@ function skid(c, dt) {
 // this frame's racers not in your fleet, and the cars not in the race, in the road's own order: what your fleet looks
 // for (fleet.js, gang.js) a frame, each of its cars searching the whole road was most of the traffic's work in act 4
 let RIVALS = [], ORDINARY = [];
+// a head-on with a mad driver (Fuel madness) isn't the end of your run (the owner, 18 Oct): you lose most of your speed
+// and the game hears of a hard crash (Distance: heavy damage, and the mad car totalled); it ends up spun round, stopped
+function madHeadOn(c) {
+  impact = { kmh: (speed + c.v) * 3.6, headOn: true, mad: true, car: c };
+  speed *= 0.25;
+  crashed = true;
+  Object.assign(c, { dir: 1, v: 0, want: 0, swerve: null });
+}
 function updateTraffic(dt, clock) {
   RIVALS = traffic.filter(o => o.racer && !o.fleet); ORDINARY = traffic.filter(o => !o.racer);
   for (const c of traffic) {
@@ -397,7 +415,11 @@ function updateTraffic(dt, clock) {
     else if (c.police) policeDrive(c, dt); // police.js
     else if (c.tank) tankDrive(c, dt); // boss.js
     else if (c.dir > 0) driveCar(c, dt);
-    else { c.z -= c.v * dt; if (c.swerve != null) c.x += clamp(c.swerve - c.x, -3.5 * dt, 3.5 * dt); } // as brisk as yielding
+    else { // oncoming: a mad driver steers for you while you are on its side, until 1.2 s out (as the police do)
+      if (mad(c) && lane > 1 && (c.z - odo) / Math.max(1, speed + c.v) > 1.2) c.x += clamp(carX - c.x, -3 * dt, 3 * dt);
+      c.z -= c.v * dt;
+      if (c.swerve != null) c.x += clamp(c.swerve - c.x, -3.5 * dt, 3.5 * dt); // as brisk as yielding
+    }
     const d = c.z - odo;
     if (c.d > 0 && d <= 0) whoosh(Math.abs(speed - c.dir * c.v) * 3.6, c.x < carX ? -0.7 : 0.7); // went past the driver
     c.d = d;
@@ -411,7 +433,7 @@ function updateTraffic(dt, clock) {
     }
     // you ran into it: your front into its back, sideways into it while changing lanes, or head-on
     const touching = !c.wreck && sameLane(c.x, carX) && c.z < odo + MY_FRONT && c.z + CAR_LEN > odo - MY_REAR && clock - c.hit > 1.5;
-    if (touching) { c.hit = clock; c.dir > 0 ? bump(c) : headOn(c); }
+    if (touching) { c.hit = clock; c.dir > 0 ? bump(c) : mad(c) ? madHeadOn(c) : headOn(c); }
     // an oncoming car with you in its lane: flashes its lights and sounds its horn, once, about 3 s out
     c.beams = Math.max(0, (c.beams ?? 0) - dt);
     if (c.dir < 0 && !c.warned && sameLane(c.x, carX) && c.d > 0 && c.d < 3 * (speed + c.v)) { c.warned = true; c.beams = 2; horn(); }
@@ -504,7 +526,7 @@ function drawRoad(g, w, h, dt) {
 
   // sprites, far to near: palms, traffic and the game's marks (x: metres from the centre line, w/h: metres)
   const marks = (game.marks?.() ?? []).map(m => ({ z: m.z, ...MARKS[m.kind](m.value) }));
-  const look = c => c.wreck ? wreckSprite(lookOf(c).rear) : c.dir > 0 ? lookOf(c).rear : c.beams ? c.look.beams : c.look.front;
+  const look = c => c.wreck ? wreckSprite(lookOf(c).rear) : c.dir > 0 ? lookOf(c).rear : c.beams ? lookOf(c).beams : lookOf(c).front;
   const placed = c => { const img = look(c), w = c.w ?? (img.pixel ? CAR_M : 1.8); // a car's art sets its height
     return { z: c.z, x: c.x + weave(c), w, h: c.h ?? (img.pixel ? w * img.height / img.width : 1.4), img, car: c }; };
   const ahead = [...traffic.map(placed), ...marks]
