@@ -36,8 +36,8 @@ function renderSonar() {
   }).join('');
 }
 
-// a fleet car's teamwork, before it drives on (road.js driveCar): its flash for you, out of your way, then in the way
-// of a rival
+// a fleet car's teamwork, before it drives on (road.js driveCar): its flash for you, out of your way, then after its
+// prey (the Hunting pack, gang.js) or in the way of a rival
 function teamwork(c, dt) {
   const other = MY_LANES[1 - c.lane], you = c.z - odo; // m it is ahead of you
   c.flashed = Math.max(0, (c.flashed ?? 0) - dt);
@@ -55,9 +55,15 @@ function teamwork(c, dt) {
     if (roomAt(c, other, 12, 25)) Object.assign(c, { lane: 1 - c.lane, yielding: true, cool: 2 });
     return;
   }
+  const yours = x => sameLane(carX, x) && you > 0 && you < 250; // that lane is yours behind it: never block you
+  if (c.prey) { // into its prey's lane, room permitting
+    const to = MY_LANES.findIndex(x => sameLane(x, c.prey.x));
+    if (to >= 0 && to !== c.lane && !yours(MY_LANES[to]) && roomAt(c, MY_LANES[to], 8, c.prey.z - c.z - 1))
+      Object.assign(c, { lane: to, cool: 2 });
+    return;
+  }
   // a rival close behind, faster, in (or heading for) the other lane: it moves across in front of it. It waits 2 s
   // between moves and a racer 5 s, so a blocked rival rarely gets past
   const rival = RIVALS.find(o => !o.wreck && MY_LANES[o.lane] === other && o.z < c.z && c.z - o.z < 60 && o.want > c.v);
-  const yours = sameLane(carX, other) && you > 0 && you < 250; // that lane is yours behind it: never block you
-  if (rival && !yours && roomAt(c, other, 8, 25)) Object.assign(c, { lane: 1 - c.lane, cool: 2 });
+  if (rival && !yours(other) && roomAt(c, other, 8, 25)) Object.assign(c, { lane: 1 - c.lane, cool: 2 });
 }

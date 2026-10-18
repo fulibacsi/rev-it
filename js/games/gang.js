@@ -5,7 +5,8 @@
 // totals it outright; at 0 health it skids off onto the shoulder (road.js) and you collect its parts. A totalled rival
 // is out of the race (race.js position). The first total opens the War Rig page, paid in parts: it is to the Fleet
 // what the Black market is to the Workshop. Its gear is yours and the gang's: with a bull bar a fleet car side-swipes
-// a rival beside it; with guns (last) the wheel's red marker is your trigger and the gang shoots at rivals too.
+// a rival beside it; with guns (last) the wheel's red marker is your trigger and the gang shoots at rivals too; with
+// the Hunting pack the gang hunts as you do.
 Object.assign(UPGRADES, {
   // prices in parts (22 a car, 55 a racer), from the simulations (tests/balance/act4.py, 14 and 18 Oct): about 15 races
   // from the gang to the tank, something to buy every few races, the guns as the last big save
@@ -39,8 +40,15 @@ Object.assign(UPGRADES, {
   // a switch, so synthwave is a tap away. No use for speed. Price: a first guess, see act4.py
   warradio: { name: 'War Rig radio', tab: 'warrig', max: 1, base: 100, needs: ['stereo'],
               info: () => "the stereo tunes in to the War Rig's own: war drums and fuzz guitar, and darksynth" },
+  // the owner's idea (18 Oct: "Fleet should have an attack upgrade so they hunt just like you"): each fleet car hunts
+  // the nearest car ahead of it, rivals and traffic alike (prowl, road.js driveCar). Price: act4.py, bought a few
+  // races before the tank (at 300 it came a race or two before it, at 600 after the guns)
+  pack: { name: 'Hunting pack', tab: 'warrig', max: 1, base: 150,
+          info: () => `fleet cars hunt as you do: the nearest car ahead of each, within ${PACK} m, into its lane and ` +
+            'into it; and their guns, if any, on it' },
 });
 const GUN = 6, RANGE = 200; // damage a shot a level; m your guns reach (the gang's: 80)
+const PACK = 150; // m ahead of it a fleet car hunts (the Hunting pack): as far as Hunter first did
 // the share of drivers gone mad a level of Fuel madness, up to 90% (the owner, 18 Oct: "there should be still an
 // occasional sane person")
 const MADNESS = 0.25, MAD_TOP = 0.9;
@@ -115,7 +123,8 @@ function total(c, gang, how) { // the parts are yours, whoever did it; the heat 
   run.parts += parts;
   run.totals++;
   if (progress.totals === 1) run.firstTotal = true;
-  flash(`${gang ? `THE GANG TOTALLED #${c.racer}` : how ?? 'TOTALLED'} +${parts} PARTS`, '#ff6a4a', true);
+  const who = c.racer ? `#${c.racer}` : c.police ? 'A POLICE CAR' : 'A CAR'; // the Hunting pack hunts anything
+  flash(`${gang ? `THE GANG TOTALLED ${who}` : how ?? 'TOTALLED'} +${parts} PARTS`, '#ff6a4a', true);
 }
 
 // the gang at work (fleet.js teamwork): with a bull bar a fleet car side-swipes a rival beside it, every 3 s at most;
@@ -123,9 +132,11 @@ function total(c, gang, how) { // the parts are yours, whoever did it; the heat 
 function gangwork(c, dt) {
   c.rammed = Math.max(0, (c.rammed ?? 0) - dt);
   c.gun = Math.max(0, (c.gun ?? 0) - dt);
-  if (lvl('guns') && !c.gun) { // a rival up to 80 m ahead of it, or beside it, or the tank within 200 m: a shot a second
+  prowl(c, dt);
+  // a shot a second at the tank within 200 m, or its prey or a rival up to 80 m ahead of it (or beside it)
+  if (lvl('guns') && !c.gun) {
     const o = run.tank && !run.tank.wreck && Math.abs(run.tank.z - c.z) < 200 ? run.tank
-      : RIVALS.find(o => !o.wreck && o.z > c.z - CAR_LEN && o.z - c.z < 80);
+      : c.prey && c.prey.z - c.z < 80 ? c.prey : RIVALS.find(o => !o.wreck && o.z > c.z - CAR_LEN && o.z - c.z < 80);
     if (o) { c.gun = 1; tracers.push([c, o, performance.now()]); hurtCar(o, GUN * lvl('guns'), true); }
   }
   if (!lvl('bullbar') || c.rammed) return;
@@ -135,6 +146,25 @@ function gangwork(c, dt) {
   c.rammed = 3;
   c.x += Math.sign(o.x - c.x) * 0.9;
   hurtCar(o, 20 * lvl('bullbar') + (spikes ? 30 : 0), true);
+}
+// the Hunting pack: a fleet car's prey (c.prey) is the nearest car ahead of it going your way within PACK m, not one
+// of yours, kept while it stays in reach; looked for twice a second (the whole road, for half the field, is a
+// lot of looking). Nothing while the tank is on the road: the gang's place is alongside it (fleet.js teamwork)
+function prowl(c, dt) {
+  c.seek = Math.max(0, (c.seek ?? 0) - dt);
+  if (!lvl('pack') || run.tank && !run.tank.wreck) { c.prey = null; return; }
+  const fair = o => o && !o.wreck && !o.fleet && !o.tank && o.dir > 0 && o.z > c.z && o.z - c.z < PACK;
+  if (!fair(c.prey)) c.prey = null;
+  if (c.prey || c.seek) return;
+  c.seek = 0.5;
+  for (const o of traffic) if (fair(o) && (!c.prey || o.z < c.prey.z)) c.prey = o;
+}
+// ... and runs into it (road.js driveCar): a hit, as yours are (the bull bar counts), and it falls back a little
+function gangRam(c, o) {
+  if (c.rammed) return;
+  c.rammed = 1.5;
+  c.v = Math.min(c.v, o.v) - 4;
+  hurtCar(o, HIT * (1 + 2 / 3 * lvl('bullbar')), true);
 }
 
 // the AR layer: the reticle round the target where it is on the screen (road.js keeps c.seen), its health above it;

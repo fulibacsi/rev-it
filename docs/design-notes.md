@@ -410,6 +410,7 @@ on the horizon, and the guns would fire at nothing else).
   | Fuel madness | 4 | 30 | 2.5 | 25% of ordinary drivers mad a level, 90% at the top: rusty, weaving, no mirror check or indicator, and each jumps in front of you once; ram one that cut in and it's totalled; a mad car pays double parts; ON/OFF in the garage |
   | War Rig radio | 1 | 100 | | needs the Car stereo: it plays the War Rig's own four tapes instead of synthwave; ON/OFF in the garage |
   | Hunter | 1 | 100 | | needs Autocruise: it hunts the car in the reticle, into its lane and into it (not the tank; it backs off past 60% damage); ON/OFF in the garage |
+  | Hunting pack | 1 | 150 | | fleet cars hunt as you do: the nearest car ahead of each, within 150 m, into its lane and into it; their guns on it too |
 
 - **Bad drivers** (the owner's idea, 18 Oct): the playtesters hated cars cutting in (fixed: traffic passes the way
   drivers do), but in the War Rig a car jumping in front of you is a ram, worth parts and heat. Bought, ordinary
@@ -470,9 +471,22 @@ on the horizon, and the guns would fire at nothing else).
   Reckless auto-drive (6 races, same seeds): lane changes other than Hunter's 0-3 a race (keep-right with nothing in
   reach, backing off past 60% damage), from 3-7; about as many cars totalled (60, 64 before), about a tenth less road
   a race (it stays behind its prey rather than passing in the oncoming lane: Hunter is a switch). `act4.py`: the tank
-  in races 14, 16, 13, 14 (14, 15, 12, 13 before). Not the tank (the guns are for that), not an oncoming car, and not past 60% damage, so it doesn't wreck you;
-  your hand on the wheel overrides it. It is what `act4.py`'s bot did by hand, so the simulation now leaves the hunting
-  to the aid once it has it. `hunter_test.py` checks all of it.
+  in races 14, 16, 13, 14 (14, 15, 12, 13 before). Not the tank (the guns are for that), not an oncoming car, and not
+  past 60% damage, so it doesn't wreck you; your hand on the wheel overrides it. It is what `act4.py`'s bot did by
+  hand, so the simulation now leaves the hunting to the aid once it has it. `hunter_test.py` checks all of it.
+- **Hunting pack** (the owner, 18 Oct: "Fleet should have an attack upgrade so they hunt just like you"; on the War
+  Rig page, paid in parts, and hunting "like you: anything", both the owner's picks): each fleet car hunts the nearest
+  car ahead of it going your way within 150 m, rivals and traffic alike (police too; not the tank, whose fight has the
+  gang alongside it). It moves into that car's lane, room permitting, and drives into it without passing it or backing
+  off: a ram is a hit as yours are (34, the bull bar counting), every 1.5 s at most, and it falls back 4 m/s. Its guns,
+  if any, fire on its prey too. It never moves into your lane in front of you (it gives way first, as ever). The
+  totals are yours: parts (double for a mad driver) and the gang's heat, with "THE GANG TOTALLED A CAR" (or the
+  racer's number, or A POLICE CAR) on the head-up display. A fleet car looks for prey twice a second, the whole road
+  for half the field being a lot of looking. `pack_test.py` checks it. Price, `act4.py` (cheapest first): at 150
+  parts it is bought in races 8-12 and the tank falls in races 14, 16, 12, 12 (14, 16, 13, 14 without it); the race
+  after buying it pays two or three times the parts (10 cars for 462 parts on one seed, 5 for 132 without). At 300
+  it came in races 11-14, a race or two before the tank (14.0 on average), and at 600 never before it (the guns,
+  400, come first).
 - **The kit shows on your car** (the owner, 18 Oct), drawn in the cockpit's frame as bought, each part from its level
   up: armour as riveted plates up the A-pillars, then a visor under the roof (clear of the mirror), then slats; the
   bull bar's hoop over the bonnet's front edge, then uprights, then spikes; twin guns on the bonnet aimed down the
