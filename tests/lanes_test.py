@@ -6,7 +6,7 @@ errors = []
 SIM = """([kmh, steer, seconds, seed]) => {
   play(FREE); state = 'off'; rng = seed; resetTraffic(); resetCar();
   const dt = 1 / 60; let clock = 1000, crashes = 0, cutins = 0, passed = 0, aiOverlap = 0, behindMe = 0, changes = 0;
-  let aiChanges = 0, unsignalled = 0, t = 0;
+  let aiChanges = 0, unsignalled = 0, saneUnsignalled = 0, t = 0;
   for (let i = 0; i < seconds * 60; i++) {
     speed = kmh / 3.6; t += dt;
     if (steer && Math.abs(carX - ROAD_LANES[lane]) < 0.3) { // a slower car under 2.5 s ahead: pull out if the other lane is clear
@@ -24,14 +24,14 @@ SIM = """([kmh, steer, seconds, seed]) => {
     traffic.forEach((c, j) => {
       if (c.dir > 0 && before[j][0] > 0 && c.d <= 0) passed++;
       if (c.dir > 0 && c.lane !== before[j][1] && Math.abs(c.z - before[j][3]) < 50) { // pulled out (not respawned)
-        aiChanges++; c.movedAt = t; if (before[j][2] < 0.9) unsignalled++;
+        aiChanges++; c.movedAt = t; if (before[j][2] < 0.9) { unsignalled++; if (!mad(c)) saneUnsignalled++; }
       }
     });
     if (crashed) { crashed = false; crashes++; if (impact.car.movedAt > t - 3) cutins++; }
     for (const a of traffic) for (const b of traffic) if (a !== b && a.dir > 0 && b.dir > 0 && sameLane(a.x, b.x) && a.z < b.z && a.z + CAR_LEN > b.z + 0.01) aiOverlap++;
     for (const c of traffic) if (c.dir > 0 && sameLane(c.x, carX) && c.z < odo - MY_REAR && c.z + CAR_LEN > odo - MY_REAR + 0.01) behindMe++;
   }
-  return { kmh, steer, crashes, cutins, passed, changes, aiChanges, unsignalled, aiOverlapFrames: aiOverlap,
+  return { kmh, steer, crashes, cutins, passed, changes, aiChanges, unsignalled, saneUnsignalled, aiOverlapFrames: aiOverlap,
            aiIntoYouFrames: behindMe, km: +(odo / 1000).toFixed(1) };
 }"""
 with sync_playwright() as p:
@@ -46,14 +46,22 @@ with sync_playwright() as p:
                 print(r)
                 changes += r["aiChanges"]; unsignalled += r["unsignalled"]
                 if steer and kmh >= 160: cutins += r["cutins"]; km += r["km"]
-    # Bad drivers (Distance's War Rig upgrade, through the game's badDrivers()): the old manners, cut-ins are back
-    bad_cutins = bad_km = bad_unsignalled = 0
-    for seed in (1001, 1002, 1003):
-        r = pg.evaluate("(a) => { FREE.badDrivers = () => true; const r = (" + SIM + ")(a); delete FREE.badDrivers; return r; }", [160, True, 120, seed])
-        bad_cutins += r["cutins"]; bad_km += r["km"]; bad_unsignalled += r["unsignalled"]
+    # Fuel madness (Distance's War Rig upgrade, through the game's madness()): a share of the drivers goes mad, drops its
+    # manners and jumps in front of you; the rest keep theirs
+    shares = pg.evaluate("[0.25, 0.5, 0.75, 0.9].map(s => Array.from({ length: 1000 }, (_, k) => (k + 1) * 0.6180339887 % 1 < s).filter(Boolean).length / 1000)")
+    mad = {}
+    for share in (0.25, 0.5, 0.75, 0.9):
+        mad[share] = {"cutins": 0, "km": 0, "unsignalled": 0, "sane": 0}
+        for seed in (1001, 1002, 1003):
+            r = pg.evaluate("([s, a]) => { FREE.madness = () => s; const r = (" + SIM + ")(a); delete FREE.madness; return r; }", [share, [160, True, 120, seed]])
+            for k, v in (("cutins", r["cutins"]), ("km", r["km"]), ("unsignalled", r["unsignalled"]), ("sane", r["saneUnsignalled"])): mad[share][k] += v
     b.close()
-print(f"{'ok' if bad_cutins >= 6 and bad_unsignalled > 0 else 'FAIL'}: Bad drivers at 160 km/h: {bad_cutins} cut-ins in {bad_km:.0f} km, "
-      f"{bad_unsignalled} lane changes without a signal")
+print(f"{'ok' if all(abs(s - x) < 0.01 for s, x in zip(shares, (0.25, 0.5, 0.75, 0.9))) else 'FAIL'}: mad drivers by serial, 1,000 cars: {shares}")
+for share, m in mad.items():
+    print(f"   {share:.0%} mad, 160 km/h: {m['cutins']} cut-ins in {m['km']:.0f} km, {m['unsignalled']} lane changes without a signal, {m['sane']} of them sane drivers'")
+cuts = [m["cutins"] for m in mad.values()]
+print(f"{'ok' if cuts[0] > 0 and cuts[-1] > 2 * cuts[0] and mad[0.5]['cutins'] >= 6 else 'FAIL'}: cut-ins grow with the madness: {cuts}")
+print(f"{'ok' if not any(m['sane'] for m in mad.values()) else 'FAIL'}: the sane drivers still indicate: {[m['sane'] for m in mad.values()]}")
 # before the fix (15-18 Oct playtests): a steering player at 160-220 km/h met a cut-in every 4 km or so
 print(f"{'ok' if cutins <= km / 25 else 'FAIL'}: {cutins} cut-ins in {km:.0f} km at 160-220 km/h, steering (at most one in 25 km)")
 print(f"{'ok' if changes and not unsignalled else 'FAIL'}: {changes - unsignalled} of {changes} lane changes indicated for a second first")

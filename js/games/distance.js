@@ -295,12 +295,13 @@ function renderGarage(bought) {
     const l = lvl(id), why = whyNot(id), max = maxOf(u), steps = typeof u.max === 'function' ? 0 : max;
     const pips = steps > 1 ? `<i>${'■'.repeat(l)}${'□'.repeat(steps - l)}</i>` : '';
     const info = max > 1 || steps === 0 ? u.info(l) + (why !== 'max' && !why.startsWith('finish') ? ` → ${u.info(l + 1)}` : '') : u.info();
-    const button = why === u.locked ? `<button disabled>${why}</button>` : why === 'max' ? (u.max !== 1 ? '<button disabled>MAX</button>'
-        : u.needs?.some(n => progress.off[n]) ? `<button disabled>needs ${UPGRADES[u.needs.find(n => progress.off[n])].name} on</button>`
-        : `<button data-toggle="${id}"${progress.off[id] ? '' : ' class="on"'}>${progress.off[id] ? 'OFF' : 'ON'}</button>`)
+    const toggle = u.needs?.some(n => progress.off[n]) ? `<button disabled>needs ${UPGRADES[u.needs.find(n => progress.off[n])].name} on</button>`
+      : `<button data-toggle="${id}"${progress.off[id] ? '' : ' class="on"'}>${progress.off[id] ? 'OFF' : 'ON'}</button>`;
+    const button = why === u.locked ? `<button disabled>${why}</button>` : why === 'max' ? (u.max !== 1 && !u.toggle ? '<button disabled>MAX</button>' : toggle)
       : why.startsWith('needs') ? `<button disabled>${why}</button>`
       : `<button data-buy="${id}"${why ? ' disabled' : ''}>${price(id, cost(id))}</button>` +
-        (steps === 0 && !why ? `<button data-max="${id}">all I can</button>` : ''); // the grid: many slots at once
+        (steps === 0 && !why ? `<button data-max="${id}">all I can</button>` : '') + // the grid: many slots at once
+        (u.toggle && l ? toggle : ''); // a switch with more levels to buy (Fuel madness)
     return `<div class="card${id === bought ? ' bought' : ''}"><b>${u.name}</b>${pips}<small>${info}</small>${button}</div>`;
   }).join('');
 }
@@ -409,7 +410,7 @@ const DISTANCE = {
   gears: topGear,
   engine: () => progress.engine, // the garage's engines, not the menu's
   tune: applyUpgrades,
-  badDrivers: () => run.phase === 'run' && lvl('baddrivers') > 0 && !progress.off.baddrivers, // gang.js
+  madness: () => run.phase === 'run' && !progress.off.baddrivers ? madShare(lvl('baddrivers')) : 0, // gang.js
   start() { Object.assign(run, { phase: 'garage', best: progress.best }); shownPhase = null; },
   pause: () => save(), // the menu opened: the time played so far is kept
   endRun() { if (run.phase === 'run') finishRun(); }, // the pause menu's END RUN: as if the time ran out

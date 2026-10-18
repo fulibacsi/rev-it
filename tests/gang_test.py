@@ -79,6 +79,18 @@ with sync_playwright() as p:
     js("progress.parts = 100"); pg.click('[data-buy="bullbar"]'); pg.wait_for_timeout(100)
     check("bought: bull bar 1", js("[lvl('bullbar'), bullBar, progress.parts]") == [1, 1, 80], js("[lvl('bullbar'), bullBar, progress.parts]"))
     pg.screenshot(path=f"{OUT}/gang_garage.png")
+    # Fuel madness (the owner, 18 Oct): levels of 25%, and a switch beside the next level's price once bought
+    card = "[...document.querySelector('[data-buy=\"baddrivers\"], [data-toggle=\"baddrivers\"]').closest('.card').querySelectorAll('b, small, button')].map(e => e.textContent)"
+    got = js(card)
+    check("Fuel madness: its card, 30 parts, 25% at the first level", got[0] == "Fuel madness" and "double parts" in got[1] and got[1].endswith("→ 25% of drivers mad for fuel") and got[2:] == ["30 parts"], got)
+    js("progress.parts = 1000"); pg.click('[data-buy="baddrivers"]'); pg.wait_for_timeout(100)
+    got = js(card)
+    check("bought: the next level's price and an ON switch", got[2:] == ["75 parts", "ON"] and got[1] == "25% of drivers mad for fuel → 50% of drivers mad for fuel", got)
+    pg.click('[data-toggle="baddrivers"]'); pg.wait_for_timeout(100)
+    check("switched off", js(card)[2:] == ["75 parts", "OFF"] and js("progress.off.baddrivers") is True, js(card))
+    js("progress.levels.baddrivers = 4; renderGarage()")
+    check("at the top (90%: still the odd sane driver): the switch alone", js(card)[1:] == ["90% of drivers mad for fuel", "OFF"], js(card))
+    js("delete progress.off.baddrivers; progress.levels.baddrivers = 0; progress.parts = 80; renderGarage()")
     # 8. the bull bar at 3: you carry on at the car's speed, and it takes 2.5 times the damage
     js("progress.levels.bullbar = 3; refreshCar()")
     got = js("(() => { const c = { v: 20, hp: null, racer: 0 }; speed = 60; bump(c); const kept = speed; ram(impact); return [Math.round(kept), c.wreck]; })()")
@@ -158,12 +170,31 @@ with sync_playwright() as p:
     pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000); pg.wait_for_timeout(200)
     got = js("({ old: target === tg, onRoad: !target || traffic.includes(target) })")
     check("the next race: the last one's car is gone from the reticle", got == {"old": False, "onRoad": True}, got)
-    # 16. Bad drivers (the owner, 18 Oct): bought and switched on, traffic loses its manners in a run (road.js asks the game)
-    got = [js("!!game.badDrivers()")]
-    js("progress.levels.baddrivers = 1; delete progress.off.baddrivers; 0"); got.append(js("game.badDrivers()"))
-    js("progress.off.baddrivers = true; 0"); got.append(js("game.badDrivers()"))
+    # 16. Fuel madness (the owner, 18 Oct): a share of the drivers goes mad in a run, 25% a level (road.js asks the game)
+    got = [js("game.madness()")]
+    js("progress.levels.baddrivers = 1; delete progress.off.baddrivers; 0"); got.append(js("game.madness()"))
+    js("progress.levels.baddrivers = 3; 0"); got.append(js("game.madness()"))
+    js("progress.levels.baddrivers = 4; 0"); got.append(js("game.madness()"))
+    js("progress.off.baddrivers = true; 0"); got.append(js("game.madness()"))
     js("delete progress.off.baddrivers; progress.levels.baddrivers = 0; 0")
-    check("Bad drivers: off until bought, on when bought, off with its switch", got == [False, True, False], got)
+    check("Fuel madness: none until bought, 25% a level to 90%, none with its switch off", got == [0, 0.25, 0.75, 0.9, 0], got)
+    # the mad ones: rusty, weaving, never indicating, even as they move over; the sane ones as they were
+    js("progress.levels.baddrivers = 2; 0")
+    got = js("""(() => { const ord = traffic.filter(c => !c.racer && !c.police && !c.wreck && !c.fleet && !c.tank); // earlier checks turned them round
+        ord.forEach((c, i) => Object.assign(c, { dir: 1, z: odo + 2000 + 60 * i, lane: 0, x: MY_LANES[0], v: 20, want: 20 }));
+        const m = ord.find(mad), s = ord.find(c => !mad(c));
+        if (!m || !s) return 'no mad and sane pair: ' + ord.map(c => c.serial);
+        window.m = m; Object.assign(m, { z: odo + 45, lane: 1 - lane, x: MY_LANES[lane], cool: 99, jumped: true });
+        Object.assign(s, { z: odo + 70, lane: lane, x: MY_LANES[lane], cool: 99 });
+        return { madLook: MAD.includes(lookOf(m)), saneLook: lookOf(s) === s.look, signals: indicator(m), weave: weave(m), still: weave(s) }; })()""")
+    pg.wait_for_timeout(300)
+    w2 = js("window.m ? weave(m) : null")
+    check("a mad car: rust, no indicator as it moves over, weaving; a sane one as it was", isinstance(got, dict) and got["madLook"] and got["saneLook"]
+          and got["signals"] == 0 and got["still"] == 0 and abs(got["weave"]) <= 0.3 and abs(w2 - got["weave"]) > 0.01, [got, w2])
+    pg.screenshot(path=f"{OUT}/fuel_madness.png")
+    got = aside("""(() => { Object.assign(m, { z: odo + 30, hp: null, wreck: false }); total(m); const r = [m.wreck, $('flash').textContent]; m.wreck = false; m.z = odo + 5000; return r; })()""")
+    check("a mad car's stolen fuel: double parts", got == [True, "TOTALLED +44 PARTS"], got)
+    js("progress.levels.baddrivers = 0; 0")
     # with a bull bar, the aids take the ram of a car that has just cut in: lane assist and autocruise look past it
     got = js("""(() => { const c = traffic.find(c => !c.racer && !c.police && !c.wreck); Object.assign(c, { dir: 1, z: odo + 30, x: MY_LANES[lane], cut: 2 });
         const seen = () => nextCar(MY_LANES[lane], takeRam) === c, out = [];
@@ -171,10 +202,10 @@ with sync_playwright() as p:
         progress.levels.bullbar = 0; out.push(seen());
         progress.levels.bullbar = 1; c.cut = 0; out.push(seen());
         progress.levels.baddrivers = 0; c.z = odo + 5000; return out; })()""")
-    check("a cut-in, with a bull bar: the aids take the ram (not without one, nor once it has settled)", got == [False, True, True], got)
+    check("a mad driver's cut-in, with a bull bar: the aids take the ram (not without one, nor once it has settled)", got == [False, True, True], got)
     got = aside("""(() => { const c = traffic.find(c => !c.racer && !c.police && !c.wreck); Object.assign(c, { dir: 1, z: odo + 30, cut: 2, hp: null });
         ram({ car: c, kmh: 60, side: false, headOn: false }); const r = [c.wreck, $('flash').textContent]; c.wreck = false; c.z = odo + 5000; return r; })()""")
-    check("Bad drivers: ram a car that cut in, it's totalled", got == [True, "HAD IT COMING! +22 PARTS"], got)
+    check("Fuel madness: ram a car that cut in, it's totalled", got == [True, "HAD IT COMING! +22 PARTS"], got)
     # 17. the war kit shows on your car as bought, each part from its level up (the owner, 18 Oct); not in other games
     kit = "[...document.querySelectorAll('#kit > g')].filter(g => getComputedStyle(g).display !== 'none').map(g => g.dataset.kit)"
     js("Object.assign(progress.levels, { bullbar: 0, armour: 0, guns: 0, autogun: 0 }); renderKit(); 0")  # drawn now, not next frame
