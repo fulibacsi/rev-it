@@ -231,6 +231,7 @@ function driveCar(c, dt) { // follow at a safe distance, or pull out and pass
   const lead = leader(c), gap = lead ? lead.z - c.z - CAR_LEN : Infinity, safe = 8 + 1.2 * c.v;
   let aim = c.want;
   c.cool = Math.max(0, (c.cool ?? 0) - dt);
+  c.cut = Math.max(0, (c.cut ?? 0) - dt); // s it still counts as having just cut in (a bad driver: aids.js takeRam)
   if (c.fleet) teamwork(c, dt); // one of your fleet (fleet.js)
   if (lead && gap < 2 * safe && lead.v < c.want) {
     // a bad driver (the game's badDrivers(), Distance's War Rig): no look in the mirror, no indicator, out whenever quicker
@@ -238,7 +239,7 @@ function driveCar(c, dt) { // follow at a safe distance, or pull out and pass
     const other = 1 - c.lane, clear = () => roomAt(c, MY_LANES[other], 20, 30, mirror);
     let moved = false;
     if (lead.v > c.want - pass || c.cool || Math.abs(c.x - MY_LANES[c.lane]) > 0.2) c.signal = 0; // follows; settled first
-    else if (!c.signal && !signal) { if (clear()) { c.lane = other; c.cool = LANE_GAP.car; moved = true; } } // straight out
+    else if (!c.signal && !signal) { if (clear()) { c.lane = other; c.cool = LANE_GAP.car; c.cut = 3; moved = true; } } // straight out
     else if (!c.signal) c.signal = clear() ? signal : 0;
     else if ((c.signal = Math.max(0, c.signal - dt)) === 0 && clear()) { // moves over if the lane is still clear
       c.lane = other;
