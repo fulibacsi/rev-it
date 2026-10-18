@@ -1,7 +1,8 @@
 """The third act, simulated: from the first win (P1) with the car as act 2 leaves it, race after race, turning the
 metres into miles (keeping some for nitro and repairs) and buying the Fleet's upgrades until 51 fleet cars: the gang
 (act 4). Policy "order" (the default) buys like a player who knows dues are income: the first it can afford of dues,
-a car, tuning, the flash; "cheapest" buys the cheapest first. Usage: act3.py [races] [seed] [order|cheapest]"""
+a car, tuning, the flash; "cheapest" buys the cheapest first. Usage: act3.py [races] [seed] [order|cheapest] [overrides],
+the overrides JavaScript to try other numbers ("UPGRADES.fleet.growth = 1.04")."""
 import json, sys
 from playwright.sync_api import sync_playwright
 from pathlib import Path
@@ -17,12 +18,14 @@ FLEET = ["dues", "fleet", "fleetPace", "fleetFlash"]
 GOAL = 51        # fleet cars: the gang
 RACES = int(sys.argv[1]) if len(sys.argv) > 1 else 80
 SEED = int(sys.argv[2]) if len(sys.argv) > 2 else None
-POLICY = sys.argv[3] if len(sys.argv) > 3 else "order"
+POLICY = sys.argv[3] if len(sys.argv) > 3 and sys.argv[3] != "-" else "order"
+OVERRIDES = sys.argv[4] if len(sys.argv) > 4 else ""
 with sync_playwright() as p:
     b = launch(p, args=["--autoplay-policy=no-user-gesture-required"])
     pg = b.new_page(); errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
     pg.goto(URL); js = pg.evaluate
     js("localStorage.clear()"); pg.reload(); pg.add_script_tag(path=str(HERE / "sim.js")); pg.click('[data-play="distance"]'); pg.click("#drive"); pg.wait_for_timeout(1500)
+    if OVERRIDES: js(OVERRIDES + "; 0")
     js(f"window.RACER_BOT = true; Object.assign(progress, {{ racing: true, finish: 1, points: 0, bank: {BANK}, miles: 0, damage: 0, broken: [], nitro: 0, levels: {json.dumps(ACT2)} }})")
     for race in range(1, RACES + 1):
         lv = {**ACT2, **js("({ ...progress.levels })")}
