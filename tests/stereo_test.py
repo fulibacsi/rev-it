@@ -32,6 +32,26 @@ with sync_playwright() as p:
     # a kick lights them all, 12 or more for 47 ms after it (14 only for 19 ms: a slow frame rate could miss that)
     check("the lights jump with the beat (all lit on a kick, then down)", max(got["lit"]) >= 12 and min(got["lit"]) <= 4, sorted(set(got["lit"])))
     check("the head unit's equaliser moves", js("document.querySelectorAll('#stereo-eq u.on').length") > 0)
+    # the tapes are songs of their own (the owner, 18 Oct: they sounded too alike): every two differ in tempo, groove,
+    # bass line, drum kit, lead sound and hook, and each one's form brings the parts in and out
+    tapes = js("""TAPES.map(t => ({ name: t.name, bpm: t.bpm, groove: t.kick + t.snare + t.hat, bass: t.bass.line, kit: t.kit,
+        lead: JSON.stringify(t.lead.parts.map(p => p.slice(0, 2))), hook: JSON.stringify(t.hook),
+        secs: Math.round(t.form.reduce((n, [, b]) => n + b, 0) * 4 * 60 / t.bpm) }))""")
+    same = [(a["name"], b["name"], k) for i, a in enumerate(tapes) for b in tapes[i + 1:] for k in ("groove", "bass", "kit", "lead", "hook")
+            if a[k] == b[k]] + [(a["name"], b["name"], "bpm") for i, a in enumerate(tapes) for b in tapes[i + 1:] if abs(a["bpm"] - b["bpm"]) < 6]
+    check("every two tapes differ in tempo, groove, bass line, kit, lead sound and hook", not same, same or [(t["name"], t["bpm"], f"{t['secs']} s") for t in tapes])
+    form = js("""TAPES.map(t => { const n = t.form.reduce((a, [, b]) => a + b, 0) * 16, has = {};
+        for (let s = 0; s < n; s += 16) { const { part } = place(t, s); has[part] = SECTIONS[part]; }
+        return [t.name, Object.keys(has).sort().join(' ')]; })""")
+    check("each tape's form: intro, verse, chorus and break", all(f[1] == "break chorus intro verse" for f in form), form)
+    lead = js("""(() => { const real = voice; let n = 0; voice = () => n++; const counts = [];
+        for (let k = 0; k < TAPES.length; k++) { stereo.tape = k; const t = TAPES[k], chorus = t.form.findIndex(([p]) => p === 'chorus'),
+          from = t.form.slice(0, chorus).reduce((a, [, b]) => a + b, 0) * 16, intro = [0, 0];
+          n = 0; for (let s = 0; s < 64; s++) playStep(0, s); intro[0] = n;           // the intro's first four bars
+          n = 0; for (let s = from; s < from + 64; s++) playStep(0, s); intro[1] = n; // the first chorus's
+          counts.push(intro); }
+        voice = real; stereo.tape = 0; stereo.beats.length = 0; return counts; })()""")
+    check("a chorus is fuller than the intro (voices in four bars)", all(c[1] > 1.5 * c[0] for c in lead), lead)
     pg.screenshot(path=f"{OUT}/stereo_desktop.png")
     # 3. the head unit's button, M, the lights: the next tape; after the last, off; the garage's switch follows
     pg.click("#stereo-next"); pg.wait_for_timeout(150)

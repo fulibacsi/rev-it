@@ -92,8 +92,23 @@ machine or session. Keep it current: update a section when a decision changes, a
   telltale is dimmed for none left. (Claude's call: 10, 8, 6, 4, 2 s over five levels, 2,500 m and up, on sale
   once the race is revealed; see the hidden race.)
 - **The car stereo** (Workshop, 500 m, the owner's idea): synthwave made on the spot with Web Audio, on four tapes
-  (Neon Coast, Night Drive, Sunset Grid, Chrome Heart) that differ in key, tempo, chords and patterns. Drums, a driving
-  bass, pads and an arpeggio over a four-chord loop, in 16-bar turns with a break. A row of lights in the cluster's
+  (Neon Coast, Night Drive, Sunset Grid, Chrome Heart), each a song of its own (the owner, 18 Oct: the first tapes
+  sounded too alike; they shared every sound, the groove and a 16-bar loop, had no melody, and differed only in key,
+  tempo and the order of the same few chords). Written down as data, each tape has its own tempo and key, four
+  chords, drum kit and groove, bass line, lead sound and hook, and a form of 93–115 s that brings the parts in and
+  out: intro, verse, chorus, break, with a drum fill and a rising sweep into each chorus, and the hook an octave up
+  the second time round.
+
+  | Tape | Tempo | Key and chords | Groove | Bass | Lead |
+  |---|---|---|---|---|---|
+  | Neon Coast | 100 | A minor, i VI III VII | four on the floor, big snare | eighths with octaves | two detuned saws |
+  | Night Drive | 84 | F# minor, i iv VI V | half-time, gated snare | rolling sixteenths, dark | soft square, reverb |
+  | Sunset Grid | 112 | D major, I V vi IV | disco open hats, clap | syncopated square pluck | bell |
+  | Chrome Heart | 124 | E minor, i VII VI VII | sixteenth hats, tight snare | hard sixteenths | square in octaves |
+
+  The echo on the arpeggio and lead is a dotted eighth at the tape's tempo (it had no delay time set, so it was a
+  3 ms comb). Rendered offline, every chorus peaks at 0.39 at most and they sit within 3 dB of each other. Whether
+  they sound good is the owner's ear: the tests can only show they differ. A row of lights in the cluster's
   hood jumps with the beat (on the phone that is all there is: the dash is full); on a desktop a head unit in the dash,
   left of the cluster, shows the tape and an 8-band equaliser. A tap on the lights or the head unit's TAPE button (or
   M) plays the next tape, and after the last it goes off: the lights and the head unit stay, greyed ("OFF"), and a tap
