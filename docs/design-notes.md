@@ -394,9 +394,10 @@ on the horizon, and the guns would fire at nothing else).
   swerves, and always jumps in front of you once when it lines up; the sane ones keep their manners, so the road
   reads. `lanes_test.py` at 160 km/h, 16 km: 3 cut-ins at 25%, 14 at 50% (about Bad drivers' 11), 14 at 75%, 22 at
   100%; no sane driver changes lanes without its indicator. Through the game interface's `madness()` (the share).
-  - **The tell** (the owner left it to Claude): rust for paint (three shades), the right tail light dead, rust holes
-    and a spiked roof, and a weave in its lane (0.3 m, about every 1.6 s), drawn only: its place on the road stays
-    put. The paint and the weave read from afar on a phone; the rest close up. The card shows the next level and,
+  - **The tell** (the owner left it to Claude): rust for paint (three shades), the right tail light dead, rust holes,
+    and a weave in its lane (0.3 m, about every 1.6 s), drawn only: its place on the road stays put. And, the owner's
+    addition, bars and spikes: bars welded over the rear window, a pipe bar across the back, and steel spikes on the
+    roof and along the bar. The paint and the weave read from afar on a phone; the rest close up. The card shows the next level and,
     once bought, the switch beside it.
 - **Hunter** (the owner's idea, 18 Oct: "an auto driver that hunts down cars"): autocruise hunts the car in the
   reticle while it is within 150 m, going your way: it moves into that car's lane and drives into it, without braking

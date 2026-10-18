@@ -112,7 +112,7 @@ function policeSprite(front, lit) { // black and white, the light bar on the roo
   });
 }
 const POLICE = [0, 1].map(lit => ({ rear: policeSprite(false, lit), front: policeSprite(true, lit), beams: policeSprite(true, lit) }));
-function madSprite(paint) { // Fuel madness (Distance's War Rig): rust for paint, one tail light out, a spiked roof
+function madSprite(paint) { // Fuel madness (Distance's War Rig): rust for paint, one tail light out, bars and spikes
   return sprite(180, 140, (g, w, h) => {
     g.drawImage(carSprite(paint, false), 0, 0);
     g.fillStyle = '#4a2414'; // rust holes
@@ -120,8 +120,18 @@ function madSprite(paint) { // Fuel madness (Distance's War Rig): rust for paint
       g.beginPath(); g.arc(w * x, h * y, w * r, 0, 2 * Math.PI); g.fill();
     }
     g.fillStyle = '#2a0c0c'; g.fillRect(w * 0.75, h * 0.52, w * 0.2, h * 0.1); // the right tail light, dead
-    g.fillStyle = '#3a3a3a'; // roof spikes
-    for (let i = 0; i < 5; i++) { const x = w * (0.3 + i * 0.1); g.beginPath(); g.moveTo(x - 6, h * 0.07); g.lineTo(x, 0); g.lineTo(x + 6, h * 0.07); g.fill(); }
+    const spike = (x, y, s) => { // steel, lit on its left
+      g.fillStyle = '#d4d4dc'; g.beginPath(); g.moveTo(x - s / 2, y); g.lineTo(x, y - s); g.lineTo(x, y); g.fill();
+      g.fillStyle = '#8c8c96'; g.beginPath(); g.moveTo(x, y); g.lineTo(x, y - s); g.lineTo(x + s / 2, y); g.fill();
+    };
+    for (let i = 0; i < 5; i++) spike(w * (0.3 + i * 0.1), h * 0.07, 13); // on the roof
+    g.fillStyle = '#2b2b2e'; // bars welded over the rear window
+    for (const x of [0.36, 0.5, 0.64]) g.fillRect(w * x - 2.5, h * 0.12, 5, h * 0.3);
+    g.fillRect(w * 0.25, h * 0.26, w * 0.5, 5);
+    g.fillStyle = '#3c3c42'; g.fillRect(w * 0.14, h * 0.6, 7, h * 0.16); g.fillRect(w * 0.86 - 7, h * 0.6, 7, h * 0.16); // a pipe bar
+    g.fillRect(0, h * 0.74, w, h * 0.09); // across the back, on two uprights
+    g.fillStyle = '#9a9aa4'; g.fillRect(0, h * 0.74, w, 3); // its top, catching the light
+    for (let i = 0; i < 6; i++) spike(w * (0.1 + i * 0.16), h * 0.74, 14); // spikes along it
   });
 }
 const MAD = ['#8b4a2b', '#6b3a22', '#9a6a44'].map(p => ({ rear: madSprite(p) })); // rust, darker rust, sun-bleached
