@@ -12,7 +12,7 @@ from common import URL, launch
 # the car at P1 in act2.py's runs (13 Oct): everything but 7th gear and Daredevil
 ACT2 = dict(power=10, rev=4, gears=3, tyres=4, time=6, clutch=1, gas=1, shift=1, steer=1, cruise=1, engine=2, flash=5, grid=100,
             rolling=6, reckless=1, chicken=1, ecuRev=4, recklessCruise=1, cooling=3, ecuPower=4, nitro=5)
-BANK = 57000     # metres unspent at P1 in act2.py's runs
+BANK = 44000     # metres unspent at P1 in act2.py's runs (18 Oct, after the traffic and brakes fixes: 40-47k)
 RESERVE = 3000   # metres kept back for the nitro refill and repairs
 FLEET = ["dues", "fleet", "fleetPace", "fleetFlash"]
 GOAL = 51        # fleet cars: the gang
