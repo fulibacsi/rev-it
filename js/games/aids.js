@@ -78,8 +78,8 @@ const HUNT = 150;
 const hunted = c => !!c && c === target && aid('hunter') && !c.tank && !c.wreck && c.dir > 0 && c.z > odo && c.z - odo < HUNT &&
   progress.damage <= 60;
 // a car to ram, not to avoid: lane assist doesn't swerve round it, autocruise doesn't brake for it or take it for a
-// blocked lane. The one Hunter hunts; and, with Bad drivers (the War Rig page) and a bull bar, one that has just cut in
-const takeRam = c => hunted(c) || c.cut > 0 && lvl('bullbar') > 0 && !!game.badDrivers?.();
+// blocked lane. The one Hunter hunts; and, with a bull bar, a mad driver that has just cut in (Fuel madness, road.js)
+const takeRam = c => hunted(c) || c.cut > 0 && lvl('bullbar') > 0;
 // ... how far its back is from your front, and how fast you close on it
 function carAhead(x, past) {
   const near = nextCar(x, past);

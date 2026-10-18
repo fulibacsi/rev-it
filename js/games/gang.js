@@ -7,8 +7,8 @@
 // what the Black market is to the Workshop. Its gear is yours and the gang's: with a bull bar a fleet car side-swipes
 // a rival beside it; with guns (last) the wheel's red marker is your trigger and the gang shoots at rivals too.
 Object.assign(UPGRADES, {
-  // prices in parts (10 a car, 25 a racer), from the simulations (tests/balance/act4.py, 14 Oct): about 25 races from
-  // the gang to the tank, something to buy every few races, the guns as the last big save
+  // prices in parts (22 a car, 55 a racer), from the simulations (tests/balance/act4.py, 14 and 18 Oct): about 15 races
+  // from the gang to the tank, something to buy every few races, the guns as the last big save
   bullbar: { name: 'Bull bar', tab: 'warrig', max: 3, base: 20, growth: 2.5,
              info: l => l ? `a hit hurts them ${Math.round(200 * l / 3)}% more and costs you less speed; the gang ` +
                `side-swipes rivals beside it (${20 * l} damage)` : 'the factory bumper' },
@@ -21,11 +21,12 @@ Object.assign(UPGRADES, {
           info: l => l ? `the wheel's red marker (or G) fires at the car in the reticle: ${GUN * l} damage a shot, ` +
             `4 a second, up to ${RANGE} m; the gang fires at rivals once a second` : 'unarmed' },
   // the owner's idea (14 Oct): on a phone your thumbs are busy steering and on the pedals
-  // the owner's idea (18 Oct): ordinary traffic drops its manners (road.js driveCar) and jumps in front of you, so a
-  // cut-in is a ram, not a crash to avoid; a switch, like the aids. Price: a first guess, see act4.py
-  baddrivers: { name: 'Bad drivers', tab: 'warrig', max: 1, base: 60,
-                info: () => 'panic on the road: drivers stop checking their mirrors and pull out in front of you. Ram one ' +
-                  'that does: totalled, it had it coming' },
+  // the owner's idea (18 Oct; first called Bad drivers, the id kept so saves keep it): a share of ordinary traffic goes
+  // mad for fuel, drops its manners and jumps in front of you (road.js mad), so a cut-in is a ram, not a crash to
+  // avoid; MADNESS more of it a level; a switch, like the aids. Prices: see act4.py
+  baddrivers: { name: 'Fuel madness', tab: 'warrig', max: 4, base: 60, growth: 2.5, toggle: true,
+                info: l => l ? `${Math.round(100 * MADNESS * l)}% of drivers mad for fuel` : 'drivers check their mirrors. ' +
+                  'Mad ones (rusty, weaving) jump in front of you; ram one that does: totalled, it had it coming' },
   // the owner's idea (18 Oct): autocruise hunts the car in the reticle (aids.js hunt), as act4.py's bot did by hand; a
   // switch. Price: a first guess, see act4.py
   hunter: { name: 'Hunter', tab: 'warrig', max: 1, base: 100, needs: ['cruise'],
@@ -39,6 +40,7 @@ Object.assign(UPGRADES, {
              info: () => 'fires for you whenever the car in the reticle is in reach and in sight; the marker reads AUTO' },
 });
 const GUN = 6, RANGE = 200; // damage a shot a level; m your guns reach (the gang's: 80)
+const MADNESS = 0.25; // the share of drivers gone mad a level of Fuel madness
 const GANG = FIELD / 2 + 1; // fleet cars that make a gang
 const health = c => c.tank ? tankHealth() : c.police ? 200 : c.racer ? 150 : 100; // full health (the tank: boss.js)
 // parts from a totalled car: 2.2 times the first guesses (with the heat), so act 4 takes about 15 races (act4.py)
@@ -90,7 +92,7 @@ function ram(i) {
   const c = i.car;
   if (!c || c.wreck || c.fleet || i.headOn || !i.side && i.kmh < NUDGE) return;
   if (i.kmh > OHKO && !c.tank) return total(c, false, 'OHKO!');
-  if (c.cut > 0) return total(c, false, 'HAD IT COMING!'); // Bad drivers: it cut in on you, it's totalled (road.js c.cut)
+  if (c.cut > 0) return total(c, false, 'HAD IT COMING!'); // Fuel madness: it cut in on you, it's totalled (road.js c.cut)
   hurtCar(c, HIT * (1 + 2 / 3 * lvl('bullbar') + (i.side && spikes ? 1 : 0)) * (c.tank ? 0.2 : 1));
 }
 function hurtCar(c, hp, gang) {

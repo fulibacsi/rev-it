@@ -1,6 +1,6 @@
 """Hunter (the War Rig page): autocruise hunts the car in the reticle within 150 m, into its lane and into it, instead
 of steering round it or braking for it. Not the tank, not past 60% damage, and your hand on the wheel overrides it;
-switched off, autocruise is itself again. Bad drivers with a bull bar: the aids take the ram of a car that cut in."""
+switched off, autocruise is itself again. (The aids taking a mad driver's cut-in as a ram: gang_test.py.)"""
 from playwright.sync_api import sync_playwright
 from common import URL, launch
 CAR = ("power: 10, rev: 4, gears: 3, tyres: 4, time: 6, clutch: 1, gas: 1, shift: 1, steer: 1, cruise: 1, engine: 2, "
