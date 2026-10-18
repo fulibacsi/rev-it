@@ -140,6 +140,10 @@ machine or session. Keep it current: update a section when a decision changes, a
 - **How to drive:** before the first run the garage says how to get going (start, clutch, 1st, gas); the full controls
   are under HOW TO DRIVE in the pause menu and the settings. The key help that sat at the foot of a desktop screen
   went there too.
+- **Stuck at the line:** standing still for 1.5 s in a run, or stalled, the windscreen's read-out says the next step
+  until the car moves, in the words of the layout: START THE ENGINE (the key, or Enter), CLUTCH DOWN, INTO 1ST, GAS,
+  CLUTCH UP; nothing for a step an aid does. For the whole game, not just the first runs: it costs an expert nothing
+  (18 Oct: one playtester couldn't get off the start line for three runs; another skipped the first run's text).
 - **Credits:** a screen with the sound credits; CC BY 4.0 needs the credit given in a reasonable manner, not on screen
   all the time, so the credit line in play went.
 - Claude's calls: the first-run help in the garage rather than a pop-up before it (DRIVE stays one tap away), the
