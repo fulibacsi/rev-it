@@ -79,15 +79,17 @@ const lum = ([r, g, b]) => 0.3 * r + 0.59 * g + 0.11 * b;
 // mask(x, y): another paint for this pixel (two-tone, stripes), or nothing; pad: rows of room above, for a roof's kit
 function pixelSprite(art, paint, { mask, pad = 0 } = {}) {
   const c = document.createElement('canvas'); c.width = art.w; c.height = art.h + pad;
-  const g = c.getContext('2d'), im = g.createImageData(art.w, art.h), base = lum(rgb(art.pal[0]));
-  const pal = art.pal.map(rgb), shade = (hex, i) => rgb(hex).map(v => Math.max(0, Math.min(255, v + lum(pal[i]) - base)));
-  const own = paint && pal.map((_, i) => i < art.paint ? shade(paint, i) : pal[i]);
+  const g = c.getContext('2d'), im = g.createImageData(art.w, art.h), d = im.data, base = lum(rgb(art.pal[0]));
+  const pal = art.pal.map(rgb), shades = new Map(); // a paint's shades, worked out once
+  const shade = hex => shades.get(hex) ?? shades.set(hex, pal.map((p, i) => i < art.paint ? rgb(hex).map(v => Math.max(0, Math.min(255, v + lum(p) - base))) : p)).get(hex);
+  const own = paint ? shade(paint) : pal;
   let x = 0, y = 0;
   for (const [, n, ch] of art.rows.matchAll(/(\d*)(\D)/g)) {
     if (ch === '/') { x = 0; y++; continue; }
+    const i = ch < 'a' ? ch.charCodeAt(0) - 39 : ch.charCodeAt(0) - 97;
     for (let k = +(n || 1); k--; x++) if (ch !== '.') {
-      const i = ch < 'a' ? ch.charCodeAt(0) - 39 : ch.charCodeAt(0) - 97, other = i < art.paint && mask?.(x, y);
-      im.data.set([...(other ? shade(other, i) : own ? own[i] : pal[i]), 255], 4 * (y * art.w + x));
+      const other = mask && i < art.paint && mask(x, y), [r, gr, bl] = (other ? shade(other) : own)[i], o = 4 * (y * art.w + x);
+      d[o] = r; d[o + 1] = gr; d[o + 2] = bl; d[o + 3] = 255;
     }
   }
   g.putImageData(im, 0, pad);
@@ -105,8 +107,11 @@ function beamsSprite(art, paint) { // high beams: flashed at you when you're in 
   }
   return c;
 }
+// a car's views, each made the first time it is drawn: most of them never are in a run, and a phone starts quicker
+const lazyLook = views => Object.defineProperties({}, Object.fromEntries(Object.entries(views).map(([k, make]) => {
+  let v; return [k, { get: () => v ??= make(), enumerable: true }]; })));
 const carLook = (model, paint) => { const a = CAR_ART[model];
-  return { rear: pixelSprite(a.rear, paint), front: pixelSprite(a.front, paint), beams: beamsSprite(a.front, paint) }; };
+  return lazyLook({ rear: () => pixelSprite(a.rear, paint), front: () => pixelSprite(a.front, paint), beams: () => beamsSprite(a.front, paint) }); };
 const CARS = CAR_COLORS.flatMap(col => MODELS.map(m => carLook(m, col))); // every car in every colour
 const WRECKS = new Map(); // a totalled car's rear view (Distance's War Rig): tipped over, burnt, smoking
 function wreckSprite(img) {
@@ -148,7 +153,7 @@ function madSprite(model, paint) { // Fuel madness (Distance's War Rig): rust fo
   for (let i = 0; i < 6; i++) spike(bx0 + (i + 0.5) * bw / 6 - 1, py); // spikes along it
   return c;
 }
-const MAD = MODELS.flatMap(m => ['#8b4a2b', '#6b3a22', '#9a6a44'].map(p => ({ rear: madSprite(m, p) }))); // rust, darker rust, sun-bleached
+const MAD = MODELS.flatMap(m => ['#8b4a2b', '#6b3a22', '#9a6a44'].map(p => lazyLook({ rear: () => madSprite(m, p) }))); // rust, darker rust, sun-bleached
 const TANK_SPRITE = sprite(300, 230, (g, w, h) => { // the final boss (Distance), from behind: hull, tracks, turret, gun
   g.fillStyle = '#1b1d17'; g.fillRect(0, h * 0.6, w * 0.2, h * 0.4); g.fillRect(w * 0.8, h * 0.6, w * 0.2, h * 0.4); // tracks
   g.fillStyle = '#4b5320'; g.beginPath(); g.roundRect(w * 0.06, h * 0.42, w * 0.88, h * 0.4, 10); g.fill(); // hull
@@ -161,22 +166,22 @@ const TANK_SPRITE = sprite(300, 230, (g, w, h) => { // the final boss (Distance)
 const RACERS = new Map(); // racers' rear views by number: tuned, racing stripes, and the number once the race is revealed
 const FONT = ['111101101101111', '010110010010111', '111001111100111', '111001111001111', '101101111001001', '111100111001111',
   '111100111101111', '111001001001001', '111101111101111', '111101111001111']; // 0-9, 3 wide and 5 high, row by row
-function racerSprite(n, numbered, team) { // team: one of your fleet, black with gold stripes
+function racerSprite(n, numbered, team) { // team: one of your fleet, black with gold stripes; made when first drawn
   const model = MODELS[n % MODELS.length], key = numbered ? (team ? -n : n) : model;
-  if (!RACERS.has(key)) {
-    const a = CAR_ART[model].tuned, mid = a.w / 2, sw = Math.max(2, Math.round(a.w * 0.06)), gap = Math.max(1, Math.round(a.w * 0.025));
-    const stripe = (x, y) => Math.abs(x + 0.5 - mid) > gap && Math.abs(x + 0.5 - mid) <= gap + sw && (team ? '#e8c440' : '#c62828');
-    const c = pixelSprite(a, team ? '#1a1a20' : '#f4f4f4', { mask: stripe }), at = (...b) => dab(c, 0, ...b);
-    if (numbered) { // the number on a roundel on the boot
-      const digits = [...String(n)].map(Number), tw = digits.length * 4 - 1, r = Math.ceil(tw / 2) + 3;
-      const cy = Math.round(a.glass[3] + (a.body[3] - a.glass[3]) * 0.4), cx = Math.round(mid);
-      for (let y = -r; y <= r; y++) { const half = Math.round(Math.sqrt(r * r - y * y)); at('#111', cx - half, cy + y, 2 * half, 1); }
-      for (let y = -r + 1; y < r; y++) { const half = Math.round(Math.sqrt((r - 1) * (r - 1) - y * y)); at('#fff', cx - half, cy + y, 2 * half, 1); }
-      digits.forEach((d, i) => [...FONT[d]].forEach((bit, j) => bit === '1' && at('#111', cx - Math.floor(tw / 2) + 4 * i + j % 3, cy - 2 + Math.floor(j / 3))));
-    }
-    RACERS.set(key, c);
+  return { get rear() { if (!RACERS.has(key)) RACERS.set(key, racerArt(model, n, numbered, team)); return RACERS.get(key); } };
+}
+function racerArt(model, n, numbered, team) {
+  const a = CAR_ART[model].tuned, mid = a.w / 2, sw = Math.max(2, Math.round(a.w * 0.06)), gap = Math.max(1, Math.round(a.w * 0.025));
+  const stripe = (x, y) => Math.abs(x + 0.5 - mid) > gap && Math.abs(x + 0.5 - mid) <= gap + sw && (team ? '#e8c440' : '#c62828');
+  const c = pixelSprite(a, team ? '#1a1a20' : '#f4f4f4', { mask: stripe }), at = (...b) => dab(c, 0, ...b);
+  if (numbered) { // the number on a roundel on the boot
+    const digits = [...String(n)].map(Number), tw = digits.length * 4 - 1, r = Math.ceil(tw / 2) + 3;
+    const cy = Math.round(a.glass[3] + (a.body[3] - a.glass[3]) * 0.4), cx = Math.round(mid);
+    for (let y = -r; y <= r; y++) { const half = Math.round(Math.sqrt(r * r - y * y)); at('#111', cx - half, cy + y, 2 * half, 1); }
+    for (let y = -r + 1; y < r; y++) { const half = Math.round(Math.sqrt((r - 1) * (r - 1) - y * y)); at('#fff', cx - half, cy + y, 2 * half, 1); }
+    digits.forEach((d, i) => [...FONT[d]].forEach((bit, j) => bit === '1' && at('#111', cx - Math.floor(tw / 2) + 4 * i + j % 3, cy - 2 + Math.floor(j / 3))));
   }
-  return { rear: RACERS.get(key) };
+  return c;
 }
 const SPEED_SIGNS = new Map(); // Speed signs game, by value; drawn 1.5 m wide (oversized so they read from afar)
 function signSprite(value) {
