@@ -360,13 +360,17 @@ on the horizon, and the guns would fire at nothing else).
   drivers do), but in the War Rig a car jumping in front of you is a ram, worth parts and heat. Bought, ordinary
   traffic goes back to the old manners: no mirror check, no indicator, out whenever it is quicker than the car ahead
   (racers and your fleet keep theirs). A switch, like the aids. Through the game interface's `badDrivers()`, so the
-  road stays the same for every other game. `lanes_test.py`: 3 cut-ins in 16 km at 160 km/h with it, none without.
+  road stays the same for every other game.
   With a bull bar fitted, the aids take the ram of a car that has just cut in (for 3 s): lane assist doesn't swerve
   round it, autocruise doesn't brake for it or count it as a blocked lane (the owner, 18 Oct: as first built, the aids
   avoided the cut-ins, so it changed nothing in `act4.py`: the tank in races 25, 24, 23, 28 with it, 23, 24, 23, 23
   without). Taking those rams cost more than it paid (a ram costs speed and damage, and paid a third of a total: 26,
   27, 24, 25 with it), so a car that cut in and gets rammed is totalled on the spot, full parts and heat: "HAD IT
-  COMING!" (the owner's pick, 18 Oct).
+  COMING!" (the owner's pick, 18 Oct). That changed nothing either (3.65 totals a race with it, 3.67 without): a bad
+  driver only pulled out when stuck behind a slower car, and at act 4's speeds you were past before that lined up. So,
+  in the owner's words, they now "jump in front of the player": a bad driver in your other lane, as you close on it
+  from 0.8 to 2 s behind, swerves across into your lane, briskly, about one car in two, once each. `lanes_test.py`:
+  11 cut-ins in 16 km at 160 km/h.
 - **The kit shows on your car** (the owner, 18 Oct), drawn in the cockpit's frame as bought, each part from its level
   up: armour as riveted plates up the A-pillars, then a visor under the roof (clear of the mirror), then slats; the
   bull bar's hoop over the bonnet's front edge, then uprights, then spikes; twin guns on the bonnet aimed down the
