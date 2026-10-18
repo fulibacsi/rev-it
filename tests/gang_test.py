@@ -165,14 +165,14 @@ with sync_playwright() as p:
     js("delete progress.off.baddrivers; progress.levels.baddrivers = 0; 0")
     check("Bad drivers: off until bought, on when bought, off with its switch", got == [False, True, False], got)
     # with a bull bar, the aids take the ram of a car that has just cut in: lane assist and autocruise look past it
-    got = js("""(() => { const c = traffic.find(c => !c.racer && c.dir > 0); Object.assign(c, { z: odo + 30, x: MY_LANES[lane], cut: 2 });
+    got = js("""(() => { const c = traffic.find(c => !c.racer && !c.police && !c.wreck); Object.assign(c, { dir: 1, z: odo + 30, x: MY_LANES[lane], cut: 2 });
         const seen = () => nextCar(MY_LANES[lane], takeRam) === c, out = [];
         progress.levels.baddrivers = 1; progress.levels.bullbar = 1; out.push(seen());
         progress.levels.bullbar = 0; out.push(seen());
         progress.levels.bullbar = 1; c.cut = 0; out.push(seen());
         progress.levels.baddrivers = 0; c.z = odo + 5000; return out; })()""")
     check("a cut-in, with a bull bar: the aids take the ram (not without one, nor once it has settled)", got == [False, True, True], got)
-    got = aside("""(() => { const c = traffic.find(c => !c.racer && c.dir > 0 && !c.wreck); Object.assign(c, { cut: 2, hp: null });
+    got = aside("""(() => { const c = traffic.find(c => !c.racer && !c.police && !c.wreck); Object.assign(c, { dir: 1, z: odo + 30, cut: 2, hp: null });
         ram({ car: c, kmh: 60, side: false, headOn: false }); const r = [c.wreck, $('flash').textContent]; c.wreck = false; c.z = odo + 5000; return r; })()""")
     check("Bad drivers: ram a car that cut in, it's totalled", got == [True, "HAD IT COMING! +10 PARTS"], got)
     # 17. the war kit shows on your car as bought, each part from its level up (the owner, 18 Oct); not in other games
