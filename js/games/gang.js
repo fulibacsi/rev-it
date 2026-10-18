@@ -120,6 +120,7 @@ function renderGang() {
   document.body.classList.toggle('has-guns', run.phase !== 'garage' && lvl('guns') > 0);
   const label = lvl('autogun') && !progress.off.autogun ? 'AUTO' : 'FIRE'; // the trigger's marker: Auto gun fires for you
   if ($('fire').textContent !== label) $('fire').textContent = label;
+  renderKit();
   drawTracers();
   const t = arOn() && run.phase === 'run' ? target : null, s = t?.seen;
   document.body.classList.toggle('ar-on', !!s);
@@ -131,13 +132,25 @@ function renderGang() {
   $('ar-label').textContent = t.tank ? 'TANK' : !gangOpen() ? 'TOTAL IT' : t.racer ? `#${t.racer}` : '';
 }
 
+// your car's war kit, seen from the seat (index.html #kit): each part shows from its level up, the Auto gun's red lamps
+// while it is switched on (the owner, 18 Oct: the guns and armour should show). Spiked hubs can't be seen from inside
+let shownKit = '';
+function renderKit() {
+  const have = { bullbar: lvl('bullbar'), armour: lvl('armour'), guns: lvl('guns'), autogun: lvl('autogun') && !progress.off.autogun ? 1 : 0 };
+  const key = JSON.stringify(have);
+  if (key === shownKit) return;
+  shownKit = key;
+  for (const g of $('kit').children) { const [id, l] = g.dataset.kit.split(' '); g.classList.toggle('on', have[id] >= +l); }
+}
+
 const middle = s => [s[0] + s[2] / 2, s[1] + s[3] / 2];
+const MUZZLES = { [-1]: [598 / 1600, 512 / 900], 1: [1002 / 1600, 512 / 900] }; // the guns' barrel ends in the frame (#kit)
 function drawTracers() {
   const now = performance.now(), w = canvas.width, h = canvas.height;
   while (tracers.length && now - tracers[0][2] > 100) tracers.shift();
   for (const [from, to, when] of tracers) {
     const side = Math.round(when / 250) % 2 ? 1 : -1; // twin guns on the bonnet, in turn
-    const [x1, y1] = from ? from.seen && middle(from.seen) || [] : [w / 2 + side * w * 0.08, h * 0.64];
+    const [x1, y1] = from ? from.seen && middle(from.seen) || [] : [w * MUZZLES[side][0], h * MUZZLES[side][1]];
     const [x2, y2] = to === 'you' ? [w / 2, h * 0.66] : to?.seen ? middle(to.seen) // the tank at you; a miss: off
       : [x1 + side * w * 0.02, h * 0.42];                                          // into the distance
     if (x1 === undefined) continue;

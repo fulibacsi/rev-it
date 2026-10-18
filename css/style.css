@@ -4,6 +4,9 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
              touch-action: none; overscroll-behavior: none; -webkit-touch-callout: none; } /* no zoom, no pull-to-refresh */
 #world, #frame { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
 #frame { pointer-events: none; }
+#kit > g { display: none; }
+#kit > g.on { display: inline; }
+body:not([data-game="distance"]) #kit { display: none; }
 #cracks { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; fill: none;
           stroke: #f4f6ffcc; stroke-width: 1.6; stroke-linejoin: round; filter: drop-shadow(0 0 1px #000a); }
 
