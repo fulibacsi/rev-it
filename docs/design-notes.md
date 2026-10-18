@@ -400,6 +400,16 @@ the heat. Till then the garage says "the army has a tank ready for when you are 
     the Black market at 6,360 points against the ~5,200 act 2 pays (10 a race after P1), so a buyer would go without
     nitro or 7th gear for about 115 races. 600 (the owner's pick): the dearest item with 7th gear, the market 5,761.
     Act 2 then: P1 after 24, 22, 21, 19 races, Reckless auto-drive bought along the way (races 12–22).
+- **After the traffic fix (18 Oct),** same seeds: fewer crashes everywhere, so the first three acts went quicker and
+  act 4 slower (traffic no longer cuts in front of the bot to be rammed: about 3 totals a race instead of 4, so the
+  heat and the parts for guns come later).
+  - Act 1: #100 first passed on run 17, 18, 18, 19 (value) and 22, 21, 21, 23 (cheapest-first): on target, and less
+    spread. Act 2: P1 after 16, 17, 14, 17 races (was 19–24), with 43–47k metres in the bank (was 50–61k). Act 3:
+    51 fleet cars after 26, 24, 25, 26. Act 4: the tank beaten in races 28, 30, 26, 29 (was 21–27).
+  - `cruise.py`, 24 runs: autocruise 2,881 m a run (was 2,451), 20 crashes (was 35), 32% of the run on the brake
+    (was 29%); Reckless auto-drive 2,975 m (was 2,577), 20 crashes (was 36), 32% (was 28%).
+  - Acts 3 and 4 are retuned after the brakes change (act 3 to about 15 races, act 4 back to about 25). Act 2 has no
+    target of its own; it is left shorter unless the owner wants it back.
 - **Simulation tools** live in `tests/balance/` and are run from the repo root:
   - `act1.py [cheapest|value] [head-start curve or -] [traffic]`: when #100 is first passed;
   - `act2.py [races] [seed]`: races from the reveal to P1, the bot driving like Reckless auto-drive (`aids.js`). The
