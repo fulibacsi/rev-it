@@ -1,7 +1,7 @@
 """The fourth act, simulated: from the gang (51 fleet cars, the car and fleet as act 3 leaves them) to beating the tank.
 The bot drives like act2.py's (Reckless auto-drive) with War Rig habits on top: within 150 m of the car in the reticle
 it takes the wheel, moves into that car's lane and rams it (the aids would brake or steer round), unless its own car is
-past 60% damage; it holds the trigger whenever the reticle's car is in reach (the tank too, which it doesn't ram).
+past 60% damage, and once it has Hunter, the aid that does the same, it leaves that to the aid; it holds the trigger whenever the reticle's car is in reach (the tank too, which it doesn't ram).
 After each race: metres pay the repairs and the rest becomes miles for the fleet (dues and tuning first, then more
 cars); parts buy the War Rig upgrades, the cheapest first (Auto gun too: it fires no more than the bot already does,
 but a phone player would buy it). Usage: act4.py [races] [seed] [overrides], the overrides
@@ -18,7 +18,7 @@ START = dict(power=10, rev=4, gears=3, tyres=4, time=6, clutch=1, gas=1, shift=1
              fleet=51, dues=3, fleetPace=3, fleetFlash=1)
 RESERVE = 3000   # metres kept back for the nitro refill and repairs
 FLEET = ["dues", "fleetPace", "fleet"]
-WARRIG = ["bullbar", "armour", "spikes", "guns", "autogun", "baddrivers"]
+WARRIG = ["bullbar", "armour", "spikes", "guns", "autogun", "baddrivers", "hunter"]
 RACES = int(sys.argv[1]) if len(sys.argv) > 1 else 60
 SEED = int(sys.argv[2]) if len(sys.argv) > 2 else None
 OVERRIDES = sys.argv[3] if len(sys.argv) > 3 else ""
@@ -27,7 +27,7 @@ HABITS = """window.afterAids = () => { // the bot's War Rig habits, after the ai
   if (run.phase !== 'run' || !target || target.wreck) return;
   const d = target.z - odo;
   firing = lvl('guns') > 0 && d < RANGE;
-  if (target.tank || target.dir < 0 || d > 150 || progress.damage > 60) return;
+  if (aid('hunter') || target.tank || target.dir < 0 || d > 150 || progress.damage > 60) return; // Hunter: the aid hunts
   wheel.held = true; // its own hand on the wheel: the aids keep off the wheel and the brake
   const tl = MY_LANES.findIndex(x => sameLane(x, target.x));
   if (tl >= 0 && tl !== lane && Math.abs(carX - ROAD_LANES[lane]) < 0.3) changeLane(lane < tl ? -1 : 1);

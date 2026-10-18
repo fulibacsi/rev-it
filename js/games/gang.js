@@ -26,6 +26,11 @@ Object.assign(UPGRADES, {
   baddrivers: { name: 'Bad drivers', tab: 'warrig', max: 1, base: 60,
                 info: () => 'panic on the road: drivers stop checking their mirrors and pull out in front of you. Ram one ' +
                   'that does: totalled, it had it coming' },
+  // the owner's idea (18 Oct): autocruise hunts the car in the reticle (aids.js hunt), as act4.py's bot did by hand; a
+  // switch. Price: a first guess, see act4.py
+  hunter: { name: 'Hunter', tab: 'warrig', max: 1, base: 100, needs: ['cruise'],
+            info: () => 'autocruise hunts the car in the reticle: into its lane and into it, within 150 m. Not the tank, and it ' +
+              'backs off past 60% damage' },
   // the owner's idea (18 Oct): the stereo plays the War Rig's own music instead of synthwave (stereo.js, the war tapes);
   // a switch, so synthwave is a tap away. No use for speed. Price: a first guess, see act4.py
   warradio: { name: 'War Rig radio', tab: 'warrig', max: 1, base: 100, needs: ['stereo'],
