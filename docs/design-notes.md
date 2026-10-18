@@ -274,8 +274,9 @@ racers you beat are open to offers". It is a garage page paid in **miles**.
   available" button, and the miles you have. Miles show in the garage's header too. The speedometer stays in km/h.
 - **Pay off a racer:** each one you pay off joins your fleet. It keeps its number, its slot in the 100-car field and
   its pace, in your colours (black with gold stripes).
-  - The slowest go first (#100, then #99 ...), from 1 mi, each 6% dearer: 18 mi for the 51st, about 308 mi for the
-    first 51. #1 won't sell.
+  - The slowest go first (#100, then #99 ...), from 1 mi, each 3.5% dearer: about 6 mi for the 51st, about 137 mi
+    for the first 51 (6% dearer, 308 mi, until 18 Oct: the owner wanted the act down from about 25 races to 15).
+    #1 won't sell.
   - Your position counts the rivals only, so a fleet car ahead of you doesn't cost you a place; the head-up display's
     gaps are to rivals too.
   - Claude's calls: the order (the slowest first, so a fleet car is one you have already beaten) and the prices (first
