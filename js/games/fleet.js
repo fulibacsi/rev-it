@@ -5,9 +5,9 @@
 // share of the metres your fleet drives, paid at the finish), tuning, and a flash used for you.
 
 Object.assign(UPGRADES, {
-  // prices: first guesses. tests/balance/act3.py: 51 cars (the gang, act 4) about 26 races after the first win, buying
-  // dues first; about 70 buying the cheapest first, as dues come late
-  fleet: { name: 'Pay off a racer', tab: 'fleet', base: 1, growth: 1.06, max: () => FIELD - 1, locked: "#1 won't sell",
+  // prices: tests/balance/act3.py, 51 cars (the gang, act 4) after the first win, buying dues first. Each racer 6%
+  // dearer took about 26 races; the owner (18 Oct) wanted about 15, the Fleet being the weakest act: 3.5% takes 14-16
+  fleet: { name: 'Pay off a racer', tab: 'fleet', base: 1, growth: 1.035, max: () => FIELD - 1, locked: "#1 won't sell",
            info: l => !l ? 'every racer for themselves' : l === 1 ? '#100 races for you'
              : `#${FIELD + 1 - l} to #100 race for you` },
   dues: { name: 'Fleet dues', tab: 'fleet', max: 5, base: 5, growth: 2, needs: ['fleet'],

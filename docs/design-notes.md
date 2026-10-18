@@ -274,8 +274,9 @@ racers you beat are open to offers". It is a garage page paid in **miles**.
   available" button, and the miles you have. Miles show in the garage's header too. The speedometer stays in km/h.
 - **Pay off a racer:** each one you pay off joins your fleet. It keeps its number, its slot in the 100-car field and
   its pace, in your colours (black with gold stripes).
-  - The slowest go first (#100, then #99 ...), from 1 mi, each 6% dearer: 18 mi for the 51st, about 308 mi for the
-    first 51. #1 won't sell.
+  - The slowest go first (#100, then #99 ...), from 1 mi, each 3.5% dearer: about 6 mi for the 51st, about 137 mi
+    for the first 51 (6% dearer, 308 mi, until 18 Oct: the owner wanted the act down from about 25 races to 15).
+    #1 won't sell.
   - Your position counts the rivals only, so a fleet car ahead of you doesn't cost you a place; the head-up display's
     gaps are to rivals too.
   - Claude's calls: the order (the slowest first, so a fleet car is one you have already beaten) and the prices (first
@@ -422,6 +423,15 @@ the heat. Till then the garage says "the army has a tank ready for when you are 
     (was 29%); Reckless auto-drive 2,975 m (was 2,577), 20 crashes (was 36), 32% (was 28%).
   - Acts 3 and 4 are retuned after the brakes change (act 3 to about 15 races, act 4 back to about 25). Act 2 has no
     target of its own; it is left shorter unless the owner wants it back.
+- **Acts 3 and 4 retuned (18 Oct),** after the traffic and brakes fixes. The owner's targets: act 3 about 15 races
+  (it was 25; the Fleet is the weakest act), act 4 still about 25. `act3.py` now starts from the 44k metres act 2
+  leaves (40–47k; it was 57k) and takes overrides like `act4.py`.
+  - Act 3, by how much dearer each racer is: 6% 27–28 races, 5% 22, 4% 16–18, 3.5% 16, 14, 16, 15, 3% 12–13. Chosen:
+    3.5%; a race still buys two to five racers.
+  - Act 4 took 28–30 races at 6% (traffic no longer cuts in front of the bot to be rammed: about 3.3 totals a race,
+    was 3.8). Scaling the parts and heat a total up 10–30% gave 20–27 at 6%; but with the Fleet at 3.5%, act 4's
+    fleet grows to its 99 cars and the bigger gang totals more, so the old numbers already give 24, 25, 23, 23 (10%
+    more: 20–23). Parts and heat are unchanged.
 - **Simulation tools** live in `tests/balance/` and are run from the repo root:
   - `act1.py [cheapest|value] [head-start curve or -] [traffic]`: when #100 is first passed;
   - `act2.py [races] [seed]`: races from the reveal to P1, the bot driving like Reckless auto-drive (`aids.js`). The
