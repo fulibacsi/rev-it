@@ -53,8 +53,8 @@ Design decisions, balance targets, the playtest history and the open questions a
   car and music credits live in `CREDITS.md` and the menu's credits screen, reached from a small link in the main
   menu's corner. CC BY 4.0 lets the credit be given in any reasonable manner for the medium (its section 3(a)(2)), so
   it needn't be on screen all the time; but the credits screen must stay reachable and keep each CC BY work's title,
-  author, licence (with links) and the change made (the recording cut and looped; the music levelled, its bass
-  rolled off, re-encoded).
+  author, licence (with links) and the change made (the recording cut and looped; the music levelled and
+  re-encoded). `menus_test` checks that every menu screen fits a phone without scrolling.
 - Style: match the surrounding code. Short functions, terse names, comments in plain English that say why (the
   physics and balance numbers say where they come from). British spelling in text and comments: metres, tyres,
   windscreen.
