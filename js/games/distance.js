@@ -31,7 +31,7 @@ const UPGRADES = {
   cruise: { name: 'Autocruise', tab: 'autopilot', max: 1, base: 6000, needs: ['steer', 'gas', 'shift'],
             info: () => 'drives the whole run: passes, keeps right, brakes when boxed in' },
   stereo: { name: 'Car stereo', max: 1, base: 500, built: 0, // stereo.js; no use for speed, so not part of building the car
-            info: () => 'synthwave, made on the spot, on four tapes: tap the lights in the cluster (or M) for the next, or off' },
+            info: () => 'synthwave on five tapes: tap the lights in the cluster (or M) for the next, or off' },
   engine: { name: 'Engine swap', max: ENGINES.length - 1, base: 4000, growth: 2.5, info: l => ENGINES[l].name },
 };
 const COUNTDOWN = 3, FINISH = 2; // seconds of countdown before a run, and of braking after it
@@ -439,10 +439,12 @@ const DISTANCE = {
   speedo: () => lvl('gear7') ? 540 : 360,
   stereo: () => lvl('stereo') > 0,
   tape: () => progress.off.stereo ? null : TAPES.indexOf(onRadio()[progress.tape] ?? onRadio()[0]),
-  nextTape() { // through the tapes, then off; a tap when off plays the first. The garage's ON/OFF is the same switch
-    if (!lvl('stereo')) return;
+  nextTape(round) { // through the tapes, then off; a tap when off plays the first. The garage's ON/OFF is the same
+    if (!lvl('stereo')) return;    // switch. round: a tape ended, so the next plays, round to the first
+    const n = onRadio().length, at = progress.tape < n ? progress.tape : 0; // the one playing (the radios differ in length)
     if (progress.off.stereo) progress.off.stereo = false;
-    else if (progress.tape < onRadio().length - 1) progress.tape++;
+    else if (at < n - 1) progress.tape = at + 1;
+    else if (round) progress.tape = 0;
     else Object.assign(progress, { tape: 0, off: { ...progress.off, stereo: true } }); // rewound for next time
     save();
     if (run.phase === 'garage') renderGarage();

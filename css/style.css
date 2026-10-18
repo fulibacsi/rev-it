@@ -67,6 +67,9 @@ body:not([data-game="distance"]) #kit { display: none; }
 .touch #stereo { display: none; } /* on a phone the dash is full: the lights in the cluster do */
 #stereo-lcd { padding: 2px 6px; border-radius: 3px; background: #14200f; color: #8f8; font: 600 11px monospace;
               letter-spacing: 1px; white-space: nowrap; overflow: hidden; }
+#stereo-lcd span { display: inline-block; }
+#stereo-lcd.scroll span { animation: lcd-scroll 8s linear infinite; } /* a name too long for it (stereo.js label) */
+@keyframes lcd-scroll { 0%, 15% { transform: none; } 85%, 100% { transform: translateX(var(--over)); } }
 #stereo-eq { display: flex; gap: 3px; height: 34px; }
 #stereo-eq i { flex: 1; display: flex; flex-direction: column-reverse; gap: 2px; }
 #stereo-eq u { flex: 1; border-radius: 1px; background: #241e1a; }

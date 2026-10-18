@@ -120,45 +120,40 @@ machine or session. Keep it current: update a section when a decision changes, a
   line fills under it while a used flash comes back (up to the run's full count); it shows in full even when the
   telltale is dimmed for none left. (Claude's call: 10, 8, 6, 4, 2 s over five levels, 2,500 m and up, on sale
   once the race is revealed; see the hidden race.)
-- **The car stereo** (Workshop, 500 m, the owner's idea): synthwave made on the spot with Web Audio, on four tapes
-  (Neon Coast, Night Drive, Sunset Grid, Chrome Heart), each a song of its own (the owner, 18 Oct: the first tapes
-  sounded too alike; they shared every sound, the groove and a 16-bar loop, had no melody, and differed only in key,
-  tempo and the order of the same few chords). Written down as data, each tape has its own tempo and key, four
-  chords, drum kit and groove, bass line, lead sound and hook, and a form of 93–115 s that brings the parts in and
-  out: intro, verse, chorus, break, with a drum fill and a rising sweep into each chorus, and the hook an octave up
-  the second time round.
+- **The car stereo** (Workshop, 500 m, the owner's idea): recorded tapes, picked by the owner (18 Oct). It was
+  synthwave made on the spot with Web Audio, eight songs written down as data; the owner found it "not really good",
+  and making it kept 11-21% of a phone core busy while it played (the phone ran hot). The research (no music site
+  was reachable from the build, only copies on GitHub) shortlisted CC0 and CC BY tracks; the owner listened and
+  picked three of Kevin MacLeod's (CC BY 4.0) for synthwave and, finding none that suited the War Rig, made five with
+  Suno on its free plan: two more for synthwave and three for the War Rig radio.
 
-  | Tape | Tempo | Key and chords | Groove | Bass | Lead |
-  |---|---|---|---|---|---|
-  | Neon Coast | 100 | A minor, i VI III VII | four on the floor, big snare | eighths with octaves | two detuned saws |
-  | Night Drive | 84 | F# minor, i iv VI V | half-time, gated snare | rolling sixteenths, dark | soft square, reverb |
-  | Sunset Grid | 112 | D major, I V vi IV | disco open hats, clap | syncopated square pluck | bell |
-  | Chrome Heart | 124 | E minor, i VII VI VII | sixteenth hats, tight snare | hard sixteenths | square in octaves |
+  | Radio | Tapes, in order |
+  |---|---|
+  | Synthwave | Neon Laser Horizon (the owner's favourite), Neon Outrun, Chill Wave, Chasing the Light (光の追跡), Newer Wave |
+  | War Rig (War Rig page) | War Rigs Rolling (sung), Ember Charge (余烬冲锋), War Rigs of the Wasteland (sung) |
 
-  **The War Rig radio** (War Rig page; the owner's idea and pick, 18 Oct: both styles) swaps in four tapes of its own,
-  original riffs written down the same way, with new sounds: a fuzz (a waveshaper and a speaker's top end) for guitars
-  and darksynth's bass and leads, power chords (palm-muted chugs and chords let ring), war drums (low and high), and
-  lead notes that slide up into themselves, a wail.
-
-  | Tape | Tempo | Key and chords | What it is |
-  |---|---|---|---|
-  | War Drums | 90 | D minor with a flat second, i bII i VII | war drums, chugging fuzz guitar, a wailing lead |
-  | Iron Convoy | 106 | E minor, i VI VII i | a galloping guitar riff, tom fills, a guitar-like lead |
-  | No Law | 132 | C minor, i VI VII i | darksynth: fuzz bass in sixteenths, a harsh square lead, an arpeggio |
-  | Black Sun | 118 | B minor, i VII VI V | darksynth: pumping offbeat fuzz bass, a wailing saw lead |
-
-  Its switch off, the stereo plays synthwave again (the same slot). Rendered offline, the war choruses peak at 0.41 at
-  most and sit about 2 dB above the synthwave ones (the fuzz and the war drums were turned down to get there).
-  The echo on the arpeggio and lead is a dotted eighth at the tape's tempo (it had no delay time set, so it was a
-  3 ms comb). Rendered offline, every chorus peaks at 0.39 at most and they sit within 3 dB of each other. Whether
-  they sound good is the owner's ear: the tests can only show they differ. A row of lights in the cluster's
-  hood jumps with the beat (on the phone that is all there is: the dash is full); on a desktop a head unit in the dash,
-  left of the cluster, shows the tape and an 8-band equaliser. A tap on the lights or the head unit's TAPE button (or
-  M) plays the next tape, and after the last it goes off: the lights and the head unit stay, greyed ("OFF"), and a tap
-  plays the first tape again (the owner, 14 Oct: it used to vanish). The garage's ON/OFF is the same switch. Distance
-  only. It
-  plays about 6 dB under the engine at 4,000 rpm. (Claude's calls: generated rather than recorded, since no music
-  site was reachable from the build; the tapes and the controls.)
+  Kevin MacLeod's alternate with the owner's on the synthwave radio, and the Suno songs' Chinese and Japanese titles
+  are in English on the head unit (Claude's calls). Suno's free plan: Suno owns the songs and they may be used only
+  non-commercially, so Rev It, free, plays them, but they are not under the repository's MIT licence and would have
+  to go if the game ever earned money (`CREDITS.md`; the owner agreed, 18 Oct). `tools/make_music.py` makes
+  `assets/music`: Kevin MacLeod's fetched (from incompetech, or a copy on GitHub that must match the original's
+  SHA-256), the owner's from the folder they were downloaded to; each levelled to -16 LUFS, the bass under 70 Hz
+  rolled off (the engine has the low end; Suno's songs were mastered loud, with much of it at 50-150 Hz) and encoded as
+  a 96 kbps MP3 (the one format every iPhone plays): 2.1-3.8 MB a tape, 21 MB in all. A tape plays through an <audio>
+  element into the audio graph, so the volume slider and the lights work as before, at the old tapes' level on
+  average (about 6 dB under the engine at 4,000 rpm); at its end the next one plays, round to the first. Downloaded
+  ahead, never all at once (the owner, 18 Oct: load the music in the main menu, so it doesn't stop the flow; 21 MB
+  over a phone's data on every first visit was too much for tapes mostly not played): the save's tape while the main
+  menu is up, the next one while a tape plays, so a tap changes tapes at once. An iPhone loads no media before it
+  plays, whatever the page asks, so ahead means downloaded into memory. On an iPhone a tape plays only from a tap:
+  the first tap while it should be playing starts it (untested on a phone: emulation only). The menu pauses it. A row
+  of lights in the cluster's hood jumps with the beat, now the kick drum heard in the music's bass (a jump over its
+  recent level); on the phone that is all there is: the dash is full. On a desktop a head unit in the dash, left of
+  the cluster, shows the tape (a name too long for it scrolls) and an 8-band equaliser. A tap on the lights or the
+  head unit's TAPE button (or M) plays the next tape, and after the last it goes off: the lights and the head unit
+  stay, greyed ("OFF"), and a tap plays the first tape again (the owner, 14 Oct: it used to vanish). The garage's
+  ON/OFF is the same switch. Distance only. `stereo_test.py` serves the page over HTTP, as GitHub Pages does: a page
+  opened from a file can't download the tapes, and Chromium won't let the audio graph hear one streamed from a file.
 - The run's time left is a bar draining across the widened rear-view mirror. It turns red and blinks under 5 s.
 - Nitro is a smaller red NOS pedal bolted over the gas pedal's top right corner, like a side pedal (the owner's
   design). Pushing it floors the gas, and N does the same. The tank shows as a NOS bar under TEMP on the cluster. It
@@ -408,7 +403,7 @@ on the horizon, and the guns would fire at nothing else).
   | Guns | 3 | 400 | 2 | needs Spiked hubs: 6 damage a shot a level, 4 shots a second, up to 200 m; the gang fires too |
   | Auto gun | 1 | 200 | | needs Guns: fires for you while the reticle's car is in reach and in sight; the marker reads AUTO; ON/OFF in the garage |
   | Fuel madness | 4 | 30 | 2.5 | 25% of ordinary drivers mad a level, 90% at the top: rusty, weaving, no mirror check or indicator, and each jumps in front of you once; ram one that cut in and it's totalled; a mad car pays double parts; ON/OFF in the garage |
-  | War Rig radio | 1 | 100 | | needs the Car stereo: it plays the War Rig's own four tapes instead of synthwave; ON/OFF in the garage |
+  | War Rig radio | 1 | 100 | | needs the Car stereo: it plays the War Rig's own three tapes instead of synthwave; ON/OFF in the garage |
   | Hunter | 1 | 100 | | needs Autocruise: it hunts the car in the reticle, into its lane and into it (not the tank; it backs off past 60% damage); ON/OFF in the garage |
   | Hunting pack | 1 | 150 | | fleet cars hunt as you do: the nearest car ahead of each, within 150 m, into its lane and into it; their guns on it too |
 

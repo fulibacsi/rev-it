@@ -1,8 +1,9 @@
 # Credits
 
-The code is released under the MIT license (see [LICENSE](LICENSE)). The engine sounds and the cars are not covered
-by it: `assets/sounds.js` holds audio derived from the recordings below, and each keeps its own license;
-`assets/cars.js` holds pixel art from the car pack below, under its own terms.
+The code is released under the MIT license (see [LICENSE](LICENSE)). The engine sounds, the cars and the music are not
+covered by it: `assets/sounds.js` holds audio derived from the recordings below, and each keeps its own license;
+`assets/cars.js` holds pixel art from the car pack below, under its own terms; `assets/music` holds the car stereo's
+tapes, each under its own license or terms (below).
 
 ## Sounds
 
@@ -46,6 +47,32 @@ written as palettes and runs of pixels. The game fits the parts at random, repai
 the racers' and police's liveries and the rust of Fuel madness, and draws on top the racers' stripes and numbers,
 the police light bar, and the mad drivers' primer, rust holes, bars, pipe bar, spikes and dead tail light
 (`js/road.js`).
+
+## Music
+
+The car stereo's tapes (`assets/music`), in the order they play:
+
+| Tape | Author | License or terms | Radio |
+|---|---|---|---|
+| "Neon Laser Horizon" | Kevin MacLeod ([incompetech.com](https://incompetech.com)) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | synthwave |
+| "Neon Outrun" | fulibacsi, made with [Suno](https://suno.com) | Suno's, see below | synthwave |
+| "Chill Wave" | Kevin MacLeod ([incompetech.com](https://incompetech.com)) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | synthwave |
+| "Chasing the Light" (光の追跡) | fulibacsi, made with [Suno](https://suno.com) | Suno's, see below | synthwave |
+| "Newer Wave" | Kevin MacLeod ([incompetech.com](https://incompetech.com)) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | synthwave |
+| "War Rigs Rolling" | fulibacsi, made with [Suno](https://suno.com) | Suno's, see below | War Rig |
+| "Ember Charge" (余烬冲锋) | fulibacsi, made with [Suno](https://suno.com) | Suno's, see below | War Rig |
+| "War Rigs of the Wasteland" | fulibacsi, made with [Suno](https://suno.com) | Suno's, see below | War Rig |
+
+Kevin MacLeod's, as he asks to be credited: "Neon Laser Horizon", "Chill Wave" and "Newer Wave" Kevin MacLeod
+(incompetech.com), Licensed under Creative Commons: By Attribution 4.0 License, http://creativecommons.org/licenses/by/4.0/
+
+The five made with Suno were made on Suno's free plan. Under
+[Suno's terms](https://help.suno.com/en/articles/9601601) Suno owns them and they may be used only for non-commercial
+purposes, so Rev It, a free game, plays them, but they are not for reuse, and they would have to go if the game ever
+earned money.
+
+**Changes made.** [`tools/make_music.py`](tools/make_music.py) levels every tape to the same loudness (-16 LUFS),
+rolls off the bass under 70 Hz (the engine has the low end) and encodes it as a 96 kbps MP3.
 
 ## Techniques
 
