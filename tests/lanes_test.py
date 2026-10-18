@@ -48,15 +48,15 @@ with sync_playwright() as p:
                 if steer and kmh >= 160: cutins += r["cutins"]; km += r["km"]
     # Fuel madness (Distance's War Rig upgrade, through the game's madness()): a share of the drivers goes mad, drops its
     # manners and jumps in front of you; the rest keep theirs
-    shares = pg.evaluate("[0.25, 0.5, 0.75, 1].map(s => Array.from({ length: 1000 }, (_, k) => (k + 1) * 0.6180339887 % 1 < s).filter(Boolean).length / 1000)")
+    shares = pg.evaluate("[0.25, 0.5, 0.75, 0.9].map(s => Array.from({ length: 1000 }, (_, k) => (k + 1) * 0.6180339887 % 1 < s).filter(Boolean).length / 1000)")
     mad = {}
-    for share in (0.25, 0.5, 0.75, 1):
+    for share in (0.25, 0.5, 0.75, 0.9):
         mad[share] = {"cutins": 0, "km": 0, "unsignalled": 0, "sane": 0}
         for seed in (1001, 1002, 1003):
             r = pg.evaluate("([s, a]) => { FREE.madness = () => s; const r = (" + SIM + ")(a); delete FREE.madness; return r; }", [share, [160, True, 120, seed]])
             for k, v in (("cutins", r["cutins"]), ("km", r["km"]), ("unsignalled", r["unsignalled"]), ("sane", r["saneUnsignalled"])): mad[share][k] += v
     b.close()
-print(f"{'ok' if all(abs(s - x) < 0.01 for s, x in zip(shares, (0.25, 0.5, 0.75, 1))) else 'FAIL'}: mad drivers by serial, 1,000 cars: {shares}")
+print(f"{'ok' if all(abs(s - x) < 0.01 for s, x in zip(shares, (0.25, 0.5, 0.75, 0.9))) else 'FAIL'}: mad drivers by serial, 1,000 cars: {shares}")
 for share, m in mad.items():
     print(f"   {share:.0%} mad, 160 km/h: {m['cutins']} cut-ins in {m['km']:.0f} km, {m['unsignalled']} lane changes without a signal, {m['sane']} of them sane drivers'")
 cuts = [m["cutins"] for m in mad.values()]

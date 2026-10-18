@@ -82,14 +82,14 @@ with sync_playwright() as p:
     # Fuel madness (the owner, 18 Oct): levels of 25%, and a switch beside the next level's price once bought
     card = "[...document.querySelector('[data-buy=\"baddrivers\"], [data-toggle=\"baddrivers\"]').closest('.card').querySelectorAll('b, small, button')].map(e => e.textContent)"
     got = js(card)
-    check("Fuel madness: its card, 60 parts, 25% at the first level", got[0] == "Fuel madness" and "drivers check their mirrors" in got[1] and got[1].endswith("→ 25% of drivers mad for fuel") and got[2:] == ["60 parts"], got)
+    check("Fuel madness: its card, 30 parts, 25% at the first level", got[0] == "Fuel madness" and "double parts" in got[1] and got[1].endswith("→ 25% of drivers mad for fuel") and got[2:] == ["30 parts"], got)
     js("progress.parts = 1000"); pg.click('[data-buy="baddrivers"]'); pg.wait_for_timeout(100)
     got = js(card)
-    check("bought: the next level's price and an ON switch", got[2:] == ["150 parts", "ON"] and got[1] == "25% of drivers mad for fuel → 50% of drivers mad for fuel", got)
+    check("bought: the next level's price and an ON switch", got[2:] == ["75 parts", "ON"] and got[1] == "25% of drivers mad for fuel → 50% of drivers mad for fuel", got)
     pg.click('[data-toggle="baddrivers"]'); pg.wait_for_timeout(100)
-    check("switched off", js(card)[2:] == ["150 parts", "OFF"] and js("progress.off.baddrivers") is True, js(card))
+    check("switched off", js(card)[2:] == ["75 parts", "OFF"] and js("progress.off.baddrivers") is True, js(card))
     js("progress.levels.baddrivers = 4; renderGarage()")
-    check("at the top (100%): the switch alone", js(card)[2:] == ["OFF"], js(card))
+    check("at the top (90%: still the odd sane driver): the switch alone", js(card)[1:] == ["90% of drivers mad for fuel", "OFF"], js(card))
     js("delete progress.off.baddrivers; progress.levels.baddrivers = 0; progress.parts = 80; renderGarage()")
     # 8. the bull bar at 3: you carry on at the car's speed, and it takes 2.5 times the damage
     js("progress.levels.bullbar = 3; refreshCar()")
@@ -174,9 +174,10 @@ with sync_playwright() as p:
     got = [js("game.madness()")]
     js("progress.levels.baddrivers = 1; delete progress.off.baddrivers; 0"); got.append(js("game.madness()"))
     js("progress.levels.baddrivers = 3; 0"); got.append(js("game.madness()"))
+    js("progress.levels.baddrivers = 4; 0"); got.append(js("game.madness()"))
     js("progress.off.baddrivers = true; 0"); got.append(js("game.madness()"))
     js("delete progress.off.baddrivers; progress.levels.baddrivers = 0; 0")
-    check("Fuel madness: none until bought, 25% a level, none with its switch off", got == [0, 0.25, 0.75, 0], got)
+    check("Fuel madness: none until bought, 25% a level to 90%, none with its switch off", got == [0, 0.25, 0.75, 0.9, 0], got)
     # the mad ones: rusty, weaving, never indicating, even as they move over; the sane ones as they were
     js("progress.levels.baddrivers = 2; 0")
     got = js("""(() => { const ord = traffic.filter(c => !c.racer && !c.police && !c.wreck && !c.fleet && !c.tank); // earlier checks turned them round
@@ -191,6 +192,8 @@ with sync_playwright() as p:
     check("a mad car: rust, no indicator as it moves over, weaving; a sane one as it was", isinstance(got, dict) and got["madLook"] and got["saneLook"]
           and got["signals"] == 0 and got["still"] == 0 and abs(got["weave"]) <= 0.3 and abs(w2 - got["weave"]) > 0.01, [got, w2])
     pg.screenshot(path=f"{OUT}/fuel_madness.png")
+    got = aside("""(() => { Object.assign(m, { z: odo + 30, hp: null, wreck: false }); total(m); const r = [m.wreck, $('flash').textContent]; m.wreck = false; m.z = odo + 5000; return r; })()""")
+    check("a mad car's stolen fuel: double parts", got == [True, "TOTALLED +44 PARTS"], got)
     js("progress.levels.baddrivers = 0; 0")
     # with a bull bar, the aids take the ram of a car that has just cut in: lane assist and autocruise look past it
     got = js("""(() => { const c = traffic.find(c => !c.racer && !c.police && !c.wreck); Object.assign(c, { dir: 1, z: odo + 30, x: MY_LANES[lane], cut: 2 });

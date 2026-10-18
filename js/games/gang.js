@@ -23,10 +23,11 @@ Object.assign(UPGRADES, {
   // the owner's idea (14 Oct): on a phone your thumbs are busy steering and on the pedals
   // the owner's idea (18 Oct; first called Bad drivers, the id kept so saves keep it): a share of ordinary traffic goes
   // mad for fuel, drops its manners and jumps in front of you (road.js mad), so a cut-in is a ram, not a crash to
-  // avoid; MADNESS more of it a level; a switch, like the aids. Prices: see act4.py
-  baddrivers: { name: 'Fuel madness', tab: 'warrig', max: 4, base: 60, growth: 2.5, toggle: true,
-                info: l => l ? `${Math.round(100 * MADNESS * l)}% of drivers mad for fuel` : 'drivers check their mirrors. ' +
-                  'Mad ones (rusty, weaving) jump in front of you; ram one that does: totalled, it had it coming' },
+  // avoid; MADNESS more of it a level, up to MAD_TOP; a switch, like the aids. A mad car carries stolen fuel: double
+  // parts, or buying it slowed act 4 down (act4.py: the tank in races 18-21, 16 without it). Prices: see act4.py
+  baddrivers: { name: 'Fuel madness', tab: 'warrig', max: 4, base: 30, growth: 2.5, toggle: true,
+                info: l => l ? `${Math.round(100 * madShare(l))}% of drivers mad for fuel` : 'drivers check their mirrors. ' +
+                  'Mad ones (rusty, weaving) jump in front of you; ram one that does: totalled. Stolen fuel: double parts' },
   // the owner's idea (18 Oct): autocruise hunts the car in the reticle (aids.js hunt), as act4.py's bot did by hand; a
   // switch. Price: a first guess, see act4.py
   hunter: { name: 'Hunter', tab: 'warrig', max: 1, base: 100, needs: ['cruise'],
@@ -40,7 +41,10 @@ Object.assign(UPGRADES, {
              info: () => 'fires for you whenever the car in the reticle is in reach and in sight; the marker reads AUTO' },
 });
 const GUN = 6, RANGE = 200; // damage a shot a level; m your guns reach (the gang's: 80)
-const MADNESS = 0.25; // the share of drivers gone mad a level of Fuel madness
+// the share of drivers gone mad a level of Fuel madness, up to 90% (the owner, 18 Oct: "there should be still an
+// occasional sane person")
+const MADNESS = 0.25, MAD_TOP = 0.9;
+const madShare = l => Math.min(MAD_TOP, MADNESS * l);
 const GANG = FIELD / 2 + 1; // fleet cars that make a gang
 const health = c => c.tank ? tankHealth() : c.police ? 200 : c.racer ? 150 : 100; // full health (the tank: boss.js)
 // parts from a totalled car: 2.2 times the first guesses (with the heat), so act 4 takes about 15 races (act4.py)
@@ -101,7 +105,7 @@ function hurtCar(c, hp, gang) {
 }
 function total(c, gang, how) { // the parts are yours, whoever did it; the heat too (police.js); how: the HUD's word for it
   if (c.tank) return tankDown(c); // boss.js
-  const parts = c.racer ? PARTS.racer : PARTS.car;
+  const parts = (c.racer ? PARTS.racer : PARTS.car) * (mad(c) ? 2 : 1); // a mad driver's stolen fuel (Fuel madness)
   raiseHeat(gang ? WANTED.gang : c.police ? WANTED.police : c.racer ? WANTED.racer : WANTED.car);
   Object.assign(c, { wreck: true, hp: 0 });
   progress.totals++;
