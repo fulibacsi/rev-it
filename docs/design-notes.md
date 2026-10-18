@@ -465,7 +465,11 @@ on the horizon, and the guns would fire at nothing else).
   auto-drive keeps to your side). From as far as the reticle takes it (300 m): it hunted within 150 m at first, so
   autocruise steered round the car before that and Hunter swung back into its lane (the owner, 18 Oct: it "changes
   lanes to avoid traffic"). Nor do the aids steer round or brake for a wreck, which can't be hit and skids off: they
-  swerved round each car Hunter had just totalled. Not the tank (the guns are for that), not an oncoming car, and not past 60% damage, so it doesn't wreck you;
+  swerved round each car Hunter had just totalled; and the reticle moves on the moment its car is totalled (for a
+  frame Hunter had nothing to hunt, and autocruise steered away from the car it would hunt next). An act 4 run on
+  Reckless auto-drive (6 races, same seeds): lane changes other than Hunter's 0-3 a race (keep-right with nothing in
+  reach, backing off past 60% damage), from 3-7; about as many cars totalled (60, 64 before), about a tenth less road
+  a race (it stays behind its prey rather than passing in the oncoming lane: Hunter is a switch). Not the tank (the guns are for that), not an oncoming car, and not past 60% damage, so it doesn't wreck you;
   your hand on the wheel overrides it. It is what `act4.py`'s bot did by hand, so the simulation now leaves the hunting
   to the aid once it has it. `hunter_test.py` checks all of it.
 - **The kit shows on your car** (the owner, 18 Oct), drawn in the cockpit's frame as bought, each part from its level
