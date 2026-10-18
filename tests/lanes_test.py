@@ -46,7 +46,14 @@ with sync_playwright() as p:
                 print(r)
                 changes += r["aiChanges"]; unsignalled += r["unsignalled"]
                 if steer and kmh >= 160: cutins += r["cutins"]; km += r["km"]
+    # Bad drivers (Distance's War Rig upgrade, through the game's badDrivers()): the old manners, cut-ins are back
+    bad_cutins = bad_km = bad_unsignalled = 0
+    for seed in (1001, 1002, 1003):
+        r = pg.evaluate("(a) => { FREE.badDrivers = () => true; const r = (" + SIM + ")(a); delete FREE.badDrivers; return r; }", [160, True, 120, seed])
+        bad_cutins += r["cutins"]; bad_km += r["km"]; bad_unsignalled += r["unsignalled"]
     b.close()
+print(f"{'ok' if bad_cutins >= 2 and bad_unsignalled > 0 else 'FAIL'}: Bad drivers at 160 km/h: {bad_cutins} cut-ins in {bad_km:.0f} km, "
+      f"{bad_unsignalled} lane changes without a signal")
 # before the fix (15-18 Oct playtests): a steering player at 160-220 km/h met a cut-in every 4 km or so
 print(f"{'ok' if cutins <= km / 25 else 'FAIL'}: {cutins} cut-ins in {km:.0f} km at 160-220 km/h, steering (at most one in 25 km)")
 print(f"{'ok' if changes and not unsignalled else 'FAIL'}: {changes - unsignalled} of {changes} lane changes indicated for a second first")

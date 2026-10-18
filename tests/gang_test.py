@@ -158,7 +158,13 @@ with sync_playwright() as p:
     pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000); pg.wait_for_timeout(200)
     got = js("({ old: target === tg, onRoad: !target || traffic.includes(target) })")
     check("the next race: the last one's car is gone from the reticle", got == {"old": False, "onRoad": True}, got)
-    # 16. the war kit shows on your car as bought, each part from its level up (the owner, 18 Oct); not in other games
+    # 16. Bad drivers (the owner, 18 Oct): bought and switched on, traffic loses its manners in a run (road.js asks the game)
+    got = [js("!!game.badDrivers()")]
+    js("progress.levels.baddrivers = 1; delete progress.off.baddrivers; 0"); got.append(js("game.badDrivers()"))
+    js("progress.off.baddrivers = true; 0"); got.append(js("game.badDrivers()"))
+    js("delete progress.off.baddrivers; progress.levels.baddrivers = 0; 0")
+    check("Bad drivers: off until bought, on when bought, off with its switch", got == [False, True, False], got)
+    # 17. the war kit shows on your car as bought, each part from its level up (the owner, 18 Oct); not in other games
     kit = "[...document.querySelectorAll('#kit > g')].filter(g => getComputedStyle(g).display !== 'none').map(g => g.dataset.kit)"
     js("Object.assign(progress.levels, { bullbar: 0, armour: 0, guns: 0, autogun: 0 }); renderKit(); 0")  # drawn now, not next frame
     check("no kit bought: none shows", js(kit) == [], js(kit))

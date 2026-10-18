@@ -354,7 +354,13 @@ on the horizon, and the guns would fire at nothing else).
   | Spiked hubs | 1 | 150 | | a side-swipe (into a car while moving over) costs you no speed and counts one more hit; the gang's 30 more damage |
   | Guns | 3 | 400 | 2 | needs Spiked hubs: 6 damage a shot a level, 4 shots a second, up to 200 m; the gang fires too |
   | Auto gun | 1 | 200 | | needs Guns: fires for you while the reticle's car is in reach and in sight; the marker reads AUTO; ON/OFF in the garage |
+  | Bad drivers | 1 | 60 | | ordinary traffic stops checking its mirrors and indicating, and pulls out whenever it is quicker: cut-ins are rams; ON/OFF in the garage |
 
+- **Bad drivers** (the owner's idea, 18 Oct): the playtesters hated cars cutting in (fixed: traffic passes the way
+  drivers do), but in the War Rig a car jumping in front of you is a ram, worth parts and heat. Bought, ordinary
+  traffic goes back to the old manners: no mirror check, no indicator, out whenever it is quicker than the car ahead
+  (racers and your fleet keep theirs). A switch, like the aids. Through the game interface's `badDrivers()`, so the
+  road stays the same for every other game. `lanes_test.py`: 3 cut-ins in 16 km at 160 km/h with it, none without.
 - **The kit shows on your car** (the owner, 18 Oct), drawn in the cockpit's frame as bought, each part from its level
   up: armour as riveted plates up the A-pillars, then a visor under the roof (clear of the mirror), then slats; the
   bull bar's hoop over the bonnet's front edge, then uprights, then spikes; twin guns on the bonnet aimed down the

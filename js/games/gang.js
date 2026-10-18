@@ -21,6 +21,10 @@ Object.assign(UPGRADES, {
           info: l => l ? `the wheel's red marker (or G) fires at the car in the reticle: ${GUN * l} damage a shot, ` +
             `4 a second, up to ${RANGE} m; the gang fires at rivals once a second` : 'unarmed' },
   // the owner's idea (14 Oct): on a phone your thumbs are busy steering and on the pedals
+  // the owner's idea (18 Oct): ordinary traffic drops its manners (road.js driveCar) and jumps in front of you, so a
+  // cut-in is a ram, not a crash to avoid; a switch, like the aids. Price: a first guess, see act4.py
+  baddrivers: { name: 'Bad drivers', tab: 'warrig', max: 1, base: 60,
+                info: () => 'panic on the road: drivers stop checking their mirrors and pull out in front of you, to be rammed' },
   autogun: { name: 'Auto gun', tab: 'warrig', max: 1, base: 200, needs: ['guns'],
              info: () => 'fires for you whenever the car in the reticle is in reach and in sight; the marker reads AUTO' },
 });

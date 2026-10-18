@@ -406,6 +406,7 @@ const DISTANCE = {
   gears: topGear,
   engine: () => progress.engine, // the garage's engines, not the menu's
   tune: applyUpgrades,
+  badDrivers: () => run.phase === 'run' && lvl('baddrivers') > 0 && !progress.off.baddrivers, // gang.js
   start() { Object.assign(run, { phase: 'garage', best: progress.best }); shownPhase = null; },
   pause: () => save(), // the menu opened: the time played so far is kept
   endRun() { if (run.phase === 'run') finishRun(); }, // the pause menu's END RUN: as if the time ran out
