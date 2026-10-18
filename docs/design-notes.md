@@ -354,7 +354,7 @@ on the horizon, and the guns would fire at nothing else).
   | Spiked hubs | 1 | 150 | | a side-swipe (into a car while moving over) costs you no speed and counts one more hit; the gang's 30 more damage |
   | Guns | 3 | 400 | 2 | needs Spiked hubs: 6 damage a shot a level, 4 shots a second, up to 200 m; the gang fires too |
   | Auto gun | 1 | 200 | | needs Guns: fires for you while the reticle's car is in reach and in sight; the marker reads AUTO; ON/OFF in the garage |
-  | Bad drivers | 1 | 60 | | ordinary traffic stops checking its mirrors and indicating, and pulls out whenever it is quicker: cut-ins are rams; ON/OFF in the garage |
+  | Bad drivers | 1 | 60 | | ordinary traffic stops checking its mirrors and indicating, and pulls out whenever it is quicker; ram one that cut in and it's totalled; ON/OFF in the garage |
 
 - **Bad drivers** (the owner's idea, 18 Oct): the playtesters hated cars cutting in (fixed: traffic passes the way
   drivers do), but in the War Rig a car jumping in front of you is a ram, worth parts and heat. Bought, ordinary
@@ -364,7 +364,9 @@ on the horizon, and the guns would fire at nothing else).
   With a bull bar fitted, the aids take the ram of a car that has just cut in (for 3 s): lane assist doesn't swerve
   round it, autocruise doesn't brake for it or count it as a blocked lane (the owner, 18 Oct: as first built, the aids
   avoided the cut-ins, so it changed nothing in `act4.py`: the tank in races 25, 24, 23, 28 with it, 23, 24, 23, 23
-  without).
+  without). Taking those rams cost more than it paid (a ram costs speed and damage, and paid a third of a total: 26,
+  27, 24, 25 with it), so a car that cut in and gets rammed is totalled on the spot, full parts and heat: "HAD IT
+  COMING!" (the owner's pick, 18 Oct).
 - **The kit shows on your car** (the owner, 18 Oct), drawn in the cockpit's frame as bought, each part from its level
   up: armour as riveted plates up the A-pillars, then a visor under the roof (clear of the mirror), then slats; the
   bull bar's hoop over the bonnet's front edge, then uprights, then spikes; twin guns on the bonnet aimed down the

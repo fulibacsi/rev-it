@@ -172,6 +172,9 @@ with sync_playwright() as p:
         progress.levels.bullbar = 1; c.cut = 0; out.push(seen());
         progress.levels.baddrivers = 0; c.z = odo + 5000; return out; })()""")
     check("a cut-in, with a bull bar: the aids take the ram (not without one, nor once it has settled)", got == [False, True, True], got)
+    got = aside("""(() => { const c = traffic.find(c => !c.racer && c.dir > 0 && !c.wreck); Object.assign(c, { cut: 2, hp: null });
+        ram({ car: c, kmh: 60, side: false, headOn: false }); const r = [c.wreck, $('flash').textContent]; c.wreck = false; c.z = odo + 5000; return r; })()""")
+    check("Bad drivers: ram a car that cut in, it's totalled", got == [True, "HAD IT COMING! +10 PARTS"], got)
     # 17. the war kit shows on your car as bought, each part from its level up (the owner, 18 Oct); not in other games
     kit = "[...document.querySelectorAll('#kit > g')].filter(g => getComputedStyle(g).display !== 'none').map(g => g.dataset.kit)"
     js("Object.assign(progress.levels, { bullbar: 0, armour: 0, guns: 0, autogun: 0 }); renderKit(); 0")  # drawn now, not next frame
