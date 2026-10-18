@@ -370,6 +370,7 @@ on the horizon, and the guns would fire at nothing else).
   | Auto gun | 1 | 200 | | needs Guns: fires for you while the reticle's car is in reach and in sight; the marker reads AUTO; ON/OFF in the garage |
   | Bad drivers | 1 | 60 | | ordinary traffic stops checking its mirrors and indicating, and pulls out whenever it is quicker; ram one that cut in and it's totalled; ON/OFF in the garage |
   | War Rig radio | 1 | 100 | | needs the Car stereo: it plays the War Rig's own four tapes instead of synthwave; ON/OFF in the garage |
+  | Hunter | 1 | 100 | | needs Autocruise: it hunts the car in the reticle within 150 m, into its lane and into it (not the tank; it backs off past 60% damage); ON/OFF in the garage |
 
 - **Bad drivers** (the owner's idea, 18 Oct): the playtesters hated cars cutting in (fixed: traffic passes the way
   drivers do), but in the War Rig a car jumping in front of you is a ram, worth parts and heat. Bought, ordinary
@@ -386,6 +387,12 @@ on the horizon, and the guns would fire at nothing else).
   in the owner's words, they now "jump in front of the player": a bad driver in your other lane, as you close on it
   from 0.8 to 2 s behind, swerves across into your lane, briskly, about one car in two, once each. `lanes_test.py`:
   11 cut-ins in 16 km at 160 km/h.
+- **Hunter** (the owner's idea, 18 Oct: "an auto driver that hunts down cars"): autocruise hunts the car in the
+  reticle while it is within 150 m, going your way: it moves into that car's lane and drives into it, without braking
+  or swerving for it (autocruise leaves the lanes to it meanwhile, or its keep-right habit pulled it off the prey's
+  lane). Not the tank (the guns are for that), not an oncoming car, and not past 60% damage, so it doesn't wreck you;
+  your hand on the wheel overrides it. It is what `act4.py`'s bot did by hand, so the simulation now leaves the hunting
+  to the aid once it has it. `hunter_test.py` checks all of it.
 - **The kit shows on your car** (the owner, 18 Oct), drawn in the cockpit's frame as bought, each part from its level
   up: armour as riveted plates up the A-pillars, then a visor under the roof (clear of the mirror), then slats; the
   bull bar's hoop over the bonnet's front edge, then uprights, then spikes; twin guns on the bonnet aimed down the

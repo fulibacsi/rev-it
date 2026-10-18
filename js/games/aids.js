@@ -15,6 +15,7 @@ function updateAids(dt) {
   if (reckless) recklessLanes(); // before autocruise, which keeps out of the oncoming lanes
   if (aid('cruise')) autocruise(); // after the gas: it brakes behind traffic it can't pass
   else if (aid('steer')) laneAssist();
+  if (aid('hunter')) hunt(); // after autocruise, whose lane it overrules
   if (aid('autoflash')) autoFlash();
   if (reckless) recklessNitro(); // last: never while braking
 }
@@ -70,9 +71,15 @@ function nextCar(x, past = () => false) {
   for (const c of traffic) if (c.dir > 0 && sameLane(c.x, x) && c.z > odo && !past(c, x) && (!near || c.z < near.z)) near = c;
   return near;
 }
-// Bad drivers (the War Rig page) with a bull bar: a car that has just cut in is a ram to take, not one to avoid (the
-// owner, 18 Oct): lane assist doesn't swerve round it, autocruise doesn't brake for it or take it for a blocked lane
-const takeRam = c => c.cut > 0 && lvl('bullbar') > 0 && !!game.badDrivers?.();
+// Hunter (the War Rig page, the owner's idea, 18 Oct): autocruise hunts the car in the reticle (gang.js target) within
+// HUNT m: into its lane and into it. Not the tank (the guns are for that), not a car coming the other way, and not past
+// 60% damage, so it doesn't wreck you. act4.py's bot drove like this before it was an aid
+const HUNT = 150;
+const hunted = c => !!c && c === target && aid('hunter') && !c.tank && !c.wreck && c.dir > 0 && c.z > odo && c.z - odo < HUNT &&
+  progress.damage <= 60;
+// a car to ram, not to avoid: lane assist doesn't swerve round it, autocruise doesn't brake for it or take it for a
+// blocked lane. The one Hunter hunts; and, with Bad drivers (the War Rig page) and a bull bar, one that has just cut in
+const takeRam = c => hunted(c) || c.cut > 0 && lvl('bullbar') > 0 && !!game.badDrivers?.();
 // ... how far its back is from your front, and how fast you close on it
 function carAhead(x, past) {
   const near = nextCar(x, past);
@@ -115,7 +122,8 @@ function autocruise() {
     : c !== target && aid('autoflash') && run.flashes > 0 && yields(c, 1 - c.lane));
   const further = x => reach(carAhead(x, leaving));
   const escape = roomBeside && further(MY_LANES[1 - lane]) > further(MY_LANES[lane]) + 0.5;
-  if (settled() && (escape && reach(mine) < 8 || lane === 1 && roomBeside && reach(mine) > 6 && reach(theirs) > 8)) moveOver();
+  if (settled() && !hunted(target) && // Hunter has the lanes while it hunts (it would keep right off the prey's lane)
+      (escape && reach(mine) < 8 || lane === 1 && roomBeside && reach(mine) > 6 && reach(theirs) > 8)) moveOver();
   // your foot on the gas, or on NOS (not Reckless auto-drive's): no braking, no lift
   if (pushing() || nitroHeld) { if (cruiseBrake) { brakePedal = 0; cruiseBrake = false; } return; }
   if (touching('brake')) { cruiseBrake = false; return; } // your foot on the brake: it's yours
@@ -131,6 +139,12 @@ function autocruise() {
     if (cruiseBrake) { brakePedal = 0; cruiseBrake = false; }
     if (!escape && room < 0) gasPedal = 0; // inside the gap but not closing: coast
   }
+}
+
+function hunt() { // into the hunted car's lane, on your side of the road; your hand on the wheel overrides it
+  if (wheel.held || lane > 1 || !settled() || !hunted(target)) return;
+  const to = MY_LANES.findIndex(x => sameLane(x, target.x));
+  if (to >= 0 && to !== lane) changeLane(lane < to ? -1 : 1);
 }
 
 // auto flash: flashes the car ahead in your lane when it is slower than you, under 4 s away and would move over: an
