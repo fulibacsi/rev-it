@@ -1,7 +1,8 @@
 # Credits
 
-The code is released under the MIT license (see [LICENSE](LICENSE)). The engine sounds are not covered by it:
-`assets/sounds.js` holds audio derived from the recordings below, and each keeps its own license.
+The code is released under the MIT license (see [LICENSE](LICENSE)). The engine sounds and the cars are not covered
+by it: `assets/sounds.js` holds audio derived from the recordings below, and each keeps its own license;
+`assets/cars.js` holds pixel art from the car pack below, under its own terms.
 
 ## Sounds
 
@@ -29,6 +30,21 @@ All six recordings come from [Freesound](https://freesound.org).
 - **Filtering:**
   - The Turbo I6 loops are low-pass filtered at 5.5 kHz to tame the turbo whine.
   - The Boxer's idle is high-pass filtered at 120 Hz so small speakers can play it.
+
+## Cars
+
+The traffic's cars come from [JDM 90s pack](https://patricio449.itch.io/car-pack-jdm-sprites-whit-tuning-parts) by
+[Pay 'n' Sprite](https://patricio449.itch.io/): five cars, from behind and in front, with their glass, interiors,
+bumpers and spoilers as layers. Its terms: "You are free to use these assets in commercial and non-commercial
+projects, including free-to-play mobile games. However, reselling or redistributing the assets as standalone is not
+allowed." So the pack itself is not in this repository, and the art in `assets/cars.js` is not for reuse outside
+Rev It.
+
+**Changes made.** [`tools/make_cars.py`](tools/make_cars.py), run on a copy of the pack, puts each car together
+(tyres, the interior and glass over a dark cabin, the body, a bumper, and for the racers a body kit and a wing) and
+writes it as a palette and runs of pixels. The game repaints each car in its traffic colours, the racers' and
+police's liveries and the rust of Fuel madness, and draws on top the racers' stripes and numbers, the police light
+bar, and the mad drivers' bars, spikes and dead tail light (`js/road.js`).
 
 ## Techniques
 
