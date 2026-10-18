@@ -213,7 +213,7 @@ runs. A hidden race is the second act.
 | Bribe the starter (grid) | up to 100 | 1 | 1.035 | slot N needs a finish ahead of #N |
 | Reckless driving | 1 | 100 | | oncoming lanes; from now on collisions damage the car |
 | Game of chicken | 1 | 75 | | flashes work on oncoming cars: they swerve, room permitting; needs Headlight flash |
-| Reckless auto-drive | 1 | 600 | | autocruise in the oncoming lanes too, with chicken, the tune and nitro; needs Autocruise, on sale once 7th gear is bought (18 Oct: a playtester spent the points on it instead of 7th gear, which the top 10 need; it adds no pace) |
+| Reckless auto-drive | 1 | 600 | | autocruise in the oncoming lanes too, with chicken, the tune and nitro; needs Autocruise, on sale once 7th gear is bought (18 Oct: a playtester spent the points on it instead of 7th gear, which the top 10 need; it adds no pace; `act2.py`: P1 after 24, 22, 20, 20 races, unchanged, with 7th gear bought in the race P1 came) |
 | Cooling | 3 | 60 | 2 | heat rises 15% slower a level |
 | ECU: rev limit | 4 | 50 | 1.6 | +300 rpm past the factory redline a level |
 | ECU: power | 4 | 60 | 1.6 | +8% torque a level |
