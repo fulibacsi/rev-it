@@ -34,12 +34,14 @@ with sync_playwright() as p:
     check("the head unit's equaliser moves", js("document.querySelectorAll('#stereo-eq u.on').length") > 0)
     # the tapes are songs of their own (the owner, 18 Oct: they sounded too alike): every two differ in tempo, groove,
     # bass line, drum kit, lead sound and hook, and each one's form brings the parts in and out
-    tapes = js("""TAPES.map(t => ({ name: t.name, bpm: t.bpm, groove: t.kick + t.snare + t.hat, bass: t.bass.line, kit: t.kit,
+    tapes = js("""TAPES.map(t => ({ name: t.name, war: !!t.war, bpm: t.bpm, groove: t.kick + t.snare + t.hat, bass: t.bass.line, kit: t.kit,
         lead: JSON.stringify(t.lead.parts.map(p => p.slice(0, 2))), hook: JSON.stringify(t.hook),
         secs: Math.round(t.form.reduce((n, [, b]) => n + b, 0) * 4 * 60 / t.bpm) }))""")
-    same = [(a["name"], b["name"], k) for i, a in enumerate(tapes) for b in tapes[i + 1:] for k in ("groove", "bass", "kit", "lead", "hook")
-            if a[k] == b[k]] + [(a["name"], b["name"], "bpm") for i, a in enumerate(tapes) for b in tapes[i + 1:] if abs(a["bpm"] - b["bpm"]) < 6]
-    check("every two tapes differ in tempo, groove, bass line, kit, lead sound and hook", not same, same or [(t["name"], t["bpm"], f"{t['secs']} s") for t in tapes])
+    pairs = [(a, b) for i, a in enumerate(tapes) for b in tapes[i + 1:] if a["war"] == b["war"]]  # on the same radio
+    same = [(a["name"], b["name"], k) for a, b in pairs for k in ("groove", "bass", "kit", "lead", "hook") if a[k] == b[k]] + \
+           [(a["name"], b["name"], "bpm") for a, b in pairs if abs(a["bpm"] - b["bpm"]) < 6]
+    check("on each radio, every two tapes differ in tempo, groove, bass line, kit, lead sound and hook", not same and len(tapes) == 8,
+          same or [(t["name"], t["bpm"], f"{t['secs']} s") for t in tapes])
     form = js("""TAPES.map(t => { const n = t.form.reduce((a, [, b]) => a + b, 0) * 16, has = {};
         for (let s = 0; s < n; s += 16) { const { part } = place(t, s); has[part] = SECTIONS[part]; }
         return [t.name, Object.keys(has).sort().join(' ')]; })""")
@@ -65,6 +67,18 @@ with sync_playwright() as p:
     pg.screenshot(path=f"{OUT}/stereo_off_desktop.png")
     pg.click('[data-toggle="stereo"]'); pg.wait_for_timeout(300)
     check("the garage's ON: tape 1 again", js("[stereo.on, stereo.tape]") == [True, 0], js("[stereo.on, stereo.tape]"))
+    # the War Rig radio (the owner, 18 Oct): bought and on, the war tapes, through them with M; its switch off, synthwave
+    js("progress.levels.warradio = 1; delete progress.off.warradio; progress.tape = 0; 0"); pg.wait_for_timeout(400)
+    got = js("[stereo.on, $('stereo-lcd').textContent]")
+    check("War Rig radio: its first tape", got == [True, "1 WAR DRUMS"], got)
+    got = js(LISTEN)
+    check("the war tapes: you can hear them, and they never clip", 0.01 < got["rms"] and got["peak"] < 1, {"peak": got["peak"], "rms": got["rms"]})
+    names = []
+    for _ in range(3): pg.keyboard.press("m"); pg.wait_for_timeout(150); names.append(js("$('stereo-lcd').textContent"))
+    check("M: the war tapes in turn", names == ["2 IRON CONVOY", "3 NO LAW", "4 BLACK SUN"], names)
+    js("progress.off.warradio = true; 0"); pg.wait_for_timeout(300)
+    check("War Rig radio switched off: synthwave again", js("$('stereo-lcd').textContent") == "4 CHROME HEART", js("$('stereo-lcd').textContent"))
+    js("progress.levels.warradio = 0; delete progress.off.warradio; progress.tape = 0; 0"); pg.wait_for_timeout(300)
     # 4. the menu pauses it, and it carries on after
     pg.keyboard.press("Escape"); pg.wait_for_timeout(200); s0 = js("stereo.step"); pg.wait_for_timeout(800)
     check("the menu: paused", js("stereo.step") == s0 and js("ctx.state") == "suspended", [s0, js("stereo.step"), js("ctx.state")])

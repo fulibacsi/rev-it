@@ -1,4 +1,5 @@
-// The car stereo (Distance's Workshop): synthwave made on the spot with Web Audio, on four tapes. Each tape is a song
+// The car stereo (Distance's Workshop): synthwave made on the spot with Web Audio, on four tapes; the War Rig radio
+// (Distance's War Rig page) swaps in four of its own, war drums and fuzz guitar, and darksynth. Each tape is a song
 // of its own, written down as data: a tempo and a key, four chords, a drum kit and groove, a bass line, a lead hook
 // over the four chords, an arpeggio and pads, and a form of sections that bring the parts in and out (intro, verse,
 // chorus, break), with a drum fill and a rising sweep into each chorus; the hook goes up an octave the second time
@@ -52,14 +53,56 @@ const TAPES = [
            [40, 2, 19], [42, 2, 15], [44, 4, 12], [48, 2, 14], [50, 2, 17], [52, 4, 22], [56, 2, 17], [58, 2, 19], [60, 4, 19]],
     arp: { notes: [3, 2, 1, 0], wave: 'sawtooth', every: 1, cutoff: 2400 },
     form: [['intro', 4], ['verse', 8], ['chorus', 8], ['verse', 8], ['chorus', 8], ['break', 4], ['chorus', 8]] },
+  // the War Rig radio (the War Rig page): the War Rig's own music, the owner's pick of both (18 Oct): two of war drums
+  // and fuzz guitar, two of darksynth (synthwave gone savage). Original riffs, written down here like the tapes above.
+  // toms: x a low war drum, o a higher one; guitar: x a palm-muted power chord, X one let ring; dist: through the fuzz;
+  // bend: semitones a lead note slides up into itself, a wail
+  { name: 'WAR DRUMS', war: true, bpm: 90, key: 38, kit: 'war', pad: 600, // D minor with a flat second: i bII i VII
+    chords: [[0, 3, 7], [1, 5, 8], [0, 3, 7], [10, 14, 17]],
+    kick: 'x.......x.......', snare: '....x.......x...', hat: '................', toms: 'x..x..x.x.o.x.oo',
+    guitar: 'x.xx.xx.x.xxX...',
+    bass: { line: 'r..r..r.r.r.r...', wave: 'sawtooth', cutoff: 700, sweep: 150, len: 2, vol: 0.32 },
+    lead: { octave: 24, parts: [[1, 'sawtooth', 0.4, 0]], cutoff: 4000, sweep: 2500, attack: 0.02, dist: true, bend: 2 },
+    hook: [[0, 6, 12], [6, 2, 10], [8, 8, 7], [16, 6, 13], [22, 2, 12], [24, 8, 8], [32, 4, 15], [36, 4, 12], [40, 8, 7],
+           [48, 6, 10], [54, 2, 12], [56, 8, 5]],
+    form: [['intro', 4], ['verse', 8], ['chorus', 8], ['break', 4], ['chorus', 8]] },
+  { name: 'IRON CONVOY', war: true, bpm: 106, key: 40, kit: 'gated', pad: 0, // E minor, i VI VII i: a galloping riff
+    chords: [[0, 3, 7], [8, 12, 15], [10, 14, 17], [0, 3, 7]],
+    kick: 'x...x...x...x...', snare: '....x.......x...', hat: 'x.x.x.x.x.x.x.x.', toms: '..........o.o.xx',
+    guitar: 'x.xxx.xxx.xxx.xx',
+    bass: { line: 'r.rrr.rrr.rrr.rr', wave: 'sawtooth', cutoff: 900, sweep: 200, len: 0.9, vol: 0.28 },
+    lead: { octave: 12, parts: [[1, 'sawtooth', 0.35, 0], [2, 'square', 0.15, 0]], cutoff: 4500, sweep: 3000, attack: 0.01, dist: true, bend: 1 },
+    hook: [[0, 2, 7], [2, 2, 7], [4, 4, 12], [8, 2, 15], [10, 2, 14], [12, 4, 12], [16, 4, 15], [20, 4, 12], [24, 6, 8],
+           [30, 2, 10], [32, 4, 14], [36, 4, 17], [40, 6, 22], [46, 2, 19], [48, 4, 19], [52, 4, 15], [56, 8, 12]],
+    form: [['intro', 4], ['verse', 8], ['chorus', 8], ['verse', 8], ['chorus', 8], ['break', 4], ['chorus', 8]] },
+  { name: 'NO LAW', war: true, bpm: 132, key: 36, kit: 'industrial', pad: 900, // C minor, i VI VII i: darksynth, flat out
+    chords: [[0, 3, 7], [8, 12, 15], [10, 14, 17], [0, 3, 7]],
+    kick: 'x...x...x...x...', snare: '....x.......x...', hat: 'xxxxxxxxxxxxxxxx',
+    bass: { line: 'rrrrrrorrrrrrrof', wave: 'sawtooth', cutoff: 1600, sweep: 300, len: 0.8, vol: 0.5, dist: true },
+    lead: { octave: 12, parts: [[1, 'square', 0.3, 0], [1, 'sawtooth', 0.2, 1200]], cutoff: 3500, sweep: 1500, attack: 0.004, dist: true },
+    hook: [[0, 1, 19], [2, 1, 19], [3, 1, 17], [4, 2, 15], [6, 2, 12], [8, 2, 19], [10, 2, 22], [12, 4, 24], [16, 1, 20],
+           [18, 1, 20], [19, 1, 19], [20, 2, 15], [22, 2, 12], [24, 2, 20], [26, 2, 22], [28, 4, 24], [32, 1, 22], [34, 1, 22],
+           [35, 1, 20], [36, 2, 17], [38, 2, 14], [40, 2, 22], [42, 2, 24], [44, 4, 26], [48, 2, 24], [50, 2, 22], [52, 2, 19],
+           [54, 2, 17], [56, 8, 19]],
+    arp: { notes: [0, 1, 2, 3, 4, 5], wave: 'sawtooth', every: 1, cutoff: 2800 },
+    form: [['intro', 4], ['verse', 8], ['chorus', 8], ['verse', 8], ['chorus', 8], ['break', 4], ['chorus', 8]] },
+  { name: 'BLACK SUN', war: true, bpm: 118, key: 35, kit: 'big', pad: 1400, // B minor, i VII VI V: darksynth, pumping
+    chords: [[0, 3, 7], [10, 14, 17], [8, 12, 15], [7, 11, 14]],
+    kick: 'x...x...x...x...', snare: '....x.......x...', hat: '..x...x...x...x.',
+    bass: { line: '.r.r.r.r.r.r.r.r', wave: 'sawtooth', cutoff: 1200, sweep: 250, len: 0.9, vol: 0.45, dist: true },
+    lead: { octave: 12, parts: [[1, 'sawtooth', 0.35, -8], [1, 'sawtooth', 0.35, 8]], cutoff: 3000, sweep: 1800, attack: 0.01, dist: true, bend: 1 },
+    hook: [[0, 4, 19], [4, 4, 15], [8, 6, 12], [14, 2, 14], [16, 4, 17], [20, 4, 14], [24, 6, 10], [30, 2, 12], [32, 4, 15],
+           [36, 4, 20], [40, 6, 24], [46, 2, 22], [48, 4, 19], [52, 4, 23], [56, 8, 26]],
+    arp: { notes: [0, 2, 1, 2], wave: 'square', every: 2, cutoff: 2000 },
+    form: [['intro', 8], ['verse', 8], ['chorus', 8], ['break', 8], ['chorus', 8]] },
 ];
 const SECTIONS = { // what plays in each kind of section
-  intro: ['kick', 'hat', 'pad', 'arp'], verse: ['kick', 'snare', 'hat', 'bass', 'pad'],
-  chorus: ['kick', 'snare', 'hat', 'bass', 'pad', 'arp', 'lead'], break: ['pad', 'arp', 'lead'],
+  intro: ['kick', 'hat', 'pad', 'arp', 'toms'], verse: ['kick', 'snare', 'hat', 'bass', 'pad', 'guitar'],
+  chorus: ['kick', 'snare', 'hat', 'bass', 'pad', 'arp', 'lead', 'toms', 'guitar'], break: ['pad', 'arp', 'lead', 'toms'],
 };
 const MUSIC = 0.4; // the stereo's level: about 6 dB under the engine at 4,000 rpm
 const hz = n => 440 * 2 ** ((n - 69) / 12);
-const stereo = { on: false, tape: 0, step: 0, next: 0, bus: null, verb: null, echo: null, eq: null, beats: [], volume: 1 }; // volume: the settings' (main.js)
+const stereo = { on: false, tape: 0, step: 0, next: 0, bus: null, verb: null, echo: null, dist: null, eq: null, beats: [], volume: 1 }; // volume: the settings' (main.js)
 
 // the sound chain, built once the audio has started: everything through a compressor to the stereo's level; a
 // reverb (decaying noise) for the snare, pads and lead, an echo for the arpeggio and lead (its time set by the tape's
@@ -87,14 +130,25 @@ function wireStereo() {
   wet.gain.value = 0.5;
   s.echo.connect(fb).connect(s.echo);
   s.echo.connect(wet).connect(s.bus);
+  s.dist = ctx.createWaveShaper(); // the war tapes' fuzz (guitars, darksynth's bass and leads), then a speaker's top end
+  const curve = new Float32Array(1024);
+  for (let i = 0; i < curve.length; i++) curve[i] = Math.tanh(6 * (i / 511.5 - 1));
+  s.dist.curve = curve;
+  s.dist.oversample = '2x';
+  const cab = ctx.createBiquadFilter(), fuzz = ctx.createGain();
+  cab.type = 'lowpass';
+  cab.frequency.value = 3500;
+  fuzz.gain.value = 0.18; // the war tapes about as loud as the synthwave ones (rendered offline)
+  s.dist.connect(cab).connect(fuzz).connect(s.bus);
 }
 
 // one voice: an oscillator (or the noise) through a filter, with a quick attack and an exponential fade
 function voice(t, { type = 'sawtooth', freq, noisy, filter = 'lowpass', cutoff = 20000, sweep, dur, vol, attack = 0.005,
-                    to = [stereo.bus], detune = 0, drop }) {
+                    to = [stereo.bus], detune = 0, drop, bend }) {
   const src = noisy ? ctx.createBufferSource() : ctx.createOscillator();
   if (noisy) src.buffer = noise; // engine.js
-  else { src.type = type; src.frequency.setValueAtTime(freq, t); src.detune.value = detune; }
+  else { src.type = type; src.frequency.setValueAtTime(bend ? freq * 2 ** (-bend / 12) : freq, t); src.detune.value = detune; }
+  if (bend) src.frequency.exponentialRampToValueAtTime(freq, t + 0.12); // a wail: it slides up into the note
   if (drop) src.frequency.exponentialRampToValueAtTime(drop, t + dur * 0.4); // the kick's pitch falls
   const f = ctx.createBiquadFilter(), g = ctx.createGain();
   f.type = filter;
@@ -109,7 +163,8 @@ function voice(t, { type = 'sawtooth', freq, noisy, filter = 'lowpass', cutoff =
   src.stop(t + dur + 0.05);
 }
 
-// the snares: a big roomy one, an 80s gated one (a long burst into the reverb), a clap (three quick bursts), a tight one
+// the snares: a big roomy one, an 80s gated one (a long burst into the reverb), a clap (three quick bursts), a tight
+// one; on the war tapes, a huge one and an industrial one
 function snare(t, kit, vol = 1) {
   const room = [stereo.bus, stereo.verb];
   if (kit === 'big') {
@@ -121,6 +176,12 @@ function snare(t, kit, vol = 1) {
   } else if (kit === 'clap') {
     for (const d of [0, 0.011, 0.023]) voice(t + d, { noisy: true, filter: 'bandpass', cutoff: 1200, dur: 0.05, vol: 0.35 * vol });
     voice(t + 0.023, { noisy: true, filter: 'bandpass', cutoff: 1300, dur: 0.2, vol: 0.3 * vol, to: room });
+  } else if (kit === 'war') { // huge, into the reverb
+    voice(t, { noisy: true, filter: 'bandpass', cutoff: 1100, dur: 0.5, vol: 0.55 * vol, attack: 0.002, to: room });
+    voice(t, { type: 'triangle', freq: 150, dur: 0.2, vol: 0.35 * vol });
+  } else if (kit === 'industrial') { // noise and a clang of metal
+    voice(t, { noisy: true, filter: 'highpass', cutoff: 3000, dur: 0.15, vol: 0.45 * vol });
+    for (const f of [330, 467]) voice(t, { type: 'square', freq: f, cutoff: 3000, dur: 0.08, vol: 0.08 * vol });
   } else {
     voice(t, { noisy: true, filter: 'bandpass', cutoff: 2600, dur: 0.12, vol: 0.4 * vol });
     voice(t, { type: 'triangle', freq: 230, dur: 0.06, vol: 0.25 * vol });
@@ -150,17 +211,27 @@ function playStep(t, step) {
     stereo.beats.push([t, 0.7]);
   }
   if (fill && i === 0) voice(t, { noisy: true, filter: 'highpass', cutoff: 300, sweep: 6000, dur: 16 * beat, vol: 0.08, attack: 15 * beat });
+  if (has('toms') && tape.toms && tape.toms[i] !== '.') { // war drums: x a low one, o a higher one
+    const low = tape.toms[i] === 'x';
+    voice(t, { type: 'sine', freq: low ? 95 : 170, drop: low ? 48 : 95, dur: low ? 0.7 : 0.35, vol: low ? 0.55 : 0.35,
+               to: [stereo.bus, stereo.verb] });
+    voice(t, { noisy: true, filter: 'bandpass', cutoff: low ? 180 : 400, dur: 0.12, vol: 0.25 });
+    stereo.beats.push([t, low ? 0.9 : 0.6]);
+  }
+  const g = tape.guitar?.[i];
+  if (has('guitar') && g && g !== '.') // a power chord through the fuzz: root, fifth and octave; x palm-muted, X let ring
+    for (const n of [12, 19, 24]) voice(t, { freq: hz(root + n), cutoff: 5000, dur: g === 'X' ? beat * 6 : beat * 0.9, vol: 0.5, to: [stereo.dist] });
   if (has('hat') && tape.hat[i] !== '.') voice(t, { noisy: true, filter: 'highpass', cutoff: 7500, dur: tape.hat[i] === 'o' ? 0.25 : 0.04, vol: 0.11 });
   const b = tape.bass.line[i];
   if (has('bass') && b !== '.') { // the bass, through a filter that closes on each note
-    const { wave, cutoff, sweep, len, vol } = tape.bass;
-    voice(t, { type: wave, freq: hz(root + { r: 0, o: 12, f: 7 }[b]), cutoff, sweep, dur: beat * len, vol });
+    const { wave, cutoff, sweep, len, vol, dist } = tape.bass;
+    voice(t, { type: wave, freq: hz(root + { r: 0, o: 12, f: 7 }[b]), cutoff, sweep, dur: beat * len, vol, to: [dist ? stereo.dist : stereo.bus] });
   }
-  if (has('pad') && i === 0) for (const n of chord) for (const d of [-8, 8]) // pads: two saws a note, slowly in
+  if (has('pad') && tape.pad && i === 0) for (const n of chord) for (const d of [-8, 8]) // pads: two saws a note, slowly in
     voice(t, { freq: hz(tape.key + 12 + n), detune: d, cutoff: tape.pad, dur: beat * 16, vol: 0.05, attack: 0.4,
                to: [stereo.bus, stereo.verb] });
   const { arp } = tape;
-  if (has('arp') && i % arp.every === 0) { // the arpeggio, two octaves up, through the echo
+  if (has('arp') && arp && i % arp.every === 0) { // the arpeggio, two octaves up, through the echo
     const k = arp.notes[(step / arp.every) % arp.notes.length], n = chord[k % 3] + 12 * Math.floor(k / 3);
     voice(t, { type: arp.wave, freq: hz(tape.key + 24 + n), cutoff: arp.cutoff, sweep: 900, dur: beat * 0.9 * arp.every,
                vol: part === 'intro' ? 0.05 : 0.07, to: [stereo.bus, stereo.echo] });
@@ -169,10 +240,11 @@ function playStep(t, step) {
   const note = has('lead') && tape.hook.find(([at]) => at === (bar % 4) * 16 + i);
   if (note) { // the hook: softer in a break, up an octave the second time round in a chorus
     const [, len, semis] = note, { lead } = tape, lift = part === 'chorus' && bar >= 4 ? 12 : 0, soft = part === 'break' ? 0.6 : 1;
-    const to = [stereo.bus, stereo.echo, ...(lead.verb ? [stereo.verb] : [])];
+    const to = [lead.dist ? stereo.dist : stereo.bus, stereo.echo, ...(lead.verb ? [stereo.verb] : [])];
     for (const [ratio, type, vol, detune] of lead.parts)
       voice(t, { type, freq: hz(tape.key + lead.octave + semis + lift) * ratio, detune, cutoff: lead.cutoff, sweep: lead.sweep,
-                 dur: lead.decay ? Math.min(lead.decay, beat * len * 1.5) : beat * len * 1.05, vol: vol * soft, attack: lead.attack, to });
+                 dur: lead.decay ? Math.min(lead.decay, beat * len * 1.5) : beat * len * 1.05, vol: vol * soft, attack: lead.attack,
+                 bend: lead.bend, to });
   }
 }
 
@@ -217,7 +289,8 @@ function renderStereo() {
   const [t, hit] = stereo.beats[0] ?? [now, 0], level = t <= now ? hit * Math.exp(-(now - t) * 7) : 0;
   const leds = $('beat').children, lit = Math.round(level * leds.length);
   for (let i = 0; i < leds.length; i++) leds[i].classList.toggle('on', Math.abs(i - (leds.length - 1) / 2) < lit / 2);
-  $('stereo-lcd').textContent = `${stereo.tape + 1} ${TAPES[stereo.tape].name}`;
+  const tape = TAPES[stereo.tape];
+  $('stereo-lcd').textContent = `${TAPES.filter(t => !!t.war === !!tape.war).indexOf(tape) + 1} ${tape.name}`; // its place on its radio
   const bins = new Uint8Array(stereo.eq.frequencyBinCount);
   stereo.eq.getByteFrequencyData(bins);
   [...$('stereo-eq').children].forEach((band, b) => { // bands spaced like an equaliser's, low to high

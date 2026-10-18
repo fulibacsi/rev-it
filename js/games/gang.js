@@ -26,6 +26,10 @@ Object.assign(UPGRADES, {
   baddrivers: { name: 'Bad drivers', tab: 'warrig', max: 1, base: 60,
                 info: () => 'panic on the road: drivers stop checking their mirrors and pull out in front of you. Ram one ' +
                   'that does: totalled, it had it coming' },
+  // the owner's idea (18 Oct): the stereo plays the War Rig's own music instead of synthwave (stereo.js, the war tapes);
+  // a switch, so synthwave is a tap away. No use for speed. Price: a first guess, see act4.py
+  warradio: { name: 'War Rig radio', tab: 'warrig', max: 1, base: 100, needs: ['stereo'],
+              info: () => "the stereo tunes in to the War Rig's own: war drums and fuzz guitar, and darksynth" },
   autogun: { name: 'Auto gun', tab: 'warrig', max: 1, base: 200, needs: ['guns'],
              info: () => 'fires for you whenever the car in the reticle is in reach and in sight; the marker reads AUTO' },
 });
