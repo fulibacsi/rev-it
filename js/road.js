@@ -70,49 +70,71 @@ const PALM = sprite(160, 320, (g, w, h) => { // dark sunset silhouette
   }
 });
 // ---- the cars: Pay 'n' Sprite's "JDM 90s pack" (assets/cars.js, made by tools/make_cars.py), pixel art, five
-// cars from behind and in front. A view is a palette and runs of it a row at a time; its first `paint` colours are
-// the paint, repainted here in the car's own colour, each shade kept as much lighter or darker than the main one
+// cars from behind and in front, and their bumpers, body kits and spoilers, each a layer that fits its car's frame.
+// A layer is a palette and runs of it a row at a time; its first `paint` colours are the paint, repainted here in
+// the car's own colour, each shade kept as much lighter or darker than the view's main paint colour
 const MODELS = Object.keys(CAR_ART);
 const CAR_M = 1.9; // m across a car's sprite, mirrors and all (its height follows the art)
 const rgb = hex => hex.length < 7 ? [1, 2, 3].map(i => 17 * parseInt(hex[i], 16)) : [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16)); // #rgb or #rrggbb
 const lum = ([r, g, b]) => 0.3 * r + 0.59 * g + 0.11 * b;
-// mask(x, y): another paint for this pixel (two-tone, stripes), or nothing; pad: rows of room above, for a roof's kit
-function pixelSprite(art, paint, { mask, pad = 0 } = {}) {
-  const c = document.createElement('canvas'); c.width = art.w; c.height = art.h + pad;
-  const g = c.getContext('2d'), im = g.createImageData(art.w, art.h), d = im.data, base = lum(rgb(art.pal[0]));
-  const pal = art.pal.map(rgb), shades = new Map(); // a paint's shades, worked out once
-  const shade = hex => shades.get(hex) ?? shades.set(hex, pal.map((p, i) => i < art.paint ? rgb(hex).map(v => Math.max(0, Math.min(255, v + lum(p) - base))) : p)).get(hex);
-  const own = paint ? shade(paint) : pal;
-  let x = 0, y = 0;
-  for (const [, n, ch] of art.rows.matchAll(/(\d*)(\D)/g)) {
-    if (ch === '/') { x = 0; y++; continue; }
-    const i = ch < 'a' ? ch.charCodeAt(0) - 39 : ch.charCodeAt(0) - 97;
-    for (let k = +(n || 1); k--; x++) if (ch !== '.') {
-      const other = mask && i < art.paint && mask(x, y), [r, gr, bl] = (other ? shade(other) : own)[i], o = 4 * (y * art.w + x);
-      d[o] = r; d[o + 1] = gr; d[o + 2] = bl; d[o + 3] = 255;
+const mix = (a, b, f) => '#' + rgb(a).map((v, i) => Math.round(v + (rgb(b)[i] - v) * f).toString(16).padStart(2, '0')).join('');
+// parts: the view's layers, in order (the car, then a bumper, then a spoiler; a missing one is skipped); mask(x, y):
+// another paint for this pixel (two-tone, stripes, a primer panel), or nothing; pad: rows of room above, for a roof's kit
+function pixelSprite(view, parts, paint, { mask, pad = 0 } = {}) {
+  const c = document.createElement('canvas'); c.width = view.w; c.height = view.h + pad;
+  const g = c.getContext('2d'), im = g.createImageData(view.w, view.h), d = im.data, base = lum(rgb(view.base));
+  for (const art of parts) if (art) {
+    const pal = art.pal.map(rgb), shades = new Map(); // a paint's shades, worked out once
+    const shade = hex => shades.get(hex) ?? shades.set(hex, pal.map((p, i) => i < art.paint ? rgb(hex).map(v => Math.max(0, Math.min(255, v + lum(p) - base))) : p)).get(hex);
+    const own = paint ? shade(paint) : pal;
+    let x = art.x, y = art.y;
+    for (const [, n, ch] of art.rows.matchAll(/(\d*)(\D)/g)) {
+      if (ch === '/') { x = art.x; y++; continue; }
+      const i = ch < 'a' ? ch.charCodeAt(0) - 39 : ch.charCodeAt(0) - 97;
+      for (let k = +(n || 1); k--; x++) if (ch !== '.') {
+        const other = mask && i < art.paint && mask(x, y), [r, gr, bl] = (other ? shade(other) : own)[i], o = 4 * (y * view.w + x);
+        d[o] = r; d[o + 1] = gr; d[o + 2] = bl; d[o + 3] = 255;
+      }
     }
   }
   g.putImageData(im, 0, pad);
-  const frac = b => b && [b[0] / art.w, (b[1] + pad) / c.height, b[2] / art.w, (b[3] + pad) / c.height];
-  return Object.assign(c, { pixel: true, lamps: art.lamps?.map(frac) });
+  const frac = b => b && [b[0] / view.w, (b[1] + pad) / c.height, b[2] / view.w, (b[3] + pad) / c.height];
+  return Object.assign(c, { pixel: true, lamps: view.lamps?.map(frac) });
 }
 // pixels drawn on a car's sprite, in the art's own pixels (below the pad)
 const dab = (c, pad, col, x, y, w = 1, h = 1) => { const g = c.getContext('2d'); g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y) + pad, Math.round(w), Math.round(h)); };
 const CAR_COLORS = ['#d33', '#36c', '#eee', '#222', '#e8b', '#2a8', '#fa3', '#88a'];
-function beamsSprite(art, paint) { // high beams: flashed at you when you're in its lane
-  const c = pixelSprite(art, paint), g = c.getContext('2d'), w = c.width, h = c.height;
-  for (const b of art.lights.map((l, i) => l ?? [[0.1, 0.48, 0.3, 0.56], [0.7, 0.48, 0.9, 0.56]][i].map((f, j) => f * (j % 2 ? h : w)))) {
+function beamsSprite(view, parts, paint) { // high beams: flashed at you when you're in its lane
+  const c = pixelSprite(view, parts, paint), g = c.getContext('2d'), w = c.width, h = c.height;
+  for (const b of view.lights.map((l, i) => l ?? [[0.1, 0.48, 0.3, 0.56], [0.7, 0.48, 0.9, 0.56]][i].map((f, j) => f * (j % 2 ? h : w)))) {
     const x = (b[0] + b[2]) / 2, y = (b[1] + b[3]) / 2, glow = g.createRadialGradient(x, y, 1, x, y, w * 0.3);
     glow.addColorStop(0, '#ffffff'); glow.addColorStop(1, '#fff6c800'); g.fillStyle = glow; g.fillRect(0, 0, w, h);
   }
   return c;
 }
 // a car's views, each made the first time it is drawn: most of them never are in a run, and a phone starts quicker
-const lazyLook = views => Object.defineProperties({}, Object.fromEntries(Object.entries(views).map(([k, make]) => {
+const lazyLook = (views, more) => Object.defineProperties({ ...more }, Object.fromEntries(Object.entries(views).map(([k, make]) => {
   let v; return [k, { get: () => v ??= make(), enumerable: true }]; })));
-const carLook = (model, paint) => { const a = CAR_ART[model];
-  return lazyLook({ rear: () => pixelSprite(a.rear, paint), front: () => pixelSprite(a.front, paint), beams: () => beamsSprite(a.front, paint) }); };
-const CARS = CAR_COLORS.flatMap(col => MODELS.map(m => carLook(m, col))); // every car in every colour
+// a car as fitted: its model, paint, and which rear bumper, spoiler and front bumper (-1: as it came)
+function carLook(spec) {
+  const { rear, front } = CAR_ART[spec.model], at = (list, i) => list[i];
+  const back = [rear.car, at(rear.bumpers, spec.bumper), at(rear.spoilers, spec.spoiler)], face = [front.car, at(front.bumpers, spec.front)];
+  return lazyLook({ rear: () => pixelSprite(rear, back, spec.paint), front: () => pixelSprite(front, face, spec.paint),
+    beams: () => beamsSprite(front, face, spec.paint) }, { spec });
+}
+// the traffic: every car in every colour, and a dozen fittings each: half of them as they came, a third with a wing,
+// a bumper or kit at the front and back alike. Still one draw on the traffic's dice a car (spawnCar)
+const FITS = 12, TRAFFIC = MODELS.length * CAR_COLORS.length * FITS, TRAFFIC_LOOKS = new Map();
+function trafficLook(k) {
+  if (!TRAFFIC_LOOKS.has(k)) {
+    const model = MODELS[k % MODELS.length], paint = CAR_COLORS[Math.floor(k / MODELS.length) % CAR_COLORS.length];
+    const fit = Math.floor(k / MODELS.length / CAR_COLORS.length), { rear, front } = CAR_ART[model], kit = fit % 2 ? -1 : fit / 2;
+    const wing = fit % 3 === 0 && rear.spoilers.length ? Math.floor(fit / 3) % rear.spoilers.length : -1;
+    TRAFFIC_LOOKS.set(k, carLook({ model, paint, bumper: kit < 0 ? -1 : kit % rear.bumpers.length, spoiler: wing,
+      front: kit < 0 ? -1 : kit % front.bumpers.length, k }));
+  }
+  return TRAFFIC_LOOKS.get(k);
+}
 const WRECKS = new Map(); // a totalled car's rear view (Distance's War Rig): tipped over, burnt, smoking
 function wreckSprite(img) {
   const pad = Math.round(img.height * 0.3); // room above, as it tips
@@ -128,32 +150,43 @@ function wreckSprite(img) {
   return WRECKS.get(img);
 }
 const POLICE_MODEL = 'JTR-34';
-function policeSprite(view, lit) { // black and white (white down to the glass, black below), a light bar on the roof
-  const a = CAR_ART[POLICE_MODEL][view === 'beams' ? 'front' : view], pad = 3; // lit red (0) or blue (1)
-  const c = view === 'beams' ? beamsSprite(a, '#f4f4f4') : pixelSprite(a, '#f4f4f4', { pad, mask: (x, y) => y >= a.glass[3] && '#1c1c22' });
-  const p = view === 'beams' ? 0 : pad, [x0, , x1] = a.glass, bw = Math.round((x1 - x0) * 0.6), bx = Math.round((x0 + x1 - bw) / 2);
-  dab(c, p, '#222', bx, -pad + (view === 'beams' ? pad : 0), bw, 3);
+function policeSprite(side, lit) { // black and white (white down to the glass, black below), a light bar on the roof
+  const v = CAR_ART[POLICE_MODEL][side === 'beams' ? 'front' : side], pad = side === 'beams' ? 0 : 3; // lit red (0) or blue (1)
+  const c = side === 'beams' ? beamsSprite(v, [v.car], '#f4f4f4') : pixelSprite(v, [v.car], '#f4f4f4', { pad, mask: (x, y) => y >= v.glass[3] && '#1c1c22' });
+  const [x0, , x1] = v.glass, bw = Math.round((x1 - x0) * 0.6), bx = Math.round((x0 + x1 - bw) / 2);
+  dab(c, 0, '#222', bx, 0, bw, 3);
   const g = c.getContext('2d'); g.shadowColor = lit ? '#48f' : '#f33'; g.shadowBlur = 6;
-  dab(c, p, lit ? '#48f' : '#f33', lit ? bx + bw / 2 : bx, -pad + (view === 'beams' ? pad : 0), bw / 2, 3);
+  dab(c, 0, lit ? '#48f' : '#f33', lit ? bx + bw / 2 : bx, 0, bw / 2, 3);
   return c;
 }
 const POLICE = [0, 1].map(lit => ({ rear: policeSprite('rear', lit), front: policeSprite('front', lit), beams: policeSprite('beams', lit) }));
-function madSprite(model, paint) { // Fuel madness (Distance's War Rig): rust for paint, one tail light out, bars and spikes
-  const a = CAR_ART[model].rear, pad = 4, c = pixelSprite(a, paint, { pad }), at = (...b) => dab(c, pad, ...b);
-  const [gx0, gy0, gx1, gy1] = a.glass, [bx0, , bx1, by1] = a.body, bw = bx1 - bx0, low = by1 - gy1;
-  for (const [x, y, w] of [[0.16, 0.75, 3], [0.6, 0.35, 2], [0.86, 0.8, 2], [0.36, 0.6, 2]]) at('#4a2414', bx0 + x * bw, gy1 + y * low, w, 2); // rust holes
-  const dead = a.lamps[1]; if (dead) at('#2a0c0c', dead[0] + (dead[2] - dead[0]) / 2, dead[1], (dead[2] - dead[0]) / 2, dead[3] - dead[1]); // its outer half
-  for (const f of [0.25, 0.5, 0.75]) at('#2b2b2e', gx0 + f * (gx1 - gx0), gy0, 1, gy1 - gy0); // bars welded over the rear window
-  at('#2b2b2e', gx0 + 2, (gy0 + gy1) / 2, gx1 - gx0 - 4, 1);
-  const spike = (x, y) => { at('#d4d4dc', x, y - 3, 1, 3); at('#8c8c96', x + 1, y - 2, 1, 2); }; // steel, lit on its left
+// Fuel madness (Distance's War Rig): a mad driver's own car, gone to seed and armed: the paint mostly rust (one of
+// three shades), a primer panel, rust holes, one tail light out, bars welded over the rear window, a pipe bar across
+// the back with spikes along it and on the roof, in the pack's way of shading (a lit side, a dark side)
+const RUST = ['#8b4a2b', '#6b3a22', '#9a6a44'];
+function madLook(look) {
+  return look.mad ??= lazyLook({ rear: () => madSprite(look.spec) }, { madOf: look });
+}
+function madSprite(spec) {
+  const v = CAR_ART[spec.model].rear, pad = 4, [gx0, gy0, gx1, gy1] = v.glass, [bx0, , bx1, by1] = v.body, bw = bx1 - bx0, low = by1 - gy1;
+  const primer = (x, y) => y > gy1 && x - bx0 > bw * (spec.k % 2 ? 0.64 : 0.14) && x - bx0 < bw * (spec.k % 2 ? 0.84 : 0.34) && '#7c7a70';
+  const c = pixelSprite(v, [v.car, v.bumpers[spec.bumper], v.spoilers[spec.spoiler]], mix(spec.paint, RUST[spec.k % 3], 0.75), { pad, mask: primer });
+  const at = (...b) => dab(c, pad, ...b);
+  for (const [x, y, w] of [[0.16, 0.7, 3], [0.62, 0.3, 2], [0.86, 0.75, 2], [0.4, 0.55, 2]]) { // rust holes, their edges orange
+    at('#b0602e', bx0 + x * bw - 1, gy1 + y * low - 1, w + 2, 3); at('#3a1a0c', bx0 + x * bw, gy1 + y * low, w, 1);
+  }
+  const dead = v.lamps[1]; if (dead) at('#2a0c0c', (dead[0] + dead[2]) / 2, dead[1], (dead[2] - dead[0]) / 2, dead[3] - dead[1]); // its outer half
+  for (const f of [0.25, 0.5, 0.75]) { at('#1e1e22', gx0 + f * (gx1 - gx0), gy0, 2, gy1 - gy0); at('#6a6a72', gx0 + f * (gx1 - gx0), gy0, 1, gy1 - gy0); } // bars
+  at('#1e1e22', gx0 + 2, (gy0 + gy1) / 2, gx1 - gx0 - 4, 2); at('#6a6a72', gx0 + 2, (gy0 + gy1) / 2, gx1 - gx0 - 4, 1);
+  const spike = (x, y) => { at('#e2e2ea', x, y - 4, 1, 4); at('#8c8c96', x + 1, y - 3, 1, 3); at('#55555c', x - 1, y - 1, 1, 1); }; // steel, lit on its left
   for (let i = 0; i < 5; i++) spike(gx0 + (i + 0.5) * (gx1 - gx0) / 5 - 1, gy0 - 1); // on the roof
-  const py = by1 - 6; // a pipe bar across the back, on two uprights
-  at('#3c3c42', bx0 + 0.15 * bw, py - 3, 2, 3); at('#3c3c42', bx0 + 0.85 * bw - 2, py - 3, 2, 3);
-  at('#3c3c42', bx0, py, bw, 3); at('#9a9aa4', bx0, py, bw, 1);
+  const py = by1 - 7; // the pipe bar, on two uprights: a lit top, a dark underside, bolts
+  for (const x of [bx0 + 0.15 * bw, bx0 + 0.85 * bw - 2]) { at('#2b2b30', x, py - 4, 2, 4); at('#6a6a72', x, py - 4, 1, 4); }
+  at('#3c3c42', bx0, py, bw, 4); at('#a4a4ae', bx0, py, bw, 1); at('#1e1e22', bx0, py + 3, bw, 1);
+  for (let i = 1; i < 8; i++) at('#c8c8d0', bx0 + i * bw / 8, py + 2);
   for (let i = 0; i < 6; i++) spike(bx0 + (i + 0.5) * bw / 6 - 1, py); // spikes along it
   return c;
 }
-const MAD = MODELS.flatMap(m => ['#8b4a2b', '#6b3a22', '#9a6a44'].map(p => lazyLook({ rear: () => madSprite(m, p) }))); // rust, darker rust, sun-bleached
 const TANK_SPRITE = sprite(300, 230, (g, w, h) => { // the final boss (Distance), from behind: hull, tracks, turret, gun
   g.fillStyle = '#1b1d17'; g.fillRect(0, h * 0.6, w * 0.2, h * 0.4); g.fillRect(w * 0.8, h * 0.6, w * 0.2, h * 0.4); // tracks
   g.fillStyle = '#4b5320'; g.beginPath(); g.roundRect(w * 0.06, h * 0.42, w * 0.88, h * 0.4, 10); g.fill(); // hull
@@ -163,20 +196,21 @@ const TANK_SPRITE = sprite(300, 230, (g, w, h) => { // the final boss (Distance)
   g.fillStyle = '#ddd'; g.font = `bold ${h * 0.16}px sans-serif`; g.textAlign = 'center'; g.fillText('★', w / 2, h * 0.7);
   g.fillStyle = '#a22'; g.fillRect(w * 0.12, h * 0.5, w * 0.08, h * 0.05); g.fillRect(w * 0.8, h * 0.5, w * 0.08, h * 0.05);
 });
-const RACERS = new Map(); // racers' rear views by number: tuned, racing stripes, and the number once the race is revealed
+const RACERS = new Map(); // racers' rear views by number: kitted, racing stripes, and the number once the race is revealed
 const FONT = ['111101101101111', '010110010010111', '111001111100111', '111001111001111', '101101111001001', '111100111001111',
   '111100111101111', '111001001001001', '111101111101111', '111101111001111']; // 0-9, 3 wide and 5 high, row by row
 function racerSprite(n, numbered, team) { // team: one of your fleet, black with gold stripes; made when first drawn
   const model = MODELS[n % MODELS.length], key = numbered ? (team ? -n : n) : model;
-  return { get rear() { if (!RACERS.has(key)) RACERS.set(key, racerArt(model, n, numbered, team)); return RACERS.get(key); } };
+  return { get rear() { if (!RACERS.has(key)) RACERS.set(key, racerArt(model, numbered ? n : 0, numbered, team)); return RACERS.get(key); } };
 }
-function racerArt(model, n, numbered, team) {
-  const a = CAR_ART[model].tuned, mid = a.w / 2, sw = Math.max(2, Math.round(a.w * 0.06)), gap = Math.max(1, Math.round(a.w * 0.025));
+function racerArt(model, n, numbered, team) { // each number its own bumper and wing (racers are always kitted)
+  const v = CAR_ART[model].rear, mid = v.w / 2, sw = Math.max(2, Math.round(v.w * 0.06)), gap = Math.max(1, Math.round(v.w * 0.025));
+  const kit = [v.car, v.bumpers[(n + v.bumpers.length - 1) % v.bumpers.length], v.spoilers[Math.floor(n / MODELS.length) % v.spoilers.length]];
   const stripe = (x, y) => Math.abs(x + 0.5 - mid) > gap && Math.abs(x + 0.5 - mid) <= gap + sw && (team ? '#e8c440' : '#c62828');
-  const c = pixelSprite(a, team ? '#1a1a20' : '#f4f4f4', { mask: stripe }), at = (...b) => dab(c, 0, ...b);
+  const c = pixelSprite(v, kit, team ? '#1a1a20' : '#f4f4f4', { mask: stripe }), at = (...b) => dab(c, 0, ...b);
   if (numbered) { // the number on a roundel on the boot
     const digits = [...String(n)].map(Number), tw = digits.length * 4 - 1, r = Math.ceil(tw / 2) + 3;
-    const cy = Math.round(a.glass[3] + (a.body[3] - a.glass[3]) * 0.4), cx = Math.round(mid);
+    const cy = Math.round(v.glass[3] + (v.body[3] - v.glass[3]) * 0.4), cx = Math.round(mid);
     for (let y = -r; y <= r; y++) { const half = Math.round(Math.sqrt(r * r - y * y)); at('#111', cx - half, cy + y, 2 * half, 1); }
     for (let y = -r + 1; y < r; y++) { const half = Math.round(Math.sqrt((r - 1) * (r - 1) - y * y)); at('#fff', cx - half, cy + y, 2 * half, 1); }
     digits.forEach((d, i) => [...FONT[d]].forEach((bit, j) => bit === '1' && at('#111', cx - Math.floor(tw / 2) + 4 * i + j % 3, cy - 2 + Math.floor(j / 3))));
@@ -231,7 +265,7 @@ function spawnCar(car, d) {
   const oncoming = rand() < 0.45, lane = rand() < 0.6 ? 0 : 1;
   const kmh = oncoming ? 70 + rand() * 40 : lane ? 90 + rand() * 30 : 60 + rand() * 35;
   Object.assign(car, {
-    z: odo + d, dir: oncoming ? -1 : 1, lane, look: CARS[Math.floor(rand() * CARS.length)],
+    z: odo + d, dir: oncoming ? -1 : 1, lane, look: trafficLook(Math.floor(rand() * TRAFFIC)),
     x: oncoming ? LANES.oncoming[rand() < 0.5 ? 0 : 1] : MY_LANES[lane],
     v: kmh / 3.6, want: kmh / 3.6, signal: 0, // m/s now, and what it cruises at; s of indicator before it pulls out
     serial: ++spawned, // which car it is (a mad one or not: Fuel madness)
@@ -392,7 +426,7 @@ function roadSlope(pos) { return elevation(pos + 0.5) - elevation(pos - 0.5); }
 
 // a mad driver's car is rusty and weaves in its lane, drawn only (its place on the road stays put), so you know it
 // from afar (the owner left the look to Claude, 18 Oct)
-const lookOf = c => mad(c) ? MAD[c.serial % MAD.length] : c.look;
+const lookOf = c => mad(c) && c.look.spec ? madLook(c.look) : c.look;
 const weave = c => mad(c) && !c.wreck ? 0.3 * Math.sin(performance.now() / 250 + c.serial) : 0; // m, about every 1.6 s
 function drawRoad(g, w, h, dt) {
   const depth = 1 / Math.tan(ROAD.fov / 2 * Math.PI / 180), horizon = h * ROAD.horizon, k0 = w / 2;

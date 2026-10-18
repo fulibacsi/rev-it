@@ -37,15 +37,21 @@ machine or session. Keep it current: update a section when a decision changes, a
   layers. On our road they read as the same flat-colour style, only with more detail, so the road stays as it is (the
   owner's idea of pixelating the whole road was tried at half resolution: the sky and hills looked fine, but the thin
   lane lines broke up and would flicker in motion). `tools/make_cars.py` puts the cars together from a local copy of
-  the pack and writes `assets/cars.js` (20 kB, 7 kB gzipped): the pack's terms allow it in games but not passed on as
+  the pack and writes `assets/cars.js` (39 kB with every part a layer, 13 kB gzipped): the pack's terms allow it in games but not passed on as
   a pack, so the pack itself never goes in the repo (CREDITS.md). Drawn with hard pixels as they come close and
   smoothed far off (no shimmer), 1.9 m across with their height from the art; each shade of paint repainted keeping
   its lightness, so one car makes every colour:
-  - traffic: the five cars in the eight traffic colours; oncoming ones flash their headlights where the art has them;
+  - traffic: the five cars in the eight traffic colours, each in a dozen fittings from the pack's parts (the owner, 18
+    Oct: "spice up the cars with random varieties"): half as they came, a third with a wing, the rest with one of
+    its bumpers or body kits, front and back alike. 480 looks, still one draw on the traffic's dice a car; oncoming
+    ones flash their headlights where the art has them;
   - police: white down to the glass and black below, a light bar on the roof;
-  - racers: the tuned car (the pack's boldest bumper and a wing), white with two red stripes, and the number on a
+  - racers: always kitted, each number its own bumper and wing, white with two red stripes, and the number on a
     roundel in a 3x5 pixel font once the race is revealed; your fleet black with gold stripes;
-  - Fuel madness: the rust shades, with the bars, spikes, pipe bar and dead tail light drawn in pixels;
+  - Fuel madness: a mad driver's own car, morphed (the owner: "morph them to become mad cars"): the same model, bumper
+    and wing, the paint mostly rust (a quarter of its old colour left, so mad cars differ), a primer panel, rust holes
+    with orange edges, one tail light out, bars over the rear window, and a bolted pipe bar with steel spikes along
+    it and on the roof, shaded the pack's way (a lit side, a dark side);
   - the indicator blinks over the outer half of each car's own tail light.
   The tank, palms and signs stay as they were.
 - **Crashes:** hitting a slower car in your lane drops you to the lower of 35% of your speed and 40% of its speed.
