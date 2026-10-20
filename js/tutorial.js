@@ -101,7 +101,9 @@ const TUTORIALS = [
     { title: 'YOUR FLEET',
       both: 'The racers you pay off race for you, in your colours: they give way when you come up behind them, and ' +
         'move across to block a rival closing on them. Your place counts the rivals only.' },
-    { title: 'THE SONAR', at: '#sonar', both: 'On the A-pillar: your fleet cars up to 500 m behind you.' },
+    { title: 'THE SONAR', at: '#sonar',
+      both: 'On the A-pillar: the road 250 m ahead of you and behind, from above. You are the arrow; your fleet cars ' +
+        'are green, the rivals white, the traffic yellow.' },
     { title: 'THE HUNTING PACK', if: () => lvl('pack') > 0,
       both: 'Each fleet car hunts the nearest car ahead of it, as you do: into its lane and into it.' },
   ] },
@@ -122,8 +124,8 @@ const TUTORIALS = [
   ] },
   { id: 'police', name: 'Police heat', open: () => gangOpen(), pages: [
     { title: 'THE SCANNER', at: '#scanner',
-      both: 'Every car totalled raises the police heat: the scanner on the A-pillar. The police come after you, and at ' +
-        '100% the army sends a tank, once you have guns.' },
+      both: 'Every car totalled raises the police heat: the scanner on the A-pillar. The police come after you (red ' +
+        'and blue on the sonar), and at 100% the army sends a tank, once you have guns.' },
   ] },
   { id: 'guns', name: 'Guns', for: ['guns', 'autogun'], open: () => lvl('guns') > 0, pages: [
     { title: 'FIRE', at: '#fire',
@@ -133,8 +135,8 @@ const TUTORIALS = [
   ] },
   { id: 'tank', name: 'The tank', open: () => bossRace() || progress.tanks > 0, pages: [
     { title: 'THE TANK',
-      both: 'It holds the road 80 m ahead of you and shells you. Rams barely scratch it: outgun it, with the gang. ' +
-        'Lose and the heat drops to half; push for it again.' },
+      both: 'It holds the road 80 m ahead of you (the red square on the sonar) and shells you. Rams barely scratch ' +
+        'it: outgun it, with the gang. Lose and the heat drops to half; push for it again.' },
   ] },
 ];
 const tour = { id: 'driving', page: 0, popup: false }; // popup: opened from the garage, so it closes back to it
