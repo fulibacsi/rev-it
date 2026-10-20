@@ -270,7 +270,7 @@ function renderGarage(bought) {
         'you: total a car.</b> Ram the car in the reticle until its health bar is empty.' : '') +
       (run.firstTotal ? '<br><b>Totalled! No law out here any more. The gang is yours, and your car becomes a war rig: the War Rig page ' +
         'is open, paid in parts.</b>' : '') +
-      (run.beatTank ? `<br><b>GAME OVER. You beat the tank: the road is yours, and the police have given up (heat 0%).</b> ` +
+      (run.beatTank ? `<br><b>The tank is scrap: the road is yours, and the police have given up (heat 0%).</b> ` +
         `+${TANK.parts} parts. Play on: the race, the fleet and the gang carry on, and the next tank is tougher.`
         : run.boss ? '<br><b>The tank held the road.</b> The heat is down to half: push for it again.'
         : bossRace() ? '<br><b>Police heat 100%: the army has sent a tank. It is waiting up the road: outgun it.</b>'
@@ -347,9 +347,9 @@ let shownPhase, shownCount, passedBest = false, shownReveal = false;
 function renderRun() {
   if (run.phase !== shownPhase) { // a new phase starts
     if (run.phase === 'run') { flash('GO!', '#5f5', true); beep(1320, 0.5); }
-    if (run.phase === 'finish') { flash(run.beatTank ? 'GAME OVER' : 'TIME!', '#ec4', true); beep(880, 0.8); }
+    if (run.phase === 'finish') { flash(run.beatTank ? 'TANK DOWN!' : 'TIME!', '#ec4', true); beep(880, 0.8); }
     if (run.phase === 'garage') renderGarage();
-    if (run.phase === 'garage' && run.beatTank) openMenu('win'); // GAME OVER, then the win screen (main.js)
+    if (run.phase === 'garage' && run.beatTank) openMenu('win'); // the tank burning, then the ending (main.js)
     document.body.classList.toggle('garage', run.phase === 'garage');
     shownPhase = run.phase;
   }
@@ -371,7 +371,7 @@ function renderRun() {
       : run.limp ? ['LIMP MODE', `${Math.floor(odo)} of ${LIMP} m`] // the time left is in the mirror
       : progress.racing ? [`P${position()}`, `${fmt(odo)} m` + gaps()]
       : [`${fmt(odo)} m`, run.best ? `best ${fmt(run.best)} m` : ''],
-    finish: run.beatTank ? ['GAME OVER', 'the road is yours'] // boss.js: the tank destroyed
+    finish: run.beatTank ? ['TANK DOWN', 'the road is yours'] // boss.js: the tank destroyed
       : run.race?.dnf ? ['DNF', run.race.dnf]
       : run.race ? [`P${run.race.p}`, `+${run.race.points} pts · ${fmt(run.gain)} m`]
       : [`${fmt(run.gain)} m`, run.newBest ? 'new best!' : 'time'],
