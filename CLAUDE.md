@@ -85,6 +85,9 @@ uv run --no-project --with playwright playwright install chromium         # once
 - The menu: the main game starts from `[data-play="distance"]` (NEW GAME, or CONTINUE with a save); the other games
   are behind ARCADE (`[data-show="arcade"]`, then `[data-play="free"]` etc.). Esc over a game opens the pause menu;
   `#to-main` goes on to the main menu.
+- A system's tutorial pops up over the garage the first time it opens in play (bought, or reached in a run, and that
+  includes levels a test sets between runs). Tests not about the tutorials mark them all seen in their setup:
+  `toured: TUTORIALS.map(t => t.id)` in `progress`.
 - **Debug mode**, for playtesting: tap the menu's REV IT title 5 times (then OK). Distance plays a separate save,
   copied from the game the first time, with unlimited metres, points, miles and parts (shown as ∞), every grid slot
   for sale and police heat rising ten times quicker, so the later acts are quick to reach; the same again switches it

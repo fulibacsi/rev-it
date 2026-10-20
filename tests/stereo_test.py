@@ -29,7 +29,7 @@ with sync_playwright() as p:
     pg = b.new_page(viewport={"width": 1440, "height": 900}); pg.on("pageerror", lambda e: errors.append(str(e))); js = pg.evaluate
     got_mp3 = []; pg.on("request", lambda r: r.url.endswith(".mp3") and got_mp3.append(r.url.rsplit("/", 1)[1]))
     pg.goto(URL)
-    js("localStorage.clear(); Object.assign(progress, { bank: 5000, runs: 3 })")
+    js("localStorage.clear(); Object.assign(progress, { bank: 5000, runs: 3, toured: TUTORIALS.map(t => t.id) })")
     pg.click('[data-play="distance"]'); pg.wait_for_timeout(300)
     # 1. not bought: no stereo, nothing downloaded
     check("not bought: no lights, no head unit, no music, nothing downloaded",
@@ -97,7 +97,7 @@ with sync_playwright() as p:
     cdp = ctx.new_cdp_session(ph); cdp.send("Emulation.setTouchEmulationEnabled", {"enabled": True, "maxTouchPoints": 5})
     cdp.send("Emulation.setSafeAreaInsetsOverride", {"insets": {"left": 59, "right": 59, "bottom": 21, "top": 0}})
     ph.goto(URL); ph.wait_for_timeout(300)
-    ph.evaluate("localStorage.setItem('car-rev-incremental', JSON.stringify({ bank: 5000, runs: 3, tape: 2, levels: { stereo: 1, clutch: 1, gas: 1, shift: 1 } }))")
+    ph.evaluate("localStorage.setItem('car-rev-incremental', JSON.stringify({ bank: 5000, runs: 3, tape: 2, levels: { stereo: 1, clutch: 1, gas: 1, shift: 1 }, toured: TUTORIALS.map(t => t.id) }))")
     ph.reload(); ph.wait_for_timeout(1000)
     check("the main menu: the save's tape downloaded, ready to play", menu_mp3 == ["chill-wave.mp3"], menu_mp3)
     ph.evaluate("settings.layout = 'touch'; applyLayout(); progress.tape = 0")
