@@ -173,8 +173,11 @@ machine or session. Keep it current: update a section when a decision changes, a
 - **STATS:** time played, runs, best run, distance driven; races and best place only after the reveal, the fleet and
   cars totalled only once their acts open, tanks beaten once one is; never a word of the race before the reveal.
   SHARE sends them (and the build: when the page was published) by the phone's share sheet, else the clipboard.
-- **The win screen** follows GAME OVER: congratulations, the stats, SHARE, NEW GAME (after "are you sure?") and EXIT TO
-  MAIN MENU.
+- **The ending** (the win screen) follows the tank's destruction, a modal in fire and rust (the owner, 20 Oct: the HUD's
+  GAME OVER and a plain screen felt underwhelming; their pick of title and words): "WARLORD OF THE COAST ROAD. Steel,
+  smoke and silence where the tank stood. A hundred engines howl your name. Nobody's chasing you any more. They're
+  following." Then the stats, MAIN MENU, SHARE and BACK TO THE GARAGE (play on). Its NEW GAME went: a red "erase
+  everything" doesn't belong on a win, and RESET PROGRESS in the settings does it.
 - **How to drive:** before the first run the garage says how to get going (start, clutch, 1st, gas); the full controls
   are under HOW TO DRIVE in the pause menu and the settings. The key help that sat at the foot of a desktop screen
   went there too.
@@ -528,8 +531,9 @@ the heat. Till then the garage says "the army has a tank ready for when you are 
   off a level), with the shot, a jolt and the cracks to show it.
 - You and the gang outgun it: your guns, and the fleet's, which race up to join the fight (40 m/s quicker until
   they are with it) and shoot it from within 200 m. A ram does a fifth of its usual damage.
-- **Destroyed:** the ending. GAME OVER on the head-up display ("the road is yours") and the run stops there, held for
-  4 s (the owner, 14 Oct: that's the end state). The garage: "GAME OVER. You beat the tank: the road is yours", 300
+- **Destroyed:** the ending. TANK DOWN on the head-up display ("the road is yours"; GAME OVER until 20 Oct, which read
+  like losing) and the run stops there, the tank burning, held for 4 s (the owner, 14 Oct: that's the end state);
+  then the ending's screen. The garage: "The tank is scrap: the road is yours", 300
   parts, the heat back to 0. You can still play on, the next tank half as tough again (1,500, then 2,000 ...), until
   the menus are talked about.
 - **Lost** (wrecked, a head-on, or the bell with the tank still going): a DNF ("the tank held the road"), and the heat

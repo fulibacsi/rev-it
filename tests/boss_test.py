@@ -1,6 +1,6 @@
 """The final boss: at 100% heat the garage warns of the tank, and the next race has it. It holds the road about 80 m
 ahead of you in your lane, is the AR target ("TANK"), shells you (8% damage each, less with armour), and shrugs off
-rams; your guns and the gang's wear it down. Destroyed: GAME OVER, the run stops there; the ending (heat back to 0,
+rams; your guns and the gang's wear it down. Destroyed: TANK DOWN, the run stops there; the ending (heat back to 0,
 parts), and the next tank is tougher. Not destroyed by the bell: a DNF, and the heat drops to half."""
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -50,17 +50,22 @@ with sync_playwright() as p:
     check("destroyed: heat back to 0, 300 parts, one tank beaten", got == {"wanted": 0, "tanks": 1, "parts": 300}, got)
     pg.wait_for_timeout(300)
     got = js("({ phase: run.phase, left: Math.round(run.left), hud: $('run-dist').textContent, flash: $('flash').textContent })")
-    check("GAME OVER on the head-up display, the run stopped with time to spare", got["phase"] == "finish" and got["left"] > 5 and got["hud"] == "GAME OVER" and got["flash"] == "GAME OVER", got)
-    pg.screenshot(path=f"{OUT}/boss_game_over.png")
+    check("TANK DOWN on the head-up display, the run stopped with time to spare", got["phase"] == "finish" and got["left"] > 5 and got["hud"] == "TANK DOWN" and got["flash"] == "TANK DOWN!", got)
+    pg.screenshot(path=f"{OUT}/boss_tank_down.png")
     pg.wait_for_timeout(3000); check("held a while (4 s), longer than a finish", js("run.phase") == "finish", js("run.phase"))
     pg.wait_for_function("run.phase === 'garage'", timeout=5000)
     rep = js("$('report').innerText")
-    check("the ending, then play on (a result, not a DNF)", "GAME OVER" in rep and "Play on" in rep and "DNF" not in rep, rep[-160:])
+    check("the ending, then play on (a result, not a DNF)", "The tank is scrap" in rep and "Play on" in rep and "DNF" not in rep, rep[-160:])
     check("the next tank is half as tough again", js("tankHealth()") == 1500, js("tankHealth()"))
     got = js("({ menu: menuOpen, screen, text: $('menu').innerText })")
-    check("then the win screen: congratulations, the stats, a tank beaten", got["menu"] and got["screen"] == "win" and "CONGRATULATIONS" in got["text"]
-          and "Tanks beaten\n1" in got["text"], {k: v for k, v in got.items() if k != "text"})
+    check("then the ending: WARLORD OF THE COAST ROAD, the stats, a tank beaten", got["menu"] and got["screen"] == "win"
+          and "WARLORD OF THE COAST ROAD" in got["text"] and "Tanks beaten\n1" in got["text"], {k: v for k, v in got.items() if k != "text"})
+    buttons = js("[...document.querySelectorAll('[data-screen=win] button')].map(b => b.textContent)")
+    check("its buttons: MAIN MENU, SHARE, BACK TO THE GARAGE (no NEW GAME)", buttons == ["MAIN MENU", "SHARE", "BACK TO THE GARAGE"], buttons)
     pg.screenshot(path=f"{OUT}/boss_win.png")
+    pg.click("#win-garage"); pg.wait_for_timeout(100)
+    check("BACK TO THE GARAGE: playing on", js("[menuOpen, run.phase]") == [False, "garage"], js("[menuOpen, run.phase]"))
+    js("openMenu('win')")
     pg.click("#win-main"); got = js("[screen, $('continue').textContent, $('continue').classList.contains('done')]")
     check("exit to the main menu: CONTINUE with the tick, and it plays on in the garage", got == ["main", "CONTINUE", True], got)
     pg.click("#continue"); pg.wait_for_timeout(100)

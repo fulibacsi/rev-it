@@ -159,11 +159,10 @@ $('menu').onclick = e => {
   if ('back' in b.dataset) showScreen(screenFrom.pop() ?? (playing ? 'pause' : 'main'), true);
   if ('share' in b.dataset) shareStats(b.closest('section').querySelector('.shared'));
   if (b.dataset.engine) pickEngine(+b.dataset.engine);
-  if (b.id === 'resume') { closeMenu(); goFullscreen(); }
+  if (b.id === 'resume' || b.id === 'win-garage') { closeMenu(); goFullscreen(); }
   if (b.id === 'to-main' || b.id === 'win-main') showScreen('main');
   if (b.id === 'end-run' && confirm('End this run now? It counts as if the time had run out.')) { closeMenu(); game.endRun?.(); }
   if (b.id === 'reset' && confirm('Reset your progress? Every metre, point and upgrade is gone, and the game starts over.')) resetGame();
-  if (b.id === 'win-new' && confirm('Start a new game? Everything from this one is gone, its stats too.')) { resetGame(); play(DISTANCE); }
   if (b.id === 'layout') {
     settings.layout = LAYOUTS[(LAYOUTS.indexOf(settings.layout) + 1) % LAYOUTS.length];
     saveSettings(); applyLayout(); renderMenu();
