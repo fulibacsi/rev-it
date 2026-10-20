@@ -10,7 +10,7 @@ with sync_playwright() as p:
     pg = b.new_page(viewport={"width": 1440, "height": 900}); pg.on("pageerror", lambda e: errors.append(str(e)))
     pg.goto(URL); js = pg.evaluate; m = pg.mouse; kb = pg.keyboard
     def start(levels, extra=""):
-        js(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, bank: 9e6, levels: {{ {levels} }}, engine: 2 {extra} }})")
+        js(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, bank: 9e6, levels: {{ {levels} }}, engine: 2, toured: TUTORIALS.map(t => t.id) {extra} }})")
         if js("game.id") != "distance": pg.click('[data-play="distance"]'); pg.wait_for_timeout(200)
         else: js("run.left = 0.1"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
         js("refreshCar()")  # as buying in the garage does

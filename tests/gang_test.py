@@ -19,7 +19,7 @@ with sync_playwright() as p:
     pg = b.new_page(viewport={"width": 1440, "height": 900}); pg.on("pageerror", lambda e: errors.append(str(e))); js = pg.evaluate
     pg.goto(URL)
     def start(fleet):
-        js(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, runs: 40, bank: 10000, levels: {{ {CAR}, fleet: {fleet} }}, engine: 2 }})")
+        js(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, runs: 40, bank: 10000, levels: {{ {CAR}, fleet: {fleet} }}, engine: 2, toured: TUTORIALS.map(t => t.id) }})")
         if js("game.id") != "distance": pg.click('[data-play="distance"]'); pg.wait_for_timeout(200)
         js("refreshCar(); renderGarage()")
     tabs = lambda: js("[...document.querySelectorAll('#tabs button')].map(b => b.textContent)")
@@ -80,7 +80,7 @@ with sync_playwright() as p:
     check("bought: bull bar 1", js("[lvl('bullbar'), bullBar, progress.parts]") == [1, 1, 80], js("[lvl('bullbar'), bullBar, progress.parts]"))
     pg.screenshot(path=f"{OUT}/gang_garage.png")
     # Fuel madness (the owner, 18 Oct): levels of 25%, and a switch beside the next level's price once bought
-    card = "[...document.querySelector('[data-buy=\"baddrivers\"], [data-toggle=\"baddrivers\"]').closest('.card').querySelectorAll('b, small, button')].map(e => e.textContent)"
+    card = "[...document.querySelector('[data-buy=\"baddrivers\"], [data-toggle=\"baddrivers\"]').closest('.card').querySelectorAll('b, small, button:not(.tip)')].map(e => e.textContent)"
     got = js(card)
     check("Fuel madness: its card, 30 parts, 25% at the first level", got[0] == "Fuel madness" and "double parts" in got[1] and got[1].endswith("→ 25% of drivers mad for fuel") and got[2:] == ["30 parts"], got)
     js("progress.parts = 1000"); pg.click('[data-buy="baddrivers"]'); pg.wait_for_timeout(100)

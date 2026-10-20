@@ -34,7 +34,8 @@ Design decisions, balance targets, the playtest history and the open questions a
   anything goes.
 - `js/engine.js` engine model and Web Audio (recorded loops crossfaded by rpm) · `js/car.js` drivetrain, clutch slip,
   lanes, crashes · `js/road.js` pseudo-3D road, traffic AI, sprites · `js/controls.js` all input (key, pedals, H-gate
-  lever, wheel, light stalk, nitro, stereo) · `js/stereo.js` the car stereo's tapes and lights · `js/main.js` the
+  lever, wheel, light stalk, nitro, stereo) · `js/stereo.js` the car stereo's tapes and lights · `js/tutorial.js` the
+  tutorials under HOW TO DRIVE (a step a page, the real control lit up behind the menu) · `js/main.js` the
   menus (main, pause, arcade, settings, stats, how to drive, credits, win), cluster, head-up display, main loop.
   **The interface a game implements is documented at the top of `main.js`.**
 - `js/games/`: `levels.js` (adaptive levels for Rev and Speed signs), `rev.js`, `signs.js`, `distance.js` (garage,
@@ -84,6 +85,9 @@ uv run --no-project --with playwright playwright install chromium         # once
 - The menu: the main game starts from `[data-play="distance"]` (NEW GAME, or CONTINUE with a save); the other games
   are behind ARCADE (`[data-show="arcade"]`, then `[data-play="free"]` etc.). Esc over a game opens the pause menu;
   `#to-main` goes on to the main menu.
+- A system's tutorial pops up over the garage the first time it opens in play (bought, or reached in a run, and that
+  includes levels a test sets between runs). Tests not about the tutorials mark them all seen in their setup:
+  `toured: TUTORIALS.map(t => t.id)` in `progress`.
 - **Debug mode**, for playtesting: tap the menu's REV IT title 5 times (then OK). Distance plays a separate save,
   copied from the game the first time, with unlimited metres, points, miles and parts (shown as ∞), every grid slot
   for sale and police heat rising ten times quicker, so the later acts are quick to reach; the same again switches it

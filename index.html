@@ -200,7 +200,7 @@
 
 <button id="menu-button" title="menu (Esc)">☰</button>
 <div id="rotate">Turn your phone sideways to drive.</div>
-<div id="menu"><div id="menu-panel">
+<div id="menu"><div id="spot"></div><div id="menu-panel">
   <h1>REV <span>IT</span></h1>
   <!-- one screen at a time (#menu's data-screen, main.js) -->
   <section data-screen="main">
@@ -245,6 +245,8 @@
   </section>
   <section data-screen="help">
     <h2>HOW TO DRIVE</h2>
+    <div id="tutorials" class="menu-buttons"></div> <!-- the tutorials, a step a page (tutorial.js) -->
+    <h2>CONTROLS</h2>
     <div class="menu-help touch-only">
       <b>Key</b> turn it to START and hold it until the engine runs ·
       <b>Pedals</b> touch a pedal to press it all the way, slide your finger up to ease off; let go and it springs back ·
@@ -261,6 +263,12 @@
       Slower cars use your lane: overtake them, a crash costs most of your speed.
     </div>
     <footer><button data-back>◀ BACK</button></footer>
+  </section>
+  <section data-screen="tour"> <!-- a tutorial's page, its control lit up behind the menu (tutorial.js) -->
+    <h2 id="tour-name"></h2>
+    <h3 id="tour-title"></h3>
+    <p id="tour-text"></p>
+    <footer><button id="tour-back">◀ BACK</button><span id="tour-dots"></span><button id="tour-prev">◀</button><button id="tour-next">▶</button></footer>
   </section>
   <section data-screen="credits">
     <h2>CREDITS</h2>
@@ -302,6 +310,7 @@
 <script src="js/road.js"></script>
 <script src="js/controls.js"></script>
 <script src="js/stereo.js"></script>
+<script src="js/tutorial.js"></script>
 <script src="js/games/levels.js"></script>
 <script src="js/games/rev.js"></script>
 <script src="js/games/signs.js"></script>
