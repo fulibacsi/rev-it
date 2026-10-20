@@ -54,7 +54,7 @@ with sync_playwright() as p:
     pg.screenshot(path=f"{OUT}/boss_tank_down.png")
     pg.wait_for_timeout(3000); check("held a while (4 s), longer than a finish", js("run.phase") == "finish", js("run.phase"))
     pg.wait_for_function("run.phase === 'garage'", timeout=5000)
-    rep = js("$('report').innerText")
+    rep = js("$('report').textContent") # the garage is out of sight behind the ending
     check("the ending, then play on (a result, not a DNF)", "The tank is scrap" in rep and "Play on" in rep and "DNF" not in rep, rep[-160:])
     check("the next tank is half as tough again", js("tankHealth()") == 1500, js("tankHealth()"))
     got = js("({ menu: menuOpen, screen, text: $('menu').innerText })")
@@ -62,9 +62,11 @@ with sync_playwright() as p:
           and "WARLORD OF THE COAST ROAD" in got["text"] and "Tanks beaten\n1" in got["text"], {k: v for k, v in got.items() if k != "text"})
     buttons = js("[...document.querySelectorAll('[data-screen=win] button')].map(b => b.textContent)")
     check("its buttons: MAIN MENU, SHARE, BACK TO THE GARAGE (no NEW GAME)", buttons == ["MAIN MENU", "SHARE", "BACK TO THE GARAGE"], buttons)
+    check("over the road: the garage not behind it", js("getComputedStyle($('garage')).visibility") == "hidden", js("getComputedStyle($('garage')).visibility"))
     pg.screenshot(path=f"{OUT}/boss_win.png")
     pg.click("#win-garage"); pg.wait_for_timeout(100)
-    check("BACK TO THE GARAGE: playing on", js("[menuOpen, run.phase]") == [False, "garage"], js("[menuOpen, run.phase]"))
+    check("BACK TO THE GARAGE: playing on, the garage there", js("[menuOpen, run.phase, getComputedStyle($('garage')).visibility]") == [False, "garage", "visible"],
+          js("[menuOpen, run.phase, getComputedStyle($('garage')).visibility]"))
     js("openMenu('win')")
     pg.click("#win-main"); got = js("[screen, $('continue').textContent, $('continue').classList.contains('done')]")
     check("exit to the main menu: CONTINUE with the tick, and it plays on in the garage", got == ["main", "CONTINUE", True], got)
