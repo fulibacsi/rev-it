@@ -23,17 +23,25 @@ const fleetPace = () => 1 + 0.05 * lvl('fleetPace');
 // the dues for a run: a share of the metres your fleet drove from the grid, paid into the bank at the finish
 const fleetDues = () => Math.round(0.1 * lvl('dues') * racers().reduce((m, c) => m + (c.fleet ? Math.max(0, c.z - c.grid) : 0), 0));
 
-// the sonar on the A-pillar: your fleet cars up to 500 m behind you, by distance (out from you at the top) and by how
-// far across the road they are (the angle)
-const SONAR = 500; // m
+// the sonar on the A-pillar: the road 250 m ahead of you and behind, from above, ahead up. The lanes to scale across
+// (4.4 px a metre: the lanes 15 px apart), squeezed along (34 px for 250 m); you in the middle, every car coloured by
+// what it is (the owner, 20 Oct). Redrawn 15 times a second: plenty for a blip, and a phone stays cool
+const SONAR = 250; // m each way
+const BLIPS = ['car', 'rival', 'ally', 'red', 'blue', 'tank']; // their order on the screen: the police and the tank on top
+let sonarAt = 0; // when it was last drawn
 function renderSonar() {
-  const on = run.phase !== 'garage' && fleetSize() > 0;
+  const on = run.phase !== 'garage' && fleetSize() > 0, now = performance.now();
   document.body.classList.toggle('has-fleet', on);
-  if (!on) return;
-  $('sonar-blips').innerHTML = racers().filter(c => c.fleet && c.z < odo && odo - c.z < SONAR).map(c => {
-    const r = 8 + 52 * (odo - c.z) / SONAR, a = clamp((c.x - carX) / 7, -1, 1) * 36 * Math.PI / 180;
-    return `<circle cx="${(64 + r * Math.sin(a)).toFixed(1)}" cy="${(12 + r * Math.cos(a)).toFixed(1)}" r="3.2"/>`;
-  }).join('');
+  if (!on || now - sonarAt < 66) return;
+  sonarAt = now;
+  const X = x => (66 + 4.4 * x).toFixed(1), Y = z => (43 - 34 * (z - odo) / SONAR).toFixed(1);
+  const kind = c => c.tank ? 'tank' : c.police ? (now % 500 < 250 ? 'red' : 'blue') : c.fleet ? 'ally' : c.racer ? 'rival' : 'car';
+  $('sonar-blips').innerHTML = traffic.filter(c => !c.wreck && Math.abs(c.z - odo) < SONAR).map(c => [kind(c), c])
+    .sort((a, b) => BLIPS.indexOf(a[0]) - BLIPS.indexOf(b[0])).map(([k, c]) => k === 'tank'
+      ? `<rect class="tank" x="-3.5" y="-3.5" width="7" height="7" transform="translate(${X(c.x)},${Y(c.z)})"/>`
+      : `<circle class="${k}" cx="${X(c.x)}" cy="${Y(c.z)}" r="2.4"/>`).join('');
+  $('sonar-you').setAttribute('transform', `translate(${X(carX)},43)`);
+  $('sonar-dash').style.strokeDashoffset = -(odo * 34 / SONAR) % 6; // the lane lines go by as fast as the road does
 }
 
 // a fleet car's teamwork, before it drives on (road.js driveCar): its flash for you, out of your way, then after its
