@@ -3,8 +3,9 @@ header and the Exchange card: metres for miles, one way, 1,609 m a mile, a slide
 phone) and "all available". Racers paid off (the slowest first, each dearer, #1 never) race for you in your colours:
 they don't count against your position, give way when you come up behind them and block a rival closing on them.
 The fleet-wide upgrades: dues (a share of the fleet's metres at the finish), tuning (pace) and Fleet flash. The sonar
-on the A-pillar shows the fleet cars behind you, clear of the menu button, the shifter and the mirror, phone and
-desktop."""
+on the A-pillar shows the road 250 m each way from above, ahead up: you, your fleet green, the rivals white, the traffic
+yellow, the police flashing red and blue, the tank a red square; clear of the menu button, the shifter and the mirror,
+phone and desktop."""
 import re
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -108,7 +109,8 @@ with sync_playwright() as p:
     js("progress.levels.fleetPace = 5; refreshCar()"); pg.tap("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     got = js("[racers().find(c => c.racer === 99).want / pace(99), racers().find(c => c.racer === 40).want / pace(40)].map(x => +x.toFixed(2))")
     check("Fleet tuning 5: fleet cars 25% quicker, rivals as before", got == [1.25, 1], got)
-    # 11. the sonar: fleet cars up to 500 m behind you, nothing else; clear of the controls; gone in the garage
+    # 11. the sonar: the road 250 m each way from above, every car on it in its colour; clear of the controls; gone in
+    # the garage
     def sonar(page, shot):
         page.evaluate("""(() => { const fl = racers().filter(c => c.fleet); rivals().forEach(c => c.z = odo - 120);
             [[-60, 0], [-220, 1], [-420, 0], [80, 1]].forEach(([d, l], i) => Object.assign(fl[i], { z: odo + d, lane: l, x: MY_LANES[l] })); })()""")
@@ -116,18 +118,43 @@ with sync_playwright() as p:
         box = lambda sel: page.evaluate(f"(() => {{ const r = $('{sel}').getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; }})()")
         apart = lambda a, b: a[2] <= b[0] or b[2] <= a[0] or a[3] <= b[1] or b[3] <= a[1]
         s, others = box("sonar"), {k: box(k) for k in ["menu-button", "shifter", "timer", "hud"]}
-        return page.evaluate("[getComputedStyle($('sonar')).display, $('sonar-blips').children.length]"), s, [k for k, o in others.items() if not apart(s, o)]
+        return page.evaluate("[getComputedStyle($('sonar')).display, $('sonar-blips').querySelectorAll('.ally').length]"), s, [k for k, o in others.items() if not apart(s, o)]
     js("progress.levels.fleet = 4; refreshCar(); run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
     check("in the garage: no sonar", js("getComputedStyle($('sonar')).display") == "none")
     pg.tap("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     (shown, n), s, hits = sonar(pg, "sonar_phone.png")
-    check("phone: the sonar shows the 3 fleet cars behind (not the one ahead, nor rivals)", shown == "block" and n == 3, [shown, n])
+    check("phone: the sonar shows the 3 fleet cars within 250 m (not the one 420 m back)", shown == "block" and n == 3, [shown, n])
     check("phone: clear of the menu button, the shifter, the mirror and the display", not hits and s[0] >= 0, {"sonar": [round(v) for v in s], "overlaps": hits})
+    # drawn at once (it redraws 15 times a second), what it shows against the road: each kind of car counted, the fleet
+    # cars' blips where they are (ahead up, across to scale), you, and the colours
+    got = js("""(() => { sonarAt = 0; renderSonar(); const b = $('sonar-blips'), near = traffic.filter(c => !c.wreck && Math.abs(c.z - odo) < 250);
+        const at = e => [+e.getAttribute('cx'), +e.getAttribute('cy')];
+        return { ally: b.querySelectorAll('.ally').length, rival: b.querySelectorAll('.rival').length, car: b.querySelectorAll('.car').length,
+                 rivals: near.filter(c => c.racer && !c.fleet).length, cars: near.filter(c => !c.racer).length,
+                 allies: near.filter(c => c.fleet).map(c => [c.x, c.z - odo]), blips: [...b.querySelectorAll('.ally')].map(at),
+                 you: [carX, $('sonar-you').getAttribute('transform')],
+                 fill: Object.fromEntries([...b.children].map(e => [e.getAttribute('class'), getComputedStyle(e).fill])) }; })()""")
+    check("every rival and every ordinary car within 250 m has its blip", got["rival"] == got["rivals"] > 0 and got["car"] == got["cars"], {k: got[k] for k in ["rival", "rivals", "car", "cars"]})
+    off = [(round(cx - (66 + 4.4 * x), 1), round(cy - (43 - 34 * dz / 250), 1)) for (x, dz), (cx, cy) in zip(got["allies"], got["blips"])]
+    check("the fleet's blips: ahead up, behind down, across to scale", len(off) == 3 and all(abs(a) < 0.1 and abs(b) < 0.1 for a, b in off)
+          and sorted(cy < 43 for (_, dz), (_, cy) in zip(got["allies"], got["blips"])) == sorted(dz > 0 for _, dz in got["allies"]) == [False, False, True],
+          {"allies": got["allies"], "blips": got["blips"]})
+    check("you: the arrow in the middle, in your lane", got["you"][1] == f"translate({66 + 4.4 * got['you'][0]:.1f},43)", got["you"])
+    check("the colours: traffic yellow, the fleet green, the rivals white", got["fill"] == {"car": "rgb(238, 204, 68)", "ally": "rgb(51, 255, 102)", "rival": "rgb(238, 238, 238)"}, got["fill"])
+    seen = set()  # a police car (an ordinary one made one, for the drawing only): red, then blue, every quarter second
+    for _ in range(12):
+        seen.add(js("""(() => { const c = ORDINARY.find(c => !c.wreck && !c.police && !c.tank); c.z = odo + 150; c.police = true;
+            sonarAt = 0; renderSonar(); c.police = false; const e = $('sonar-blips').lastElementChild; return e.getAttribute('class') + ' ' + getComputedStyle(e).fill; })()"""))
+        pg.wait_for_timeout(110)
+    check("a police car flashes red and blue, on top", seen == {"red rgb(255, 51, 51)", "blue rgb(51, 153, 255)"}, seen)
+    got = js("""(() => { const c = ORDINARY.find(c => !c.wreck && !c.police && !c.tank); c.z = odo + 100; c.tank = true;
+        sonarAt = 0; renderSonar(); c.tank = false; const e = $('sonar-blips').lastElementChild; return [e.tagName, e.getAttribute('class'), getComputedStyle(e).fill]; })()""")
+    check("the tank: a red square, on top", got == ["rect", "tank", "rgb(255, 34, 34)"], got)
     dk = b.new_page(viewport={"width": 1440, "height": 900}); dk.on("pageerror", lambda e: errors.append(str(e))); dk.goto(URL)
     dk.evaluate(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, bank: 10000, levels: {{ {HANDS}, fleet: 4 }}, engine: 2, toured: TUTORIALS.map(t => t.id) }})")
     dk.click('[data-play="distance"]'); dk.wait_for_timeout(200); dk.evaluate("refreshCar()"); dk.click("#drive"); dk.wait_for_function("run.phase === 'run'", timeout=15000)
     (shown, n), s, hits = sonar(dk, "sonar_desktop.png")
-    check("desktop: the sonar shows them, clear of everything", shown == "block" and n == 3 and not hits, {"blips": n, "sonar": [round(v) for v in s], "overlaps": hits})
+    check("desktop: the sonar shows them, clear of everything", shown == "block" and n == 3 and not hits, {"fleet": n, "sonar": [round(v) for v in s], "overlaps": hits})
     js("progress.levels.fleet = 0; run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
     pg.tap("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     check("no fleet: no sonar", js("getComputedStyle($('sonar')).display") == "none")

@@ -386,9 +386,13 @@ racers you beat are open to offers". It is a garage page paid in **miles**.
   Dues are the act's income: a race nets you only about 1 mile after the nitro refill and repairs, while a fleet car
   drives about 2.5 km a race. They pay metres, into the bank, so the Exchange stays the one way to miles.
 - **The sonar:** the mirror is the timer, so there is no rear view. A sonar bolted to the left A-pillar, under the menu
-  button, shows your fleet cars up to 500 m behind you: gold blips on a green phosphor fan, further out the further
-  back, angled by how far across the road they are, with range rings at 100, 250 and 500 m and a sweeping line. It
-  shows only with a fleet, and only on the road. (Claude's call: the look, the range, and fleet cars only.)
+  button, shows the road from above, 250 m ahead of you and behind, ahead up, you an arrow in the middle: its four
+  lanes and the double yellow drawn (the lane lines going by as fast as the road), every car on it as a blip coloured
+  by what it is. The owner (20 Oct): the traffic yellow, your fleet green, the police flashing red and blue, the tank
+  red (a square), the rivals white (Claude's pick, clear of the police and the tank). The lanes are to scale across
+  (15 px apart, so a lane change shows), squeezed along (34 px for 250 m); faint lines at 100 m each way, and a sweep
+  going round. It shows only with a fleet, and only on the road; it redraws 15 times a second. (Before, Claude's call:
+  a fan behind you, your fleet cars only, to 500 m.)
 - **Simulated** (`act3.py`, seed 11, from P1 with act 2's car and 57k m): 51 fleet cars after 26 races buying dues
   first, 71 buying the cheapest first (dues came only at race 46).
 

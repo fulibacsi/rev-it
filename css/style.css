@@ -105,8 +105,15 @@ body:not([data-game="distance"]) #kit { display: none; }
 #sonar { display: none; position: fixed; left: 5vw; top: 96px; width: 120px; pointer-events: none; }
 .has-fleet #sonar { display: block; }
 .garage #sonar { display: none; }
-#sonar-sweep { transform-box: view-box; transform-origin: 64px 12px; animation: sweep 1.6s ease-in-out infinite alternate; }
-@keyframes sweep { from { transform: rotate(-38deg); } to { transform: rotate(38deg); } }
+#sonar-sweep { transform-box: view-box; transform-origin: 66px 43px; animation: sweep 2.4s linear infinite; }
+@keyframes sweep { to { transform: rotate(360deg); } }
+/* its blips: traffic yellow, your fleet green, the rivals white, the police flashing red and blue, the tank red */
+#sonar-blips .car { fill: #ec4; }
+#sonar-blips .ally { fill: #3f6; }
+#sonar-blips .rival { fill: #eee; }
+#sonar-blips .red { fill: #f33; }
+#sonar-blips .blue { fill: #39f; }
+#sonar-blips .tank { fill: #f22; }
 #stalk, #stalk-hit { display: none; }
 .has-flash #stalk, .has-flash #stalk-hit { display: inline; }
 #stalk-hit { pointer-events: stroke; cursor: pointer; touch-action: none; }
