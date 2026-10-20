@@ -165,6 +165,7 @@ $('menu').onclick = e => {
   if (b.id === 'resume' || b.id === 'win-garage') { closeMenu(); goFullscreen(); }
   if (b.dataset.tour) openTour(b.dataset.tour);
   if (b.id === 'tour-prev' || b.id === 'tour-next') turnTour(b.id === 'tour-next' ? 1 : -1);
+  if (b.id === 'tour-back') exitTour();
   if (b.id === 'to-main' || b.id === 'win-main') showScreen('main');
   if (b.id === 'end-run' && confirm('End this run now? It counts as if the time had run out.')) { closeMenu(); game.endRun?.(); }
   if (b.id === 'reset' && confirm('Reset your progress? Every metre, point and upgrade is gone, and the game starts over.')) resetGame();

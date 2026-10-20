@@ -159,6 +159,12 @@ body.touring.tour-right #menu-panel { margin-left: auto; margin-right: 10px; } /
         outline: 2px solid var(--accent); animation: spot 1s ease-in-out infinite alternate; }
 .touring #spot.lit { display: block; }
 @keyframes spot { from { outline-offset: 0; } to { outline-offset: 5px; } }
+.menu.touring .tour-show { display: block !important; } /* the page's control, if the garage hides it */
+.menu.touring #garage { visibility: hidden; } /* it covers much of the cockpit: back when the tutorial closes */
+.menu.touring #ar.tour-show { left: 45vw !important; top: 26vh !important; width: 10vw !important; height: 7vw !important; }
+#garage .card .tip { position: absolute; top: 5px; right: 5px; width: 20px; height: 20px; padding: 0; border-radius: 50%;
+             font-size: 12px; line-height: 18px; } /* a bought system's tutorial */
+.card:has(.tip) b { padding-right: 22px; }
 #tour-title { margin: 2px 0 6px; font-size: 20px; letter-spacing: 2px; color: #eee; }
 #menu #tour-text { min-height: 3em; color: #ccc; font-size: 15px; }
 #tour-dots { display: flex; gap: 5px; margin: 0 auto; }
@@ -229,7 +235,7 @@ body.touring.tour-right #menu-panel { margin-left: auto; margin-right: 10px; } /
 #tabs button.new::after { content: '!'; margin-left: 6px; color: #ffd23f; font-weight: 800; } /* something new unlocked */
 #engine-row button { flex: 1; }
 #cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
-.card { display: flex; flex-direction: column; gap: 3px; padding: 7px 9px; border: 1px solid #262a36;
+.card { position: relative; display: flex; flex-direction: column; gap: 3px; padding: 7px 9px; border: 1px solid #262a36;
         border-radius: 8px; background: #12141e; }
 .card b { color: #eee; letter-spacing: 1px; }
 .card i { font-style: normal; color: var(--accent); letter-spacing: 1px; font-size: 11px; }

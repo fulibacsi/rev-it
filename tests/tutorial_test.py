@@ -82,5 +82,58 @@ with sync_playwright() as p:
     pj("tour.page = 5; renderTour()"); ph.screenshot(path=f"{OUT}/tutorial_phone_tach.png")
     pj("tour.page = 6; renderTour()"); ph.screenshot(path=f"{OUT}/tutorial_phone_wheel.png")
     walk(pj, "phone")
+    # 6. a system's tutorial: popped up once when bought (on the phone, in the garage), its control lit; the card's ?
+    #    opens it again (once bought), and HOW TO DRIVE lists it. A save set up with systems pops nothing up
+    pj("localStorage.clear(); Object.assign(progress, { bank: 9e6, runs: 3, levels: { clutch: 1 } }); closeMenu()")
+    ph.tap('[data-play="distance"]') if pj("menuOpen") else None; ph.wait_for_timeout(200)
+    pj("play(DISTANCE); closeMenu(); renderGarage()"); ph.wait_for_timeout(200)
+    check("a save with an aid bought before: nothing pops up", pj("menuOpen") is False, pj("[menuOpen, screen]"))
+    pj("document.querySelector('[data-buy=\"flash\"]').click()"); ph.wait_for_timeout(200)
+    got = pj("[menuOpen, screen, tour.popup, $('tour-title').textContent, $('spot').classList.contains('lit'), progress.toured]")
+    check("bought: its tutorial pops up, the stalk lit", got[:5] == [True, "tour", True, "FLASH", True] and got[5] == ["flash"], got)
+    ph.screenshot(path=f"{OUT}/tutorial_phone_flash.png")
+    pj("$('tour-next').click()"); ph.wait_for_timeout(100)
+    check("DONE: back in the garage", pj("[menuOpen, run.phase]") == [False, "garage"], pj("[menuOpen, run.phase]"))
+    pj("document.querySelector('[data-buy=\"flash\"]').click()"); ph.wait_for_timeout(200)
+    check("the next level: no pop-up (once)", pj("menuOpen") is False, pj("[menuOpen, screen]"))
+    pj("document.querySelector('.card .tip[data-tour=\"flash\"]').click()"); ph.wait_for_timeout(200)
+    check("the card's ?: its tutorial again", pj("[menuOpen, screen, $('tour-title').textContent]") == [True, "tour", "FLASH"], pj("[menuOpen, screen, $('tour-title').textContent]"))
+    pj("$('tour-back').click()"); ph.wait_for_timeout(100)
+    check("BACK: back in the garage", pj("menuOpen") is False, pj("menuOpen"))
+    tips = pj("[...document.querySelectorAll('#cards .tip')].map(b => b.dataset.tour)")
+    check("a ? only on bought cards with a tutorial (the Workshop: the flash)", tips == ["flash"], tips)
+    ph.screenshot(path=f"{OUT}/tutorial_phone_garage_tips.png")
+    pj("openMenu('help')")
+    check("HOW TO DRIVE: Driving, then the systems you have", pj("[...document.querySelectorAll('#tutorials button')].map(b => b.textContent)")
+          == ["DRIVING", "HEADLIGHT FLASH", "DRIVER AIDS"], pj("[...document.querySelectorAll('#tutorials button')].map(b => b.textContent)"))
+    pj("closeMenu()")
+    # 7. two systems a run brings (the first total: the War Rig and police heat): one pops up, then the other
+    pj("markTours(); Object.assign(progress, { racing: true, totals: 1, levels: { ...progress.levels, fleet: 1 } }); popTour()"); ph.wait_for_timeout(100)
+    first = pj("$('tour-name').textContent")
+    pj("exitTour()"); ph.wait_for_timeout(100); second = pj("menuOpen && $('tour-name').textContent")
+    pj("exitTour()"); ph.wait_for_timeout(100)
+    check("a run brings several: each pops up in turn, once", first.startswith("THE RACE") and second.startswith("THE FLEET"), [first, second])
+    while pj("menuOpen"): pj("exitTour()"); ph.wait_for_timeout(50)
+    toured = pj("progress.toured"); check("all of them shown once", sorted(toured) == ["flash", "fleet", "police", "race", "warrig"], toured)
+    # 8. every system's page: lit round its control (shown for the page if the garage hides it), the card clear
+    for name, pjs, page in [("phone", pj, ph), ("desktop", js, pg)]:
+        pjs("Object.assign(progress, { racing: true, totals: 1, levels: { clutch: 1, cruise: 1, flash: 5, autoflash: 1, stereo: 1, reckless: 1, chicken: 1, "
+            "ecuRev: 1, nitro: 1, fleet: 51, pack: 1, guns: 1, autogun: 1, baddrivers: 1, hunter: 1 }, nitro: 0 }); if (game !== DISTANCE) play(DISTANCE); refreshCar()")
+        bad = pjs("""(() => { const out = [];
+          for (const t of TUTORIALS.slice(1)) { openTour(t.id); pagesOf(t).forEach((p, i) => { tour.page = i; renderTour(); if (!p.at) return;
+            const box = e => { const r = e.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; };
+            const s = box($('spot')), c = box(document.querySelector(p.at)), k = box($('menu-panel'));
+            const round = s[0] <= c[0] && s[1] <= c[1] && s[2] >= c[2] && s[3] >= c[3] && $('spot').classList.contains('lit');
+            const covered = getComputedStyle($('garage')).visibility !== 'hidden' && (() => { const g = $('garage').getBoundingClientRect();
+              return Math.min(g.right, c[2]) > Math.max(g.left, c[0]) && Math.min(g.bottom, c[3]) > Math.max(g.top, c[1]); })();
+            const clear = Math.min(k[2], s[2]) <= Math.max(k[0], s[0]) || Math.min(k[3], s[3]) <= Math.max(k[1], s[1]);
+            if (!round || !clear || covered) out.push([t.id, p.title, round, clear, !covered]); }); closeMenu(); }
+          return out; })()""")
+        check(f"{name}: every system page lights its control, the card clear of it, the garage not over it", not bad, bad)
+    pj("openTour('warrig'); tour.page = 0; renderTour()"); ph.wait_for_timeout(100); ph.screenshot(path=f"{OUT}/tutorial_phone_reticle.png")
+    pj("openTour('fleet'); tour.page = 1; renderTour()"); ph.wait_for_timeout(100); ph.screenshot(path=f"{OUT}/tutorial_phone_sonar.png")
+    pj("closeMenu()"); ph.wait_for_timeout(100)
+    check("closed: the sonar and the reticle hidden again in the garage", pj("[getComputedStyle($('sonar')).display, getComputedStyle($('ar')).display]") == ["none", "none"],
+          pj("[getComputedStyle($('sonar')).display, getComputedStyle($('ar')).display]"))
     b.close()
 print("ERRORS:", errors or "none", "| FAILS:", fails or "none")
