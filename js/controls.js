@@ -230,6 +230,7 @@ drag($('nos'), (e, first) => { if (first) pushNitro(true); }, () => pushNitro(fa
 // ---- keyboard ----
 const HELD_KEYS = { ' ': 'gas', Shift: 'clutch', b: 'brake', B: 'brake' };
 addEventListener('keydown', e => {
+  if (tourKey(e.key)) return e.preventDefault(); // a tutorial's pages (tutorial.js)
   if (e.key === 'Escape') return toggleMenu();
   if (menuOpen || e.target.closest?.('button') && e.key === ' ') return;
   if (game.key?.(e.key)) return e.preventDefault();

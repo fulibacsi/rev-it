@@ -7,7 +7,7 @@ with sync_playwright() as p:
     b = launch(p, args=["--autoplay-policy=no-user-gesture-required"])
     pg = b.new_page(viewport={"width": 1440, "height": 900}); pg.on("pageerror", lambda e: errors.append(str(e)))
     pg.goto(URL); js = pg.evaluate; m = pg.mouse
-    js("localStorage.clear()"); pg.reload(); pg.wait_for_timeout(300); pg.click("[data-play=distance]"); pg.wait_for_timeout(200)
+    js("localStorage.clear()"); pg.reload(); pg.wait_for_timeout(300); js("progress.toured = TUTORIALS.map(t => t.id)"); pg.click("[data-play=distance]"); pg.wait_for_timeout(200)
     st = lambda: js("({ phase: run.phase, left: +run.left.toFixed(1), state, gear, kmh: Math.round(speed * 3.6), rpm: Math.round(rpm), "
                     "m: Math.round(odo), clutch: +clutchPedal.toFixed(2), gas: +gasPedal.toFixed(2), lever: [+lever.x.toFixed(2), +lever.y.toFixed(2)] })")
     def gate_xy(gx, gy):

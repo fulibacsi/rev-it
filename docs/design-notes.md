@@ -181,6 +181,24 @@ machine or session. Keep it current: update a section when a decision changes, a
 - **How to drive:** before the first run the garage says how to get going (start, clutch, 1st, gas); the full controls
   are under HOW TO DRIVE in the pause menu and the settings. The key help that sat at the foot of a desktop screen
   went there too.
+- **Tutorials** (the owner, 20 Oct, after Diablo IV's: a step a page, a system at a time). HOW TO DRIVE lists them,
+  the controls cheat sheet under the list. A page is a step: its title, what to do (for a touch, or for keys and
+  mouse, by the layout in use), and the real control lit up behind the menu, which goes clear and dims all else (the
+  owner's pick over screenshots: always your own cockpit, phone or desktop, never stale as the cockpit changes). The
+  card sits at the top or the bottom, out of the control's way, and beside it when it is off to one side (the
+  phone's lever is tall). ◀ ▶, the arrow keys, Space or a swipe turn the pages, dots show where you are; DONE or Esc
+  go back to the list. Over a run the run stays paused. Driving, always there: start the engine, clutch down, into
+  1st, gas, clutch up, change up, change lanes, brake. Then one for each system, listed once it opens: Headlight
+  flash, Driver aids (with the layers on top of Autocruise), Car stereo, The race, Reckless driving (with damage and
+  chicken), ECU tune (and heat), Nitro, The Fleet (the sonar, the Hunting pack), The War Rig (the reticle, totals,
+  parts), Fuel madness, Police heat, Guns, The tank; a page about an upgrade shows once it is bought. A system's
+  tutorial pops up once in the garage when it opens in play (bought, or come with a run: the race, the gang, the
+  tank), never mid-run; several at once follow one another. Only in play: a save's systems from before the tutorials,
+  or set up by a test, pop nothing up. Its ? sits on the cards of the upgrades it is for, once bought (the owner's
+  picks); nothing of the race shows before the reveal, its systems being bought after it. While a tutorial is up the
+  garage hides (it covers much of the cockpit), and a control the garage hides (the sonar, the scanner, the
+  reticle, drawn in the windscreen's middle) shows for its page. `tutorial_test.py` checks every page on both
+  layouts (lit round its control, the card clear of it, nothing over it), the pop-ups and the ?.
 - **Stuck at the line:** standing still for 1.5 s in a run, or stalled, the windscreen's read-out says the next step
   until the car moves, in the words of the layout: START THE ENGINE (the key, or Enter), CLUTCH DOWN, INTO 1ST, GAS,
   CLUTCH UP; nothing for a step an aid does. For the whole game, not just the first runs: it costs an expert nothing

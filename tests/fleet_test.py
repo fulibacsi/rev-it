@@ -21,7 +21,7 @@ with sync_playwright() as p:
     cdp = ctx.new_cdp_session(pg); cdp.send("Emulation.setTouchEmulationEnabled", {"enabled": True, "maxTouchPoints": 5})
     cdp.send("Emulation.setSafeAreaInsetsOverride", {"insets": {"left": 59, "right": 59, "bottom": 21, "top": 0}})
     pg.goto(URL); pg.wait_for_timeout(300)
-    js(f"localStorage.clear(); settings.layout = 'touch'; applyLayout(); Object.assign(progress, {{ racing: true, finish: 2, bank: 10000, levels: {{ {CAR} }}, engine: 2 }})")
+    js(f"localStorage.clear(); settings.layout = 'touch'; applyLayout(); Object.assign(progress, {{ racing: true, finish: 2, bank: 10000, levels: {{ {CAR} }}, engine: 2, toured: TUTORIALS.map(t => t.id) }})")
     pg.tap('[data-play="distance"]'); pg.wait_for_timeout(200)
     tabs = lambda: js("[...document.querySelectorAll('#tabs button')].map(b => b.textContent)")
     # 1. before the first win: no Fleet, no miles, nothing that hints at them
@@ -124,7 +124,7 @@ with sync_playwright() as p:
     check("phone: the sonar shows the 3 fleet cars behind (not the one ahead, nor rivals)", shown == "block" and n == 3, [shown, n])
     check("phone: clear of the menu button, the shifter, the mirror and the display", not hits and s[0] >= 0, {"sonar": [round(v) for v in s], "overlaps": hits})
     dk = b.new_page(viewport={"width": 1440, "height": 900}); dk.on("pageerror", lambda e: errors.append(str(e))); dk.goto(URL)
-    dk.evaluate(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, bank: 10000, levels: {{ {HANDS}, fleet: 4 }}, engine: 2 }})")
+    dk.evaluate(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, bank: 10000, levels: {{ {HANDS}, fleet: 4 }}, engine: 2, toured: TUTORIALS.map(t => t.id) }})")
     dk.click('[data-play="distance"]'); dk.wait_for_timeout(200); dk.evaluate("refreshCar()"); dk.click("#drive"); dk.wait_for_function("run.phase === 'run'", timeout=15000)
     (shown, n), s, hits = sonar(dk, "sonar_desktop.png")
     check("desktop: the sonar shows them, clear of everything", shown == "block" and n == 3 and not hits, {"blips": n, "sonar": [round(v) for v in s], "overlaps": hits})

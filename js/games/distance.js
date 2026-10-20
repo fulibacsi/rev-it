@@ -66,7 +66,8 @@ const SAVE_KEY = 'car-rev-incremental';
 // menu's STATS)
 const FRESH = () => ({ bank: 0, best: 0, runs: 0, levels: {}, off: {}, engine: 0, racing: false, points: 0, finish: 101,
                        damage: 0, broken: [], nitro: 0, miles: 0, parts: 0, totals: 0, wanted: 0, tanks: 0, tape: 0,
-                       time: 0, driven: 0, races: 0, seen: [] }); // seen: upgrades seen unlocked (the tabs' !)
+                       time: 0, driven: 0, races: 0, seen: [], toured: [] }); // seen: upgrades seen unlocked (the tabs' !);
+                                                                             // toured: tutorials popped up (tutorial.js)
 // debug mode (main.js) plays a save of its own, with wallets that never run out, so testing never touches the game
 const FUNDS = 1e9;
 let debugSave = false;
@@ -305,7 +306,8 @@ function renderGarage(bought) {
       : `<button data-buy="${id}"${why ? ' disabled' : ''}>${price(id, cost(id))}</button>` +
         (steps === 0 && !why ? `<button data-max="${id}">all I can</button>` : '') + // the grid: many slots at once
         (u.toggle && l ? toggle : ''); // a switch with more levels to buy (Fuel madness)
-    return `<div class="card${id === bought ? ' bought' : ''}"><b>${u.name}</b>${pips}<small>${info}</small>${button}</div>`;
+    const tip = l && tourFor(id) ? `<button class="tip" data-tour="${tourFor(id)}" title="how it works">?</button>` : ''; // once bought
+    return `<div class="card${id === bought ? ' bought' : ''}"><b>${u.name}</b>${tip}${pips}<small>${info}</small>${button}</div>`;
   }).join('');
 }
 
@@ -314,7 +316,9 @@ $('garage').onclick = e => {
   if (!b || b.disabled) return;
   loading ??= start(); // any click is a user gesture: audio can start
   const { buy: id, engine: i, toggle, tab, max } = b.dataset;
-  if (id && buy(id)) { beep(1760, 0.08); refreshCar(); }
+  if (b.dataset.tour) return openTour(b.dataset.tour, true); // a card's ?: its tutorial (tutorial.js)
+  if (id) markTours(); // what is open before it (tutorial.js)
+  if (id && buy(id)) { beep(1760, 0.08); refreshCar(); popTour(); }
   if (max) { while (buy(max)); beep(1760, 0.08); }
   if (tab) garageTab = tab;
   if ('repair' in b.dataset && repair()) { beep(1320, 0.1); refreshCar(); }
@@ -334,6 +338,7 @@ $('garage').oninput = e => { // the Exchange's slider: only its button changes, 
 };
 
 function drive() {
+  markTours(); // what is open before the run: a system it brings pops its tutorial up after (tutorial.js)
   startRun();
   passedBest = shownReveal = false;
   startEngine(); // the key turns itself
@@ -350,6 +355,7 @@ function renderRun() {
     if (run.phase === 'finish') { flash(run.beatTank ? 'TANK DOWN!' : 'TIME!', '#ec4', true); beep(880, 0.8); }
     if (run.phase === 'garage') renderGarage();
     if (run.phase === 'garage' && run.beatTank) openMenu('win'); // the tank burning, then the ending (main.js)
+    else if (run.phase === 'garage') popTour(); // a system new this run: its tutorial (tutorial.js)
     document.body.classList.toggle('garage', run.phase === 'garage');
     shownPhase = run.phase;
   }
