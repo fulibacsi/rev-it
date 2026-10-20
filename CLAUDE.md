@@ -34,7 +34,8 @@ Design decisions, balance targets, the playtest history and the open questions a
   anything goes.
 - `js/engine.js` engine model and Web Audio (recorded loops crossfaded by rpm) · `js/car.js` drivetrain, clutch slip,
   lanes, crashes · `js/road.js` pseudo-3D road, traffic AI, sprites · `js/controls.js` all input (key, pedals, H-gate
-  lever, wheel, light stalk, nitro, stereo) · `js/stereo.js` the car stereo's tapes and lights · `js/main.js` the
+  lever, wheel, light stalk, nitro, stereo) · `js/stereo.js` the car stereo's tapes and lights · `js/tutorial.js` the
+  tutorials under HOW TO DRIVE (a step a page, the real control lit up behind the menu) · `js/main.js` the
   menus (main, pause, arcade, settings, stats, how to drive, credits, win), cluster, head-up display, main loop.
   **The interface a game implements is documented at the top of `main.js`.**
 - `js/games/`: `levels.js` (adaptive levels for Rev and Speed signs), `rev.js`, `signs.js`, `distance.js` (garage,

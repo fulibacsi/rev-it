@@ -147,6 +147,24 @@ body:not([data-game="distance"]) #kit { display: none; }
 .setting > span { width: 110px; color: #9ab; }
 .setting input[type=range] { flex: 1; max-width: 280px; accent-color: var(--accent); }
 .setting button { padding: 4px 10px; }
+/* a tutorial (tutorial.js): the menu goes clear and its card moves out of the way, top or bottom; all but the control
+   the page is about is dimmed, that one ringed and glowing */
+.touring #menu { background: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+body.touring #menu-panel { width: min(var(--tour-w, 540px), 92vw); margin: 10px auto auto; z-index: 1; }
+body.touring.tour-low #menu-panel { margin-top: auto; margin-bottom: 10px; }
+body.touring.tour-left #menu-panel { margin-left: 10px; margin-right: auto; }  /* the control to one side (a phone's */
+body.touring.tour-right #menu-panel { margin-left: auto; margin-right: 10px; } /* tall lever): the card on the other */
+.touring #menu-panel h1 { display: none; }
+#spot { display: none; position: fixed; border-radius: 12px; pointer-events: none; box-shadow: 0 0 0 200vmax #05060cc4;
+        outline: 2px solid var(--accent); animation: spot 1s ease-in-out infinite alternate; }
+.touring #spot.lit { display: block; }
+@keyframes spot { from { outline-offset: 0; } to { outline-offset: 5px; } }
+#tour-title { margin: 2px 0 6px; font-size: 20px; letter-spacing: 2px; color: #eee; }
+#menu #tour-text { min-height: 3em; color: #ccc; font-size: 15px; }
+#tour-dots { display: flex; gap: 5px; margin: 0 auto; }
+#tour-dots i { width: 7px; height: 7px; border-radius: 50%; background: #2c3140; }
+#tour-dots i.on { background: var(--accent); }
+#menu #tour-prev:disabled { opacity: 0.3; cursor: default; }
 #stats-list, #win-stats { display: grid; grid-template-columns: max-content 1fr; gap: 5px 18px; margin: 8px 0; }
 /* the ending (the win screen): louder than the other screens, in fire and rust */
 #menu-panel:has([data-screen="win"]:not([hidden])) { border-color: #8a3a1a; box-shadow: 0 0 40px #ff5a1a33, inset 0 0 60px #3a12081a; }

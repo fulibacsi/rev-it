@@ -90,8 +90,10 @@ function showScreen(name, back = false) {
   if (!back && name !== screen) screenFrom.push(screen);
   screen = name;
   for (const s of $('menu').querySelectorAll('section')) s.hidden = s.dataset.screen !== name;
+  document.body.classList.toggle('touring', name === 'tour'); // a tutorial: the menu goes clear (tutorial.js)
   for (const s of $('menu').querySelectorAll('.shared')) s.textContent = '';
   renderMenu();
+  if (name === 'tour') renderTour();
 }
 function renderMenu() {
   $('continue').textContent = started() ? 'CONTINUE' : 'NEW GAME';
@@ -106,6 +108,7 @@ function renderMenu() {
   $('vol-car').value = Math.round(settings.volume.car * 100);
   $('vol-music').value = Math.round(settings.volume.music * 100);
   $('reset').hidden = !started();
+  renderTutorials();
   if (DISTANCE.stereo() && DISTANCE.tape() !== null) loadTape(DISTANCE.tape()); // ready when you drive (stereo.js)
   const rows = DISTANCE.stats().map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
   $('stats-list').innerHTML = $('win-stats').innerHTML = rows;
@@ -160,6 +163,8 @@ $('menu').onclick = e => {
   if ('share' in b.dataset) shareStats(b.closest('section').querySelector('.shared'));
   if (b.dataset.engine) pickEngine(+b.dataset.engine);
   if (b.id === 'resume' || b.id === 'win-garage') { closeMenu(); goFullscreen(); }
+  if (b.dataset.tour) openTour(b.dataset.tour);
+  if (b.id === 'tour-prev' || b.id === 'tour-next') turnTour(b.id === 'tour-next' ? 1 : -1);
   if (b.id === 'to-main' || b.id === 'win-main') showScreen('main');
   if (b.id === 'end-run' && confirm('End this run now? It counts as if the time had run out.')) { closeMenu(); game.endRun?.(); }
   if (b.id === 'reset' && confirm('Reset your progress? Every metre, point and upgrade is gone, and the game starts over.')) resetGame();

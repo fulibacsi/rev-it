@@ -181,6 +181,16 @@ machine or session. Keep it current: update a section when a decision changes, a
 - **How to drive:** before the first run the garage says how to get going (start, clutch, 1st, gas); the full controls
   are under HOW TO DRIVE in the pause menu and the settings. The key help that sat at the foot of a desktop screen
   went there too.
+- **Tutorials** (the owner, 20 Oct, after Diablo IV's: a step a page, a system at a time). HOW TO DRIVE lists them,
+  the controls cheat sheet under the list. A page is a step: its title, what to do (for a touch, or for keys and
+  mouse, by the layout in use), and the real control lit up behind the menu, which goes clear and dims all else (the
+  owner's pick over screenshots: always your own cockpit, phone or desktop, never stale as the cockpit changes). The
+  card sits at the top or the bottom, out of the control's way, and beside it when it is off to one side (the
+  phone's lever is tall). ◀ ▶, the arrow keys, Space or a swipe turn the pages, dots show where you are; DONE or Esc
+  go back to the list. Over a run the run stays paused. Driving, always there: start the engine, clutch down, into
+  1st, gas, clutch up, change up, change lanes, brake. `tutorial_test.py` checks every page on both layouts (lit
+  round its control, the card clear of it). Next: a tutorial for each system, popping up once in the garage the first
+  time it is bought, and a ? on its card once bought (the owner's picks; nothing of the race before the reveal).
 - **Stuck at the line:** standing still for 1.5 s in a run, or stalled, the windscreen's read-out says the next step
   until the car moves, in the words of the layout: START THE ENGINE (the key, or Enter), CLUTCH DOWN, INTO 1ST, GAS,
   CLUTCH UP; nothing for a step an aid does. For the whole game, not just the first runs: it costs an expert nothing
