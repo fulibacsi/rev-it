@@ -242,6 +242,90 @@ function exchangeCard() {
     `<button data-exchange-all${can ? '' : ' disabled'}>all available · ${money(can)} mi</button></span></div>`;
 }
 
+// ---- the act cards (the owner, 21 Oct: nobody read the words on top of the garage) ----
+// A title card as each act starts, in the ending's look: what the act is about and what to do. The last act has two
+// more, without a number, at its turns: the first total, and the tank. Each pops up once, before any tutorial that
+// opens with it: they ride first in the tutorials' list (tutorial.js). The pause menu and the garage's title show the
+// current one again, with where you stand and the last run in full; the garage keeps a line of the run's numbers
+TUTORIALS.unshift(
+  { id: 'act1', act: 'I', name: 'DRIVE', open: () => true,
+    text: () => `You get ${runTime()} seconds a run. Drive as far as you can: every metre is money for upgrades in the ` +
+      'garage. New to a stick shift? HOW TO DRIVE takes you through it.' },
+  { id: 'act2', act: 'II', name: 'RACE', open: () => progress.racing,
+    text: () => 'That quick car was racer #100. You are in a race of a hundred: every run is a race now, and your place ' +
+      'when the time runs out pays race points, more for a place reached the first time. The Black market takes them.',
+    now: () => progress.finish <= FIELD ? `Your best place: P${progress.finish}.` : '' },
+  { id: 'act3', act: 'III', name: 'RECRUIT', open: () => fleetOpen(),
+    text: () => 'P1! The racers you beat are open to offers. Pay them off in miles, on the Fleet page, and they race ' +
+      'for you, in your colours.',
+    now: () => `${fleetSize() || 'None'} of the field race${fleetSize() === 1 ? 's' : ''} for you.` },
+  { id: 'act4', act: 'IV', name: 'WAR', open: () => arOn(),
+    text: () => `${GANG} of the field race for you: your fleet is a gang now. Its first job for you: total a car.`,
+    now: () => 'Ram the car in the reticle until its health bar is empty.' },
+  { id: 'nolaw', name: 'NO LAW OUT HERE', open: () => gangOpen(),
+    text: () => 'Totalled! No law out here any more. The gang is yours, and your car becomes a war rig: the War Rig page ' +
+      'is open, paid in parts.',
+    now: () => progress.wanted >= 1 ? `Police heat 100%: the army has a tank ready for when you are ${lvl('guns') ? 'repaired' : 'armed'}.`
+      : `Every car totalled raises the police heat, now ${heatPct()}. At 100% the army sends a tank` +
+        (lvl('guns') ? '.' : ', once you have guns.') },
+  { id: 'tanksent', name: 'THE ARMY SENDS A TANK', open: () => bossRace() || progress.tanks > 0,
+    text: () => 'Police heat 100%: the army has sent a tank. It is waiting up the road: outgun it, with the gang.',
+    now: () => bossRace() ? '' : `The tank is scrap and the road is yours (${progress.tanks} beaten). Push the heat ` +
+      `to 100% again, now ${heatPct()}, and the next one is tougher.` },
+);
+const heatPct = () => `${Math.round(progress.wanted * 100)}%`;
+const CARDS = TUTORIALS.filter(t => t.text);
+const currentCard = () => CARDS.findLast(c => c.open());
+const actTitle = () => { const a = CARDS.findLast(c => c.act && c.open()); return `ACT ${a.act} · ${a.name}`; };
+const dnf = r => ({ 'head-on': 'head-on with oncoming traffic', wrecked: 'the car is wrecked', limped: `limped ${LIMP} m in the wreck`,
+                     tank: 'the tank held the road' })[r.dnf]; // why a race wasn't finished
+// the last run, in a line of numbers at the top of the garage (none before the first, nor after a reload)
+function runLine() {
+  const r = run.race;
+  if (!run.gain && !r) return '';
+  return [`<b>+${fmt(run.gain)} m</b>${run.newBest ? ' new best!' : ''}`,
+    r && (r.dnf ? `<b>DNF</b> ${dnf(r)}` : `<b>P${r.p}</b> +${r.points} pts`),
+    run.dues && `fleet dues +${fmt(run.dues)} m`, run.refill && `nitro refill −${fmt(run.refill)} m`,
+    run.totals && `totalled ${run.totals}, +${fmt(run.parts)} parts`, run.beatTank && `the tank scrapped, +${TANK.parts} parts`,
+    arOn() && `police heat ${heatPct()}`]
+    .filter(Boolean).join(' · ');
+}
+// ... and in full, on the act card: the run, then where you stand
+function runRows() {
+  const r = run.race, rows = [];
+  if (run.gain || r) rows.push(['Last run', `+${fmt(run.gain)} m${run.newBest ? ', a new best' : ''}`]);
+  if (r) rows.push(['Race', r.dnf ? `DNF: ${dnf(r)}` : `${r.start > FIELD ? 'from the back' : 'from P' + r.start} to P${r.p}`],
+    ['Points', `+${r.points}` + (r.fresh ? ` (${r.fresh} for new places)` : '')]);
+  if (run.dues) rows.push(['Fleet dues', `+${fmt(run.dues)} m`]);
+  if (run.refill) rows.push(['Nitro refill', `−${fmt(run.refill)} m`]);
+  if (run.totals) rows.push(['Totalled', `${run.totals}, +${fmt(run.parts)} parts`]);
+  if (run.beatTank) rows.push(['The tank', `scrapped, +${TANK.parts} parts`]);
+  if (progress.runs) rows.push(['Best run', `${fmt(progress.best)} m`]);
+  if (arOn()) rows.push(['Police heat', heatPct()]);
+  return rows;
+}
+let card = null; // the act card up (main.js shows it)
+function openCard(id) {
+  card = CARDS.find(c => c.id === id);
+  if (menuOpen) showScreen('act'); else openMenu('act');
+}
+function renderCard() {
+  $('act-no').textContent = card.act ? `ACT ${card.act}` : '';
+  $('act-name').textContent = card.name;
+  $('act-text').textContent = card.text();
+  $('act-now').textContent = card.now?.() ?? '';
+  $('act-run').innerHTML = runRows().map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+  $('act-drive').hidden = card.id !== 'act1';
+  $('act-go').textContent = screenFrom.length ? '◀ BACK' : 'CONTINUE ▶';
+}
+// back where it came from (the pause menu), or, popped up or opened from the garage, on to the garage, and the next
+// card or tutorial the same run brought
+function closeCard() {
+  if (screenFrom.length) return showScreen(screenFrom.pop(), true);
+  closeMenu();
+  popTour();
+}
+
 // ---- garage ----
 let garageTab = 'workshop';
 function renderGarage(bought) {
@@ -249,33 +333,8 @@ function renderGarage(bought) {
   $('bank').textContent = `${money(progress.bank)} m` + (progress.racing ? ` · ${money(progress.points)} pts` : '') +
     (fleetOpen() ? ` · ${money(progress.miles)} mi` : '') + (gangOpen() ? ` · ${money(progress.parts)} parts` : '') + ' to spend';
   const sold = u => !u.afterReveal || progress.racing; // on sale yet
-  const done = Object.entries(UPGRADES).every(([id, u]) => !inMetres(u) || !sold(u) || whyNot(id) === 'max'), r = run.race;
-  $('report').innerHTML = !progress.runs // the first run: how to get going (the rest: the menu's HOW TO DRIVE)
-    ? `You get ${runTime()} seconds. Drive as far as you can: every metre is money for upgrades.<br>` + (touchLayout()
-      ? 'Hold the key at START until the engine runs, push the clutch down, drag the knob up into 1st, then gas and ' +
-        'let the clutch up. Everything else: ☰ → HOW TO DRIVE.'
-      : 'Enter starts the engine. Hold Shift (the clutch), ↑ for 1st, then Space (gas) and let Shift go. Everything ' +
-        'else: Esc → HOW TO DRIVE.')
-    : (r?.dnf ? `<b>DNF</b>: ${{ 'head-on': 'head-on with oncoming traffic', wrecked: 'the car is wrecked',
-        limped: `limped ${LIMP} m in the wreck`, tank: 'the tank held the road' }[r.dnf]} · no points · ` : '') +
-      (r && !r.dnf ? `Started ${r.start > FIELD ? 'at the back' : 'P' + r.start}, finished <b>P${r.p}</b> · <b>+${r.points} pts</b>` +
-        (r.fresh ? ` (${r.fresh} for new positions, ${r.finish} for the finish)` : '') + ` · best P${progress.finish} · ` : '') +
-      `Last run <b>+${fmt(run.gain)} m</b>${run.newBest ? ' · <b>new best!</b>' : ''} · best ${fmt(progress.best)} m · ` +
-      `${progress.runs} run${progress.runs > 1 ? 's' : ''} · ${runTime()} s a run` + (done ? ' · fully built' : '') +
-      (run.dues ? ` · fleet dues +${fmt(run.dues)} m` : '') + (run.refill ? ` · nitro refill −${fmt(run.refill)} m` : '') +
-      (run.revealed ? '<br><b>That quick car was racer #100. You are in a race: the Black market is open.</b>' : '') +
-      (run.totals ? ` · totalled ${run.totals}, +${fmt(run.parts)} parts` : '') +
-      (arOn() ? ` · police heat ${Math.round(progress.wanted * 100)}%` : '') +
-      (run.won ? '<br><b>P1! The racers you beat are open to offers: the Fleet is open, paid in miles.</b>' : '') +
-      (arOn() && !gangOpen() ? `<br><b>${GANG} of the field race for you: your fleet is a gang now. Its first job for ` +
-        'you: total a car.</b> Ram the car in the reticle until its health bar is empty.' : '') +
-      (run.firstTotal ? '<br><b>Totalled! No law out here any more. The gang is yours, and your car becomes a war rig: the War Rig page ' +
-        'is open, paid in parts.</b>' : '') +
-      (run.beatTank ? `<br><b>The tank is scrap: the road is yours, and the police have given up (heat 0%).</b> ` +
-        `+${TANK.parts} parts. Play on: the race, the fleet and the gang carry on, and the next tank is tougher.`
-        : run.boss ? '<br><b>The tank held the road.</b> The heat is down to half: push for it again.'
-        : bossRace() ? '<br><b>Police heat 100%: the army has sent a tank. It is waiting up the road: outgun it.</b>'
-        : arOn() && progress.wanted >= 1 ? '<br><b>Police heat 100%.</b> The army has a tank ready for when you are armed.' : '');
+  $('act-title').textContent = `${actTitle()} ▸`;
+  $('report').innerHTML = runLine();
   const onPage = page => Object.keys(UPGRADES).filter(id => id !== 'engine' && pageOf(UPGRADES[id]) === page && sold(UPGRADES[id]));
   const fresh = onPage(garageTab).filter(unseen); // on the page you're looking at: seen now
   if (fresh.length) { progress.seen.push(...fresh); save(); }
@@ -317,6 +376,7 @@ $('garage').onclick = e => {
   loading ??= start(); // any click is a user gesture: audio can start
   const { buy: id, engine: i, toggle, tab, max } = b.dataset;
   if (b.dataset.tour) return openTour(b.dataset.tour, true); // a card's ?: its tutorial (tutorial.js)
+  if (b.id === 'act-title') return openCard(currentCard().id); // the act: what to do
   if (id) markTours(); // what is open before it (tutorial.js)
   if (id && buy(id)) { beep(1760, 0.08); refreshCar(); popTour(); }
   if (max) { while (buy(max)); beep(1760, 0.08); }
@@ -420,7 +480,10 @@ const DISTANCE = {
   engine: () => progress.engine, // the garage's engines, not the menu's
   tune: applyUpgrades,
   madness: () => run.phase === 'run' && !progress.off.baddrivers ? madShare(lvl('baddrivers')) : 0, // gang.js
-  start() { Object.assign(run, { phase: 'garage', best: progress.best }); shownPhase = null; },
+  start() { // a new game: its first act's card pops up, alone
+    Object.assign(run, { phase: 'garage', best: progress.best }); shownPhase = null;
+    if (!progress.runs) markTours('act1');
+  },
   pause: () => save(), // the menu opened: the time played so far is kept
   endRun() { if (run.phase === 'run') finishRun(); }, // the pause menu's END RUN: as if the time ran out
   stats() { // STATS and SHARE: an act's numbers only once it is open (never a word of the race before the reveal)

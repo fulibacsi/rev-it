@@ -94,12 +94,15 @@ function showScreen(name, back = false) {
   for (const s of $('menu').querySelectorAll('.shared')) s.textContent = '';
   renderMenu();
   if (name === 'tour') renderTour();
+  if (name === 'act') renderCard(); // distance.js
 }
 function renderMenu() {
   $('continue').textContent = started() ? 'CONTINUE' : 'NEW GAME';
   $('continue').classList.toggle('done', progress.tanks > 0); // the tank beaten: a green tick
   $('to-stats').hidden = !started();
   $('end-run').hidden = !(game === DISTANCE && run.phase === 'run');
+  $('act-button').hidden = !(game === DISTANCE && playing); // the act's card again: what to do (distance.js)
+  if (game === DISTANCE) $('act-button').textContent = actTitle();
   const best = g => settings.best[g.id] ? `best ${fmt(settings.best[g.id].points)} pts · level ${settings.best[g.id].level + 1}` : '';
   $('game-list').innerHTML = ARCADE.map(g => `<button data-play="${g.id}"${g === game && playing ? ' class="on"' : ''}>` +
     `<b>${g.name}</b><small>${g.blurb}</small><i>${best(g)}</i></button>`).join('');
@@ -166,6 +169,9 @@ $('menu').onclick = e => {
   if (b.dataset.tour) openTour(b.dataset.tour);
   if (b.id === 'tour-prev' || b.id === 'tour-next') turnTour(b.id === 'tour-next' ? 1 : -1);
   if (b.id === 'tour-back') exitTour();
+  if (b.id === 'act-button') openCard(currentCard().id);
+  if (b.id === 'act-drive') openTour('driving');
+  if (b.id === 'act-go') closeCard();
   if (b.id === 'to-main' || b.id === 'win-main') showScreen('main');
   if (b.id === 'end-run' && confirm('End this run now? It counts as if the time had run out.')) { closeMenu(); game.endRun?.(); }
   if (b.id === 'reset' && confirm('Reset your progress? Every metre, point and upgrade is gone, and the game starts over.')) resetGame();
