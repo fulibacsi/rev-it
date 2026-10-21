@@ -13,7 +13,7 @@ with sync_playwright() as p:
     pg = b.new_page(viewport={"width": 1440, "height": 900}); pg.on("pageerror", lambda e: errors.append(str(e)))
     pg.goto(URL); js = pg.evaluate
     # 1. the shop: only after 10 flashes, 10 s down to 2 s, the head start untouched
-    js("localStorage.clear(); Object.assign(progress, { bank: 9e6, levels: { flash: 10 } })")
+    js("localStorage.clear(); Object.assign(progress, { bank: 9e6, levels: { flash: 10 }, toured: TUTORIALS.map(t => t.id) })")
     check("before the reveal: not on sale", js("whyNot('flashRecharge')") == "after the reveal", js("whyNot('flashRecharge')"))
     js("progress.racing = true; progress.levels.flash = 9")
     check("locked with 9 flashes", js("whyNot('flashRecharge')") == "needs 10 flashes", js("whyNot('flashRecharge')"))
@@ -27,7 +27,7 @@ with sync_playwright() as p:
     check("the white car's head start doesn't change", h0 == h5, f"{h0} -> {h5}")
     # 2. a run at level 5: a used flash back in 2 s, with the refill under the telltale; none past 10
     def start(levels):
-        js(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, bank: 9e6, levels: {{ {levels} }}, engine: 2 }})")
+        js(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, bank: 9e6, levels: {{ {levels} }}, engine: 2, toured: TUTORIALS.map(t => t.id) }})")
         if js("game.id") != "distance": pg.click('[data-play="distance"]'); pg.wait_for_timeout(200)
         else: js("run.left = 0.1"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
         js("refreshCar()"); pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)

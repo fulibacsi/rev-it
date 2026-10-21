@@ -20,9 +20,9 @@ with sync_playwright() as p:
     except Exception as e: print("safe-area insets can't be emulated here:", str(e)[:60])
     pg.goto(URL); pg.wait_for_timeout(400); js = pg.evaluate
     print("iPhone tip shown:", js("getComputedStyle(document.getElementById('ios-tip')).display"))
-    js("localStorage.clear(); progress.bank = 5000; progress.levels = { flash: 1, nitro: 1 }"); pg.tap('[data-play="distance"]'); pg.wait_for_timeout(200)
+    js("localStorage.clear(); progress.bank = 5000; progress.levels = { flash: 1, nitro: 1 }; progress.toured = TUTORIALS.map(t => t.id)"); pg.tap('[data-play="distance"]'); pg.wait_for_timeout(200)
     box = lambda sel: js(f"(() => {{ const r = document.querySelector('{sel}').getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; }})()")
-    t, m = box("#garage header b"), box("#menu-button")
+    t, m = box("#act-title"), box("#menu-button")
     print(f"{'ok ' if t[0] >= m[2] + 4 else 'FAIL'} the garage's title clear of the menu button: title from {t[0]:.0f}, button to {m[2]:.0f}")
     pg.tap("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000); pg.wait_for_timeout(300)
     k, d = box("#ignition"), box("#tach")
