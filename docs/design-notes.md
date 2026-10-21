@@ -178,9 +178,20 @@ machine or session. Keep it current: update a section when a decision changes, a
   smoke and silence where the tank stood. A hundred engines howl your name. Nobody's chasing you any more. They're
   following." Then the stats, MAIN MENU, SHARE and BACK TO THE GARAGE (play on). Its NEW GAME went: a red "erase
   everything" doesn't belong on a win, and RESET PROGRESS in the settings does it.
-- **How to drive:** before the first run the garage says how to get going (start, clutch, 1st, gas); the full controls
-  are under HOW TO DRIVE in the pause menu and the settings. The key help that sat at the foot of a desktop screen
-  went there too.
+- **The act cards** (the owner, 21 Oct: nobody read the words on top of the garage). A title card as each act starts,
+  in the ending's look (the garage hidden behind it): a small "ACT II", the act's name, what it is about and what to
+  do. ACT I · DRIVE (on a new game, with a HOW TO DRIVE button into the Driving tutorial), II · RACE (the reveal),
+  III · RECRUIT (the first win), IV · WAR (the gang); then, without a number, the last act's two turns: NO LAW OUT
+  HERE (the first total) and THE ARMY SENDS A TANK. The owner's picks: verbs for the names, the tank a turn in act 4
+  rather than an act of its own. Each pops up once, before any tutorial that opens with it (they ride first in the
+  tutorials' list). The pause menu's button with the act's name, and the garage's title ("ACT II · RACE ▸"), show the
+  current one again (the owner's pick: both), with a line on where you stand (best place, fleet size, the heat and
+  what it brings) and the last run in full. The garage keeps a line of the run's numbers (+metres, place and points,
+  dues, nitro refill, totals and parts, the heat): numbers get read, and a report after every run would be a tap
+  every run (the owner's pick over a modal each run). Claude's calls: the words, and "Act I" saying more is to come
+  (not what: the race stays hidden).
+- **How to drive:** ACT I's card points to HOW TO DRIVE, in the pause menu and the settings: the Driving tutorial and
+  the full controls. The key help that sat at the foot of a desktop screen went there too.
 - **Tutorials** (the owner, 20 Oct, after Diablo IV's: a step a page, a system at a time). HOW TO DRIVE lists them,
   the controls cheat sheet under the list. A page is a step: its title, what to do (for a touch, or for keys and
   mouse, by the layout in use), and the real control lit up behind the menu, which goes clear and dims all else (the
@@ -358,7 +369,7 @@ brakes nor lifts; Auto gas's traction control still trims it, so nitro doesn't s
 
 ### Act 3: the fleet
 
-**The Fleet** opens with your first win (P1), and never shows before it. The garage says so after that race: "the
+**The Fleet** opens with your first win (P1), and never shows before it. ACT III's card says so after that race: "the
 racers you beat are open to offers". It is a garage page paid in **miles**.
 - **The Exchange** card turns metres into miles, one way, a mile for 1,609 m: a slider for how many, an "all
   available" button, and the miles you have. Miles show in the garage's header too. The speedometer stays in km/h.
@@ -403,7 +414,7 @@ Road*, and the nod is wanted: an apocalypse turning ordinary people into savages
 trademark. The page opens with an outlaw's line: "No law out here any more. The gang is yours, and your
 car becomes a war rig."
 
-**The gang:** once 51 of the 100 race for you, your fleet is a gang. The garage gives its first job: total a car. The
+**The gang:** once 51 of the 100 race for you, your fleet is a gang. ACT IV's card gives its first job: total a car. The
 windscreen gains an **AR layer** (red, like a gunsight): a reticle round the nearest car ahead going your way, its
 health bar above it, and "TOTAL IT" until the first job is done (a racer's number after). It stays on that car while
 it is within the guns' reach (200 m) until you pass it or total it, then moves to the next; further up the road it
@@ -544,9 +555,9 @@ lamp. It shows from the War Rig act on, only on the road; the garage's report gi
 - Claude's calls: the heat rates, the police numbers and moves, and the scanner on the right A-pillar instead of the
   dash (on a phone the dash is full: shifter, cluster and pedals).
 
-**The final boss, the tank.** At 100% heat the garage warns that the army has sent a tank, and the next race has it
-(not in limp mode). It waits until you have guns: rams alone can't beat it, so unarmed it was a sure DNF that halved
-the heat. Till then the garage says "the army has a tank ready for when you are armed".
+**The final boss, the tank.** At 100% heat a card (THE ARMY SENDS A TANK) warns that the army has sent one, and the
+next race has it (not in limp mode). It waits until you have guns: rams alone can't beat it, so unarmed it was a sure
+DNF that halved the heat. Till then the act's card says "the army has a tank ready for when you are armed".
 - It comes into view 250 m up the road and holds the road about 80 m ahead of you, in your lane: you can't get away
   from it or past it. It is the AR target ("TANK"), with 1,000 health.
 - It fires a shell at you every 2.5 s while you are within 250 m behind it: 8% damage a hit (armour takes a quarter
