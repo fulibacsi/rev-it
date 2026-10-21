@@ -147,7 +147,7 @@ const tourFor = upgrade => TUTORIALS.find(t => t.for?.includes(upgrade))?.id; //
 
 // HOW TO DRIVE's list (main.js renderMenu)
 function renderTutorials() {
-  $('tutorials').innerHTML = opened().map(t => `<button data-tour="${t.id}">${t.name.toUpperCase()}</button>`).join('');
+  $('tutorials').innerHTML = opened().filter(t => t.pages).map(t => `<button data-tour="${t.id}">${t.name.toUpperCase()}</button>`).join('');
 }
 function openTour(id, popup = false) {
   Object.assign(tour, { id, page: 0, popup });
@@ -160,15 +160,16 @@ function exitTour() {
   popTour(); // another system the same purchase or run brought (the first total brings two): its turn
 }
 // a system's tutorial, once, when it opens in play: open now, not before the purchase or the run (markTours), and not
-// shown yet. Only in play: a save's systems from before the tutorials, or set up by a test, pop nothing up
+// shown yet. Only in play: a save's systems from before the tutorials, or set up by a test, pop nothing up. A new
+// game marks all but its first act's card (distance.js)
 let openBefore = null; // marked before a purchase or a run, and done with once its tutorials have popped up
-const markTours = () => { openBefore = new Set(opened().map(t => t.id)); };
+const markTours = (but) => { openBefore = new Set(opened().map(t => t.id).filter(id => id !== but)); };
 function popTour() {
   const t = openBefore && opened().find(t => t.open && !openBefore.has(t.id) && !progress.toured.includes(t.id));
   if (!t) { openBefore = null; return; }
   progress.toured.push(t.id);
   save();
-  openTour(t.id, true);
+  if (t.text) openCard(t.id); else openTour(t.id, true); // an act's card (distance.js), or a tutorial
 }
 function turnTour(by) {
   const to = tour.page + by;
@@ -205,6 +206,7 @@ addEventListener('resize', () => { if (menuOpen && screen === 'tour') renderTour
 
 // the keys while a tutorial is open (controls.js asks first): the pages, and Esc back to the list
 function tourKey(k) {
+  if (menuOpen && screen === 'act' && k === 'Escape') { closeCard(); return true; } // an act's card (distance.js)
   if (!menuOpen || screen !== 'tour') return false;
   if (k === 'ArrowRight' || k === ' ' && !document.activeElement?.closest('button')) turnTour(1); // Space on a button
   else if (k === 'ArrowLeft') turnTour(-1);                                                       // presses that one

@@ -16,19 +16,31 @@ with sync_playwright() as p:
     pg = ctx.new_page(); pg.on("pageerror", lambda e: errors.append(str(e))); js = pg.evaluate
     pg.goto(URL); js("localStorage.clear()"); pg.reload(); pg.wait_for_timeout(300)
     shown = lambda: js("[...document.querySelectorAll('#menu section:not([hidden]) button')].filter(b => !b.hidden && b.offsetParent).map(b => b.textContent.trim())")
-    # 1. a first visit: NEW GAME, no stats, no reset; the garage tells you how to get going
+    # 1. a first visit: NEW GAME, no stats, no reset; the first act's card tells you how to get going
     check("first visit: NEW GAME, SETTINGS, ARCADE, credits (no STATS)", shown() == ["NEW GAME", "SETTINGS", "ARCADE", "credits"], shown())
     pg.click('[data-show="settings"]')
     check("settings without a game: no RESET PROGRESS", "RESET PROGRESS" not in shown(), shown())
     pg.click("[data-back]:visible")
-    pg.click("#continue"); pg.wait_for_timeout(200)
-    rep = js("$('report').innerText")
-    check("NEW GAME: the garage says how to get going", "Enter starts the engine" in rep and "HOW TO DRIVE" in rep, rep[-160:])
+    pg.click("#continue"); pg.wait_for_timeout(300)
+    got = js("[menuOpen, screen, $('act-no').textContent, $('act-name').textContent, $('act-text').textContent, getComputedStyle($('garage')).visibility]")
+    check("NEW GAME: DRIVE's card, no act number (no word of acts to come), over the road (the garage hidden)", got[:4] == [True, "act", "", "DRIVE"]
+          and "Drive as far as you can" in got[4] and got[5] == "hidden", got)
+    check("its buttons: HOW TO DRIVE, CONTINUE", shown() == ["HOW TO DRIVE", "CONTINUE ▶"], shown())
+    pg.screenshot(path=f"{OUT}/menus_act1.png")
+    pg.click("#act-drive"); got = js("[screen, tour.id, $('tour-title').textContent]")
+    check("HOW TO DRIVE: the Driving tutorial", got == ["tour", "driving", "START THE ENGINE"], got)
+    pg.keyboard.press("Escape"); check("Esc: back to the card", js("screen") == "act", js("screen"))
+    pg.click("#act-go"); pg.wait_for_timeout(100)
+    got = js("[menuOpen, getComputedStyle($('garage')).visibility, $('act-title').textContent, $('report').textContent, progress.toured]")
+    check("CONTINUE: the garage, GARAGE its title (no act yet); no run yet, no numbers; the card seen", got == [False, "visible", "GARAGE ▸", "", ["act1"]], got)
     # 2. a run, then the pause menu: END RUN is there; exit to the main menu and CONTINUE goes back to the same run
     js("Object.assign(progress.levels, { clutch: 1, gas: 1, shift: 1 }); refreshCar()"); pg.click("#drive")
     pg.wait_for_function("run.phase === 'run'", timeout=15000); pg.wait_for_timeout(500)
     pg.keyboard.press("Escape"); left = js("run.left")
-    check("Esc mid-run: the pause menu", shown() == ["RESUME ▶", "HOW TO DRIVE", "END RUN", "EXIT TO MAIN MENU"], shown())
+    check("Esc mid-run: the pause menu, WHAT TO DO in it (no act yet)", shown() == ["RESUME ▶", "WHAT TO DO", "HOW TO DRIVE", "END RUN", "EXIT TO MAIN MENU"], shown())
+    pg.click("#act-button"); got = js("[screen, $('act-name').textContent, $('act-go').textContent]")
+    check("the act's button: its card, BACK to the pause menu", got == ["act", "DRIVE", "◀ BACK"], got)
+    pg.click("#act-go"); check("BACK: the pause menu", js("[screen, menuOpen, run.phase]") == ["pause", True, "run"], js("[screen, menuOpen, run.phase]"))
     pg.click('[data-show="help"]')
     check("HOW TO DRIVE: the keys", "Space gas" in js("$('menu').innerText"), "")
     pg.click("[data-back]:visible")
@@ -43,6 +55,11 @@ with sync_playwright() as p:
     pg.once("dialog", lambda d: d.accept()); pg.click("#end-run"); pg.wait_for_timeout(100)
     check("END RUN, sure: the run ends as if the time ran out", js("[menuOpen, run.phase, progress.runs]") == [False, "finish", 1], js("[menuOpen, run.phase, progress.runs]"))
     pg.wait_for_function("run.phase === 'garage'", timeout=10000)
+    got = js("[$('report').textContent, menuOpen]")
+    check("the garage: the run in a line of numbers, no card (the first act's seen)", got[0].startswith("+") and " m" in got[0] and not got[1], got)
+    pg.click("#act-title"); got = js("[menuOpen, screen, $('act-name').textContent, $('act-run').innerText, $('act-go').textContent]")
+    check("the garage's title: the act's card, the run in full, CONTINUE", got[:3] == [True, "act", "DRIVE"] and "Last run" in got[3] and got[4] == "CONTINUE ▶", got)
+    pg.click("#act-go"); check("CONTINUE: the garage", js("[menuOpen, getComputedStyle($('garage')).visibility]") == [False, "visible"], js("[menuOpen]"))
     # 3. STATS: now there, the first act's numbers only (nothing of the race), and SHARE copies them
     pg.keyboard.press("Escape"); pg.click("#to-main")
     check("a game started: CONTINUE and STATS", shown() == ["CONTINUE", "STATS", "SETTINGS", "ARCADE", "credits"], shown())
@@ -85,12 +102,14 @@ with sync_playwright() as p:
     ph.on("pageerror", lambda e: errors.append(str(e)))
     ph.goto(URL); ph.wait_for_timeout(300)
     ph.evaluate("localStorage.clear(); settings.layout = 'touch'; applyLayout(); Object.assign(progress, { runs: 30, best: 2400, driven: 60000, time: 1800, racing: true, finish: 1, races: 20, tanks: 1, totals: 40, levels: { fleet: 51 } }); 0")
+    # the act cards with the longest run behind them: a race, dues, a refill, totals, the tank
+    ph.evaluate("Object.assign(run, { gain: 23456, newBest: true, dues: 4567, refill: 900, totals: 4, parts: 132, beatTank: true, race: { start: 3, p: 1, points: 110, fresh: 100 } }); 0")
     over = {}
-    for s in SCREENS:
-        ph.evaluate(f"showScreen('{s}'); 0"); ph.wait_for_timeout(80)
+    for s in SCREENS + [f"act {c}" for c in ph.evaluate("CARDS.map(c => c.id)")]:
+        ph.evaluate(f"card = CARDS.find(c => c.id === '{s[4:]}'); showScreen('act'); 0" if s.startswith("act ") else f"showScreen('{s}'); 0"); ph.wait_for_timeout(80)
         r = ph.evaluate("(() => { const r = $('menu-panel').getBoundingClientRect(); return [r.top, r.bottom, $('menu').scrollHeight > $('menu').clientHeight]; })()")
         if r[0] < 0 or r[1] > 393 or r[2]: over[s] = r
-        ph.screenshot(path=f"{OUT}/menus_phone_{s}.png")
+        ph.screenshot(path=f"{OUT}/menus_phone_{s.replace(' ', '_')}.png")
     check("phone: every screen fits without scrolling", not over, over)
     b.close()
 print("ERRORS:", errors or "none", "| FAILS:", fails or "none")

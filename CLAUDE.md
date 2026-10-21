@@ -39,7 +39,7 @@ Design decisions, balance targets, the playtest history and the open questions a
   menus (main, pause, arcade, settings, stats, how to drive, credits, win), cluster, head-up display, main loop.
   **The interface a game implements is documented at the top of `main.js`.**
 - `js/games/`: `levels.js` (adaptive levels for Rev and Speed signs), `rev.js`, `signs.js`, `distance.js` (garage,
-  upgrades, runs, save), `race.js` (the hidden race, the Black market's upgrades, scoring), `fleet.js` (the Fleet:
+  upgrades, runs, save, the act cards), `race.js` (the hidden race, the Black market's upgrades, scoring), `fleet.js` (the Fleet:
   paid-off racers and their teamwork), `gang.js` (War Rig: the AR target, totals, parts, guns), `police.js` (police
   heat, the scanner, police cars), `boss.js` (the tank, the ending), `damage.js` (damage, heat, nitro), `aids.js`
   (Distance's driver aids: robot feet and hands working the same pedals and lever as the player).
@@ -85,9 +85,10 @@ uv run --no-project --with playwright playwright install chromium         # once
 - The menu: the main game starts from `[data-play="distance"]` (NEW GAME, or CONTINUE with a save); the other games
   are behind ARCADE (`[data-show="arcade"]`, then `[data-play="free"]` etc.). Esc over a game opens the pause menu;
   `#to-main` goes on to the main menu.
-- A system's tutorial pops up over the garage the first time it opens in play (bought, or reached in a run, and that
-  includes levels a test sets between runs). Tests not about the tutorials mark them all seen in their setup:
-  `toured: TUTORIALS.map(t => t.id)` in `progress`.
+- A system's tutorial, and an act's card, pops up over the garage the first time it opens in play (bought, or
+  reached in a run, and that includes levels a test sets between runs); the first act's on a new game (no runs yet). Tests not
+  about them mark them all seen in their setup: `toured: TUTORIALS.map(t => t.id)` in `progress` (the cards are in
+  that list).
 - **Debug mode**, for playtesting: tap the menu's REV IT title 5 times (then OK). Distance plays a separate save,
   copied from the game the first time, with unlimited metres, points, miles and parts (shown as ∞), every grid slot
   for sale and police heat rising ten times quicker, so the later acts are quick to reach; the same again switches it

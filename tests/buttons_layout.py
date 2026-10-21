@@ -8,7 +8,7 @@ with sync_playwright() as p:
         ctx = b.new_context(viewport={"width": w, "height": h}, has_touch=touch, is_mobile=touch); pg = ctx.new_page(); pg.on("pageerror", lambda e: errs.append(str(e)))
         if touch: ctx.new_cdp_session(pg).send("Emulation.setTouchEmulationEnabled", {"enabled": True, "maxTouchPoints": 5})
         pg.goto(URL); pg.wait_for_timeout(300)
-        pg.evaluate("localStorage.clear(); Object.assign(progress, { racing: true, finish: 1, bank: 9000, levels: { flash: 1, reckless: 1, ecuPower: 1, nitro: 2, gears: 3, gear7: 1 } })")
+        pg.evaluate("localStorage.clear(); Object.assign(progress, { racing: true, finish: 1, bank: 9000, levels: { flash: 1, reckless: 1, ecuPower: 1, nitro: 2, gears: 3, gear7: 1 }, toured: TUTORIALS.map(t => t.id) })")
         pg.click('[data-play="distance"]'); pg.wait_for_timeout(200); pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000); pg.wait_for_timeout(300)
         boxes = {s: rect(pg, s) for s in ["#stalk-hit", "#timer", "#nos", "#ignition", "#shifter", "#cluster", "#pedals", "#menu-button", "#hud-main"]}
         part = {"#nos", "#pedals"}  # the nitro pedal rides on the gas pedal

@@ -12,7 +12,7 @@ with sync_playwright() as p:
     b = launch(p, args=["--autoplay-policy=no-user-gesture-required"])
     pg = b.new_page(viewport={"width": 1440, "height": 900}); pg.on("pageerror", lambda e: errors.append(str(e)))
     pg.goto(URL); js = pg.evaluate; kb = pg.keyboard
-    js(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, bank: 9e6, levels: {{ {CAR} }}, engine: 2 }})")
+    js(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, bank: 9e6, levels: {{ {CAR} }}, engine: 2, toured: TUTORIALS.map(t => t.id) }})")
     pg.click('[data-play="distance"]'); pg.wait_for_timeout(200); js("refreshCar()"); pg.click("#drive")
     pg.wait_for_function("run.phase === 'run'", timeout=15000)
     js("traffic.forEach(c => c.z = odo + 4000); racers().forEach(c => c.z = odo - 9000); progress.nitro = 4")

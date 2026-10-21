@@ -10,7 +10,7 @@ def check(name, ok, got=""):
     if not ok: fails.append(name)
 # the page now: its title, the light's box, the control's and the card's, and whether the light is round the control
 # and clear of the card
-PAGE = """() => { const p = TUTORIALS[0].pages[tour.page], box = e => { const r = e.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; };
+PAGE = """() => { const p = tutorial('driving').pages[tour.page], box = e => { const r = e.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; };
   const s = box($('spot')), c = box(document.querySelector(p.at)), k = box($('menu-panel'));
   const round = s[0] <= c[0] && s[1] <= c[1] && s[2] >= c[2] && s[3] >= c[3];
   const clear = Math.min(k[2], s[2]) <= Math.max(k[0], s[0]) || Math.min(k[3], s[3]) <= Math.max(k[1], s[1]);
@@ -19,7 +19,7 @@ PAGE = """() => { const p = TUTORIALS[0].pages[tour.page], box = e => { const r 
 def walk(js, label):
     """Every page of Driving: lit, round its control, clear of the card; the last one says DONE."""
     bad, titles = [], []
-    for i in range(js("TUTORIALS[0].pages.length")):
+    for i in range(js("tutorial('driving').pages.length")):
         got = js(f"(() => {{ tour.page = {i}; renderTour(); return ({PAGE})(); }})()")
         titles.append(got["title"])
         if not (got["lit"] and got["round"] and got["clear"]): bad.append(got)
@@ -55,6 +55,7 @@ with sync_playwright() as p:
     pg.click('[data-tour="driving"]'); pg.keyboard.press("Escape"); pg.wait_for_timeout(100)
     check("Esc: back to the list, the menu still up", js("[screen, menuOpen]") == ["help", True], js("[screen, menuOpen]"))
     # 4. over a run: the pause menu's HOW TO DRIVE, the run stays paused
+    js("progress.toured = ['act1']")  # the first act's card seen (menus_test)
     pg.click("[data-back]:visible"); pg.click("[data-back]:visible"); pg.click('[data-play="distance"]'); pg.wait_for_timeout(200)
     js("Object.assign(progress.levels, { clutch: 1, gas: 1, shift: 1 }); refreshCar()"); pg.click("#drive")
     pg.wait_for_function("run.phase === 'run'", timeout=15000); pg.keyboard.press("Escape"); left = js("run.left")
@@ -107,20 +108,23 @@ with sync_playwright() as p:
     check("HOW TO DRIVE: Driving, then the systems you have", pj("[...document.querySelectorAll('#tutorials button')].map(b => b.textContent)")
           == ["DRIVING", "HEADLIGHT FLASH", "DRIVER AIDS"], pj("[...document.querySelectorAll('#tutorials button')].map(b => b.textContent)"))
     pj("closeMenu()")
-    # 7. two systems a run brings (the first total: the War Rig and police heat): one pops up, then the other
+    # 7. what a run brings (here, the reveal and the first total at once): the acts' cards first, then the tutorials,
+    # one at a time, each once
     pj("markTours(); Object.assign(progress, { racing: true, totals: 1, levels: { ...progress.levels, fleet: 1 } }); popTour()"); ph.wait_for_timeout(100)
-    first = pj("$('tour-name').textContent")
-    pj("exitTour()"); ph.wait_for_timeout(100); second = pj("menuOpen && $('tour-name').textContent")
-    pj("exitTour()"); ph.wait_for_timeout(100)
-    check("a run brings several: each pops up in turn, once", first.startswith("THE RACE") and second.startswith("THE FLEET"), [first, second])
-    while pj("menuOpen"): pj("exitTour()"); ph.wait_for_timeout(50)
-    toured = pj("progress.toured"); check("all of them shown once", sorted(toured) == ["flash", "fleet", "police", "race", "warrig"], toured)
+    seen = []
+    while pj("menuOpen") and len(seen) < 10:
+        seen.append(pj("screen === 'act' ? $('act-name').textContent : $('tour-name').textContent.split(' · ')[0]"))
+        pj("screen === 'act' ? closeCard() : exitTour()"); ph.wait_for_timeout(50)
+    check("a run brings several: the cards, then the tutorials, each in turn", seen == ["RACE", "WAR", "NO LAW OUT HERE", "THE RACE", "THE FLEET",
+          "THE WAR RIG", "POLICE HEAT"], seen)
+    toured = pj("progress.toured")
+    check("all of them shown once", sorted(toured) == ["act2", "act4", "flash", "fleet", "nolaw", "police", "race", "warrig"], toured)
     # 8. every system's page: lit round its control (shown for the page if the garage hides it), the card clear
     for name, pjs, page in [("phone", pj, ph), ("desktop", js, pg)]:
         pjs("Object.assign(progress, { racing: true, totals: 1, levels: { clutch: 1, cruise: 1, flash: 5, autoflash: 1, stereo: 1, reckless: 1, chicken: 1, "
             "ecuRev: 1, nitro: 1, fleet: 51, pack: 1, guns: 1, autogun: 1, baddrivers: 1, hunter: 1 }, nitro: 0 }); if (game !== DISTANCE) play(DISTANCE); refreshCar()")
         bad = pjs("""(() => { const out = [];
-          for (const t of TUTORIALS.slice(1)) { openTour(t.id); pagesOf(t).forEach((p, i) => { tour.page = i; renderTour(); if (!p.at) return;
+          for (const t of TUTORIALS.filter(t => t.pages && t.id !== 'driving')) { openTour(t.id); pagesOf(t).forEach((p, i) => { tour.page = i; renderTour(); if (!p.at) return;
             const box = e => { const r = e.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; };
             const s = box($('spot')), c = box(document.querySelector(p.at)), k = box($('menu-panel'));
             const round = s[0] <= c[0] && s[1] <= c[1] && s[2] >= c[2] && s[3] >= c[3] && $('spot').classList.contains('lit');

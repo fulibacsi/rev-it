@@ -22,11 +22,12 @@ with sync_playwright() as p:
     def race():
         pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
         js("traffic.forEach(c => { if (c.racer) c.z = odo - (c.fleet ? 3000 : 9000); else if (!c.tank) Object.assign(c, { dir: -1, x: LANES.oncoming[1], police: false }); }); copClock = 999; 0")
-    # 1. 99%: no tank; 100%: the garage warns of it
-    garage(0.99); check("99% heat: no tank", not js("bossRace()") and "tank" not in js("$('report').innerText"))
-    garage(1); check("100% heat: the garage warns of the tank", js("bossRace()") and "the army has sent a tank" in js("$('report').innerText"), js("$('report').innerText")[-100:])
+    # 1. 99%: no tank; 100%: the act's card (the pause menu's, the garage's title) warns of it
+    card = lambda: js("[currentCard().id, currentCard().text(), currentCard().now()].join(' | ')")
+    garage(0.99); check("99% heat: no tank", not js("bossRace()") and card().startswith("nolaw |"), card())
+    garage(1); check("100% heat: the act's card warns of the tank", js("bossRace()") and card().startswith("tanksent |") and "the army has sent a tank" in card(), card())
     js("progress.levels.guns = 0; renderGarage()")
-    check("100% heat but no guns: no tank yet, the garage says it waits", not js("bossRace()") and "a tank ready for when you are armed" in js("$('report').innerText"), js("$('report').innerText")[-100:])
+    check("100% heat but no guns: no tank yet, the card says it waits", not js("bossRace()") and card().startswith("nolaw |") and "a tank ready for when you are armed" in card(), card())
     js("progress.levels.guns = 3; refreshCar(); renderGarage()")
     # 2. the race: the tank appears up the road, comes back to about 80 m ahead, in your lane, the AR on it
     race(); pg.wait_for_function("run.tank", timeout=5000)
@@ -55,7 +56,8 @@ with sync_playwright() as p:
     pg.wait_for_timeout(3000); check("held a while (4 s), longer than a finish", js("run.phase") == "finish", js("run.phase"))
     pg.wait_for_function("run.phase === 'garage'", timeout=5000)
     rep = js("$('report').textContent") # the garage is out of sight behind the ending
-    check("the ending, then play on (a result, not a DNF)", "The tank is scrap" in rep and "Play on" in rep and "DNF" not in rep, rep[-160:])
+    check("the ending, then play on: a result, not a DNF; the act's card says to push for the next", "+300 parts" in rep and "DNF" not in rep
+          and "The tank is scrap" in card() and "the next one is tougher" in card(), [rep, card()])
     check("the next tank is half as tough again", js("tankHealth()") == 1500, js("tankHealth()"))
     got = js("({ menu: menuOpen, screen, text: $('menu').innerText })")
     check("then the ending: WARLORD OF THE COAST ROAD, the stats, a tank beaten", got["menu"] and got["screen"] == "win"

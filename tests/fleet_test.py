@@ -29,11 +29,12 @@ with sync_playwright() as p:
     text = js("$('garage').innerText")
     check("before a win: no Fleet page", tabs() == ["Workshop", "Autopilot", "Black market"], tabs())
     check("before a win: no word of the fleet or miles", not re.search(r"fleet|\bmiles?\b|\bmi\b", text, re.I), re.findall(r".{20}(?:fleet|\bmiles?\b|\bmi\b).{20}", text, re.I))
-    # 2. win a race: the Fleet opens, and the garage says so
+    # 2. win a race: the Fleet opens, and the act moves on (its card pops up: tutorial_test)
     js("refreshCar()"); pg.tap("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     js("racers().forEach(c => c.z = odo - 9000); run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
     check("a win opens the Fleet", tabs() == ["Workshop", "Autopilot", "Black market", "Fleet"], tabs())
-    check("the garage says so", "the Fleet is open" in js("$('report').textContent"), js("$('report').textContent")[-120:])
+    got = js("[$('act-title').textContent, currentCard().text(), currentCard().now?.()]")
+    check("ACT III · RECRUIT, its card on the racers open to offers", got[0] == "ACT III · RECRUIT ▸" and "open to offers" in got[1], got)
     check("miles in the header", js("$('bank').textContent").endswith("· 0 mi to spend"), js("$('bank').textContent"))
     # 3. the Exchange: the slider, then all available
     js("progress.bank = 10000"); pg.tap('[data-tab="fleet"]'); pg.wait_for_timeout(200)

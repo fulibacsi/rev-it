@@ -26,9 +26,10 @@ with sync_playwright() as p:
     # 1. 50 fleet cars: no gang, no word of it
     start(50)
     check("50 fleet cars: no War Rig, no task", "War Rig" not in tabs() and not re.search(r"gang|total|parts", js("$('garage').innerText"), re.I), tabs())
-    # 2. 51: the gang's first job, in the garage; still no page
+    # 2. 51: the gang's first job, on the act's card; still no page
     start(51)
-    check("51 fleet cars: the gang's first job in the garage", "total a car" in js("$('report').innerText") and "War Rig" not in tabs(), js("$('report').innerText")[-140:])
+    got = js("[$('act-title').textContent, currentCard().text(), currentCard().now?.()]")
+    check("51 fleet cars: ACT IV · WAR, the gang's first job on its card", got[0] == "ACT IV · WAR ▸" and "total a car" in got[1] and "War Rig" not in tabs(), got)
     # 3. on the road: the reticle on the nearest car ahead, at full health, labelled
     pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     js("""traffic.forEach(c => { if (!c.racer) { c.dir = -1; c.x = LANES.oncoming[0]; c.z = odo + 4000; } else if (!c.fleet) c.z = odo - 9000; else c.z = odo - 3000; });
@@ -72,8 +73,8 @@ with sync_playwright() as p:
     check("a totalled rival is out of the race: up a place", p1 == p0 - 1, f"P{p0} -> P{p1}")
     # 7. the first total opens War Rig, paid in parts
     js("run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
-    rep = js("$('report').innerText")
-    check("the garage: the first job done, War Rig open", "War Rig page is open" in rep and "War Rig" in tabs() and "parts to spend" in js("$('bank').textContent"), [rep[-120:], tabs()])
+    got = js("[$('act-title').textContent, currentCard().text(), currentCard().now?.()]")
+    check("the first job done: its card, War Rig open", "War Rig page is open" in got[1] and "War Rig" in tabs() and "parts to spend" in js("$('bank').textContent"), [got, tabs()])
     pg.click('[data-tab="warrig"]'); pg.wait_for_timeout(100)
     check("the Bull bar, paid in parts", js("document.querySelector('[data-buy=\"bullbar\"]').textContent") == "20 parts", js("document.querySelector('[data-buy=\"bullbar\"]')?.textContent"))
     js("progress.parts = 100"); pg.click('[data-buy="bullbar"]'); pg.wait_for_timeout(100)

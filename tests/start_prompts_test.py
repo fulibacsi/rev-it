@@ -15,7 +15,7 @@ with sync_playwright() as p:
     pg = b.new_page(viewport={"width": 1440, "height": 900}); pg.on("pageerror", lambda e: errors.append(str(e))); js = pg.evaluate
     pg.goto(URL); pg.wait_for_timeout(300)
     js("localStorage.clear(); settings.layout = 'keys'; applyLayout(); 0")
-    pg.click('[data-play="distance"]'); pg.wait_for_timeout(200)
+    pg.click('[data-play="distance"]'); pg.wait_for_timeout(200); pg.click("#act-go")  # a new game: its first card, then the garage
     pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     js("traffic.forEach(c => { if (!c.racer) { c.dir = -1; c.x = LANES.oncoming[0]; } }); 0")  # no traffic your way
     first = js(READ); pg.wait_for_timeout(1800)

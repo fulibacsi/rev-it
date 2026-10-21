@@ -104,8 +104,8 @@
 </div>
 
 <div id="garage">
-  <header><b>GARAGE</b><span id="bank"></span></header>
-  <div id="report"></div>
+  <header><button id="act-title" title="what to do"></button><span id="bank"></span></header> <!-- the act: its card again -->
+  <div id="report"></div> <!-- the last run, in numbers -->
   <nav id="tabs"></nav>
   <div id="engine-row"></div>
   <div id="cards"></div>
@@ -217,6 +217,7 @@
     <p>Paused.</p>
     <nav class="menu-buttons">
       <button id="resume" class="big">RESUME ▶</button>
+      <button id="act-button" hidden></button>
       <button data-show="help">HOW TO DRIVE</button>
       <button id="end-run">END RUN</button>
       <button id="to-main">EXIT TO MAIN MENU</button>
@@ -291,6 +292,14 @@
     <p><b>Techniques</b>: the road after Jake Gordon's "How to build a racing game", the car after Marco Monster's "Car
       Physics for Games". Every detail: <a href="https://github.com/fulibacsi/rev-it/blob/main/CREDITS.md" target="_blank" rel="noopener">CREDITS.md</a>.</p>
     <footer><button data-back>◀ BACK</button></footer>
+  </section>
+  <section data-screen="act"> <!-- an act's card, in the ending's look: what to do, where you stand, the last run (distance.js) -->
+    <small id="act-no"></small>
+    <h3 id="act-name"></h3>
+    <p id="act-text" class="warlord"></p>
+    <p id="act-now"></p>
+    <dl id="act-run"></dl>
+    <footer><button id="act-drive">HOW TO DRIVE</button><button id="act-go" class="big">CONTINUE ▶</button></footer>
   </section>
   <section data-screen="win"> <!-- the ending: the tank beaten (the owner's pick of title and words, 20 Oct) -->
     <h3 id="warlord">WARLORD OF THE COAST ROAD</h3>
