@@ -55,7 +55,7 @@ with sync_playwright() as p:
     pg.click('[data-tour="driving"]'); pg.keyboard.press("Escape"); pg.wait_for_timeout(100)
     check("Esc: back to the list, the menu still up", js("[screen, menuOpen]") == ["help", True], js("[screen, menuOpen]"))
     # 4. over a run: the pause menu's HOW TO DRIVE, the run stays paused
-    js("progress.toured = ['act1']")  # ACT I's card seen (menus_test)
+    js("progress.toured = ['act1']")  # the first act's card seen (menus_test)
     pg.click("[data-back]:visible"); pg.click("[data-back]:visible"); pg.click('[data-play="distance"]'); pg.wait_for_timeout(200)
     js("Object.assign(progress.levels, { clutch: 1, gas: 1, shift: 1 }); refreshCar()"); pg.click("#drive")
     pg.wait_for_function("run.phase === 'run'", timeout=15000); pg.keyboard.press("Escape"); left = js("run.left")

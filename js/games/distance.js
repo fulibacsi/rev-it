@@ -78,7 +78,7 @@ function save() {
   if (debugSave) progress.bank = progress.points = progress.miles = progress.parts = FUNDS; // spent or earned, back to full
   try { localStorage.setItem(saveKey(), JSON.stringify(progress)); } catch { /* not saved */ }
 }
-const forgetRun = () => Object.assign(run, { gain: 0, race: null, revealed: false, won: false, dues: 0, parts: 0, totals: 0,
+const forgetRun = () => Object.assign(run, { gain: null, race: null, revealed: false, won: false, dues: 0, parts: 0, totals: 0,
                                              firstTotal: false, boss: false, tank: null, beatTank: false, newBest: false, best: 0 });
 function resetProgress() { // a new game: the menu's "new game"
   Object.assign(progress, FRESH());
@@ -146,7 +146,7 @@ function aid(id) {
 // ---- a run ----
 // phase: 'garage' -> 'starting' (engine cranks) -> 'countdown' (car held on the brake) -> 'run' -> 'finish'
 // (braking, the score is in) -> 'garage'. best: the best distance before this run, marked on the road.
-const run = { phase: 'garage', count: 0, left: 0, best: progress.best, gain: 0, newBest: false };
+const run = { phase: 'garage', count: 0, left: 0, best: progress.best, gain: null, newBest: false }; // gain null: no run yet
 
 function startRun() { // back to the start line, engine running, in neutral, held on the brake
   Object.assign(run, { phase: 'starting', count: COUNTDOWN, left: runTime(), best: progress.best, gain: 0, newBest: false,
@@ -243,12 +243,13 @@ function exchangeCard() {
 }
 
 // ---- the act cards (the owner, 21 Oct: nobody read the words on top of the garage) ----
-// A title card as each act starts, in the ending's look: what the act is about and what to do. The last act has two
-// more, without a number, at its turns: the first total, and the tank. Each pops up once, before any tutorial that
+// A title card as each act starts, in the ending's look: what the act is about and what to do. The first has no
+// number, nor does anything else before the reveal: no word of acts to come (the owner, 21 Oct); ACT II is the first.
+// The last act has two more, without a number, at its turns: the first total, and the tank. Each pops up once, before any tutorial that
 // opens with it: they ride first in the tutorials' list (tutorial.js). The pause menu and the garage's title show the
 // current one again, with where you stand and the last run in full; the garage keeps a line of the run's numbers
 TUTORIALS.unshift(
-  { id: 'act1', act: 'I', name: 'DRIVE', open: () => true,
+  { id: 'act1', name: 'DRIVE', open: () => true,
     text: () => `You get ${runTime()} seconds a run. Drive as far as you can: every metre is money for upgrades in the ` +
       'garage. New to a stick shift? HOW TO DRIVE takes you through it.' },
   { id: 'act2', act: 'II', name: 'RACE', open: () => progress.racing,
@@ -276,13 +277,13 @@ TUTORIALS.unshift(
 const heatPct = () => `${Math.round(progress.wanted * 100)}%`;
 const CARDS = TUTORIALS.filter(t => t.text);
 const currentCard = () => CARDS.findLast(c => c.open());
-const actTitle = () => { const a = CARDS.findLast(c => c.act && c.open()); return `ACT ${a.act} · ${a.name}`; };
+const actTitle = () => { const a = CARDS.findLast(c => c.act && c.open()); return a && `ACT ${a.act} · ${a.name}`; }; // none yet: the first
 const dnf = r => ({ 'head-on': 'head-on with oncoming traffic', wrecked: 'the car is wrecked', limped: `limped ${LIMP} m in the wreck`,
                      tank: 'the tank held the road' })[r.dnf]; // why a race wasn't finished
 // the last run, in a line of numbers at the top of the garage (none before the first, nor after a reload)
 function runLine() {
   const r = run.race;
-  if (!run.gain && !r) return '';
+  if (run.gain == null) return '';
   return [`<b>+${fmt(run.gain)} m</b>${run.newBest ? ' new best!' : ''}`,
     r && (r.dnf ? `<b>DNF</b> ${dnf(r)}` : `<b>P${r.p}</b> +${r.points} pts`),
     run.dues && `fleet dues +${fmt(run.dues)} m`, run.refill && `nitro refill −${fmt(run.refill)} m`,
@@ -290,16 +291,19 @@ function runLine() {
     arOn() && `police heat ${heatPct()}`]
     .filter(Boolean).join(' · ');
 }
-// ... and in full, on the act card: the run, then where you stand
+// ... and in full, on the act card: the run (in the garage: mid-run, the pause menu's, there is none), then where you
+// stand
 function runRows() {
   const r = run.race, rows = [];
-  if (run.gain || r) rows.push(['Last run', `+${fmt(run.gain)} m${run.newBest ? ', a new best' : ''}`]);
-  if (r) rows.push(['Race', r.dnf ? `DNF: ${dnf(r)}` : `${r.start > FIELD ? 'from the back' : 'from P' + r.start} to P${r.p}`],
-    ['Points', `+${r.points}` + (r.fresh ? ` (${r.fresh} for new places)` : '')]);
-  if (run.dues) rows.push(['Fleet dues', `+${fmt(run.dues)} m`]);
-  if (run.refill) rows.push(['Nitro refill', `−${fmt(run.refill)} m`]);
-  if (run.totals) rows.push(['Totalled', `${run.totals}, +${fmt(run.parts)} parts`]);
-  if (run.beatTank) rows.push(['The tank', `scrapped, +${TANK.parts} parts`]);
+  if (run.phase === 'garage' && run.gain != null) {
+    rows.push(['Last run', `+${fmt(run.gain)} m${run.newBest ? ', a new best' : ''}`]);
+    if (r) rows.push(['Race', r.dnf ? `DNF: ${dnf(r)}` : `${r.start > FIELD ? 'from the back' : 'from P' + r.start} to P${r.p}`],
+      ['Points', `+${r.points}` + (r.fresh ? ` (${r.fresh} for new places)` : '')]);
+    if (run.dues) rows.push(['Fleet dues', `+${fmt(run.dues)} m`]);
+    if (run.refill) rows.push(['Nitro refill', `−${fmt(run.refill)} m`]);
+    if (run.totals) rows.push(['Totalled', `${run.totals}, +${fmt(run.parts)} parts`]);
+    if (run.beatTank) rows.push(['The tank', `scrapped, +${TANK.parts} parts`]);
+  }
   if (progress.runs) rows.push(['Best run', `${fmt(progress.best)} m`]);
   if (arOn()) rows.push(['Police heat', heatPct()]);
   return rows;
@@ -333,7 +337,7 @@ function renderGarage(bought) {
   $('bank').textContent = `${money(progress.bank)} m` + (progress.racing ? ` · ${money(progress.points)} pts` : '') +
     (fleetOpen() ? ` · ${money(progress.miles)} mi` : '') + (gangOpen() ? ` · ${money(progress.parts)} parts` : '') + ' to spend';
   const sold = u => !u.afterReveal || progress.racing; // on sale yet
-  $('act-title').textContent = `${actTitle()} ▸`;
+  $('act-title').textContent = `${actTitle() ?? 'GARAGE'} ▸`;
   $('report').innerHTML = runLine();
   const onPage = page => Object.keys(UPGRADES).filter(id => id !== 'engine' && pageOf(UPGRADES[id]) === page && sold(UPGRADES[id]));
   const fresh = onPage(garageTab).filter(unseen); // on the page you're looking at: seen now

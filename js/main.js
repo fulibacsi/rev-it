@@ -102,7 +102,7 @@ function renderMenu() {
   $('to-stats').hidden = !started();
   $('end-run').hidden = !(game === DISTANCE && run.phase === 'run');
   $('act-button').hidden = !(game === DISTANCE && playing); // the act's card again: what to do (distance.js)
-  if (game === DISTANCE) $('act-button').textContent = actTitle();
+  if (game === DISTANCE) $('act-button').textContent = actTitle() ?? 'WHAT TO DO';
   const best = g => settings.best[g.id] ? `best ${fmt(settings.best[g.id].points)} pts · level ${settings.best[g.id].level + 1}` : '';
   $('game-list').innerHTML = ARCADE.map(g => `<button data-play="${g.id}"${g === game && playing ? ' class="on"' : ''}>` +
     `<b>${g.name}</b><small>${g.blurb}</small><i>${best(g)}</i></button>`).join('');

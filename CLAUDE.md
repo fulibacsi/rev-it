@@ -86,7 +86,7 @@ uv run --no-project --with playwright playwright install chromium         # once
   are behind ARCADE (`[data-show="arcade"]`, then `[data-play="free"]` etc.). Esc over a game opens the pause menu;
   `#to-main` goes on to the main menu.
 - A system's tutorial, and an act's card, pops up over the garage the first time it opens in play (bought, or
-  reached in a run, and that includes levels a test sets between runs); ACT I's on a new game (no runs yet). Tests not
+  reached in a run, and that includes levels a test sets between runs); the first act's on a new game (no runs yet). Tests not
   about them mark them all seen in their setup: `toured: TUTORIALS.map(t => t.id)` in `progress` (the cards are in
   that list).
 - **Debug mode**, for playtesting: tap the menu's REV IT title 5 times (then OK). Distance plays a separate save,

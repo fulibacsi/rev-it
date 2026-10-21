@@ -16,14 +16,14 @@ with sync_playwright() as p:
     pg = ctx.new_page(); pg.on("pageerror", lambda e: errors.append(str(e))); js = pg.evaluate
     pg.goto(URL); js("localStorage.clear()"); pg.reload(); pg.wait_for_timeout(300)
     shown = lambda: js("[...document.querySelectorAll('#menu section:not([hidden]) button')].filter(b => !b.hidden && b.offsetParent).map(b => b.textContent.trim())")
-    # 1. a first visit: NEW GAME, no stats, no reset; ACT I's card tells you how to get going
+    # 1. a first visit: NEW GAME, no stats, no reset; the first act's card tells you how to get going
     check("first visit: NEW GAME, SETTINGS, ARCADE, credits (no STATS)", shown() == ["NEW GAME", "SETTINGS", "ARCADE", "credits"], shown())
     pg.click('[data-show="settings"]')
     check("settings without a game: no RESET PROGRESS", "RESET PROGRESS" not in shown(), shown())
     pg.click("[data-back]:visible")
     pg.click("#continue"); pg.wait_for_timeout(300)
     got = js("[menuOpen, screen, $('act-no').textContent, $('act-name').textContent, $('act-text').textContent, getComputedStyle($('garage')).visibility]")
-    check("NEW GAME: ACT I · DRIVE's card, over the road (the garage behind it hidden)", got[:4] == [True, "act", "ACT I", "DRIVE"]
+    check("NEW GAME: DRIVE's card, no act number (no word of acts to come), over the road (the garage hidden)", got[:4] == [True, "act", "", "DRIVE"]
           and "Drive as far as you can" in got[4] and got[5] == "hidden", got)
     check("its buttons: HOW TO DRIVE, CONTINUE", shown() == ["HOW TO DRIVE", "CONTINUE ▶"], shown())
     pg.screenshot(path=f"{OUT}/menus_act1.png")
@@ -32,12 +32,12 @@ with sync_playwright() as p:
     pg.keyboard.press("Escape"); check("Esc: back to the card", js("screen") == "act", js("screen"))
     pg.click("#act-go"); pg.wait_for_timeout(100)
     got = js("[menuOpen, getComputedStyle($('garage')).visibility, $('act-title').textContent, $('report').textContent, progress.toured]")
-    check("CONTINUE: the garage, its title the act; no run yet, no numbers; the card seen", got == [False, "visible", "ACT I · DRIVE ▸", "", ["act1"]], got)
+    check("CONTINUE: the garage, GARAGE its title (no act yet); no run yet, no numbers; the card seen", got == [False, "visible", "GARAGE ▸", "", ["act1"]], got)
     # 2. a run, then the pause menu: END RUN is there; exit to the main menu and CONTINUE goes back to the same run
     js("Object.assign(progress.levels, { clutch: 1, gas: 1, shift: 1 }); refreshCar()"); pg.click("#drive")
     pg.wait_for_function("run.phase === 'run'", timeout=15000); pg.wait_for_timeout(500)
     pg.keyboard.press("Escape"); left = js("run.left")
-    check("Esc mid-run: the pause menu, the act's button in it", shown() == ["RESUME ▶", "ACT I · DRIVE", "HOW TO DRIVE", "END RUN", "EXIT TO MAIN MENU"], shown())
+    check("Esc mid-run: the pause menu, WHAT TO DO in it (no act yet)", shown() == ["RESUME ▶", "WHAT TO DO", "HOW TO DRIVE", "END RUN", "EXIT TO MAIN MENU"], shown())
     pg.click("#act-button"); got = js("[screen, $('act-name').textContent, $('act-go').textContent]")
     check("the act's button: its card, BACK to the pause menu", got == ["act", "DRIVE", "◀ BACK"], got)
     pg.click("#act-go"); check("BACK: the pause menu", js("[screen, menuOpen, run.phase]") == ["pause", True, "run"], js("[screen, menuOpen, run.phase]"))
@@ -56,7 +56,7 @@ with sync_playwright() as p:
     check("END RUN, sure: the run ends as if the time ran out", js("[menuOpen, run.phase, progress.runs]") == [False, "finish", 1], js("[menuOpen, run.phase, progress.runs]"))
     pg.wait_for_function("run.phase === 'garage'", timeout=10000)
     got = js("[$('report').textContent, menuOpen]")
-    check("the garage: the run in a line of numbers, no card (ACT I's seen)", got[0].startswith("+") and " m" in got[0] and not got[1], got)
+    check("the garage: the run in a line of numbers, no card (the first act's seen)", got[0].startswith("+") and " m" in got[0] and not got[1], got)
     pg.click("#act-title"); got = js("[menuOpen, screen, $('act-name').textContent, $('act-run').innerText, $('act-go').textContent]")
     check("the garage's title: the act's card, the run in full, CONTINUE", got[:3] == [True, "act", "DRIVE"] and "Last run" in got[3] and got[4] == "CONTINUE ▶", got)
     pg.click("#act-go"); check("CONTINUE: the garage", js("[menuOpen, getComputedStyle($('garage')).visibility]") == [False, "visible"], js("[menuOpen]"))

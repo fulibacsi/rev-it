@@ -180,17 +180,18 @@ machine or session. Keep it current: update a section when a decision changes, a
   everything" doesn't belong on a win, and RESET PROGRESS in the settings does it.
 - **The act cards** (the owner, 21 Oct: nobody read the words on top of the garage). A title card as each act starts,
   in the ending's look (the garage hidden behind it): a small "ACT II", the act's name, what it is about and what to
-  do. ACT I · DRIVE (on a new game, with a HOW TO DRIVE button into the Driving tutorial), II · RACE (the reveal),
+  do. DRIVE (on a new game, with a HOW TO DRIVE button into the Driving tutorial), ACT II · RACE (the reveal),
   III · RECRUIT (the first win), IV · WAR (the gang); then, without a number, the last act's two turns: NO LAW OUT
-  HERE (the first total) and THE ARMY SENDS A TANK. The owner's picks: verbs for the names, the tank a turn in act 4
+  HERE (the first total) and THE ARMY SENDS A TANK. The first act has no number, nor does anything before the
+  reveal (the owner, 21 Oct: "Act I" would say more is to come): the garage's title stays GARAGE and the pause
+  menu's button reads WHAT TO DO, so ACT II is the first the game says of acts. The owner's picks: verbs for the names, the tank a turn in act 4
   rather than an act of its own. Each pops up once, before any tutorial that opens with it (they ride first in the
   tutorials' list). The pause menu's button with the act's name, and the garage's title ("ACT II · RACE ▸"), show the
   current one again (the owner's pick: both), with a line on where you stand (best place, fleet size, the heat and
   what it brings) and the last run in full. The garage keeps a line of the run's numbers (+metres, place and points,
   dues, nitro refill, totals and parts, the heat): numbers get read, and a report after every run would be a tap
-  every run (the owner's pick over a modal each run). Claude's calls: the words, and "Act I" saying more is to come
-  (not what: the race stays hidden).
-- **How to drive:** ACT I's card points to HOW TO DRIVE, in the pause menu and the settings: the Driving tutorial and
+  every run (the owner's pick over a modal each run). Claude's call: the words.
+- **How to drive:** the first act's card points to HOW TO DRIVE, in the pause menu and the settings: the Driving tutorial and
   the full controls. The key help that sat at the foot of a desktop screen went there too.
 - **Tutorials** (the owner, 20 Oct, after Diablo IV's: a step a page, a system at a time). HOW TO DRIVE lists them,
   the controls cheat sheet under the list. A page is a step: its title, what to do (for a touch, or for keys and
