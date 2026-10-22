@@ -151,6 +151,7 @@ body:not([data-game="distance"]) #kit { display: none; }
 #menu footer > :first-child { margin-right: auto; } /* back (or the first choice) on the left, the rest on the right */
 #menu .danger { color: #f77; border-color: #6a2a2a; }
 .setting { display: flex; align-items: center; gap: 12px; padding: 7px 0; border-bottom: 1px solid #1a1e2c; }
+.setting[hidden] { display: none; } /* a build without gameplay data (reporting.js) */
 .setting > span { width: 110px; color: #9ab; }
 .setting input[type=range] { flex: 1; max-width: 280px; accent-color: var(--accent); }
 .setting button { padding: 4px 10px; }
@@ -201,6 +202,13 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
 #menu .build { color: #556; font-size: 11px; }
 #menu .shared { min-height: 1em; margin: 8px 0 0; color: var(--accent); }
 #menu .shared textarea { width: 100%; height: 6em; margin-top: 4px; background: #12141e; color: #ccc; border: 1px solid #2c3140; }
+/* the first visit's question and the feedback (reporting.js: a build that reports, itch.io's) */
+#menu .tick { display: flex; align-items: center; gap: 10px; margin: 4px 0 10px; color: #eee; font-weight: 600; cursor: pointer; }
+#menu .tick input { width: 20px; height: 20px; accent-color: var(--accent); }
+#menu #hello-go { margin: 0 0 0 auto; } /* alone in its footer: on the right */
+#feedback-text { box-sizing: border-box; width: 100%; padding: 8px; resize: vertical; background: #12141e; color: #eee;
+                 border: 1px solid #2c3140; border-radius: 6px; font: inherit; }
+#menu #feedback-note { min-height: 1.5em; margin: 6px 0 0; color: var(--accent); }
 #game-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
 #game-list button { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; text-align: left; }
 #game-list b { font-size: 16px; color: #eee; letter-spacing: 1px; }
