@@ -1,5 +1,5 @@
-"""Feedback and gameplay data, in the itch.io build (tools/build.py fills in Supabase; served over HTTP, as itch.io
-serves it; Supabase answered here, nothing leaves the machine). The first visit asks, the box unticked; unticked, a
+"""Feedback and gameplay data, in the itch.io build (tools/build.py fills in the gate's address; served over HTTP, as
+itch.io serves it; the gate answered here, nothing leaves the machine; the gate itself: gate_test). The first visit asks, the box unticked; unticked, a
 run sends nothing, and FEEDBACK (in SHARE's place) can go empty with the stats; ticked, a game's start and each run
 go, FEEDBACK needs a word, an error is reported; a failed send says so. Inside a page's frame (itch.io's) the iPhone's
 "Add to Home Screen" tip is gone. The repository's own build (GitHub Pages) has none of it: SHARE, no question, nothing
@@ -12,27 +12,27 @@ errors, fails, sent = [], [], []
 def check(name, ok, got=""):
     print(f"{'ok ' if ok else 'FAIL'} {name}" + (f": {got}" if got != "" else ""))
     if not ok: fails.append(name)
-SUPA = "https://test.supabase.co"
+GATE = "https://test.supabase.co/functions/v1/report"
 build = Path(tempfile.mkdtemp()) / "itch"
-subprocess.run([sys.executable, str(ROOT / "tools" / "build.py"), str(build)], check=True,
-               env={**os.environ, "SUPABASE_URL": SUPA, "SUPABASE_KEY": "sb_publishable_test"})
+subprocess.run([sys.executable, str(ROOT / "tools" / "build.py"), str(build)], check=True, env={**os.environ, "REPORT_URL": GATE})
 (build / "frame.html").write_text('<iframe src="index.html" width="844" height="390"></iframe>')  # as itch.io embeds it
 class Quiet(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a): pass
 srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Quiet, directory=str(build)))
 threading.Thread(target=srv.serve_forever, daemon=True).start()
 ITCH = f"http://127.0.0.1:{srv.server_port}"
-status = [201]  # what Supabase answers
+status, asked = [201], []  # what the gate answers; preflights (none: the game sends plain text)
 CORS = {"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Methods": "POST"}
 def supabase(route):
     r = route.request
-    if r.method == "OPTIONS": return route.fulfill(status=204, headers=CORS)
-    sent.append({"table": r.url.rsplit("/", 1)[1], "key": r.headers.get("apikey"), **json.loads(r.post_data)})
+    if r.method == "OPTIONS": asked.append(r.url); return route.fulfill(status=204, headers=CORS)
+    sent.append({"table": {"event": "events", "feedback": "feedback"}[json.loads(r.post_data)["type"]], "key": r.headers.get("apikey"),
+                 "authorization": r.headers.get("authorization"), **json.loads(r.post_data)})
     route.fulfill(status=status[0], headers=CORS, body="")
 with sync_playwright() as p:
     b = launch(p, args=["--autoplay-policy=no-user-gesture-required"])
     ctx = b.new_context(viewport={"width": 844, "height": 390}, device_scale_factor=2, is_mobile=True, has_touch=True)
-    ctx.route(f"{SUPA}/**", supabase)
+    ctx.route(f"{GATE}*", supabase)
     pg = ctx.new_page(); pg.on("pageerror", lambda e: "on purpose" in str(e) or errors.append(str(e))); js = pg.evaluate
     shown = lambda: js("[...document.querySelectorAll('#menu section:not([hidden]) button')].filter(b => !b.hidden && b.offsetParent).map(b => b.textContent.trim())")
     def race():
@@ -64,7 +64,7 @@ with sync_playwright() as p:
     pg.screenshot(path=f"{OUT}/reporting_feedback.png")
     pg.click("#feedback-send"); pg.wait_for_timeout(300)
     f = sent[-1] if sent else {}
-    check("SEND: the feedback table, the publishable key, an empty message with the stats", f.get("table") == "feedback" and f.get("key") == "sb_publishable_test"
+    check("SEND: feedback to the gate, no key, an empty message with the stats", f.get("table") == "feedback" and f.get("key") is None and f.get("authorization") is None
           and f.get("message") == "" and f["data"]["save"]["runs"] == 1 and "toured" not in f["data"]["save"] and f["data"]["layout"] in ("touch", "keys"), {k: f.get(k) for k in ["table", "message", "build"]})
     check("... and thanks", js("$('feedback-note').textContent") == "Sent, thank you!", js("$('feedback-note').textContent"))
     pg.click("#feedback-x"); check("✕: back to STATS", js("screen") == "stats", js("screen"))
@@ -86,6 +86,7 @@ with sync_playwright() as p:
     status[0] = 500; pg.fill("#feedback-text", "again"); pg.click("#feedback-send"); pg.wait_for_timeout(300); status[0] = 201
     check("a failed send: says so, the words kept", js("[$('feedback-note').textContent, $('feedback-text').value]") == ["Couldn't send it: try again later.", "again"],
           js("$('feedback-note').textContent"))
+    check("no preflight: the browser sends straight to the gate", not asked, asked)
     # 5. an error: reported, ticked
     n = len(sent); js("setTimeout(() => { throw new Error('on purpose') }); 0"); pg.wait_for_timeout(300)
     e = sent[n] if len(sent) > n else {}
@@ -94,13 +95,13 @@ with sync_playwright() as p:
     # 6. inside itch.io's frame on an iPhone: no "Add to Home Screen" tip (it shows on the page itself)
     ios = b.new_context(viewport={"width": 900, "height": 420}, is_mobile=True, has_touch=True,
                         user_agent="Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1")
-    ios.route(f"{SUPA}/**", supabase); ph = ios.new_page(); ph.on("pageerror", lambda e: errors.append(str(e)))
+    ios.route(f"{GATE}*", supabase); ph = ios.new_page(); ph.on("pageerror", lambda e: errors.append(str(e)))
     ph.goto(f"{ITCH}/index.html"); ph.wait_for_timeout(300); alone = ph.evaluate("document.body.classList.contains('ios')")
     ph.goto(f"{ITCH}/frame.html"); ph.wait_for_timeout(500); framed = ph.frames[1].evaluate("document.body.classList.contains('ios')")
     check("iPhone: the home-screen tip on the page itself, not inside a frame", alone and not framed, [alone, framed])
     ios.close()
     # 7. the repository's build (GitHub Pages): no question, SHARE, no setting, nothing sent
-    gh = b.new_context(viewport={"width": 1440, "height": 900}); gh.route(f"{SUPA}/**", supabase); n = len(sent)
+    gh = b.new_context(viewport={"width": 1440, "height": 900}); gh.route(f"{GATE}*", supabase); n = len(sent)
     pg = gh.new_page(); pg.on("pageerror", lambda e: errors.append(str(e))); js = pg.evaluate
     pg.goto(PAGES); pg.wait_for_timeout(300)
     check("GitHub Pages: no question, the main menu", js("[screen, reporting()]") == ["main", False], js("[screen, reporting()]"))

@@ -1,7 +1,7 @@
 -- Rev It's tables on Supabase, for the itch.io build's gameplay data and feedback (js/reporting.js). Run once in the
--- project's SQL editor. The game sends with the publishable key, which anyone can read in the page, so the tables take
--- inserts from it and nothing else: no reading, changing or deleting. You read them in the dashboard (Table editor),
--- which isn't bound by these rules. Sizes are capped against junk.
+-- project's SQL editor. Only the gate writes to them (supabase/functions/report: it checks each report and writes with
+-- the project's secret key); the public keys can't touch them at all. You read them in the dashboard (Table editor).
+-- Sizes are capped against junk, behind the gate's own checks.
 
 -- gameplay data, with the player's consent: a game of Distance starting, each run's end, an error
 create table public.events (
@@ -23,10 +23,8 @@ create table public.feedback (
   data jsonb not null check (pg_column_size(data) <= 16000)
 );
 
--- the publishable key's role (anon) may add rows, nothing more
+-- closed to the public keys (anon, and signed-in users): no grants, and row level security with no policy to let them
+-- in. The gate's secret key goes past both
 alter table public.events enable row level security;
 alter table public.feedback enable row level security;
 revoke all on public.events, public.feedback from anon, authenticated;
-grant insert on public.events, public.feedback to anon;
-create policy "the game adds events" on public.events for insert to anon with check (true);
-create policy "the game adds feedback" on public.feedback for insert to anon with check (true);

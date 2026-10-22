@@ -19,9 +19,13 @@ Design decisions, balance targets, the playtest history and the open questions a
 - **Two releases from one codebase.** GitHub Pages serves `main` as it is (the owner's playtest build). itch.io gets
   only what is pushed to `release/itchio`: push to it only to release, `main`'s commit, never work in progress. The
   push runs `.github/workflows/itch.yml`: `tools/build.py` builds the itch.io copy (the game's own files, with the
-  Supabase address filled in, so that build alone asks for consent, has FEEDBACK and sends gameplay data) and butler
+  gate's address filled in, so that build alone asks for consent, has FEEDBACK and sends gameplay data) and butler
   uploads it. It needs, in the repository's Actions settings, the secret `BUTLER_API_KEY` and the variables
-  `ITCH_GAME`, `SUPABASE_URL` and `SUPABASE_KEY` (the publishable key; the build refuses a secret one).
+  `ITCH_GAME` (user/game) and `REPORT_URL` (the gate's address).
+- **Supabase stays closed to the web** (the owner, 22 Oct). The itch.io build sends to one Edge Function, the gate
+  (`supabase/functions/report`): it checks each report, throttles each sender and writes with the project's secret
+  key, kept on the server. The tables (`supabase/tables.sql`) grant the public keys nothing, and the page holds no
+  key. Never put a Supabase key in the game.
 - **Commits credit you both:** the owner as author, as on their own commits
   (`git commit --author "fulibacsi <fulibacsi@gmail.com>"`), and Claude as co-author in a `Co-Authored-By:` trailer.
   Leave the committer as git has it: a cloud session signs commits for that identity.
@@ -41,7 +45,7 @@ Design decisions, balance targets, the playtest history and the open questions a
 - `js/engine.js` engine model and Web Audio (recorded loops crossfaded by rpm) · `js/car.js` drivetrain, clutch slip,
   lanes, crashes · `js/road.js` pseudo-3D road, traffic AI, sprites · `js/controls.js` all input (key, pedals, H-gate
   lever, wheel, light stalk, nitro, stereo) · `js/stereo.js` the car stereo's tapes and lights · `js/reporting.js` feedback and gameplay data (the itch.io
-  build only: empty Supabase address in the repository; tables in `tools/supabase.sql`) · `js/tutorial.js` the
+  build only: the gate's address is empty in the repository) · `js/tutorial.js` the
   tutorials under HOW TO DRIVE (a step a page, the real control lit up behind the menu) · `js/main.js` the
   menus (main, pause, arcade, settings, stats, how to drive, credits, win), cluster, head-up display, main loop.
   **The interface a game implements is documented at the top of `main.js`.**
@@ -89,8 +93,9 @@ uv run --no-project --with playwright playwright install chromium         # once
   (`act1.py [cheapest|value]`, `act2.py`, `act3.py` for the Fleet, `act4.py` for the War Rig, to the tank) and compare
   with the targets in the design notes.
 - Testing is emulation only. Say so when a change depends on how a real phone behaves.
-- Tests never send anything: the repository's build has no Supabase address. `reporting_test` builds the itch.io copy
-  with `tools/build.py`, serves it over HTTP and answers its Supabase calls itself.
+- Tests never send anything: the repository's build has no gate address. `reporting_test` builds the itch.io copy
+  with `tools/build.py`, serves it over HTTP and answers its calls to the gate itself; `gate_test` runs the gate in the
+  browser, with Deno and the database stood in for.
 - The menu: the main game starts from `[data-play="distance"]` (NEW GAME, or CONTINUE with a save); the other games
   are behind ARCADE (`[data-show="arcade"]`, then `[data-play="free"]` etc.). Esc over a game opens the pause menu;
   `#to-main` goes on to the main menu.
