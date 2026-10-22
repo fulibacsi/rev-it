@@ -234,7 +234,7 @@
     <h2>SETTINGS</h2>
     <div class="setting"><span>Layout</span><button id="layout"></button></div>
     <label class="setting"><span>Car sounds</span><input type="range" id="vol-car" min="0" max="100" step="5"></label>
-    <label class="setting"><span>Music</span><input type="range" id="vol-music" min="0" max="100" step="5"></label>
+    <label class="setting" data-has="stereo"><span>Music</span><input type="range" id="vol-music" min="0" max="100" step="5"></label>
     <div class="setting"><span>Controls</span><button data-show="help">HOW TO DRIVE</button></div>
     <div class="setting reporting"><span>Gameplay data</span><button id="stats-switch"></button></div> <!-- sent or not (reporting.js) -->
     <footer><button data-back>◀ BACK</button><button id="reset" class="danger">RESET PROGRESS</button></footer>
@@ -248,18 +248,19 @@
   <section data-screen="help">
     <h2>HOW TO DRIVE</h2>
     <div id="tutorials" class="menu-buttons"></div> <!-- the tutorials, a step a page (tutorial.js) -->
-    <h2>CONTROLS</h2>
+    <h2>CONTROLS</h2> <!-- data-has: only once the car has it (main.js) -->
     <div class="menu-help touch-only">
       <b>Key</b> turn it to START and hold it until the engine runs ·
       <b>Pedals</b> touch a pedal to press it all the way, slide your finger up to ease off; let go and it springs back ·
       <b>Gears</b> drag the knob through the H with the clutch held down ·
-      <b>Lanes</b> grab the steering wheel and turn it · <b>Lights</b> pull the stalk left of the wheel to flash the
-      car ahead out of your lane. Slower cars use your lane: overtake them, a crash costs most of your speed.
+      <b>Lanes</b> grab the steering wheel and turn it<span data-has="flash"> · <b>Lights</b> pull the stalk left of the
+      wheel to flash the car ahead out of your lane</span>. Slower cars use your lane: overtake them, a crash costs most of your speed.
       <span id="ios-tip"><br><b>Full screen</b> on an iPhone: Share → Add to Home Screen, then start it from there.</span>
     </div>
     <div class="menu-help desk-only">
       <b>Keyboard</b> Enter engine on/off · Space gas · Shift clutch · B brake · ↑ ↓ gears · ← → change lanes ·
-      F flash · N nitro · G fire · M next tape · 1–3 engine · Esc pause<br>
+      <span data-has="flash">F flash · </span><span data-has="nitro">N nitro · </span><span data-has="guns">G fire · </span><span
+      data-has="stereo">M next tape · </span>1–3 engine · Esc pause<br>
       <b>Mouse</b> drag the ignition key to START and hold it · drag the pedals down (they stay put, double-click lets
       go) · drag the gear knob through the H with the clutch down · grab the steering wheel and turn it to change lanes.
       Slower cars use your lane: overtake them, a crash costs most of your speed.

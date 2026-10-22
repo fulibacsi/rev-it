@@ -1,7 +1,8 @@
 """Tutorials (HOW TO DRIVE): a list, then a step a page with the real control lit up behind the menu, the card clear
 of it. Every page of Driving on a desktop and on the phone (its own words there: a touch, not keys): the light round
 the right control, the card not over it. ◀ ▶, the arrow keys, Space and a swipe turn the pages; DONE and Esc go back
-to the list; over a run the menu stays up, the run paused."""
+to the list; over a run the menu stays up, the run paused. Nothing locked is named: a control's keys, and the Music
+setting, only once the car has it; a later act's upgrade, or a page's parts, only once there."""
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
 errors, fails = [], []
@@ -16,6 +17,7 @@ PAGE = """() => { const p = tutorial('driving').pages[tour.page], box = e => { c
   const clear = Math.min(k[2], s[2]) <= Math.max(k[0], s[0]) || Math.min(k[3], s[3]) <= Math.max(k[1], s[1]);
   return { title: $('tour-title').textContent, text: $('tour-text').textContent, lit: $('spot').classList.contains('lit'), round, clear,
            at: p.at, name: $('tour-name').textContent }; }"""
+LOCKED = "['flash', 'stalk', 'nitro', 'fire', 'tape'].filter(w => document.querySelector('[data-screen=help]').innerText.toLowerCase().includes(w))"
 def walk(js, label):
     """Every page of Driving: lit, round its control, clear of the card; the last one says DONE."""
     bad, titles = [], []
@@ -30,9 +32,13 @@ with sync_playwright() as p:
     pg = b.new_page(viewport={"width": 1440, "height": 900}); pg.on("pageerror", lambda e: errors.append(str(e))); js = pg.evaluate
     pg.goto(URL); js("localStorage.clear()"); pg.reload(); pg.wait_for_timeout(300)
     # 1. HOW TO DRIVE: the list, the controls under it
-    pg.click('[data-show="settings"]'); pg.click('[data-show="help"]:visible')
+    pg.click('[data-show="settings"]')
+    check("a new game, SETTINGS: no Music (no stereo yet)", "Music" not in js("document.querySelector('[data-screen=settings]').innerText"), "")
+    pg.click('[data-show="help"]:visible')
     got = js("[[...document.querySelectorAll('#tutorials button')].map(b => b.textContent), $('menu').innerText.includes('Space gas')]")
     check("HOW TO DRIVE: the tutorials (DRIVING), the controls under them", got == [["DRIVING"], True], got)
+    named = js(LOCKED)
+    check("a new game, the keys: no flash, nitro, guns or tapes", not named, named)
     # 2. the first page: the key lit up, the words for keys and mouse
     pg.click('[data-tour="driving"]'); pg.wait_for_timeout(200)
     got = js(f"({PAGE})()")
@@ -67,7 +73,10 @@ with sync_playwright() as p:
     ph = ctx.new_page(); ph.on("pageerror", lambda e: errors.append(str(e))); pj = ph.evaluate
     cdp = ctx.new_cdp_session(ph); cdp.send("Emulation.setTouchEmulationEnabled", {"enabled": True, "maxTouchPoints": 5})
     ph.goto(URL); pj("localStorage.clear(); settings.layout = 'touch'; applyLayout()"); ph.wait_for_timeout(300)
-    ph.tap('[data-show="settings"]'); ph.tap('[data-show="help"]:visible'); ph.tap('[data-tour="driving"]'); ph.wait_for_timeout(200)
+    ph.tap('[data-show="settings"]'); ph.tap('[data-show="help"]:visible')
+    named = pj(LOCKED)
+    check("a new game, the phone's controls: no stalk to flash with", not named and "Lanes" in pj("document.querySelector('[data-screen=help]').innerText"), named)
+    ph.tap('[data-tour="driving"]'); ph.wait_for_timeout(200)
     got = pj(f"({PAGE})()")
     check("phone, page 1: a touch's words, the key lit, the card clear", "Turn the key" in got["text"] and got["lit"] and got["round"] and got["clear"], got)
     ph.screenshot(path=f"{OUT}/tutorial_phone_key.png")
@@ -139,5 +148,17 @@ with sync_playwright() as p:
     pj("closeMenu()"); ph.wait_for_timeout(100)
     check("closed: the sonar and the reticle hidden again in the garage", pj("[getComputedStyle($('sonar')).display, getComputedStyle($('ar')).display]") == ["none", "none"],
           pj("[getComputedStyle($('sonar')).display, getComputedStyle($('ar')).display]"))
+    # 9. bought, their keys and the Music setting; the aids' pages name Hunter only once bought, the War Rig's the page's
+    #    parts only once the page is open (it opens with the first car totalled, after its tutorial has popped up)
+    js("closeMenu(); openMenu('help')"); got = js("document.querySelector('[data-screen=help]').innerText")
+    check("all bought: their keys", "change lanes · F flash · N nitro · G fire · M next tape · 1–3 engine" in got, got[:160])
+    js("showScreen('settings')"); check("... and Music in SETTINGS", "Music" in js("document.querySelector('[data-screen=settings]').innerText"), "")
+    got = js("""(() => { closeMenu(); Object.assign(progress, { totals: 0, levels: { cruise: 1, reckless: 1, recklessCruise: 1, fleet: 51 } });
+      const words = id => pagesOf(tutorial(id)).map(p => `${p.title} ${p.both ?? ''}`).join(' ');
+      const before = [arOn(), gangOpen(), words('aids'), words('warrig')]; progress.totals = 1; return [...before, words('warrig')]; })()""")
+    check("Reckless auto-drive bought, Hunter not: the aids' pages don't name it", "RECKLESS AUTO-DRIVE" in got[2] and "Hunter" not in got[2]
+          and "reticle" not in got[2], got[2])
+    check("the War Rig's tutorial: the page's parts only once it is open", got[:2] == [True, False] and "guns" not in got[3] and "guns" in got[4],
+          [got[:2], got[3][-60:], got[4][-60:]])
     b.close()
 print("ERRORS:", errors or "none", "| FAILS:", fails or "none")

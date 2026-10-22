@@ -57,9 +57,11 @@ const TUTORIALS = [
       both: 'Each aid has a switch on its card in the garage, so you can drive any part yourself again.' },
     { title: 'AUTOCRUISE', at: '#wheel', if: () => lvl('cruise') > 0,
       both: 'It drives the whole run on your side of the road: it passes, keeps right, and brakes when boxed in.' },
-    { title: 'ON TOP OF AUTOCRUISE', if: () => lvl('recklessCruise') + lvl('hunter') > 0,
-      both: 'Reckless auto-drive and Hunter add to Autocruise: the first takes the oncoming lanes, nitro and the tune; ' +
-        'the second hunts the car in the reticle, and has the lanes while it does. Autocruise off, they are off too.' },
+    { title: 'RECKLESS AUTO-DRIVE', if: () => lvl('recklessCruise') > 0, // each on its own: Hunter is a later act's
+      both: 'It adds to Autocruise: it takes the oncoming lanes, nitro and the tune. Autocruise off, it is off too.' },
+    { title: 'HUNTER', if: () => lvl('hunter') > 0,
+      both: 'It adds to Autocruise: it hunts the car in the reticle, and has the lanes while it does. ' +
+        'Autocruise off, it is off too.' },
   ] },
   { id: 'stereo', name: 'Car stereo', for: ['stereo', 'warradio'], open: () => lvl('stereo') > 0, pages: [
     { title: 'THE STEREO', at: '#beat',
@@ -117,7 +119,7 @@ const TUTORIALS = [
     { title: 'TOTAL IT',
       both: 'Ram it: each bump is a hit (a nudge under 30 km/h is not; over 200 km/h totals it at once). At no health ' +
         'it is totalled, and its parts are yours.' },
-    { title: 'THE WAR RIG PAGE',
+    { title: 'THE WAR RIG PAGE', if: () => gangOpen(), // it opens with the first car totalled, after this pops up
       both: 'Parts buy the War Rig page in the garage: a bull bar, armour, guns.' },
   ] },
   { id: 'madness', name: 'Fuel madness', for: ['baddrivers'], open: () => lvl('baddrivers') > 0, pages: [

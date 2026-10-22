@@ -168,7 +168,7 @@ machine or session. Keep it current: update a section when a decision changes, a
 - **Pause menu** (Esc, ☰, or leaving the app; the game is paused): RESUME, HOW TO DRIVE, END RUN (a Distance run, after
   "are you sure?": as if the time ran out, so it can't be farmed; in a tank race that is a lost fight), EXIT TO MAIN
   MENU (the game stays paused behind it, and CONTINUE goes back to it).
-- **SETTINGS:** layout, the car's sounds and the music (each a volume), HOW TO DRIVE, and RESET PROGRESS in red, bottom
+- **SETTINGS:** layout, the car's sounds and the music (each a volume; the music once the car has a stereo), HOW TO DRIVE, and RESET PROGRESS in red, bottom
   right, once a game has started (moved here from the main menu: one tap from wiping a game is too close).
 - **STATS:** time played, runs, best run, distance driven; races and best place only after the reveal, the fleet and
   cars totalled only once their acts open, tanks beaten once one is; never a word of the race before the reveal.
@@ -236,6 +236,15 @@ machine or session. Keep it current: update a section when a decision changes, a
   garage hides (it covers much of the cockpit), and a control the garage hides (the sonar, the scanner, the
   reticle, drawn in the windscreen's middle) shows for its page. `tutorial_test.py` checks every page on both
   layouts (lit round its control, the card clear of it, nothing over it), the pop-ups and the ?.
+- **Nothing locked is named** (the owner, 22 Oct: "Locked features should not be discussed anywhere until
+  unlocked"): the race's rule, for every system. A system is named once its garage page is open; a control once the
+  car has it, as the cockpit already did (the stalk, the stereo's lights, the nitro pedal, the trigger): HOW TO
+  DRIVE's keys (F flash, N nitro, G fire, M next tape) and the phone's line about the stalk, and SETTINGS' music (the
+  stereo is all that plays it). A tutorial page about a later act's upgrade shows once it is bought (Hunter has its
+  own page beside Reckless auto-drive's, which named it in act II), and the War Rig's page about the War Rig page's
+  parts once that page is open (the tutorial pops up a car totalled earlier). Kept: a locked card on an open page
+  shows its name (14 Oct); the credits name the music (CC BY needs it); ARCADE's engines are open from the start.
+  `tutorial_test.py` checks a new game's controls and settings, and the two pages.
 - **Stuck at the line:** standing still for 1.5 s in a run, or stalled, the windscreen's read-out says the next step
   until the car moves, in the words of the layout: START THE ENGINE (the key, or Enter), CLUTCH DOWN, INTO 1ST, GAS,
   CLUTCH UP; nothing for a step an aid does. For the whole game, not just the first runs: it costs an expert nothing

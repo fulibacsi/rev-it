@@ -116,6 +116,8 @@ function renderMenu() {
   // a build that reports (itch.io's, reporting.js): FEEDBACK in SHARE's place, and the gameplay data's setting
   for (const b of $('menu').querySelectorAll('[data-share]')) b.hidden = reporting();
   for (const b of $('menu').querySelectorAll('[data-show="feedback"], .reporting')) b.hidden = !reporting();
+  // a control, and its words, only once the car has it, as in the cockpit (the owner, 22 Oct: nothing locked is named)
+  for (const e of $('menu').querySelectorAll('[data-has]')) e.hidden = !lvl(e.dataset.has);
   renderTutorials();
   if (DISTANCE.stereo() && DISTANCE.tape() !== null) loadTape(DISTANCE.tape()); // ready when you drive (stereo.js)
   const rows = DISTANCE.stats().map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
