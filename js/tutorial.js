@@ -72,6 +72,9 @@ const TUTORIALS = [
     { title: "IT'S A RACE",
       both: 'You are in a race, from the back of the grid: the head-up display shows your place and how far the cars ' +
         'just ahead and behind are. Each race pays points by place, and points buy the Black market.' },
+    { title: 'POINTS', // the owner (22 Oct): how places pay, here rather than in a hint
+      both: 'A place pays its big points only the first time you take it, and the nearer the front, the more: P50 pays ' +
+        '51 the first time, P1 100. After that a race pays a little: P50 6, P1 10.' },
   ] },
   { id: 'reckless', name: 'Reckless driving', for: ['reckless', 'chicken', 'daredevil'], open: () => lvl('reckless') > 0, pages: [
     { title: 'THE ONCOMING LANES', at: '#wheel',

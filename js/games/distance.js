@@ -66,8 +66,9 @@ const SAVE_KEY = 'car-rev-incremental';
 // menu's STATS)
 const FRESH = () => ({ bank: 0, best: 0, runs: 0, levels: {}, off: {}, engine: 0, racing: false, points: 0, finish: 101,
                        damage: 0, broken: [], nitro: 0, miles: 0, parts: 0, totals: 0, wanted: 0, tanks: 0, tape: 0,
-                       time: 0, driven: 0, races: 0, seen: [], toured: [] }); // seen: upgrades seen unlocked (the tabs' !);
-                                                                             // toured: tutorials popped up (tutorial.js)
+                       time: 0, driven: 0, races: 0, seen: [], toured: [], dry: 0 }); // seen: upgrades seen unlocked (the tabs' !);
+                                                       // toured: tutorials popped up (tutorial.js); dry: races in a row
+                                                       // without a Black market buy (race.js raceWall)
 // debug mode (main.js) plays a save of its own, with wallets that never run out, so testing never touches the game
 const FUNDS = 1e9;
 let debugSave = false;
@@ -132,6 +133,7 @@ function buy(id) {
   if (whyNot(id)) return false;
   progress[wallet(UPGRADES[id])] -= cost(id);
   progress.levels[id] = lvl(id) + 1;
+  if (pageOf(UPGRADES[id]) === 'black') progress.dry = 0; // not stuck in the race (race.js)
   if (id === 'engine') progress.engine = lvl(id); // drive the new engine straight away
   save();
   return true;
@@ -169,7 +171,7 @@ function finishRun(dnf) { // dnf: why the run ended early (a crash), if it did
   progress.driven += run.gain;
   const was = progress.finish;
   run.race = raceFinish(bossLost(dnf)); // boss.js: a boss race lost is a DNF
-  if (run.race) progress.races++;
+  if (run.race) { progress.races++; progress.dry++; }
   run.dues = fleetDues(); // fleet.js
   progress.bank += run.dues;
   run.won = was > 1 && progress.finish === 1; // the first win opens the Fleet
@@ -255,7 +257,8 @@ TUTORIALS.unshift(
   { id: 'act2', act: 'II', name: 'RACE', open: () => progress.racing,
     text: () => 'That quick car was racer #100. You are in a race of a hundred: every run is a race now, and your place ' +
       'when the time runs out pays race points, more for a place reached the first time. The Black market takes them.',
-    now: () => progress.finish <= FIELD ? `Your best place: P${progress.finish}.` : '' },
+    now: () => (progress.finish <= FIELD ? `Your best place: P${progress.finish}.` : '') +
+      (hint() ? ` Stuck? ${hint()}.` : '') },
   { id: 'act3', act: 'III', name: 'RECRUIT', open: () => fleetOpen(),
     text: () => 'P1! The racers you beat are open to offers. Pay them off in miles, on the Fleet page, and they race ' +
       'for you, in your colours.',
@@ -277,6 +280,11 @@ TUTORIALS.unshift(
 const heatPct = () => `${Math.round(progress.wanted * 100)}%`;
 const CARDS = TUTORIALS.filter(t => t.text);
 const currentCard = () => CARDS.findLast(c => c.open());
+// stuck in the race (race.js raceWall): a word on the wall in the way, in the garage's line of numbers and on the act's
+// card. Kept short, and only when stuck: the owner (22 Oct) would rather not help the player too much
+const HINTS = { grid: 'Bribe the starter: start further up', reckless: 'Reckless driving: the oncoming lanes',
+                gear7: '7th gear: the top 10 are beyond 6th' };
+const hint = () => HINTS[raceWall()];
 const actTitle = () => { const a = CARDS.findLast(c => c.act && c.open()); return a && `ACT ${a.act} · ${a.name}`; }; // none yet: the first
 const dnf = r => ({ 'head-on': 'head-on with oncoming traffic', wrecked: 'the car is wrecked', limped: `limped ${LIMP} m in the wreck`,
                      tank: 'the tank held the road' })[r.dnf]; // why a race wasn't finished
@@ -288,7 +296,7 @@ function runLine() {
     r && (r.dnf ? `<b>DNF</b> ${dnf(r)}` : `<b>P${r.p}</b> +${r.points} pts`),
     run.dues && `fleet dues +${fmt(run.dues)} m`, run.refill && `nitro refill −${fmt(run.refill)} m`,
     run.totals && `totalled ${run.totals}, +${fmt(run.parts)} parts`, run.beatTank && `the tank scrapped, +${TANK.parts} parts`,
-    arOn() && `police heat ${heatPct()}`]
+    arOn() && `police heat ${heatPct()}`, hint() && `<i>stuck? ${hint()}</i>`]
     .filter(Boolean).join(' · ');
 }
 // ... and in full, on the act card: the run (in the garage: mid-run, the pause menu's, there is none), then where you

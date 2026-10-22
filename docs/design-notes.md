@@ -201,7 +201,7 @@ machine or session. Keep it current: update a section when a decision changes, a
   phone's lever is tall). ◀ ▶, the arrow keys, Space or a swipe turn the pages, dots show where you are; DONE or Esc
   go back to the list. Over a run the run stays paused. Driving, always there: start the engine, clutch down, into
   1st, gas, clutch up, change up, change lanes, brake. Then one for each system, listed once it opens: Headlight
-  flash, Driver aids (with the layers on top of Autocruise), Car stereo, The race, Reckless driving (with damage and
+  flash, Driver aids (with the layers on top of Autocruise), Car stereo, The race (and how places pay), Reckless driving (with damage and
   chicken), ECU tune (and heat), Nitro, The Fleet (the sonar, the Hunting pack), The War Rig (the reticle, totals,
   parts), Fuel madness, Police heat, Guns, The tank; a page about an upgrade shows once it is bought. A system's
   tutorial pops up once in the garage when it opens in play (bought, or come with a run: the race, the gang, the
@@ -333,6 +333,16 @@ driving is act 1's game, and the robot takes over as the fantasy moves on.
 - A DNF pays nothing.
 - Payment goes by finishing position, never by places gained. An earlier "points per place gained" rule was farmable:
   starting at the back on purpose, or swapping places with a racer, paid extra.
+- **Stuck hints** (the owner, 22 Oct: a playtester never bought a grid slot, raced from the back to the same few
+  points and couldn't farm enough). Stuck is the owner's definition: three races in a row without a Black market buy,
+  before P1. Then a word on the wall in the way, at the end of the garage's line of numbers and on ACT II's card:
+  "stuck? Bribe the starter: start further up" while a better grid slot is for sale; else "Reckless driving: the
+  oncoming lanes" (the top 20 can't be caught in two lanes); else, in the top 20, "7th gear: the top 10 are beyond
+  6th". Nothing further back with both bought: the rest is pace. A Black market buy ends it. Kept that short and only
+  when stuck (the owner would rather not help the player too much); a card that popped up once for each was tried and
+  dropped for the line. How places pay is the race tutorial's second page, POINTS: a place's big points only the
+  first time, more nearer the front (P50 51, P1 100), then a little a race (P50 6, P1 10). Claude's calls: which wall
+  when, and the words of the other two lines.
 
 **Black market** (paid in race points, 5,761 in all):
 
