@@ -11,7 +11,7 @@ with sync_playwright() as p:
     pg = b.new_page(); pg.on("pageerror", lambda e: errors.append(str(e)))
     pg.goto(URL); js = pg.evaluate
     js("localStorage.clear()"); pg.reload(); pg.add_script_tag(path=str(HERE / "sim.js"))
-    pg.click('[data-play="distance"]'); pg.click("#drive"); pg.wait_for_timeout(1500)
+    js("progress.toured = TUTORIALS.map(t => t.id)"); pg.click('[data-play="distance"]'); pg.click("#drive"); pg.wait_for_timeout(1500)
     sim = lambda lv, e=0, s=1, off={}: js(f"simRun({json.dumps(lv)}, {e}, {s}, {json.dumps(off)})")
     full = dict(power=10, rev=4, gears=3, tyres=4, time=6)
     for name, lv, e in [("stock", {}, 0), ("stock casual", {}, 0), ("auto clutch", dict(clutch=1), 0),

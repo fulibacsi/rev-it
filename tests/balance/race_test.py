@@ -14,7 +14,7 @@ with sync_playwright() as p:
     b = launch(p, args=["--autoplay-policy=no-user-gesture-required"])
     pg = b.new_page(); errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
     pg.goto(URL); js = pg.evaluate
-    js("localStorage.clear()"); pg.reload(); pg.add_script_tag(path=str(HERE / "sim.js")); pg.click('[data-play="distance"]'); pg.click("#drive"); pg.wait_for_timeout(1500)
+    js("localStorage.clear()"); pg.reload(); pg.add_script_tag(path=str(HERE / "sim.js")); js("progress.toured = TUTORIALS.map(t => t.id)"); pg.click('[data-play="distance"]'); pg.click("#drive"); pg.wait_for_timeout(1500)
     sim = lambda lv, e: js(f"simRun({json.dumps(lv)}, {e}, 1.5, {{}}, true)")
     print("before the reveal (racer #100 starts 400 m ahead at 140 km/h):")
     for name, lv, e in [("early", early, 0), ("mid", mid, 1), ("late", late, 1)]:

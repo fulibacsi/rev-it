@@ -14,7 +14,7 @@ if len(sys.argv) > 2 and sys.argv[2] == "plain": CAR = {k: v for k, v in CAR.ite
 with sync_playwright() as p:
     b = launch(p); pg = b.new_page(); errs = []; pg.on("pageerror", lambda e: errs.append(str(e))); js = pg.evaluate
     pg.goto(URL); js("localStorage.clear()"); pg.reload(); pg.add_script_tag(path=str(HERE / "sim.js"))
-    pg.click('[data-play="distance"]'); pg.click("#drive"); pg.wait_for_timeout(1500)
+    js("progress.toured = TUTORIALS.map(t => t.id)"); pg.click('[data-play="distance"]'); pg.click("#drive"); pg.wait_for_timeout(1500)
     # time on the brake: updateAids wrapped for the run (0: or Playwright would call the function it returns)
     js("""window.brakeLog = () => { let all = 0, on = 0; const f0 = window.updateAids; window.updateAids = dt => { f0(dt);
         if (run.phase === 'run') { all += dt; if (brakePedal > 0.05) on += dt; } }; return () => { window.updateAids = f0; return on / all; }; }; 0""")
