@@ -129,6 +129,15 @@ function whyNot(id) { // reason an upgrade can't be bought now, or '' if it can
 // a card is locked while none of it is bought and something else comes first: it shows only its name and what that is.
 // A tab gets a yellow ! while it has an upgrade unlocked that you haven't looked at yet (the owner, 14 Oct)
 const isLocked = id => !lvl(id) && !['', 'short', 'max'].includes(whyNot(id));
+// a locked card shows only a step away: unlocked if all on sale now were bought to the full (the grid's slots wait on
+// a race, a step too); further off it is left out, as in most incremental games (the owner, 22 Oct)
+function near(id) {
+  if (whyNot(id) === UPGRADES[id].locked) return true;
+  const levels = progress.levels, full = Object.keys(UPGRADES).filter(k => !isLocked(k));
+  progress.levels = { ...levels, ...Object.fromEntries(full.map(k => [k, Math.max(lvl(k), maxOf(UPGRADES[k]))])) };
+  try { return !isLocked(id); } finally { progress.levels = levels; }
+}
+const shows = id => !isLocked(id) || near(id);
 const unseen = id => !isLocked(id) && !progress.seen.includes(id);
 function buy(id) {
   if (whyNot(id)) return false;
@@ -356,12 +365,10 @@ function renderGarage(bought) {
   $('tabs').innerHTML = PAGES.filter(([id]) => pageOpen(id)).map(([id, name]) => `<button data-tab="${id}" class="` +
     `${id === garageTab ? 'on' : ''}${onPage(id).some(unseen) ? ' new' : ''}">${name}</button>`).join('');
   $('engine-row').hidden = garageTab !== 'workshop';
-  $('engine-row').innerHTML = ENGINES.map((e, i) => i <= lvl('engine')
+  $('engine-row').innerHTML = ENGINES.slice(0, lvl('engine') + 2).map((e, i) => i <= lvl('engine') // the next, none further
     ? `<button data-engine="${i}"${i === progress.engine ? ' class="on"' : ''}>${e.name}</button>`
-    : i === lvl('engine') + 1
-      ? `<button data-buy="engine"${whyNot('engine') ? ' disabled' : ''}>${e.name} · ${fmt(cost('engine'))} m</button>`
-      : `<button disabled>${e.name} · locked</button>`).join('');
-  const onTab = ([id, u]) => id !== 'engine' && pageOf(u) === garageTab && sold(u);
+    : `<button data-buy="engine"${whyNot('engine') ? ' disabled' : ''}>${e.name} · ${fmt(cost('engine'))} m</button>`).join('');
+  const onTab = ([id, u]) => id !== 'engine' && pageOf(u) === garageTab && sold(u) && shows(id);
   const d = progress.damage;
   $('drive').textContent = wrecked() ? `LIMP ${LIMP} m ▶` : 'DRIVE ▶'; // a wreck can always limp: no dead end
   const repairCard = garageTab === 'workshop' && d > 0 ? `<div class="card repair"><b>Repair</b><small>${Math.round(d)}% damage · ` +

@@ -168,8 +168,9 @@ machine or session. Keep it current: update a section when a decision changes, a
 - **Pause menu** (Esc, ☰, or leaving the app; the game is paused): RESUME, HOW TO DRIVE, END RUN (a Distance run, after
   "are you sure?": as if the time ran out, so it can't be farmed; in a tank race that is a lost fight), EXIT TO MAIN
   MENU (the game stays paused behind it, and CONTINUE goes back to it).
-- **SETTINGS:** layout, the car's sounds and the music (each a volume; the music once the car has a stereo), HOW TO DRIVE, and RESET PROGRESS in red, bottom
-  right, once a game has started (moved here from the main menu: one tap from wiping a game is too close).
+- **SETTINGS:** layout, the car's sounds and the music (each a volume; the music once the car has a stereo), HOW TO
+  DRIVE, and RESET PROGRESS in red, bottom right, once a game has started (moved here from the main menu: one tap from
+  wiping a game is too close).
 - **STATS:** time played, runs, best run, distance driven; races and best place only after the reveal, the fleet and
   cars totalled only once their acts open, tanks beaten once one is; never a word of the race before the reveal.
   SHARE sends them (and the build: when the page was published) by the phone's share sheet, else the clipboard.
@@ -242,8 +243,8 @@ machine or session. Keep it current: update a section when a decision changes, a
   DRIVE's keys (F flash, N nitro, G fire, M next tape) and the phone's line about the stalk, and SETTINGS' music (the
   stereo is all that plays it). A tutorial page about a later act's upgrade shows once it is bought (Hunter has its
   own page beside Reckless auto-drive's, which named it in act II), and the War Rig's page about the War Rig page's
-  parts once that page is open (the tutorial pops up a car totalled earlier). Kept: a locked card on an open page
-  shows its name (14 Oct); the credits name the music (CC BY needs it); ARCADE's engines are open from the start.
+  parts once that page is open (the tutorial pops up a car totalled earlier). A locked card shows only a step away
+  (below). Kept: the credits name the music (CC BY needs it); ARCADE's engines are open from the start.
   `tutorial_test.py` checks a new game's controls and settings, and the two pages.
 - **Stuck at the line:** standing still for 1.5 s in a run, or stalled, the windscreen's read-out says the next step
   until the car moves, in the words of the layout: START THE ENGINE (the key, or Enter), CLUTCH DOWN, INTO 1ST, GAS,
@@ -271,9 +272,15 @@ driving is act 1's game, and the robot takes over as the fantasy moves on.
   **Black market** (the illegal and forbidden, paid in race points) opens with the reveal. The price is
   `base × growth^level`, rounded to tens of metres.
   - A locked upgrade (none of it bought, something else needed first) shows only its name and what it needs, in a
-    dimmed, dashed card: what it does stays a surprise. A tab with an upgrade newly unlocked that you haven't looked at
-    yet has a yellow ! until you open it (the owner's list, 14 Oct; what you've seen is kept in the save). Nothing on
-    a page that isn't open yet counts, so neither gives the race away.
+    dimmed, dashed card: what it does stays a surprise. And only a step away (the owner, 22 Oct, as most incremental
+    games do; their pick of today's card over "???"): it would unlock if all on sale now were bought to the full, or
+    it waits on a race (the grid's slots). Further off it is out of sight, so a card never names one that isn't there:
+    Autocruise shows once Auto clutch is in (Auto shift needs it); the Black market opens with its first rung, then
+    Nitro with Reckless driving, 7th gear with ECU: power, Reckless auto-drive once 7th gear is for sale, Daredevil
+    once all else is; the War Rig's Auto gun once Guns is for sale. The engines: yours and the next, none further. A
+    tab with an upgrade newly unlocked that you haven't looked at yet has a yellow ! until you open it (the owner's
+    list, 14 Oct; what you've seen is kept in the save). Nothing on a page that isn't open yet counts, so neither
+    gives the race away.
 
   | Upgrade | Page | Levels | Base | Growth | Notes |
   |---|---|---|---|---|---|
@@ -372,7 +379,7 @@ driving is act 1's game, and the robot takes over as the fantasy moves on.
   before P1. Then a word on the wall in the way, at the end of the garage's line of numbers and on ACT II's card:
   "stuck? Bribe the starter: start further up" while a better grid slot is for sale; else "Reckless driving: the
   oncoming lanes" (the top 20 can't be caught in two lanes); else, in the top 20, "7th gear: the top 10 are beyond
-  6th". Nothing further back with both bought: the rest is pace. A Black market buy ends it. Kept that short and only
+  6th", once its card shows (22 Oct: a step away, ECU: power bought). Nothing further back with both bought: the rest is pace. A Black market buy ends it. Kept that short and only
   when stuck (the owner would rather not help the player too much); a card that popped up once for each was tried and
   dropped for the line. How places pay is the race tutorial's second page, POINTS: a place's big points only the
   first time, more nearer the front (P50 51, P1 100), then a little a race (P50 6, P1 10). Claude's calls: which wall

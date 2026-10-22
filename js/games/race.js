@@ -63,7 +63,7 @@ function raceWall() {
   if (progress.dry < STUCK || !progress.racing || progress.finish === 1) return null;
   if (lvl('grid') < maxOf(UPGRADES.grid)) return 'grid';
   if (!lvl('reckless')) return 'reckless';
-  return !lvl('gear7') && progress.finish <= 20 ? 'gear7' : null;
+  return !lvl('gear7') && progress.finish <= 20 && shows('gear7') ? 'gear7' : null; // its card in sight
 }
 
 function racer(n, z) {

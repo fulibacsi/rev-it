@@ -35,8 +35,8 @@ Design decisions, balance targets, the playtest history and the open questions a
 - Keep the game **diegetic**: controls and readouts belong to the car (the light stalk, the mirror's timer, the
   windscreen head-up display, the cluster's lamps). A floating button was called out; nitro is a pedal on the gas pedal.
 - Never hint at the hidden race before it is revealed: no garage text about the white car ("a clear giveaway").
-  The same for everything locked (the owner, 22 Oct): a system is named only once its garage page is open, and a
-  control (its keys, its setting) only once the car has it.
+  The same for everything locked (the owner, 22 Oct): a system is named only once its garage page is open, a locked
+  card shows only a step away (`near` in `distance.js`), and a control (its keys, its setting) only once the car has it.
 - Report what you verified and how. Balance claims come from the simulations in `tests/balance/`, not guesses.
 
 ## Code
