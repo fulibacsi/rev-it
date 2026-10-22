@@ -177,7 +177,7 @@ machine or session. Keep it current: update a section when a decision changes, a
   serves `main` as it is (SHARE, nothing sent); itch.io gets what is pushed to `release/itchio`, built by
   `tools/build.py`, which fills in the gate's address, so only that build:
   - asks on the first visit: "A GAME IN PROGRESS", feedback welcome, and a box, unticked, "I accept to send
-    anonymous gameplay data" (the owner's words), with what that is (runs, places, upgrades, time played, touch or
+    anonymous gameplay data" (the owner's words), with what that is (runs, progress, upgrades, time played, touch or
     keys, the kind of device, the screen's size, errors) and that it is no personal data. SETTINGS changes it.
   - has FEEDBACK in SHARE's place (STATS, the ending): a free text box, SEND and ✕. The player's stats always go with
     it; ticked, it needs a word (the stats are sent anyway), unticked it can go empty, and says so.
