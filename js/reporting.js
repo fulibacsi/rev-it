@@ -46,6 +46,7 @@ async function submitFeedback() {
   renderFeedback('Sending…');
   $('feedback-send').disabled = true;
   const sent = await sendFeedback($('feedback-text').value.trim().slice(0, 2000));
-  if (sent) $('feedback-text').value = '';
-  renderFeedback(sent ? 'Sent, thank you!' : "Couldn't send it: try again later.");
+  if (!sent) return renderFeedback("Couldn't send it: try again later."); // the words kept, to try again
+  $('feedback-text').value = '';
+  if (screen === 'feedback') showScreen('thanks', true); // in the form's place: BACK goes where FEEDBACK came from
 }

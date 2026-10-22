@@ -179,7 +179,6 @@ $('menu').onclick = e => {
   if (b.id === 'act-go') closeCard();
   if (b.id === 'hello-go') { setStats($('stats-ok').checked); showScreen('main', true); } // the first visit's question
   if (b.id === 'stats-switch') { setStats(!settings.stats); renderMenu(); }
-  if (b.id === 'feedback-x') showScreen(screenFrom.pop() ?? 'main', true);
   if (b.id === 'feedback-send') submitFeedback();
   if (b.id === 'to-main' || b.id === 'win-main') showScreen('main');
   if (b.id === 'end-run' && confirm('End this run now? It counts as if the time had run out.')) { closeMenu(); game.endRun?.(); }
