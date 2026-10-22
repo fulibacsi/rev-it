@@ -333,6 +333,15 @@ driving is act 1's game, and the robot takes over as the fantasy moves on.
 - A DNF pays nothing.
 - Payment goes by finishing position, never by places gained. An earlier "points per place gained" rule was farmable:
   starting at the back on purpose, or swapping places with a racer, paid extra.
+- **Stuck hints** (the owner, 22 Oct: a playtester never bought a grid slot, raced from the back to the same few
+  points and couldn't farm enough). Stuck is the owner's definition: three races in a row without a Black market buy,
+  before P1. Then a hint on the wall in the way: a better grid slot for sale (START FURTHER UP: a place's big points
+  come only the first time, more nearer the front, with your best place's numbers; Bribe the starter puts you ahead
+  of the cars you have beaten); else Reckless driving (USE THE WHOLE ROAD: the top 20 can't be caught in two lanes);
+  else, in the top 20, 7th gear (BEYOND 6TH: the top 10 cruise faster than 6th gear goes). None further back with both
+  bought: the rest is pace. Its card pops up once (an act card's look, no number), then a "stuck? ..." line in the
+  garage's numbers and on ACT II's card while still stuck; a Black market buy ends it. Only when stuck, never in the
+  race tutorial: the owner would rather not help the player too much. Claude's calls: the words and which wall when.
 
 **Black market** (paid in race points, 5,761 in all):
 

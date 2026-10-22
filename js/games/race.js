@@ -54,6 +54,17 @@ Object.assign(UPGRADES, { // the Black market (distance.js PAGES), paid in race 
 const everythingElse = () => Object.entries(UPGRADES).every(([id, u]) => id === 'daredevil' || id === 'grid' ||
   !['bank', 'points'].includes(wallet(u)) || lvl(id) >= maxOf(u));
 const startSlot = () => FIELD + 1 - lvl('grid'); // the position you start in; 101 is behind #100
+// stuck in the race (the owner, 22 Oct: a playtester never bought a grid slot, and raced from the back to the same few
+// points): three races in a row without a Black market buy, before P1. Then the wall in the way, for its hint
+// (distance.js): a better grid slot for sale; Reckless driving (the top 20 can't be caught in two lanes); 7th gear,
+// near the top (the top 10 cruise beyond 6th gear)
+const STUCK = 3;
+function raceWall() {
+  if (progress.dry < STUCK || !progress.racing || progress.finish === 1) return null;
+  if (lvl('grid') < maxOf(UPGRADES.grid)) return 'grid';
+  if (!lvl('reckless')) return 'reckless';
+  return !lvl('gear7') && progress.finish <= 20 ? 'gear7' : null;
+}
 
 function racer(n, z) {
   const fleet = inFleet(n); // fleet.js

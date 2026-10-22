@@ -66,8 +66,9 @@ const SAVE_KEY = 'car-rev-incremental';
 // menu's STATS)
 const FRESH = () => ({ bank: 0, best: 0, runs: 0, levels: {}, off: {}, engine: 0, racing: false, points: 0, finish: 101,
                        damage: 0, broken: [], nitro: 0, miles: 0, parts: 0, totals: 0, wanted: 0, tanks: 0, tape: 0,
-                       time: 0, driven: 0, races: 0, seen: [], toured: [] }); // seen: upgrades seen unlocked (the tabs' !);
-                                                                             // toured: tutorials popped up (tutorial.js)
+                       time: 0, driven: 0, races: 0, seen: [], toured: [], dry: 0 }); // seen: upgrades seen unlocked (the tabs' !);
+                                                       // toured: tutorials popped up (tutorial.js); dry: races in a row
+                                                       // without a Black market buy (race.js raceWall)
 // debug mode (main.js) plays a save of its own, with wallets that never run out, so testing never touches the game
 const FUNDS = 1e9;
 let debugSave = false;
@@ -132,6 +133,7 @@ function buy(id) {
   if (whyNot(id)) return false;
   progress[wallet(UPGRADES[id])] -= cost(id);
   progress.levels[id] = lvl(id) + 1;
+  if (pageOf(UPGRADES[id]) === 'black') progress.dry = 0; // not stuck in the race (race.js)
   if (id === 'engine') progress.engine = lvl(id); // drive the new engine straight away
   save();
   return true;
@@ -169,7 +171,7 @@ function finishRun(dnf) { // dnf: why the run ended early (a crash), if it did
   progress.driven += run.gain;
   const was = progress.finish;
   run.race = raceFinish(bossLost(dnf)); // boss.js: a boss race lost is a DNF
-  if (run.race) progress.races++;
+  if (run.race) { progress.races++; progress.dry++; }
   run.dues = fleetDues(); // fleet.js
   progress.bank += run.dues;
   run.won = was > 1 && progress.finish === 1; // the first win opens the Fleet
@@ -255,7 +257,8 @@ TUTORIALS.unshift(
   { id: 'act2', act: 'II', name: 'RACE', open: () => progress.racing,
     text: () => 'That quick car was racer #100. You are in a race of a hundred: every run is a race now, and your place ' +
       'when the time runs out pays race points, more for a place reached the first time. The Black market takes them.',
-    now: () => progress.finish <= FIELD ? `Your best place: P${progress.finish}.` : '' },
+    now: () => (progress.finish <= FIELD ? `Your best place: P${progress.finish}.` : '') +
+      (hint() ? ` Stuck? ${hint().line}.` : '') },
   { id: 'act3', act: 'III', name: 'RECRUIT', open: () => fleetOpen(),
     text: () => 'P1! The racers you beat are open to offers. Pay them off in miles, on the Fleet page, and they race ' +
       'for you, in your colours.',
@@ -273,10 +276,27 @@ TUTORIALS.unshift(
     text: () => 'Police heat 100%: the army has sent a tank. It is waiting up the road: outgun it, with the gang.',
     now: () => bossRace() ? '' : `The tank is scrap and the road is yours (${progress.tanks} beaten). Push the heat ` +
       `to 100% again, now ${heatPct()}, and the next one is tougher.` },
+  // stuck in the race: the wall in the way (race.js raceWall), its card once, then a line in the garage and on the
+  // act's card while still stuck. Only then: the owner (22 Oct) would rather not help the player too much
+  { id: 'stuckgrid', hint: true, open: () => raceWall() === 'grid', name: 'START FURTHER UP',
+    line: 'Bribe the starter: start further up',
+    text: () => `A place pays its big points only the first time you take it, and the nearer the front, the more: ` +
+      `P${progress.finish} paid ${FIELD + 1 - progress.finish} the first time, and now pays ` +
+      `${Math.ceil((FIELD + 1 - progress.finish) / 10)} a race. Bribe the starter, on the Black market, puts you on ` +
+      'the grid ahead of the cars you have beaten: start further up, and take new places.' },
+  { id: 'stuckreckless', hint: true, open: () => raceWall() === 'reckless', name: 'USE THE WHOLE ROAD',
+    line: 'Reckless driving: the oncoming lanes',
+    text: () => 'New places pay the big points, once each, and every car further up is quicker: the top 20 can\'t be ' +
+      'caught in two lanes of traffic. Reckless driving, on the Black market, makes the oncoming lanes yours too.' },
+  { id: 'stuckgear7', hint: true, open: () => raceWall() === 'gear7', name: 'BEYOND 6TH',
+    line: '7th gear: the top 10 are beyond 6th',
+    text: () => 'The top 10 cruise faster than 6th gear can go. 7th gear, on the Black market, is a tall overdrive: ' +
+      'with nitro to reach it, hundreds of km/h more.' },
 );
 const heatPct = () => `${Math.round(progress.wanted * 100)}%`;
 const CARDS = TUTORIALS.filter(t => t.text);
-const currentCard = () => CARDS.findLast(c => c.open());
+const currentCard = () => CARDS.findLast(c => !c.hint && c.open());
+const hint = () => CARDS.find(c => c.hint && c.open()); // stuck: the wall's hint
 const actTitle = () => { const a = CARDS.findLast(c => c.act && c.open()); return a && `ACT ${a.act} · ${a.name}`; }; // none yet: the first
 const dnf = r => ({ 'head-on': 'head-on with oncoming traffic', wrecked: 'the car is wrecked', limped: `limped ${LIMP} m in the wreck`,
                      tank: 'the tank held the road' })[r.dnf]; // why a race wasn't finished
@@ -288,7 +308,7 @@ function runLine() {
     r && (r.dnf ? `<b>DNF</b> ${dnf(r)}` : `<b>P${r.p}</b> +${r.points} pts`),
     run.dues && `fleet dues +${fmt(run.dues)} m`, run.refill && `nitro refill −${fmt(run.refill)} m`,
     run.totals && `totalled ${run.totals}, +${fmt(run.parts)} parts`, run.beatTank && `the tank scrapped, +${TANK.parts} parts`,
-    arOn() && `police heat ${heatPct()}`]
+    arOn() && `police heat ${heatPct()}`, hint() && `<i>stuck? ${hint().line}</i>`]
     .filter(Boolean).join(' · ');
 }
 // ... and in full, on the act card: the run (in the garage: mid-run, the pause menu's, there is none), then where you
