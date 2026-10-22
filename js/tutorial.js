@@ -197,7 +197,9 @@ function renderTour() {
 // beside it when it is off to one side (a phone's lever is tall)
 function spot(el) {
   for (const e of document.querySelectorAll('.tour-show')) if (e !== el) e.classList.remove('tour-show');
-  el?.classList.add('tour-show'); // shown while the page is up, if the garage hides it (the sonar, the reticle)
+  // shown while the page is up, if the garage hides it (the sonar, the reticle); only then, as tour-show makes it a
+  // block: the pedals' row once stood on end, the three stacked up the screen
+  if (el && getComputedStyle(el).display === 'none') el.classList.add('tour-show');
   const r = el?.getBoundingClientRect(), lit = !!r && r.width > 0 && r.height > 0, s = $('spot'), body = document.body;
   const side = !lit ? '' : r.right < innerWidth * 0.4 ? 'right' : r.left > innerWidth * 0.6 ? 'left' : '';
   s.classList.toggle('lit', lit);

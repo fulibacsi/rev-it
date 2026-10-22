@@ -1,8 +1,9 @@
-"""Tutorials (HOW TO DRIVE): a list, then a step a page with the real control lit up behind the menu, the card clear
-of it. Every page of Driving on a desktop and on the phone (its own words there: a touch, not keys): the light round
-the right control, the card not over it. ◀ ▶, the arrow keys, Space and a swipe turn the pages; DONE and Esc go back
-to the list; over a run the menu stays up, the run paused. Nothing locked is named: a control's keys, and the Music
-setting, only once the car has it; a later act's upgrade, or a page's parts, only once there."""
+"""Tutorials (HOW TO DRIVE): a list, then a step a page with the real control lit up behind the menu, as it is in the
+cockpit (the pedals once stood on end), the card clear of it. Every page of Driving on a desktop and on the phone
+(its own words there: a touch, not keys): the light round the right control, the card not over it. ◀ ▶, the arrow
+keys, Space and a swipe turn the pages; DONE and Esc go back to the list; over a run the menu stays up, the run
+paused. Nothing locked is named: a control's keys, and the Music setting, only once the car has it; a later act's
+upgrade, or a page's parts, only once there."""
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
 errors, fails = [], []
@@ -72,6 +73,7 @@ with sync_playwright() as p:
     ctx = b.new_context(viewport={"width": 844, "height": 390}, device_scale_factor=2, is_mobile=True, has_touch=True)
     ph = ctx.new_page(); ph.on("pageerror", lambda e: errors.append(str(e))); pj = ph.evaluate
     cdp = ctx.new_cdp_session(ph); cdp.send("Emulation.setTouchEmulationEnabled", {"enabled": True, "maxTouchPoints": 5})
+    cdp.send("Emulation.setSafeAreaInsetsOverride", {"insets": {"left": 59, "right": 59, "bottom": 21, "top": 0}})  # the iPhone's notch
     ph.goto(URL); pj("localStorage.clear(); settings.layout = 'touch'; applyLayout()"); ph.wait_for_timeout(300)
     ph.tap('[data-show="settings"]'); ph.tap('[data-show="help"]:visible')
     named = pj(LOCKED)
@@ -133,16 +135,19 @@ with sync_playwright() as p:
         pjs("Object.assign(progress, { racing: true, totals: 1, levels: { clutch: 1, cruise: 1, flash: 5, autoflash: 1, stereo: 1, reckless: 1, chicken: 1, "
             "ecuRev: 1, nitro: 1, fleet: 51, pack: 1, guns: 1, autogun: 1, baddrivers: 1, hunter: 1 }, nitro: 0 }); if (game !== DISTANCE) play(DISTANCE); refreshCar()")
         bad = pjs("""(() => { const out = [];
-          for (const t of TUTORIALS.filter(t => t.pages && t.id !== 'driving')) { openTour(t.id); pagesOf(t).forEach((p, i) => { tour.page = i; renderTour(); if (!p.at) return;
-            const box = e => { const r = e.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; };
+          const box = e => { const r = e.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; };
+          for (const t of TUTORIALS.filter(t => t.pages && t.id !== 'driving')) { closeMenu();
+            const was = new Map(pagesOf(t).filter(p => p.at).map(p => [p.at, document.querySelector(p.at).getClientRects().length ? box(document.querySelector(p.at)) : null]));
+            openTour(t.id); pagesOf(t).forEach((p, i) => { tour.page = i; renderTour(); if (!p.at) return;
             const s = box($('spot')), c = box(document.querySelector(p.at)), k = box($('menu-panel'));
+            const kept = !was.get(p.at) || c.every((v, j) => Math.abs(v - was.get(p.at)[j]) < 1); // on screen: where it was
             const round = s[0] <= c[0] && s[1] <= c[1] && s[2] >= c[2] && s[3] >= c[3] && $('spot').classList.contains('lit');
             const covered = getComputedStyle($('garage')).visibility !== 'hidden' && (() => { const g = $('garage').getBoundingClientRect();
               return Math.min(g.right, c[2]) > Math.max(g.left, c[0]) && Math.min(g.bottom, c[3]) > Math.max(g.top, c[1]); })();
             const clear = Math.min(k[2], s[2]) <= Math.max(k[0], s[0]) || Math.min(k[3], s[3]) <= Math.max(k[1], s[1]);
-            if (!round || !clear || covered) out.push([t.id, p.title, round, clear, !covered]); }); closeMenu(); }
+            if (!round || !clear || covered || !kept) out.push([t.id, p.title, round, clear, !covered, kept]); }); closeMenu(); }
           return out; })()""")
-        check(f"{name}: every system page lights its control, the card clear of it, the garage not over it", not bad, bad)
+        check(f"{name}: every system page lights its control, as it is in the cockpit, the card clear of it, the garage not over it", not bad, bad)
     pj("openTour('warrig'); tour.page = 0; renderTour()"); ph.wait_for_timeout(100); ph.screenshot(path=f"{OUT}/tutorial_phone_reticle.png")
     pj("openTour('fleet'); tour.page = 1; renderTour()"); ph.wait_for_timeout(100); ph.screenshot(path=f"{OUT}/tutorial_phone_sonar.png")
     pj("closeMenu()"); ph.wait_for_timeout(100)
