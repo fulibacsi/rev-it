@@ -31,7 +31,7 @@ Object.assign(UPGRADES, { // the Black market (distance.js PAGES), paid in race 
   // market at 6,360 points against the ~5,200 act 2 pays, with 10 a race after P1. On sale only once 7th gear is
   // bought (18 Oct: a playtester spent the points on it and had none left for 7th gear, which the top 10 need; it
   // doesn't make the car any quicker). A gate, not needs: one already bought keeps working without 7th gear
-  recklessCruise: { name: 'Reckless auto-drive', tab: 'black', max: 1, base: 600, needs: ['cruise', 'reckless'],
+  recklessCruise: { name: 'Reckless auto-drive', tab: 'black', max: 1, base: 600, needs: ['cruise', 'reckless'], grand: 'cruise',
                     gate: () => lvl('gear7') > 0 || 'needs 7th gear',
                     info: () => 'adds to Autocruise: the oncoming lanes, chicken, the ECU tune and nitro, as far as ' +
                       'the car has them' },
@@ -44,9 +44,9 @@ Object.assign(UPGRADES, { // the Black market (distance.js PAGES), paid in race 
   nitro: { name: 'Nitro', tab: 'black', max: 5, base: 100, growth: 1.5, needs: ['ecuPower'],
            info: l => `${nitroTank(l)} s tank: +${Math.round((NITRO - 1) * 100)}% torque, heat in the red. ` +
              `The NOS pedal (or N) floors the gas; refills cost ${NITRO_REFILL} m a second` },
-  gear7: { name: '7th gear', tab: 'black', max: 1, base: 600, needs: ['nitro'], gate: () => lvl('gears') < 3 ? 'needs 6 gears' : true,
+  gear7: { name: '7th gear', tab: 'black', max: 1, base: 600, needs: ['nitro'], grand: 'nitro', gate: () => lvl('gears') < 3 ? 'needs 6 gears' : true,
            info: () => 'a tall overdrive: hundreds more km/h, if nitro gets you there' },
-  daredevil: { name: 'Daredevil', tab: 'black', max: 1, base: 200, gate: () => everythingElse() || 'max everything else first',
+  daredevil: { name: 'Daredevil', tab: 'black', max: 1, base: 200, grand: 'nitro', gate: () => everythingElse() || 'max everything else first',
                info: () => 'every second in the oncoming lanes puts 0.5 s back in the nitro tank' },
 });
 

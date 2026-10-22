@@ -274,13 +274,16 @@ driving is act 1's game, and the robot takes over as the fantasy moves on.
   - A locked upgrade (none of it bought, something else needed first) shows only its name and what it needs, in a
     dimmed, dashed card: what it does stays a surprise. And only a step away (the owner, 22 Oct, as most incremental
     games do; their pick of today's card over "???"): it would unlock if all on sale now were bought to the full, or
-    it waits on a race (the grid's slots). Further off it is out of sight, so a card never names one that isn't there:
-    Autocruise shows once Auto clutch is in (Auto shift needs it); the Black market opens with its first rung, then
-    Nitro with Reckless driving, 7th gear with ECU: power, Reckless auto-drive once 7th gear is for sale, Daredevil
-    once all else is; the War Rig's Auto gun once Guns is for sale. The engines: yours and the next, none further. A
-    tab with an upgrade newly unlocked that you haven't looked at yet has a yellow ! until you open it (the owner's
-    list, 14 Oct; what you've seen is kept in the save). Nothing on a page that isn't open yet counts, so neither
-    gives the race away.
+    it waits on a race (the grid's slots). Further off it is out of sight: the Black market opens with its first rung,
+    then Nitro with Reckless driving, 7th gear with ECU: power; the War Rig's Auto gun once Guns is for sale. A grand
+    unlock, one that changes how the car drives, shows sooner, once the layer below it is in: a goal in sight (the
+    owner, 22 Oct, their list and timing): Autocruise from the start, Reckless auto-drive and Hunter with Autocruise,
+    7th gear and Daredevil with Nitro, Auto gun with Guns (Autocruise, Reckless auto-drive and Daredevil sooner than a
+    step would show them; the others a step comes first), the engines one after another (yours and the next, none
+    further). A card never names one out of sight: a grand unlock that waits on one names the first in sight on the
+    way (Reckless auto-drive "needs Nitro first" while 7th gear is out of sight). A tab with an upgrade newly unlocked
+    that you haven't looked at yet has a yellow ! until you open it (the owner's list, 14 Oct; what you've seen is
+    kept in the save). Nothing on a page that isn't open yet counts, so neither gives the race away.
 
   | Upgrade | Page | Levels | Base | Growth | Notes |
   |---|---|---|---|---|---|

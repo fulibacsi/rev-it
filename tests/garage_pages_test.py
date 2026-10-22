@@ -1,8 +1,10 @@
 """The garage's pages: Workshop (the car) and Autopilot (the aids) in metres from the start; the Black market (the
 illegal and forbidden) in race points, only once the race is revealed, and not a word about it before. Flash recharge
 joins the Workshop with the reveal. A locked upgrade shows only a step away, and then only its name and what it needs
-(further off, out of sight: the Black market a rung at a time, the next engine and none further); a tab with an upgrade
-unlocked that you haven't looked at yet has a yellow !, until you do (kept in the save)."""
+(further off, out of sight: the Black market a rung at a time, the next engine and none further); a grand unlock once
+the layer below it is in (Autocruise from the start, Reckless auto-drive with Autocruise, Daredevil with Nitro), naming
+only cards in sight; a tab with an upgrade unlocked that you haven't looked at yet has a yellow !, until you do (kept
+in the save)."""
 import re
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -40,14 +42,11 @@ with sync_playwright() as p:
     check("a fresh game: the Autopilot tab has a yellow !", news() == ["Autopilot"] and bang() == '"!"', [news(), bang()])
     page("autopilot")
     check("looked at: the ! is gone", news() == [], news())
-    check("Autopilot: the robot driver, but Autocruise (two steps off: Auto shift needs Auto clutch)", cards() == AUTOPILOT[:-1], cards())
+    check("Autopilot: the robot driver, Autocruise in sight from the start (a grand unlock)", cards() == AUTOPILOT, cards())
     locked = js("""[...document.querySelectorAll('#cards .card.locked')].map(c => ({ name: c.querySelector('b').textContent,
         text: c.querySelector('small').textContent, button: !!c.querySelector('button') }))""")
     check("locked a step away: only the name and what it needs, no price", locked == [{"name": "Auto flash", "text": "needs Headlight flash", "button": False},
-          {"name": "Auto shift", "text": "needs Auto clutch", "button": False}], locked)
-    js("progress.levels.clutch = 1; renderGarage()")
-    check("Auto clutch bought: Autocruise a step away, in sight", cards() == AUTOPILOT and "needs Lane assist" in js("$('cards').innerText"), cards())
-    js("progress.levels.clutch = 0; renderGarage()")
+          {"name": "Auto shift", "text": "needs Auto clutch", "button": False}, {"name": "Autocruise", "text": "needs Lane assist", "button": False}], locked)
     page("workshop"); pg.reload(); pg.wait_for_timeout(300); pg.tap('[data-play="distance"]'); pg.wait_for_timeout(300)
     check("reloaded: still seen, no !", news() == [], news())
     js("progress.levels.flash = 5; renderGarage()")
@@ -69,19 +68,20 @@ with sync_playwright() as p:
     check("after the reveal, the flash's card says the racers won't move over", "(racers won't)" in js("$('cards').innerText"), "")
     page("black")
     rung = ["Bribe the starter", "Jump the start", "Reckless driving", "Game of chicken", "Cooling", "ECU: rev limit", "ECU: power"]
-    check("Black market: the illegal and forbidden, its first rung", cards() == rung, cards())
+    js("progress.levels.cruise = 0; renderGarage()")
+    check("Black market: the illegal and forbidden, its first rung (no Autocruise: not Reckless auto-drive)", cards() == rung, cards())
+    js("progress.levels.cruise = 1; renderGarage()")
+    rung = rung[:4] + ["Reckless auto-drive"] + rung[4:]
+    check("with Autocruise: Reckless auto-drive, a grand unlock, in sight", cards() == rung, cards())
     check("Black market: paid in race points", set(prices()) == {"pts"}, prices())
-    def buy(levels): js(f"Object.assign(progress.levels, {levels}); renderGarage()"); return cards()
-    got = [buy("{ reckless: 1 }"), buy("{ ecuPower: 1 }"), buy("{ nitro: 1, gears: 3 }")]
-    check("a rung at a time: Nitro, then 7th gear, then Reckless auto-drive", got == [rung + ["Nitro"], rung + ["Nitro", "7th gear"],
-          rung[:4] + ["Reckless auto-drive"] + rung[4:] + ["Nitro", "7th gear"]], got)
+    why = lambda: js("[...document.querySelectorAll('#cards .card.locked')].find(c => c.querySelector('b').textContent === 'Reckless auto-drive')?.querySelector('small').textContent")
+    def buy(levels): js(f"Object.assign(progress.levels, {levels}); renderGarage()"); return [cards(), why()]
+    got = [[cards(), why()], buy("{ reckless: 1 }"), buy("{ ecuPower: 1 }"), buy("{ nitro: 1, gears: 3 }")]
+    check("a rung at a time: Nitro, 7th gear, then Daredevil (with Nitro); Reckless auto-drive naming only cards in sight",
+          got == [[rung, "needs Reckless driving"], [rung + ["Nitro"], "needs Nitro first"], [rung + ["Nitro", "7th gear"], "needs 7th gear"],
+                  [BLACK, "needs 7th gear"]] and "max everything else first" in js("$('cards').innerText"), got)
     pg.screenshot(path=f"{OUT}/pages_black.png")
     page("workshop")
     check("Workshop: still in metres", set(prices()) == {"m"}, prices())
-    page("black")
-    got = js("""(() => { for (const [id, u] of Object.entries(UPGRADES))
-        if (['bank', 'points'].includes(wallet(u)) && !['daredevil', 'grid', 'cooling'].includes(id)) progress.levels[id] = maxOf(u);
-      renderGarage(); return $('cards').innerText; })()""")
-    check("all else maxed but Cooling: Daredevil in sight", cards() == BLACK and "max everything else first" in got, cards())
     b.close()
 print("ERRORS:", errors or "none", "| FAILS:", fails or "none")

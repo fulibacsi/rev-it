@@ -7,7 +7,8 @@
 // tab: the garage page it is on, see PAGES; max can depend on
 // progress (then locked says why there is no more yet); gate(level) can hold the next level back with a reason;
 // built: how many levels count towards the car being built (headStart in race.js), when not all of them; afterReveal:
-// on sale (and shown) only once the race is revealed, so it doesn't hold up the first act.
+// on sale (and shown) only once the race is revealed, so it doesn't hold up the first act; grand: a grand unlock, the
+// upgrade it is a layer on (true: none), shown, locked, once that is bought (see shows).
 const UPGRADES = {
   power:  { name: 'Power', max: 10, base: 80, growth: 1.55, info: l => `+${12 * l}% torque` },
   rev:    { name: 'Rev limit', max: 4, base: 150, growth: 2, info: l => `${limiter(engine, l)} rpm` },
@@ -29,7 +30,7 @@ const UPGRADES = {
   gas:    { name: 'Auto gas', tab: 'autopilot', max: 1, base: 800, info: () => 'launch and traction control' },
   shift:  { name: 'Auto shift', tab: 'autopilot', max: 1, base: 2500, needs: ['clutch'], info: () => 'changes gear at the limiter' },
   steer:  { name: 'Lane assist', tab: 'autopilot', max: 1, base: 1500, info: () => 'swerves round a car you are about to hit' },
-  cruise: { name: 'Autocruise', tab: 'autopilot', max: 1, base: 6000, needs: ['steer', 'gas', 'shift'],
+  cruise: { name: 'Autocruise', tab: 'autopilot', max: 1, base: 6000, needs: ['steer', 'gas', 'shift'], grand: true,
             info: () => 'drives the whole run: passes, keeps right, brakes when boxed in' },
   stereo: { name: 'Car stereo', max: 1, base: 500, built: 0, // stereo.js; no use for speed, so not part of building the car
             info: () => 'synthwave on five tapes: tap the lights in the cluster (or M) for the next, or off' },
@@ -130,14 +131,23 @@ function whyNot(id) { // reason an upgrade can't be bought now, or '' if it can
 // A tab gets a yellow ! while it has an upgrade unlocked that you haven't looked at yet (the owner, 14 Oct)
 const isLocked = id => !lvl(id) && !['', 'short', 'max'].includes(whyNot(id));
 // a locked card shows only a step away: unlocked if all on sale now were bought to the full (the grid's slots wait on
-// a race, a step too); further off it is left out, as in most incremental games (the owner, 22 Oct)
+// a race, a step too); further off it is left out, as in most incremental games. A grand unlock shows sooner, once the
+// layer below it is in: a goal in sight (both the owner, 22 Oct)
 function near(id) {
   if (whyNot(id) === UPGRADES[id].locked) return true;
   const levels = progress.levels, full = Object.keys(UPGRADES).filter(k => !isLocked(k));
   progress.levels = { ...levels, ...Object.fromEntries(full.map(k => [k, Math.max(lvl(k), maxOf(UPGRADES[k]))])) };
   try { return !isLocked(id); } finally { progress.levels = levels; }
 }
-const shows = id => !isLocked(id) || near(id);
+const shows = id => !isLocked(id) || near(id) || UPGRADES[id].grand === true || lvl(UPGRADES[id].grand) > 0;
+// what a locked card needs, naming only a card in sight: else the first one in sight on the way to it (a grand unlock
+// can be further off than the cards it waits on)
+function inSight(why) {
+  const named = Object.keys(UPGRADES).find(id => why === `needs ${UPGRADES[id].name}`);
+  for (let id = named; id; id = UPGRADES[id].needs?.find(n => !lvl(n)))
+    if (shows(id)) return id === named ? why : `needs ${UPGRADES[id].name} first`;
+  return named ? 'locked' : why; // a reason that names no card ('needs 5 flashes') as it is
+}
 const unseen = id => !isLocked(id) && !progress.seen.includes(id);
 function buy(id) {
   if (whyNot(id)) return false;
@@ -376,7 +386,7 @@ function renderGarage(bought) {
     `<button data-repair${progress.bank >= REPAIR ? '' : ' disabled'}>${progress.bank >= repairCost() ? 'Repair all' : 'Repair what I can'}` +
     ` · ${fmt(Math.min(repairCost(), Math.floor(progress.bank / REPAIR) * REPAIR))} m</button></div>` : '';
   $('cards').innerHTML = repairCard + (garageTab === 'fleet' ? exchangeCard() : '') + Object.entries(UPGRADES).filter(onTab).map(([id, u]) => {
-    if (isLocked(id)) return `<div class="card locked"><b>${u.name}</b><small>${whyNot(id)}</small></div>`;
+    if (isLocked(id)) return `<div class="card locked"><b>${u.name}</b><small>${inSight(whyNot(id))}</small></div>`;
     const l = lvl(id), why = whyNot(id), max = maxOf(u), steps = typeof u.max === 'function' ? 0 : max;
     const pips = steps > 1 ? `<i>${'■'.repeat(l)}${'□'.repeat(steps - l)}</i>` : '';
     const info = max > 1 || steps === 0 ? u.info(l) + (why !== 'max' && !why.startsWith('finish') ? ` → ${u.info(l + 1)}` : '') : u.info();

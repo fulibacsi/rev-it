@@ -22,7 +22,7 @@ Object.assign(UPGRADES, {
           info: l => l ? `the wheel's red marker (or G) fires at the car in the reticle: ${GUN * l} damage a shot, ` +
             `4 a second, up to ${RANGE} m; the gang fires at rivals once a second` : 'unarmed' },
   // the owner's idea (14 Oct): on a phone your thumbs are busy steering and on the pedals
-  autogun: { name: 'Auto gun', tab: 'warrig', max: 1, base: 200, needs: ['guns'],
+  autogun: { name: 'Auto gun', tab: 'warrig', max: 1, base: 200, needs: ['guns'], grand: 'guns',
              info: () => 'fires for you whenever the car in the reticle is in reach and in sight; the marker reads AUTO' },
   // the owner's idea (18 Oct; first called Bad drivers, the id kept so saves keep it): a share of ordinary traffic goes
   // mad for fuel, drops its manners and jumps in front of you (road.js mad), so a cut-in is a ram, not a crash to
@@ -33,7 +33,7 @@ Object.assign(UPGRADES, {
                   'Mad ones (rusty, weaving) jump in front of you; ram one that does: totalled. Stolen fuel: double parts' },
   // the owner's idea (18 Oct): autocruise hunts the car in the reticle (aids.js hunt), as act4.py's bot did by hand; a
   // switch. Price: a first guess, see act4.py
-  hunter: { name: 'Hunter', tab: 'warrig', max: 1, base: 100, needs: ['cruise'],
+  hunter: { name: 'Hunter', tab: 'warrig', max: 1, base: 100, needs: ['cruise'], grand: 'cruise',
             info: () => 'adds to Autocruise (and Reckless auto-drive): it hunts the car in the reticle, into its lane ' +
               'and into it. Not the tank, and it backs off past 60% damage' },
   // the owner's idea (18 Oct): the stereo plays the War Rig's own music instead of synthwave (stereo.js: three tapes, the
