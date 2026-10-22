@@ -24,7 +24,9 @@ create table public.feedback (
 );
 
 -- closed to the public keys (anon, and signed-in users): no grants, and row level security with no policy to let them
--- in. The gate's secret key goes past both
+-- in. The gate's secret key (the service_role) gets past row level security, but needs its grant: given here, as a
+-- project with "Automatically expose new tables" off (the safer choice at its creation) grants new tables nothing
 alter table public.events enable row level security;
 alter table public.feedback enable row level security;
 revoke all on public.events, public.feedback from anon, authenticated;
+grant insert on public.events, public.feedback to service_role;
