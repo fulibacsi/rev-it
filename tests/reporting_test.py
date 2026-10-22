@@ -66,8 +66,10 @@ with sync_playwright() as p:
     f = sent[-1] if sent else {}
     check("SEND: feedback to the gate, no key, an empty message with the stats", f.get("table") == "feedback" and f.get("key") is None and f.get("authorization") is None
           and f.get("message") == "" and f["data"]["save"]["runs"] == 1 and "toured" not in f["data"]["save"] and f["data"]["layout"] in ("touch", "keys"), {k: f.get(k) for k in ["table", "message", "build"]})
-    check("... and thanks", js("$('feedback-note').textContent") == "Sent, thank you!", js("$('feedback-note').textContent"))
-    pg.click("#feedback-x"); check("✕: back to STATS", js("screen") == "stats", js("screen"))
+    got = js("[screen, document.querySelector('[data-screen=thanks]').innerText, $('feedback-text').value]")
+    check("... then thanks, in the form's place, the box cleared", got[0] == "thanks" and "Thanks for your feedback!" in got[1] and got[2] == "", got)
+    pg.click("[data-back]:visible"); check("its BACK: to STATS, where FEEDBACK came from", js("screen") == "stats", js("screen"))
+    pg.click('[data-show="feedback"]'); pg.click("[data-back]:visible"); check("the form's ◀ BACK: to STATS", js("screen") == "stats", js("screen"))
     # 4. ticked in SETTINGS: a game's start and its run go; FEEDBACK needs a word
     pg.click("[data-back]:visible"); pg.click('[data-show="settings"]'); pg.click("#stats-switch")
     check("SETTINGS: gameplay data ON", js("[$('stats-switch').textContent, settings.stats]") == ["ON", True], js("$('stats-switch').textContent"))
@@ -82,9 +84,10 @@ with sync_playwright() as p:
     pg.fill("#feedback-text", "The tank is too strong"); pg.wait_for_timeout(50)
     check("a word: SEND on", not js("$('feedback-send').disabled"), "")
     pg.click("#feedback-send"); pg.wait_for_timeout(300)
-    check("SEND: the words go", sent[-1].get("message") == "The tank is too strong" and js("$('feedback-text').value") == "", sent[-1].get("message"))
+    check("SEND: the words go, then thanks", sent[-1].get("message") == "The tank is too strong" and js("screen") == "thanks", [sent[-1].get("message"), js("screen")])
+    pg.click("[data-back]:visible"); pg.click('[data-show="feedback"]')
     status[0] = 500; pg.fill("#feedback-text", "again"); pg.click("#feedback-send"); pg.wait_for_timeout(300); status[0] = 201
-    check("a failed send: says so, the words kept", js("[$('feedback-note').textContent, $('feedback-text').value]") == ["Couldn't send it: try again later.", "again"],
+    check("a failed send: says so on the form, the words kept", js("[screen, $('feedback-note').textContent, $('feedback-text').value]") == ["feedback", "Couldn't send it: try again later.", "again"],
           js("$('feedback-note').textContent"))
     check("no preflight: the browser sends straight to the gate", not asked, asked)
     # 5. an error: reported, ticked

@@ -179,8 +179,10 @@ machine or session. Keep it current: update a section when a decision changes, a
   - asks on the first visit: "A GAME IN PROGRESS", feedback welcome, and a box, unticked, "I accept to send
     anonymous gameplay data" (the owner's words), with what that is (runs, places, upgrades, time played, touch or
     keys, the kind of device, the screen's size, errors) and that it is no personal data. SETTINGS changes it.
-  - has FEEDBACK in SHARE's place (STATS, the ending): a free text box, SEND and ✕. The player's stats always go with
-    it; ticked, it needs a word (the stats are sent anyway), unticked it can go empty, and says so.
+  - has FEEDBACK in SHARE's place (STATS, the ending): a free text box, ◀ BACK (as on every screen) and SEND. The
+    player's stats always go with it; ticked, it needs a word (the stats are sent anyway), unticked it can go empty,
+    and says so. Sent, the box clears and a thanks screen takes the form's place ("Thanks for your feedback!", ◀ BACK
+    to where FEEDBACK came from: the owner, 22 Oct); a failed send stays on the form, the words kept.
   - sends, ticked, never during a run: a game of Distance starting, each run's end (the run, the save less the
     interface's lists: about 1 KB, about one a minute while playing), and the first five errors of a visit. A visit's
     random id, in memory only, groups them; nothing is kept on the device.
