@@ -83,7 +83,7 @@ function leaveGame() { // keep the best score, let the game tidy up
 // owner's design, 14 Oct). BACK goes to the screen it came from
 let screen = 'main', screenFrom = [];
 const started = () => progress.runs > 0; // a game of Distance under way (in debug mode, its own save)
-// the build a playtester has: when the page was published (GitHub Pages' Last-Modified), said in STATS and SHARE
+// the build a playtester has: when the page was published (its Last-Modified), said in STATS, SHARE and feedback
 const BUILD = 'build ' + new Date(document.lastModified).toLocaleString('en-GB', { day: 'numeric', month: 'short',
   year: 'numeric', hour: '2-digit', minute: '2-digit' });
 function showScreen(name, back = false) {
@@ -95,6 +95,7 @@ function showScreen(name, back = false) {
   renderMenu();
   if (name === 'tour') renderTour();
   if (name === 'act') renderCard(); // distance.js
+  if (name === 'feedback') renderFeedback(); // reporting.js
 }
 function renderMenu() {
   $('continue').textContent = started() ? 'CONTINUE' : 'NEW GAME';
@@ -111,6 +112,10 @@ function renderMenu() {
   $('vol-car').value = Math.round(settings.volume.car * 100);
   $('vol-music').value = Math.round(settings.volume.music * 100);
   $('reset').hidden = !started();
+  $('stats-switch').textContent = settings.stats ? 'ON' : 'OFF';
+  // a build that reports (itch.io's, reporting.js): FEEDBACK in SHARE's place, and the gameplay data's setting
+  for (const b of $('menu').querySelectorAll('[data-share]')) b.hidden = reporting();
+  for (const b of $('menu').querySelectorAll('[data-show="feedback"], .reporting')) b.hidden = !reporting();
   renderTutorials();
   if (DISTANCE.stereo() && DISTANCE.tape() !== null) loadTape(DISTANCE.tape()); // ready when you drive (stereo.js)
   const rows = DISTANCE.stats().map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
@@ -172,6 +177,10 @@ $('menu').onclick = e => {
   if (b.id === 'act-button') openCard(currentCard().id);
   if (b.id === 'act-drive') openTour('driving');
   if (b.id === 'act-go') closeCard();
+  if (b.id === 'hello-go') { setStats($('stats-ok').checked); showScreen('main', true); } // the first visit's question
+  if (b.id === 'stats-switch') { setStats(!settings.stats); renderMenu(); }
+  if (b.id === 'feedback-x') showScreen(screenFrom.pop() ?? 'main', true);
+  if (b.id === 'feedback-send') submitFeedback();
   if (b.id === 'to-main' || b.id === 'win-main') showScreen('main');
   if (b.id === 'end-run' && confirm('End this run now? It counts as if the time had run out.')) { closeMenu(); game.endRun?.(); }
   if (b.id === 'reset' && confirm('Reset your progress? Every metre, point and upgrade is gone, and the game starts over.')) resetGame();
@@ -180,7 +189,8 @@ $('menu').onclick = e => {
     saveSettings(); applyLayout(); renderMenu();
   }
 };
-$('menu').oninput = e => { // the volume sliders, as they move
+$('menu').oninput = e => { // the volume sliders, as they move; the feedback, as it is typed
+  if (e.target.id === 'feedback-text') return renderFeedback();
   const v = { 'vol-car': 'car', 'vol-music': 'music' }[e.target.id];
   if (!v) return;
   settings.volume[v] = e.target.value / 100;
@@ -194,9 +204,10 @@ addEventListener('click', e => e.target.closest('button')?.blur()); // keys stay
 // can bring it back: the RESUME tap does, and so does any tap while playing, should the sound still be stopped
 document.addEventListener('visibilitychange', () => { if (document.hidden && playing && !menuOpen) openMenu(); });
 addEventListener('pointerdown', () => { if (ctx && ctx.state !== 'running' && !menuOpen) ctx.resume(); }, true);
-// iPhone Safari can't go full screen, but the game can from the home screen: say so there (not when already on it)
+// iPhone Safari can't go full screen, but the game can from the home screen: say so there (not when already on it, nor
+// inside a page's frame, itch.io's: Add to Home Screen would keep that page, not the game)
 const iosBrowser = (/iP(hone|od|ad)/.test(navigator.userAgent) || navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) &&
-  !navigator.standalone;
+  !navigator.standalone && self === top;
 document.body.classList.toggle('ios', iosBrowser);
 
 // ---- instrument cluster: analogue dials drawn as SVG ----
@@ -346,6 +357,6 @@ if (settings.debug) applyDebug();
 applyLayout();
 applyVolume();
 refreshCar();
-openMenu();
+openMenu(askStats() ? 'hello' : null); // the first visit: what we'd like to know (reporting.js)
 drawRoad(g2d, canvas.width, canvas.height, 0); // the view behind the menu
 requestAnimationFrame(tick);

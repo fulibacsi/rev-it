@@ -9,7 +9,7 @@ errors, fails = [], []
 def check(name, ok, got=""):
     print(f"{'ok ' if ok else 'FAIL'} {name}" + (f": {got}" if got != "" else ""))
     if not ok: fails.append(name)
-SCREENS = ["main", "pause", "arcade", "settings", "stats", "help", "credits", "win"]
+SCREENS = ["main", "pause", "arcade", "settings", "stats", "help", "credits", "win", "hello", "feedback"]
 with sync_playwright() as p:
     b = launch(p, args=["--autoplay-policy=no-user-gesture-required"])
     ctx = b.new_context(viewport={"width": 1440, "height": 900}); ctx.grant_permissions(["clipboard-read", "clipboard-write"])

@@ -176,6 +176,8 @@ function finishRun(dnf) { // dnf: why the run ended early (a crash), if it did
   progress.bank += run.dues;
   run.won = was > 1 && progress.finish === 1; // the first win opens the Fleet
   save();
+  const { gain, newBest, race, dues, refill, totals, parts, boss, beatTank, limp } = run;
+  report('run', { run: { gain, newBest, race, dues, refill, totals, parts, boss, beatTank, limp } }); // reporting.js
   Object.assign(run, { phase: 'finish', count: FINISH });
   nitro = false;
   gasPedal = 0; clutchPedal = 1; brakePedal = 1;
@@ -495,6 +497,7 @@ const DISTANCE = {
   start() { // a new game: its first act's card pops up, alone
     Object.assign(run, { phase: 'garage', best: progress.best }); shownPhase = null;
     if (!progress.runs) markTours('act1');
+    report('start'); // reporting.js
   },
   pause: () => save(), // the menu opened: the time played so far is kept
   endRun() { if (run.phase === 'run') finishRun(); }, // the pause menu's END RUN: as if the time ran out

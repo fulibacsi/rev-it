@@ -236,12 +236,13 @@
     <label class="setting"><span>Car sounds</span><input type="range" id="vol-car" min="0" max="100" step="5"></label>
     <label class="setting"><span>Music</span><input type="range" id="vol-music" min="0" max="100" step="5"></label>
     <div class="setting"><span>Controls</span><button data-show="help">HOW TO DRIVE</button></div>
+    <div class="setting reporting"><span>Gameplay data</span><button id="stats-switch"></button></div> <!-- sent or not (reporting.js) -->
     <footer><button data-back>◀ BACK</button><button id="reset" class="danger">RESET PROGRESS</button></footer>
   </section>
   <section data-screen="stats">
     <h2>STATS</h2>
     <dl id="stats-list"></dl>
-    <footer><button data-back>◀ BACK</button><small class="build"></small><button data-share>SHARE</button></footer>
+    <footer><button data-back>◀ BACK</button><small class="build"></small><button data-share>SHARE</button><button data-show="feedback">FEEDBACK</button></footer>
     <p class="shared"></p>
   </section>
   <section data-screen="help">
@@ -306,12 +307,29 @@
     <p class="warlord">Steel, smoke and silence where the tank stood. A hundred engines howl your name. Nobody's chasing
       you any more. They're following.</p>
     <dl id="win-stats"></dl>
-    <footer><button id="win-main">MAIN MENU</button><button data-share>SHARE</button><button id="win-garage" class="big">BACK TO THE GARAGE</button></footer>
+    <footer><button id="win-main">MAIN MENU</button><button data-share>SHARE</button><button data-show="feedback">FEEDBACK</button><button id="win-garage" class="big">BACK TO THE GARAGE</button></footer>
     <p class="shared"></p>
+  </section>
+  <section data-screen="hello"> <!-- the first visit: a game in progress, and gameplay data only with the box ticked (reporting.js) -->
+    <h2>A GAME IN PROGRESS</h2>
+    <p>Rev It is still being made, and what you think shapes it: tell us with FEEDBACK, under STATS once you have played.</p>
+    <label class="tick"><input type="checkbox" id="stats-ok"> I accept to send anonymous gameplay data</label>
+    <p>Gameplay data only: your runs, places, upgrades and time played, touch or keys, the kind of device and the screen's
+      size, and any errors the game hits. No personal data: no name, no account, nothing that tells us who you are. You
+      can change your mind in SETTINGS.</p>
+    <footer><button id="hello-go" class="big">CONTINUE ▶</button></footer>
+  </section>
+  <section data-screen="feedback"> <!-- a word to the owner, with the player's stats (reporting.js) -->
+    <h2>FEEDBACK</h2>
+    <p>What works, what doesn't, what you would like: we read every one. Your play stats go with it, nothing personal.</p>
+    <textarea id="feedback-text" maxlength="2000" rows="4" placeholder="Your feedback"></textarea>
+    <p id="feedback-note"></p>
+    <footer><button id="feedback-x" title="cancel">✕</button><button id="feedback-send" class="big">SEND</button></footer>
   </section>
 </div></div>
 
 
+<script src="js/reporting.js"></script> <!-- first: it reports the others' errors -->
 <script src="assets/sounds.js"></script>
 <script src="assets/cars.js"></script>
 <script src="js/engine.js"></script>

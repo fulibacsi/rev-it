@@ -1,0 +1,28 @@
+# The itch.io release: a push to release/itchio builds the game (tools/build.py: its own files, gameplay data and
+# feedback switched on) and pushes it with butler, itch.io's uploader. GitHub Pages is untouched: it serves main as it
+# is. Set once in the repository's settings (Secrets and variables, Actions): the secret BUTLER_API_KEY (an itch.io API
+# key), and the variables ITCH_GAME (user/game, as in the page's address) and REPORT_URL (the gate's address,
+# https://<project>.supabase.co/functions/v1/report: supabase/functions/report).
+name: itch.io release
+on:
+  push:
+    branches: [release/itchio]
+concurrency: itch-release
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        env:
+          REPORT_URL: ${{ vars.REPORT_URL }}
+        run: python3 tools/build.py build/itch
+      - name: Get butler
+        run: | # the version first, then its archive (itch.io's documented links)
+          version=$(curl -fsSL https://broth.itch.zone/butler/linux-amd64/LATEST)
+          curl -fsSL -o butler.zip "https://broth.itch.zone/butler/linux-amd64/$version/archive/default"
+          unzip -q butler.zip -d butler && chmod +x butler/butler && butler/butler -V
+      - name: Push to itch.io
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: butler/butler push build/itch "${{ vars.ITCH_GAME }}:html5" --userversion "$(git log -1 --format=%cd-%h --date=format:%Y%m%d)"

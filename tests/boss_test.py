@@ -62,7 +62,7 @@ with sync_playwright() as p:
     got = js("({ menu: menuOpen, screen, text: $('menu').innerText })")
     check("then the ending: WARLORD OF THE COAST ROAD, the stats, a tank beaten", got["menu"] and got["screen"] == "win"
           and "WARLORD OF THE COAST ROAD" in got["text"] and "Tanks beaten\n1" in got["text"], {k: v for k, v in got.items() if k != "text"})
-    buttons = js("[...document.querySelectorAll('[data-screen=win] button')].map(b => b.textContent)")
+    buttons = js("[...document.querySelectorAll('[data-screen=win] button')].filter(b => !b.hidden).map(b => b.textContent)")
     check("its buttons: MAIN MENU, SHARE, BACK TO THE GARAGE (no NEW GAME)", buttons == ["MAIN MENU", "SHARE", "BACK TO THE GARAGE"], buttons)
     check("over the road: the garage not behind it", js("getComputedStyle($('garage')).visibility") == "hidden", js("getComputedStyle($('garage')).visibility"))
     pg.screenshot(path=f"{OUT}/boss_win.png")

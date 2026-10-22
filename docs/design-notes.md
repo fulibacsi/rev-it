@@ -173,6 +173,29 @@ machine or session. Keep it current: update a section when a decision changes, a
 - **STATS:** time played, runs, best run, distance driven; races and best place only after the reveal, the fleet and
   cars totalled only once their acts open, tanks beaten once one is; never a word of the race before the reveal.
   SHARE sends them (and the build: when the page was published) by the phone's share sheet, else the clipboard.
+- **The itch.io release: feedback and gameplay data** (the owner, 22 Oct). One codebase, two releases: GitHub Pages
+  serves `main` as it is (SHARE, nothing sent); itch.io gets what is pushed to `release/itchio`, built by
+  `tools/build.py`, which fills in the gate's address, so only that build:
+  - asks on the first visit: "A GAME IN PROGRESS", feedback welcome, and a box, unticked, "I accept to send
+    anonymous gameplay data" (the owner's words), with what that is (runs, places, upgrades, time played, touch or
+    keys, the kind of device, the screen's size, errors) and that it is no personal data. SETTINGS changes it.
+  - has FEEDBACK in SHARE's place (STATS, the ending): a free text box, SEND and ✕. The player's stats always go with
+    it; ticked, it needs a word (the stats are sent anyway), unticked it can go empty, and says so.
+  - sends, ticked, never during a run: a game of Distance starting, each run's end (the run, the save less the
+    interface's lists: about 1 KB, about one a minute while playing), and the first five errors of a visit. A visit's
+    random id, in memory only, groups them; nothing is kept on the device.
+  - **Supabase closed to the web** (the owner wasn't comfortable with it open: a public key in the page could add
+    rows to the tables directly). Everything goes to one Edge Function, the gate (`supabase/functions/report`): it
+    takes only the shape the game sends, caps sizes, throttles a sender to 20 reports a minute (best effort, in an
+    instance's memory) and writes with the project's secret key, kept on the server. The tables
+    (`supabase/tables.sql`) grant the public keys nothing; the page holds no key, only the gate's address. Sent as
+    plain text, so a browser sends it straight away (no preflight: one call a report). Google Analytics was
+    considered and dropped: feedback can't go through it (100 characters a value, no personal data allowed), it keeps
+    an ID in a cookie (so not "no personal data"), and ad blockers stop it.
+  A failed send is dropped (the free plan pauses a project after a week of little use); the game never waits on one.
+  Inside itch.io's frame the iPhone's "Add to Home Screen" tip is gone (it would keep itch.io's page). itch.io: no
+  payments (the Suno tracks are non-commercial only). Claude's calls: the words, what goes in a report, errors capped
+  at five a visit, a visit's id kept in memory, the gate's limits.
 - **The ending** (the win screen) follows the tank's destruction, a modal in fire and rust (the owner, 20 Oct: the HUD's
   GAME OVER and a plain screen felt underwhelming; their pick of title and words): "WARLORD OF THE COAST ROAD. Steel,
   smoke and silence where the tank stood. A hundred engines howl your name. Nobody's chasing you any more. They're
