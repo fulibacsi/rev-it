@@ -2,6 +2,7 @@
 illegal and forbidden) in race points, only once the race is revealed, and not a word about it before. Flash recharge
 joins the Workshop with the reveal. A locked upgrade shows only its name and what it needs; a tab with an upgrade unlocked
 that you haven't looked at yet has a yellow !, until you do (kept in the save)."""
+import re
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
 WORKSHOP = ["Power", "Rev limit", "Gearbox", "Tyres", "Time", "Steering", "Headlight flash", "Car stereo"]
@@ -44,6 +45,9 @@ with sync_playwright() as p:
     check("5 flashes: Auto flash unlocks, and Autopilot has a ! again", news() == ["Autopilot"], news())
     page("autopilot")
     check("Auto flash: no longer locked", "Auto flash" not in js("[...document.querySelectorAll('#cards .card.locked b')].map(b => b.textContent)"), "")
+    words = js("(() => { const t = []; for (const id of ['workshop', 'autopilot']) { garageTab = id; renderGarage(); t.push($('garage').innerText); } return t.join(' '); })()")
+    check("not a word of racers or a race on the cards before the reveal (the flash's and Auto flash's included)",
+          not re.search(r"\brac(e|er|ers|ing)\b", words, re.I), re.findall(r".{30}\brac(?:e|er|ers|ing)\b.{10}", words, re.I))
     js("progress.levels.flash = 0; renderGarage()")
     check("Autopilot: paid in metres", set(prices()) == {"m"}, prices())
     check("no word of the Black market before the reveal", "black market" not in js("$('garage').innerText").lower())
@@ -53,6 +57,7 @@ with sync_playwright() as p:
     check("after the reveal: three pages", tabs() == ["Workshop", "Autopilot", "Black market"], tabs())
     page("workshop")
     check("Workshop: Flash recharge on sale now", cards() == WORKSHOP[:7] + ["Flash recharge"] + WORKSHOP[7:], cards())
+    check("after the reveal, the flash's card says the racers won't move over", "(racers won't)" in js("$('cards').innerText"), "")
     page("black")
     check("Black market: the illegal and forbidden", cards() == BLACK, cards())
     check("Black market: paid in race points", set(prices()) == {"pts"}, prices())

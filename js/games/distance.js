@@ -15,15 +15,16 @@ const UPGRADES = {
   tyres:  { name: 'Tyres', max: 4, base: 400, growth: 1.8, info: l => `${tyreGrip(l).toFixed(1)} g grip: launches and braking` },
   time:   { name: 'Time', max: 6, base: 200, growth: 1.9, info: l => `${runTime(l)} s a run` },
   steering: { name: 'Steering', max: 3, base: 300, growth: 2, info: l => l ? `lane changes ${40 * l}% quicker` : 'stock rack' },
-  flash:  { name: 'Headlight flash', max: 10, base: 300, growth: 1.25, built: 1,
-            info: l => `${l} flash${l === 1 ? '' : 'es'} a run. F or the stalk left of the wheel: the car ahead in your lane moves over (racers won't)` },
+  flash:  { name: 'Headlight flash', max: 10, base: 300, growth: 1.25, built: 1, // the racers only after the reveal
+            info: l => `${l} flash${l === 1 ? '' : 'es'} a run. F or the stalk left of the wheel: the car ahead in your lane moves over` +
+              (progress.racing ? " (racers won't)" : '') },
   // after the reveal: on sale before it, it took the metres the car needed, and the white car fell 3 to 10 runs later
   // (tests/balance/act1.py, cheapest and value)
   flashRecharge: { name: 'Flash recharge', max: 5, base: 2500, growth: 1.5, built: 0, afterReveal: true, needs: ['flash'],
                    gate: () => lvl('flash') >= UPGRADES.flash.max || `needs ${UPGRADES.flash.max} flashes`,
                    info: l => l ? `a flash back every ${rechargeTime(l)} s` : 'a flash used is gone for the run' },
   autoflash: { name: 'Auto flash', tab: 'autopilot', max: 1, base: 2000, needs: ['flash'], gate: () => lvl('flash') >= 5 || 'needs 5 flashes',
-               info: () => 'flashes slower cars ahead for you, and changes lanes round racers instead' },
+               info: () => 'flashes slower cars ahead for you' + (progress.racing ? ', and changes lanes round racers instead' : '') },
   clutch: { name: 'Auto clutch', tab: 'autopilot', max: 1, base: 700, info: () => 'works the clutch: no stalls' },
   gas:    { name: 'Auto gas', tab: 'autopilot', max: 1, base: 800, info: () => 'launch and traction control' },
   shift:  { name: 'Auto shift', tab: 'autopilot', max: 1, base: 2500, needs: ['clutch'], info: () => 'changes gear at the limiter' },
