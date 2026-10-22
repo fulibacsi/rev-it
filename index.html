@@ -324,7 +324,12 @@
     <p>What works, what doesn't, what you would like: we read every one. Your play stats go with it, nothing personal.</p>
     <textarea id="feedback-text" maxlength="2000" rows="4" placeholder="Your feedback"></textarea>
     <p id="feedback-note"></p>
-    <footer><button id="feedback-x" title="cancel">✕</button><button id="feedback-send" class="big">SEND</button></footer>
+    <footer><button data-back>◀ BACK</button><button id="feedback-send" class="big">SEND</button></footer>
+  </section>
+  <section data-screen="thanks"> <!-- the feedback sent: its BACK goes where FEEDBACK came from (reporting.js) -->
+    <h2>FEEDBACK</h2>
+    <p>Thanks for your feedback!</p>
+    <footer><button data-back>◀ BACK</button></footer>
   </section>
 </div></div>
 
