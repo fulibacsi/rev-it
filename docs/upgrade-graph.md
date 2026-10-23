@@ -109,7 +109,7 @@ flowchart TD
   payoff --> dues & pace & fleetFlash
   flash -- "5+" --> fleetFlash
 
-  autopilot -- "totalled a car" --> warrig
+  fleetTab -- "totalled a car" --> warrig
   warrig --> bullbar & armour & spikes & radio & hunter
   bullbar --> madness
   spikes --> guns
