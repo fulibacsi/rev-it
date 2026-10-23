@@ -1,20 +1,22 @@
 // The Fleet, Distance's third act. Once you have won a race the racers you beat take offers, the slowest first. One you
 // pay off keeps its number, its place in the field and its pace, in your team's colours, and races for you: it gives
 // way when you come up behind it, and moves across to block a rival closing on it from behind. Your position counts
-// the rivals only. Paid in miles, from the Fleet page's Exchange (distance.js). The upgrades are fleet-wide: dues (a
-// share of the metres your fleet drives, paid at the finish), tuning, and a flash used for you.
+// the rivals only. Paid in miles: their places at the finish, and the Fleet page's Mile converter (distance.js). The
+// upgrades are fleet-wide: dues (a share of the metres your fleet drives, paid at the finish), tuning, and a flash
+// used for you.
 
 Object.assign(UPGRADES, {
   // prices: tests/balance/act3.py, 51 cars (the gang, act 4) after the first win, buying dues first. Each racer 6%
   // dearer took about 26 races; the owner (18 Oct) wanted about 15, the Fleet being the weakest act: 3.5% takes 14-16
   fleet: { name: 'Pay off a racer', tab: 'fleet', base: 1, growth: 1.035, max: () => FIELD - 1, locked: "#1 won't sell",
+           needs: ['fleetTab'],
            info: l => !l ? 'every racer for themselves' : l === 1 ? '#100 races for you'
              : `#${FIELD + 1 - l} to #100 race for you` },
   dues: { name: 'Fleet dues', tab: 'fleet', max: 5, base: 5, growth: 2, needs: ['fleet'],
           info: l => l ? `each fleet car pays you ${10 * l}% of the metres it drives` : 'your fleet drives for nothing' },
   fleetPace: { name: 'Fleet tuning', tab: 'fleet', max: 5, base: 3, growth: 2, needs: ['fleet'],
                info: l => l ? `fleet cars ${5 * l}% quicker` : 'fleet cars at their old pace' },
-  fleetFlash: { name: 'Fleet flash', tab: 'fleet', max: 1, base: 15, needs: ['fleet', 'flash'],
+  fleetFlash: { name: 'Fleet flash', tab: 'fleet', max: 1, base: 15, needs: ['fleet', ['flash', 5]],
                 info: () => 'a fleet car flashes slower traffic ahead of it out of your lane' },
 });
 const fleetSize = () => lvl('fleet');
@@ -22,6 +24,13 @@ const inFleet = n => progress.racing && n > FIELD - fleetSize(); // racer n is y
 const fleetPace = () => 1 + 0.05 * lvl('fleetPace');
 // the dues for a run: a share of the metres your fleet drove from the grid, paid into the bank at the finish
 const fleetDues = () => Math.round(0.1 * lvl('dues') * racers().reduce((m, c) => m + (c.fleet ? Math.max(0, c.z - c.grid) : 0), 0));
+// team places (the owner, 23 Oct): at the finish each fleet car's place in the field pays miles, TEAM a mile for each
+// ten places it is from the back (P101 to P92 one, P2 ten), so more cars and quicker ones pay more (tests/balance/act3.py)
+const TEAM = 0.25;
+const placeOf = c => 1 + FIELD - racers().length + (odo > c.z ? 1 : 0) + // everyone ahead of it, you included
+  racers().filter(o => o !== c && !o.wreck && o.z > c.z).length;
+const teamMiles = () => Math.round(racers().filter(c => c.fleet && !c.wreck)
+  .reduce((mi, c) => mi + TEAM * Math.ceil((FIELD + 2 - placeOf(c)) / 10), 0));
 
 // the sonar on the A-pillar: the road 250 m ahead of you and behind, from above, ahead up. The lanes to scale across
 // (4.4 px a metre: the lanes 15 px apart), squeezed along (34 px for 250 m); you in the middle, every car coloured by

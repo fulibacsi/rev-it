@@ -3,38 +3,52 @@
 // screens: the garage and the run read-out on the head-up display.
 
 // upgrade costs follow the usual incremental-game curve (Cookie Clicker, Hill Climb Racing): level n costs
-// base · growth^n. info(level) describes what the car has at that level; needs: upgrades it builds on.
+// base · growth^n. info(level) describes what the car has at that level. needs: its parents in the owner's graph
+// (docs/upgrade-graph.md, the source of truth): an id (bought), or [id, levels] ([id, 'max']: maxed); a function of the
+// level when each level has its own (the engines). It shows once one is met and is bought with all of them (shows,
+// whyNot). on: the aids it works on top of: one switched off switches it off too (aid).
 // tab: the garage page it is on, see PAGES; max can depend on
 // progress (then locked says why there is no more yet); gate(level) can hold the next level back with a reason;
-// built: how many levels count towards the car being built (headStart in race.js), when not all of them; afterReveal:
-// on sale (and shown) only once the race is revealed, so it doesn't hold up the first act.
+// built: how many levels count towards the car being built (headStart in race.js), when not all of them.
 const UPGRADES = {
-  power:  { name: 'Power', max: 10, base: 80, growth: 1.55, info: l => `+${12 * l}% torque` },
-  rev:    { name: 'Rev limit', max: 4, base: 150, growth: 2, info: l => `${limiter(engine, l)} rpm` },
-  gears:  { name: 'Gearbox', max: 3, base: 250, growth: 2.5, info: l => `${3 + l} gears` },
-  tyres:  { name: 'Tyres', max: 4, base: 400, growth: 1.8, info: l => `${tyreGrip(l).toFixed(1)} g grip: launches and braking` },
-  time:   { name: 'Time', max: 6, base: 200, growth: 1.9, info: l => `${runTime(l)} s a run` },
-  steering: { name: 'Steering', max: 3, base: 300, growth: 2, info: l => l ? `lane changes ${40 * l}% quicker` : 'stock rack' },
-  flash:  { name: 'Headlight flash', max: 10, base: 300, growth: 1.25, built: 1, // the racers only after the reveal
+  power:  { name: 'Power', max: 10, base: 80, growth: 1.55, needs: ['workshopTab'], info: l => `+${12 * l}% torque` },
+  rev:    { name: 'Rev limit', max: 4, base: 150, growth: 2, needs: ['workshopTab'], info: l => `${limiter(engine, l)} rpm` },
+  gears:  { name: 'Gearbox', max: 3, base: 250, growth: 2.5, needs: ['workshopTab'], info: l => `${3 + l} gears` },
+  tyres:  { name: 'Tyres', max: 4, base: 400, growth: 1.8, needs: ['workshopTab'],
+            info: l => `${tyreGrip(l).toFixed(1)} g grip: launches and braking` },
+  time:   { name: 'Time', max: 6, base: 200, growth: 1.9, needs: ['workshopTab'], info: l => `${runTime(l)} s a run` },
+  steering: { name: 'Steering', max: 3, base: 300, growth: 2, needs: ['workshopTab'],
+              info: l => l ? `lane changes ${40 * l}% quicker` : 'stock rack' },
+  flash:  { name: 'Headlight flash', max: 10, base: 300, growth: 1.25, built: 1, needs: ['workshopTab'], // the racers only after the reveal
             info: l => `${l} flash${l === 1 ? '' : 'es'} a run. F or the stalk left of the wheel: the car ahead in your lane moves over` +
               (progress.racing ? " (racers won't)" : '') },
-  // after the reveal: on sale before it, it took the metres the car needed, and the white car fell 3 to 10 runs later
-  // (tests/balance/act1.py, cheapest and value)
-  flashRecharge: { name: 'Flash recharge', max: 5, base: 2500, growth: 1.5, built: 0, afterReveal: true, needs: ['flash'],
-                   gate: () => lvl('flash') >= UPGRADES.flash.max || `needs ${UPGRADES.flash.max} flashes`,
+  // Reckless driving a parent (the owner, 23 Oct): on sale before the reveal, it took the metres the car needed, and
+  // the white car fell 3 to 10 runs later (tests/balance/act1.py, cheapest and value); in sight from 5 flashes, a teaser
+  flashRecharge: { name: 'Flash recharge', max: 5, base: 2500, growth: 1.5, built: 0, needs: [['flash', 5], 'reckless'],
                    info: l => l ? `a flash back every ${rechargeTime(l)} s` : 'a flash used is gone for the run' },
-  autoflash: { name: 'Auto flash', tab: 'autopilot', max: 1, base: 2000, needs: ['flash'], gate: () => lvl('flash') >= 5 || 'needs 5 flashes',
+  autoflash: { name: 'Auto flash', tab: 'autopilot', max: 1, base: 2000, needs: ['autopilotTab', ['flash', 5]], on: ['flash'],
                info: () => 'flashes slower cars ahead for you' + (progress.racing ? ', and changes lanes round racers instead' : '') },
-  clutch: { name: 'Auto clutch', tab: 'autopilot', max: 1, base: 700, info: () => 'works the clutch: no stalls' },
-  gas:    { name: 'Auto gas', tab: 'autopilot', max: 1, base: 800, info: () => 'launch and traction control' },
-  shift:  { name: 'Auto shift', tab: 'autopilot', max: 1, base: 2500, needs: ['clutch'], info: () => 'changes gear at the limiter' },
-  steer:  { name: 'Lane assist', tab: 'autopilot', max: 1, base: 1500, info: () => 'swerves round a car you are about to hit' },
-  cruise: { name: 'Autocruise', tab: 'autopilot', max: 1, base: 6000, needs: ['steer', 'gas', 'shift'],
+  clutch: { name: 'Auto clutch', tab: 'autopilot', max: 1, base: 700, needs: ['autopilotTab'], info: () => 'works the clutch: no stalls' },
+  gas:    { name: 'Auto gas', tab: 'autopilot', max: 1, base: 800, needs: ['autopilotTab'], info: () => 'launch and traction control' },
+  shift:  { name: 'Auto shift', tab: 'autopilot', max: 1, base: 2500, needs: ['clutch'], on: ['clutch'],
+            info: () => 'changes gear at the limiter' },
+  steer:  { name: 'Lane assist', tab: 'autopilot', max: 1, base: 1500, needs: ['autopilotTab'],
+            info: () => 'swerves round a car you are about to hit' },
+  cruise: { name: 'Autocruise', tab: 'autopilot', max: 1, base: 6000, needs: ['steer', 'shift', 'gas'], on: ['steer', 'gas', 'shift'],
             info: () => 'drives the whole run: passes, keeps right, brakes when boxed in' },
-  stereo: { name: 'Car stereo', max: 1, base: 500, built: 0, // stereo.js; no use for speed, so not part of building the car
+  stereo: { name: 'Car stereo', max: 1, base: 500, built: 0, needs: ['workshopTab'], // stereo.js; no use for speed, so not part of building the car
             info: () => 'synthwave on five tapes: tap the lights in the cluster (or M) for the next, or off' },
-  engine: { name: 'Engine swap', max: ENGINES.length - 1, base: 4000, growth: 2.5, info: l => ENGINES[l].name },
+  engine: { name: 'Engine swap', max: ENGINES.length - 1, base: 4000, growth: 2.5, info: l => ENGINES[l].name,
+            needs: l => l ? [['power', 'max'], ['rev', 'max'], ['gears', 'max']] : ['power', 'rev', 'gears'] }, // the V8, the I6
+  // the tabs, bought (the owner, 23 Oct): opens: the page; story: the moment it waits for, out of sight till then
+  workshopTab: { name: 'Workshop', opens: 'workshop', max: 1, base: 100, built: 0 },
+  autopilotTab: { name: 'Autopilot', opens: 'autopilot', max: 1, base: 500, built: 0, needs: ['workshopTab'],
+                  gate: () => progress.driven >= TO_AUTOPILOT || `${Math.floor(progress.driven / 100) / 10} of ${TO_AUTOPILOT / 1000} km driven` },
+  blackTab: { name: 'Black market', opens: 'black', max: 1, base: 1, wallet: 'points', needs: ['workshopTab'], story: () => progress.racing },
+  fleetTab: { name: 'Fleet', opens: 'fleet', max: 1, base: 1, wallet: 'points', needs: ['blackTab'], story: () => fleetOpen() },
+  warrigTab: { name: 'War Rig', opens: 'warrig', max: 1, base: 1, wallet: 'scrap', needs: ['fleetTab'], story: () => gangOpen() },
 };
+const TO_AUTOPILOT = 2000; // m driven in all before the Autopilot tab is for sale (the owner's graph)
 const COUNTDOWN = 3, FINISH = 2; // seconds of countdown before a run, and of braking after it
 
 const lvl = id => progress.levels[id] ?? 0;
@@ -61,12 +75,12 @@ function applyUpgrades() { // the garage's work on the engines and the car, and 
 // ---- saved progress (localStorage; the game still works without it, it just won't remember) ----
 const SAVE_KEY = 'car-rev-incremental';
 // off: aids switched off; racing: the race has been revealed; points: race points; finish: best finishing position;
-// damage: % (damage.js), broken: gears it broke; nitro: seconds in the tank; miles: the Fleet's money; parts: Mad
-// Max's, from totals: cars totalled (gang.js); wanted: police heat, 0 to 1 (police.js); tanks: tanks beaten (boss.js);
+// damage: % (damage.js), broken: gears it broke; nitro: seconds in the tank; miles: the Fleet's money; scrap: the
+// War Rig's, from totals: cars totalled (gang.js); wanted: police heat, 0 to 1 (police.js); tanks: tanks beaten (boss.js);
 // tape: the one in the stereo (stereo.js); time: seconds played, driven: metres in all, races: runs raced (the
 // menu's STATS)
 const FRESH = () => ({ bank: 0, best: 0, runs: 0, levels: {}, off: {}, engine: 0, racing: false, points: 0, finish: 101,
-                       damage: 0, broken: [], nitro: 0, miles: 0, parts: 0, totals: 0, wanted: 0, tanks: 0, tape: 0,
+                       damage: 0, broken: [], nitro: 0, miles: 0, scrap: 0, totals: 0, wanted: 0, tanks: 0, tape: 0,
                        time: 0, driven: 0, races: 0, seen: [], toured: [], dry: 0 }); // seen: upgrades seen unlocked (the tabs' !);
                                                        // toured: tutorials popped up (tutorial.js); dry: races in a row
                                                        // without a Black market buy (race.js raceWall)
@@ -77,10 +91,10 @@ const saveKey = () => debugSave ? SAVE_KEY + '-debug' : SAVE_KEY;
 const progress = Object.assign(FRESH(), load());
 function load() { try { return JSON.parse(localStorage.getItem(saveKey())) ?? {}; } catch { return {}; } }
 function save() {
-  if (debugSave) progress.bank = progress.points = progress.miles = progress.parts = FUNDS; // spent or earned, back to full
+  if (debugSave) progress.bank = progress.points = progress.miles = progress.scrap = FUNDS; // spent or earned, back to full
   try { localStorage.setItem(saveKey(), JSON.stringify(progress)); } catch { /* not saved */ }
 }
-const forgetRun = () => Object.assign(run, { gain: null, race: null, revealed: false, won: false, dues: 0, parts: 0, totals: 0,
+const forgetRun = () => Object.assign(run, { gain: null, race: null, revealed: false, won: false, dues: 0, team: 0, scrap: 0, totals: 0,
                                              firstTotal: false, boss: false, tank: null, beatTank: false, newBest: false, best: 0 });
 function resetProgress() { // a new game: the menu's "new game"
   Object.assign(progress, FRESH());
@@ -98,35 +112,60 @@ function useDebugSave(on) { // switch saves; the first debug save starts as a co
 const money = n => debugSave ? '∞' : fmt(n); // a debug wallet shows as bottomless
 
 // the garage's pages: the car itself and the robot driver, paid in metres; the illegal and forbidden, paid in race
-// points, open once the race is revealed (race.js fills it); the Fleet, paid in miles, open once you have won a race
-// (fleet.js); War Rig, paid in parts, open once you have totalled a car (gang.js). Each page's currency: the key in
-// progress, and its unit
+// points (race.js fills it); the Fleet, paid in miles (fleet.js); War Rig, paid in scrap (gang.js). Each is a tab you
+// buy (the owner's graph, 23 Oct): the Black market's once the race is revealed, the Fleet's once you have won a race,
+// the War Rig's once you have totalled a car. Each page's currency: the key in progress, and its unit
 const PAGES = [['workshop', 'Workshop'], ['autopilot', 'Autopilot'], ['black', 'Black market'], ['fleet', 'Fleet'],
                ['warrig', 'War Rig']];
-const WALLETS = { workshop: 'bank', autopilot: 'bank', black: 'points', fleet: 'miles', warrig: 'parts' };
-const UNITS = { bank: 'm', points: 'pts', miles: 'mi', parts: 'parts' };
-const pageOpen = id => id === 'black' ? progress.racing : id === 'fleet' ? fleetOpen() : id === 'warrig' ? gangOpen() : true;
+const WALLETS = { workshop: 'bank', autopilot: 'bank', black: 'points', fleet: 'miles', warrig: 'scrap' };
+const UNITS = { bank: 'm', points: 'pts', miles: 'mi', scrap: 'scrap' };
+const TAB = Object.fromEntries(Object.entries(UPGRADES).filter(([, u]) => u.opens).map(([id, u]) => [u.opens, id])); // page: its tab
 const fleetOpen = () => progress.finish === 1;
 const pageOf = u => u.tab ?? 'workshop';
-const wallet = u => WALLETS[pageOf(u)];     // which of progress's currencies it costs
+const wallet = u => u.wallet ?? WALLETS[pageOf(u)]; // which of progress's currencies it costs
 const inMetres = u => wallet(u) === 'bank';
-const price = (id, n) => `${fmt(n)} ${UNITS[wallet(UPGRADES[id])]}`;
+const price = (id, n, unit = UNITS[wallet(UPGRADES[id])]) => `${fmt(n)} ${n === 1 && unit === 'pts' ? 'pt' : unit}`;
 const maxOf = u => typeof u.max === 'function' ? u.max() : u.max;
+// its level; a tab counts as bought once anything on its page is, so a save from before the tabs keeps its pages
+const owned = id => lvl(id) || (UPGRADES[id].opens && Object.entries(UPGRADES).some(([k, u]) => !u.opens && pageOf(u) === UPGRADES[id].opens && lvl(k)) ? 1 : 0);
+const pageOpen = page => owned(TAB[page]) > 0;
+// its parents for the next level, each [id, levels]; met once that many are bought
+const needsOf = (id, l = lvl(id)) => {
+  const n = UPGRADES[id].needs;
+  return (typeof n === 'function' ? n(l) : n ?? []).map(p => Array.isArray(p) ? p : [p, 1]);
+};
+const has = ([id, n]) => owned(id) >= (n === 'max' ? maxOf(UPGRADES[id]) : n);
+// in sight (the owner's graph): bought, or one of its parents met; a tab's story keeps it out of sight till then
+function shows(id) {
+  const u = UPGRADES[id], needs = needsOf(id);
+  if (owned(id)) return true;
+  if (u.story && !u.story()) return false;
+  return !needs.length || needs.some(has);
+}
+const inSight = id => shows(id) && (!!UPGRADES[id].opens || pageOpen(pageOf(UPGRADES[id]))); // a card: on a page you have
+// what it needs, in full: done ticked, a parent out of sight as ??? (a card's own tab goes without saying)
+function rule(id) {
+  const u = UPGRADES[id];
+  return 'needs ' + needsOf(id).filter(([p]) => u.opens || p !== TAB[pageOf(u)]).map(([p, n]) => {
+    if (!inSight(p)) return '???';
+    const top = n === 'max' ? maxOf(UPGRADES[p]) : n, got = Math.min(owned(p), top);
+    return `${got >= top ? '✓ ' : ''}${UPGRADES[p].name}${top > 1 ? ` ${got}/${top}` : ''}`;
+  }).join(' · ');
+}
 function cost(id) {
   const u = UPGRADES[id], step = inMetres(u) ? 10 : 1; // metres in round tens, the rest one by one
   return Math.max(step, Math.round(u.base * (u.growth ?? 1) ** lvl(id) / step) * step);
 }
 function whyNot(id) { // reason an upgrade can't be bought now, or '' if it can
   const u = UPGRADES[id], l = lvl(id);
-  if (u.afterReveal && !progress.racing) return 'after the reveal'; // never shown: the card is left out
   if (l >= maxOf(u)) return u.locked && l < FIELD ? u.locked : 'max';
-  const missing = u.needs?.find(n => !lvl(n));
-  if (missing) return `needs ${UPGRADES[missing].name}`;
+  if (u.story && !u.story()) return 'out of sight';
+  if (!needsOf(id).every(has)) return rule(id);
   const gate = u.gate?.(l);
   if (typeof gate === 'string') return gate;
   return progress[wallet(u)] < cost(id) ? 'short' : '';
 }
-// a card is locked while none of it is bought and something else comes first: it shows only its name and what that is.
+// a card is locked while none of it is bought and something else comes first: it shows its name and its rule.
 // A tab gets a yellow ! while it has an upgrade unlocked that you haven't looked at yet (the owner, 14 Oct)
 const isLocked = id => !lvl(id) && !['', 'short', 'max'].includes(whyNot(id));
 const unseen = id => !isLocked(id) && !progress.seen.includes(id);
@@ -143,7 +182,7 @@ function buy(id) {
 // a driver aid works while bought, switched on and a run is under way, and only with the aids it builds on working
 function aid(id) {
   if (!lvl(id) || progress.off[id] || (run.phase !== 'countdown' && run.phase !== 'run')) return false;
-  return (UPGRADES[id].needs ?? []).every(aid);
+  return (UPGRADES[id].on ?? []).every(aid);
 }
 
 // ---- a run ----
@@ -153,7 +192,7 @@ const run = { phase: 'garage', count: 0, left: 0, best: progress.best, gain: nul
 
 function startRun() { // back to the start line, engine running, in neutral, held on the brake
   Object.assign(run, { phase: 'starting', count: COUNTDOWN, left: runTime(), best: progress.best, gain: 0, newBest: false,
-                       slot: progress.racing ? startSlot() : null, race: null, revealed: false, won: false, parts: 0, totals: 0,
+                       slot: progress.racing ? startSlot() : null, race: null, revealed: false, won: false, scrap: 0, totals: 0,
                        firstTotal: false, boss: bossRace(), tank: null, beatTank: false, limp: wrecked(),
                        flashes: lvl('flash'), recharge: 0 });
   resetScene();
@@ -175,10 +214,12 @@ function finishRun(dnf) { // dnf: why the run ended early (a crash), if it did
   if (run.race) { progress.races++; progress.dry++; }
   run.dues = fleetDues(); // fleet.js
   progress.bank += run.dues;
+  run.team = run.race ? teamMiles() : 0; // fleet.js: your fleet's places pay miles
+  progress.miles += run.team;
   run.won = was > 1 && progress.finish === 1; // the first win opens the Fleet
   save();
-  const { gain, newBest, race, dues, refill, totals, parts, boss, beatTank, limp } = run;
-  report('run', { run: { gain, newBest, race, dues, refill, totals, parts, boss, beatTank, limp } }); // reporting.js
+  const { gain, newBest, race, dues, team, refill, totals, scrap, boss, beatTank, limp } = run;
+  report('run', { run: { gain, newBest, race, dues, team, refill, totals, scrap, boss, beatTank, limp } }); // reporting.js
   Object.assign(run, { phase: 'finish', count: FINISH });
   nitro = false;
   gasPedal = 0; clutchPedal = 1; brakePedal = 1;
@@ -241,7 +282,7 @@ const exchangeLabel = () => `${fmt(exchange)} mi for ${fmt(exchange * MILE)} m`;
 function exchangeCard() {
   const can = canExchange();
   exchange = Math.min(exchange, can);
-  return `<div class="card exchange"><b>Exchange</b><small>metres for miles, one way: ${fmt(MILE)} m a mile · ` +
+  return `<div class="card exchange"><b>Mile converter</b><small>metres for miles, one way: ${fmt(MILE)} m a mile · ` +
     `${money(progress.miles)} mi to spend</small><input type="range" id="exchange" min="0" max="${can}" value="${exchange}">` +
     `<span><button data-exchange${exchange ? '' : ' disabled'}>${exchangeLabel()}</button> ` +
     `<button data-exchange-all${can ? '' : ' disabled'}>all available · ${money(can)} mi</button></span></div>`;
@@ -255,23 +296,24 @@ function exchangeCard() {
 // current one again, with where you stand and the last run in full; the garage keeps a line of the run's numbers
 TUTORIALS.unshift(
   { id: 'act1', name: 'DRIVE', open: () => true,
-    text: () => `You get ${runTime()} seconds a run. Drive as far as you can: every metre is money for upgrades in the ` +
-      'garage. New to a stick shift? HOW TO DRIVE takes you through it.' },
+    text: () => `You get ${runTime()} seconds a run. Drive as far as you can: every metre is money for the garage, its ` +
+      'Workshop first. New to a stick shift? HOW TO DRIVE takes you through it.' },
   { id: 'act2', act: 'II', name: 'RACE', open: () => progress.racing,
     text: () => 'That quick car was racer #100. You are in a race of a hundred: every run is a race now, and your place ' +
-      'when the time runs out pays race points, more for a place reached the first time. The Black market takes them.',
+      'when the time runs out pays race points, more for a place reached the first time. The Black market takes them: ' +
+      'buy its tab in the garage.',
     now: () => (progress.finish <= FIELD ? `Your best place: P${progress.finish}.` : '') +
       (hint() ? ` Stuck? ${hint()}.` : '') },
   { id: 'act3', act: 'III', name: 'RECRUIT', open: () => fleetOpen(),
-    text: () => 'P1! The racers you beat are open to offers. Pay them off in miles, on the Fleet page, and they race ' +
-      'for you, in your colours.',
+    text: () => 'P1! The racers you beat are open to offers. Buy the Fleet tab and pay them off in miles: they race ' +
+      'for you, in your colours, and their places at the finish pay you miles.',
     now: () => `${fleetSize() || 'None'} of the field race${fleetSize() === 1 ? 's' : ''} for you.` },
   { id: 'act4', act: 'IV', name: 'WAR', open: () => arOn(),
     text: () => `${GANG} of the field race for you: your fleet is a gang now. Its first job for you: total a car.`,
     now: () => 'Ram the car in the reticle until its health bar is empty.' },
   { id: 'nolaw', name: 'NO LAW OUT HERE', open: () => gangOpen(),
-    text: () => 'Totalled! No law out here any more. The gang is yours, and your car becomes a war rig: the War Rig page ' +
-      'is open, paid in parts.',
+    text: () => 'Totalled! No law out here any more. The gang is yours, and your car becomes a war rig: the War Rig tab ' +
+      'is for sale, paid in scrap.',
     now: () => progress.wanted >= 1 ? `Police heat 100%: the army has a tank ready for when you are ${lvl('guns') ? 'repaired' : 'armed'}.`
       : `Every car totalled raises the police heat, now ${heatPct()}. At 100% the army sends a tank` +
         (lvl('guns') ? '.' : ', once you have guns.') },
@@ -285,7 +327,8 @@ const CARDS = TUTORIALS.filter(t => t.text);
 const currentCard = () => CARDS.findLast(c => c.open());
 // stuck in the race (race.js raceWall): a word on the wall in the way, in the garage's line of numbers and on the act's
 // card. Kept short, and only when stuck: the owner (22 Oct) would rather not help the player too much
-const HINTS = { grid: 'Bribe the starter: start further up', reckless: 'Reckless driving: the oncoming lanes',
+const HINTS = { black: 'Buy the Black market: tap its tab', grid: 'Bribe the starter: start further up',
+                reckless: 'Reckless driving: the oncoming lanes',
                 gear7: '7th gear: the top 10 are beyond 6th' };
 const hint = () => HINTS[raceWall()];
 const actTitle = () => { const a = CARDS.findLast(c => c.act && c.open()); return a && `ACT ${a.act} · ${a.name}`; }; // none yet: the first
@@ -297,8 +340,9 @@ function runLine() {
   if (run.gain == null) return '';
   return [`<b>+${fmt(run.gain)} m</b>${run.newBest ? ' new best!' : ''}`,
     r && (r.dnf ? `<b>DNF</b> ${dnf(r)}` : `<b>P${r.p}</b> +${r.points} pts`),
-    run.dues && `fleet dues +${fmt(run.dues)} m`, run.refill && `nitro refill −${fmt(run.refill)} m`,
-    run.totals && `totalled ${run.totals}, +${fmt(run.parts)} parts`, run.beatTank && `the tank scrapped, +${TANK.parts} parts`,
+    run.team && `team places +${fmt(run.team)} mi`, run.dues && `fleet dues +${fmt(run.dues)} m`,
+    run.refill && `nitro refill −${fmt(run.refill)} m`,
+    run.totals && `totalled ${run.totals}, +${fmt(run.scrap)} scrap`, run.beatTank && `the tank scrapped, +${TANK.scrap} scrap`,
     arOn() && `police heat ${heatPct()}`, hint() && `<i>stuck? ${hint()}</i>`]
     .filter(Boolean).join(' · ');
 }
@@ -310,10 +354,11 @@ function runRows() {
     rows.push(['Last run', `+${fmt(run.gain)} m${run.newBest ? ', a new best' : ''}`]);
     if (r) rows.push(['Race', r.dnf ? `DNF: ${dnf(r)}` : `${r.start > FIELD ? 'from the back' : 'from P' + r.start} to P${r.p}`],
       ['Points', `+${r.points}` + (r.fresh ? ` (${r.fresh} for new places)` : '')]);
+    if (run.team) rows.push(['Team places', `+${fmt(run.team)} mi`]);
     if (run.dues) rows.push(['Fleet dues', `+${fmt(run.dues)} m`]);
     if (run.refill) rows.push(['Nitro refill', `−${fmt(run.refill)} m`]);
-    if (run.totals) rows.push(['Totalled', `${run.totals}, +${fmt(run.parts)} parts`]);
-    if (run.beatTank) rows.push(['The tank', `scrapped, +${TANK.parts} parts`]);
+    if (run.totals) rows.push(['Totalled', `${run.totals}, +${fmt(run.scrap)} scrap`]);
+    if (run.beatTank) rows.push(['The tank', `scrapped, +${TANK.scrap} scrap`]);
   }
   if (progress.runs) rows.push(['Best run', `${fmt(progress.best)} m`]);
   if (arOn()) rows.push(['Police heat', heatPct()]);
@@ -344,36 +389,37 @@ function closeCard() {
 // ---- garage ----
 let garageTab = 'workshop';
 function renderGarage(bought) {
-  if (!pageOpen(garageTab)) garageTab = 'workshop';
+  if (!pageOpen(garageTab)) garageTab = PAGES.map(([id]) => id).find(pageOpen) ?? 'workshop';
   $('bank').textContent = `${money(progress.bank)} m` + (progress.racing ? ` · ${money(progress.points)} pts` : '') +
-    (fleetOpen() ? ` · ${money(progress.miles)} mi` : '') + (gangOpen() ? ` · ${money(progress.parts)} parts` : '') + ' to spend';
-  const sold = u => !u.afterReveal || progress.racing; // on sale yet
+    (fleetOpen() ? ` · ${money(progress.miles)} mi` : '') + (gangOpen() ? ` · ${money(progress.scrap)} scrap` : '') + ' to spend';
   $('act-title').textContent = `${actTitle() ?? 'GARAGE'} ▸`;
   $('report').innerHTML = runLine();
-  const onPage = page => Object.keys(UPGRADES).filter(id => id !== 'engine' && pageOf(UPGRADES[id]) === page && sold(UPGRADES[id]));
+  const onPage = page => Object.keys(UPGRADES).filter(id => !UPGRADES[id].opens && pageOf(UPGRADES[id]) === page && shows(id));
   const fresh = onPage(garageTab).filter(unseen); // on the page you're looking at: seen now
   if (fresh.length) { progress.seen.push(...fresh); save(); }
-  $('tabs').innerHTML = PAGES.filter(([id]) => pageOpen(id)).map(([id, name]) => `<button data-tab="${id}" class="` +
-    `${id === garageTab ? 'on' : ''}${onPage(id).some(unseen) ? ' new' : ''}">${name}</button>`).join('');
-  $('engine-row').hidden = garageTab !== 'workshop';
-  $('engine-row').innerHTML = ENGINES.map((e, i) => i <= lvl('engine')
-    ? `<button data-engine="${i}"${i === progress.engine ? ' class="on"' : ''}>${e.name}</button>`
-    : i === lvl('engine') + 1
-      ? `<button data-buy="engine"${whyNot('engine') ? ' disabled' : ''}>${e.name} · ${fmt(cost('engine'))} m</button>`
-      : `<button disabled>${e.name} · locked</button>`).join('');
-  const onTab = ([id, u]) => id !== 'engine' && pageOf(u) === garageTab && sold(u);
+  // the tabs you have, then any in sight for sale: a tap buys it (the owner, 23 Oct)
+  const forSale = (page, name, id = TAB[page], why = whyNot(id)) => `<button data-buy="${id}" data-tab="${page}" class="sale"` +
+    `${why ? ' disabled' : ''}>${name}<small>${why && why !== 'short' ? why : price(id, cost(id))}</small></button>`;
+  $('tabs').innerHTML = PAGES.map(([id, name]) => pageOpen(id) ? `<button data-tab="${id}" class="` +
+    `${id === garageTab ? 'on' : ''}${onPage(id).some(unseen) ? ' new' : ''}">${name}</button>` : inSight(TAB[id]) ? forSale(id, name) : '').join('');
+  $('engine-row').hidden = garageTab !== 'workshop' || !pageOpen('workshop'); // the engines you have; the next one is a card
+  $('engine-row').innerHTML = ENGINES.slice(0, lvl('engine') + 1).map((e, i) =>
+    `<button data-engine="${i}"${i === progress.engine ? ' class="on"' : ''}>${e.name}</button>`).join('');
+  const onTab = ([id, u]) => !u.opens && pageOf(u) === garageTab && shows(id);
   const d = progress.damage;
   $('drive').textContent = wrecked() ? `LIMP ${LIMP} m ▶` : 'DRIVE ▶'; // a wreck can always limp: no dead end
   const repairCard = garageTab === 'workshop' && d > 0 ? `<div class="card repair"><b>Repair</b><small>${Math.round(d)}% damage · ` +
     `rev limit −${fmt(revLoss())} rpm${progress.broken.length ? ` · broken: ${progress.broken.map(ordinal).join(', ')}` : ''}</small>` +
     `<button data-repair${progress.bank >= REPAIR ? '' : ' disabled'}>${progress.bank >= repairCost() ? 'Repair all' : 'Repair what I can'}` +
     ` · ${fmt(Math.min(repairCost(), Math.floor(progress.bank / REPAIR) * REPAIR))} m</button></div>` : '';
-  $('cards').innerHTML = repairCard + (garageTab === 'fleet' ? exchangeCard() : '') + Object.entries(UPGRADES).filter(onTab).map(([id, u]) => {
+  const first = pageOpen(garageTab) ? '' : `<p class="buy-tab">Buy the ${PAGES.find(([id]) => id === garageTab)[1]}: tap its tab.</p>`;
+  $('cards').innerHTML = first + repairCard + (garageTab === 'fleet' && pageOpen('fleet') ? exchangeCard() : '') +
+    Object.entries(UPGRADES).filter(onTab).map(([id, u]) => {
     if (isLocked(id)) return `<div class="card locked"><b>${u.name}</b><small>${whyNot(id)}</small></div>`;
     const l = lvl(id), why = whyNot(id), max = maxOf(u), steps = typeof u.max === 'function' ? 0 : max;
     const pips = steps > 1 ? `<i>${'■'.repeat(l)}${'□'.repeat(steps - l)}</i>` : '';
     const info = max > 1 || steps === 0 ? u.info(l) + (why !== 'max' && !why.startsWith('finish') ? ` → ${u.info(l + 1)}` : '') : u.info();
-    const toggle = u.needs?.some(n => progress.off[n]) ? `<button disabled>needs ${UPGRADES[u.needs.find(n => progress.off[n])].name} on</button>`
+    const toggle = u.on?.some(n => progress.off[n]) ? `<button disabled>needs ${UPGRADES[u.on.find(n => progress.off[n])].name} on</button>`
       : `<button data-toggle="${id}"${progress.off[id] ? '' : ' class="on"'}>${progress.off[id] ? 'OFF' : 'ON'}</button>`;
     const button = why === u.locked ? `<button disabled>${why}</button>` : why === 'max' ? (u.max !== 1 && !u.toggle ? '<button disabled>MAX</button>' : toggle)
       : why.startsWith('needs') ? `<button disabled>${why}</button>`
