@@ -34,8 +34,8 @@ with sync_playwright() as p:
         lever_path(path)
         if manual_clutch: pedal("clutch", 0.0, 300)
 
-    # ---- run 1: everything by hand, 3-speed box ----
-    pg.click("#drive"); wait_phase("countdown")
+    # ---- run 1: everything by hand, 3-speed box (a new game: straight onto the road, no DRIVE to press) ----
+    wait_phase("countdown")
     pedal("clutch", 1.0); lever_path([(0, 0), (-1, 0), (-1, -1)]); pedal("gas", 1.0)
     print("staged:", st()); pg.screenshot(path=f"{OUT}/p_countdown.png")
     wait_phase("run"); pedal("clutch", 0.0, 700)

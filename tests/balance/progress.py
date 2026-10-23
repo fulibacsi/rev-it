@@ -12,7 +12,7 @@ with sync_playwright() as p:
     b = launch(p, args=["--autoplay-policy=no-user-gesture-required"])
     pg = b.new_page(); pg.on("pageerror", lambda e: print("ERR", e))
     pg.goto(URL); js = pg.evaluate
-    js("localStorage.clear()"); pg.reload(); pg.add_script_tag(path=str(HERE / "sim.js")); js("progress.toured = TUTORIALS.map(t => t.id)"); pg.click('[data-play="distance"]'); pg.click("#drive"); pg.wait_for_timeout(1500)
+    js("localStorage.clear()"); pg.reload(); pg.add_script_tag(path=str(HERE / "sim.js")); js("progress.toured = TUTORIALS.map(t => t.id); progress.runs = 1"); pg.click('[data-play="distance"]'); pg.click("#drive"); pg.wait_for_timeout(1500)  # a game under way: a new one skips the garage
     U = js("Object.fromEntries(Object.entries(UPGRADES).map(([k, u]) => [k, { max: u.max, base: u.base, growth: u.growth ?? 1, needs: u.needs }]))")
     cost = lambda k, l: round(U[k]["base"] * U[k]["growth"] ** l / 10) * 10
     lv, bank, total, spent = {}, 0, 0, 0

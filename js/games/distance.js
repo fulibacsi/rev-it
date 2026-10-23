@@ -379,11 +379,11 @@ function renderCard() {
   $('act-go').textContent = screenFrom.length ? '◀ BACK' : 'CONTINUE ▶';
 }
 // back where it came from (the pause menu), or, popped up or opened from the garage, on to the garage, and the next
-// card or tutorial the same run brought
+// card or tutorial the same run brought; a new game's, on to its first run (the rest pops up after it)
 function closeCard() {
   if (screenFrom.length) return showScreen(screenFrom.pop(), true);
   closeMenu();
-  popTour();
+  if (run.phase === 'garage') popTour();
 }
 
 // ---- garage ----
@@ -476,7 +476,8 @@ function renderRun() {
     if (run.phase === 'finish') { flash(run.beatTank ? 'TANK DOWN!' : 'TIME!', '#ec4', true); beep(880, 0.8); }
     if (run.phase === 'garage') renderGarage();
     if (run.phase === 'garage' && run.beatTank) openMenu('win'); // the tank burning, then the ending (main.js)
-    else if (run.phase === 'garage') popTour(); // a system new this run: its tutorial (tutorial.js)
+    // a system new this run: its tutorial (tutorial.js); a new game: its first act's card, over the road
+    else if (run.phase === 'garage' || run.phase === 'starting' && !progress.runs) popTour();
     document.body.classList.toggle('garage', run.phase === 'garage');
     shownPhase = run.phase;
   }
@@ -541,9 +542,10 @@ const DISTANCE = {
   engine: () => progress.engine, // the garage's engines, not the menu's
   tune: applyUpgrades,
   madness: () => run.phase === 'run' && !progress.off.baddrivers ? madShare(lvl('baddrivers')) : 0, // gang.js
-  start() { // a new game: its first act's card pops up, alone
+  start() { // a new game goes straight onto the road, its first act's card up first, alone: no garage before the first
+    // run, with nothing in it yet (the owner, 23 Oct)
     Object.assign(run, { phase: 'garage', best: progress.best }); shownPhase = null;
-    if (!progress.runs) markTours('act1');
+    if (!progress.runs) { drive(); markTours('act1'); }
     report('start'); // reporting.js
   },
   pause: () => save(), // the menu opened: the time played so far is kept

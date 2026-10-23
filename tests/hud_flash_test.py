@@ -8,7 +8,7 @@ with sync_playwright() as p:
     ctx = b.new_context(viewport={"width": 844, "height": 390}, is_mobile=True, has_touch=True); pg = ctx.new_page(); pg.on("pageerror", lambda e: errors.append(str(e)))
     ctx.new_cdp_session(pg).send("Emulation.setTouchEmulationEnabled", {"enabled": True, "maxTouchPoints": 5})
     pg.goto(URL); pg.wait_for_timeout(300); js = pg.evaluate
-    js("localStorage.clear(); Object.assign(progress, { bank: 5000, levels: { flash: 1, clutch: 1, gas: 1, shift: 1 }, toured: TUTORIALS.map(t => t.id) })"); pg.tap('[data-play="distance"]'); pg.wait_for_timeout(200)
+    js("localStorage.clear(); Object.assign(progress, { bank: 5000, levels: { flash: 1, clutch: 1, gas: 1, shift: 1 }, runs: 1, toured: TUTORIALS.map(t => t.id) })"); pg.tap('[data-play="distance"]'); pg.wait_for_timeout(200)
     pg.tap("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000); pg.wait_for_timeout(120)
     print("GO! message:", js("(() => { const f = document.getElementById('flash'), s = getComputedStyle(f), r = f.getBoundingClientRect(); return { text: f.textContent, display: s.display, position: s.position, opacity: +(+s.opacity).toFixed(2), w: Math.round(r.width), h: Math.round(r.height) }; })()"))
     pg.screenshot(path=f"{OUT}/go_message.png")
