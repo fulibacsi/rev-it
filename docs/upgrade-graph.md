@@ -12,7 +12,7 @@ five levels of it. A label on a tab's arrow is a condition besides the price.
 |---|---|---|---|
 | Workshop | 100 m | nothing: the first buy | |
 | Autopilot | 500 m | Workshop | 2 km+ driven |
-| Black market | 1 point | Autopilot | |
+| Black market | 1 point | Autopilot | P100 |
 | Fleet | 1 point | Autopilot | P1 |
 | War Rig | 1 scrap | Autopilot | totalled a car |
 
@@ -50,10 +50,9 @@ flowchart TD
     ecuPower["ECU: power"]
     cooling["Cooling"]
     nitro["Nitro"]
-    nitroRecharge["Recharge"]
+    daredevil["Daredevil"]
     gear7["7th gear"]
     rcruise["Reckless auto-drive"]
-    daredevil["Daredevil"]
   end
   subgraph F["Fleet · 1 point"]
     fleetTab(["Fleet tab"])
@@ -89,19 +88,18 @@ flowchart TD
   clutch --> shift
   steer & shift & gas --> cruise
 
-  autopilot --> black
+  autopilot -- "P100" --> black
   black --> grid & reckless & rcruise
   grid --> rolling
   reckless --> chicken & ecuRev
   recharge --> chicken
   ecuRev --> ecuPower
   ecuPower --> cooling & nitro
-  nitro -- max --> nitroRecharge
+  nitro -- max --> daredevil
   nitro --> gear7
   gears --> gear7
   cruise --> rcruise
   gear7 --> rcruise
-  rcruise --> daredevil
 
   autopilot -- P1 --> fleetTab
   fleetTab --> converter & payoff
@@ -154,10 +152,9 @@ Each upgrade and what it needs, one line each: the list to edit.
 - ECU: power ← ECU: rev limit
 - Cooling ← ECU: power
 - Nitro ← ECU: power
-- Recharge ← Nitro max
+- Daredevil ← Nitro max
 - 7th gear ← Nitro, Gearbox
 - Reckless auto-drive ← Black market, Autocruise, 7th gear
-- Daredevil ← Reckless auto-drive
 
 ### Fleet (1 point; needs the Autopilot, and P1)
 
@@ -188,29 +185,11 @@ Each upgrade and what it needs, one line each: the list to edit.
 - **Game of chicken** needs Flash recharge; today Headlight flash.
 - **The ECU** is a chain: ECU: rev limit, then ECU: power, then Cooling and Nitro; today all three of the first need
   only Reckless driving.
-- **Recharge**, after Nitro maxed, is new.
 - **Jump the start** needs Bribe the starter; today it is on sale with the Black market.
 - **Reckless auto-drive** needs the Black market, Autocruise and 7th gear; today Autocruise, Reckless driving, and 7th
   gear bought.
-- **Daredevil** needs Reckless auto-drive; today everything else maxed.
+- **Daredevil** needs Nitro maxed; today everything else maxed.
 - **Mile converter**: today's Exchange card (metres for miles), there as soon as the Fleet page is.
 - **Fuel madness** needs Bull bar; today nothing.
 - **Hunter** needs the War Rig, Autocruise and Reckless auto-drive; today Autocruise.
 - **Hunting pack** needs Hunter, Fleet dues, Fleet tuning and Fleet flash; today nothing.
-
-## Where I wasn't sure
-
-1. **The line marked with × from the Workshop to the Autopilot**, beside "2 km+ driven". I read it as the condition
-   (2 km driven in all) and the plain line as the parent. Is "2 km+ driven" the total driven, or a single run?
-2. **Black market to Jump the start** is hatched over. I read it as removed, with Bribe the starter as its parent
-   instead.
-3. **Game of chicken**'s line starts at Flash recharge, not Headlight flash. Which one?
-4. **Recharge**, after Nitro max: what does it do? The nitro refilling itself over time? Today Daredevil refills it, in
-   the oncoming lanes.
-5. **Scrap**: the War Rig's money, today called parts. A new name?
-6. **Tyres, Time and Steering** aren't on the drawing. Under the Workshop, like Power?
-7. **Gearbox to 7th gear** has no label. Maxed, 6 gears, as today?
-8. **Several parents**: I read each as needed to buy, all of them. Its card shows once one of them is unlocked (your
-   rule).
-9. **Crossed-out words**: next to the Autopilot on the second sheet, "Workshop" is crossed out, and something above it
-   and above Spike too. I took the names that stand.
