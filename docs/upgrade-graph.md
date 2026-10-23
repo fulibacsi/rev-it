@@ -13,8 +13,8 @@ five levels of it. A label on a tab's arrow is a condition besides the price.
 | Workshop | 100 m | nothing: the first buy | |
 | Autopilot | 500 m | Workshop | 2 km+ driven |
 | Black market | 1 point | Autopilot | P100 |
-| Fleet | 1 point | Autopilot | P1 |
-| War Rig | 1 scrap | Autopilot | totalled a car |
+| Fleet | 1 point | Black market | P1 |
+| War Rig | 1 scrap | Fleet | totalled a car |
 
 ## The graph
 
