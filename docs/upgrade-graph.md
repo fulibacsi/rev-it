@@ -76,9 +76,12 @@ flowchart TD
   end
 
   workshop --> power & rev & gears & stereo & flash
-  power -- max --> v8
-  rev -- max --> v8
-  gears -- max --> v8
+  power --> v8
+  rev --> v8
+  gears --> v8
+  power -- max --> i6
+  rev -- max --> i6
+  gears -- max --> i6
   v8 --> i6
   flash -- "5+" --> recharge
 
