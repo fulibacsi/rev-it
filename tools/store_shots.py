@@ -8,7 +8,7 @@
 
 The first act only: no race, no fleet, no War Rig (CLAUDE.md: never a hint of the hidden race). The robot driver at
 the wheel: the coast road at speed on a desktop and on a phone held sideways, the garage after a run, HOW TO DRIVE;
-the cover is the road with the title over it, 1260 x 1000 and 630 x 500."""
+the cover is the road with the title over it, in the phone's cockpit, 1260 x 1000 and 630 x 500."""
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tests"))
@@ -34,9 +34,10 @@ with sync_playwright() as p:
     pg.screenshot(path=f"{OUT}/2-garage.png")
     pg.keyboard.press("Escape"); pg.click('[data-show="help"]:visible'); pg.click('[data-tour="driving"]'); pg.keyboard.press("ArrowRight"); pg.wait_for_timeout(300)
     pg.screenshot(path=f"{OUT}/4-how-to-drive.png")
-    # the cover: a taller window, the road, the title over it
+    # the cover: a taller window, the road, the title over it, in the phone's cockpit: the lever on the left, as the owner
+    # plays it (the owner, 23 Oct: on the desktop's, right of the wheel, it was on the wrong side)
     cv = b.new_page(viewport={"width": 1260, "height": 1000}); cj = cv.evaluate
-    cv.goto(URL); cv.wait_for_timeout(300); setup(cj, False)
+    cv.goto(URL); cv.wait_for_timeout(300); setup(cj, True)
     cv.click('[data-play="distance"]'); cv.wait_for_timeout(300); cj("refreshCar(); 0"); drive(cv, cj, 16)
     cj("""(() => { const d = document.createElement('div'); d.innerHTML = '<b>REV <span>IT</span></b><i>stick shift · coast road · synthwave</i>';
       Object.assign(d.style, { position: 'fixed', left: 0, right: 0, top: '7%', textAlign: 'center', zIndex: 99, pointerEvents: 'none',
