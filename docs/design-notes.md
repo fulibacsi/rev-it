@@ -98,6 +98,9 @@ machine or session. Keep it current: update a section when a decision changes, a
 - Lane changes are discrete: four lanes, two of them oncoming.
 
 **Gear lever.**
+- On the left in both layouts (the owner, 23 Oct: on a desktop it was right of the wheel, under the key, "on the wrong
+  side"). On a desktop it sits below the stereo, its right edge at 17vw, clear of the stereo and the light stalk at any
+  window shape; the key stays right of the wheel.
 - An H gate, and every shift needs the clutch.
 - With a finger, the lever forgives a sloppy route. Once the finger has come out through neutral, anywhere deep in
   the top or bottom row puts the lever in the nearest column's slot, and it follows the finger if it drifts.

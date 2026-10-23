@@ -293,7 +293,9 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
 #ignition text { font: bold 10px system-ui, sans-serif; fill: #777; text-anchor: middle; }
 #key { transform-origin: 65px 70px; }
 #ignition[data-state="off"] .off, #ignition[data-state="on"] .on, #ignition[data-state="start"] .start { fill: var(--accent); }
-#shifter { position: fixed; left: 67.5vw; top: 78vh; height: calc(19vh * 3.2 / var(--gate-w)); /* 7 gears: shorter, same width */ cursor: grab; touch-action: none; }
+/* the lever on the left, as on a phone (the owner, 23 Oct): its right edge at 17vw, clear of the stereo and the light
+   stalk at any window shape (19vh * 3.2 / 3.5 is its width, with 6 gears or 7) */
+#shifter { position: fixed; left: max(1.5vw, calc(17vw - 19vh * 3.2 / 3.5)); top: 78vh; height: calc(19vh * 3.2 / var(--gate-w)); /* 7 gears: shorter, same width */ cursor: grab; touch-action: none; }
 #shifter text { font: bold 0.32px system-ui, sans-serif; fill: #889; text-anchor: middle; }
 #shifter text.locked { fill: #2a2a33; }
 #shifter text.broken { fill: #c33; }

@@ -34,8 +34,7 @@ with sync_playwright() as p:
     pg.screenshot(path=f"{OUT}/2-garage.png")
     pg.keyboard.press("Escape"); pg.click('[data-show="help"]:visible'); pg.click('[data-tour="driving"]'); pg.keyboard.press("ArrowRight"); pg.wait_for_timeout(300)
     pg.screenshot(path=f"{OUT}/4-how-to-drive.png")
-    # the cover: a taller window, the road, the title over it, in the phone's cockpit: the lever on the left, as the owner
-    # plays it (the owner, 23 Oct: on the desktop's, right of the wheel, it was on the wrong side)
+    # the cover: a taller window, the road, the title over it, in the phone's cockpit, as the owner plays it
     cv = b.new_page(viewport={"width": 1260, "height": 1000}); cj = cv.evaluate
     cv.goto(URL); cv.wait_for_timeout(300); setup(cj, True)
     cv.click('[data-play="distance"]'); cv.wait_for_timeout(300); cj("refreshCar(); 0"); drive(cv, cj, 16)
