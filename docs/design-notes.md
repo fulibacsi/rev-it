@@ -717,8 +717,9 @@ DNF that halved the heat. Till then the act's card says "the army has a tank rea
   - Act 1: #100 first passed on run 19 (value) and 22 (cheapest first), both seeds; it was 17–19 and 21–23.
   - Act 2: P1 after 17 and 16 races (seeds 1 and 2), Flash recharge bought on the way for Game of chicken.
   - Act 3: 51 fleet cars after 12, 12, 10, 12 races (seeds 1 to 4); without team places 14–16.
-  - Act 4: the heat at 100% after 9 to 10 races, the tank beaten at the first go (races 11 and 12, seeds 1 and 2;
-    without team places 13 and 11). At the short end of the target. Left as it is unless the owner wants it longer.
+  - Act 4: the heat at 100% after 10 to 11 races, the tank beaten at the first go (races 11 and 12, seeds 1 and 2;
+    without team places 13 and 11; the game before this change 12 and 12): as it was, at the short end of the target.
+    Left as it is unless the owner wants it longer.
   - In all about 56–63 races, inside the 51–83.
 - **Simulation tools** live in `tests/balance/` and are run from the repo root:
   - `act1.py [cheapest|value] [head-start curve or -] [traffic]`: when #100 is first passed;
