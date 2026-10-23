@@ -49,8 +49,9 @@ with sync_playwright() as p:
     print("garage after run 1:", js("({...progress})")); pg.screenshot(path=f"{OUT}/p_garage1.png")
 
     # ---- buy through the garage UI ----
-    js("progress.bank += 3000; renderGarage()")
-    for sel in ['[data-tab="autopilot"]', '[data-buy="clutch"]', '[data-tab="workshop"]', '[data-buy="power"]', '[data-buy="gears"]', '[data-buy="rev"]']:
+    js("progress.bank += 3000; progress.driven = Math.max(progress.driven, 2000); renderGarage()")  # the Autopilot's tab: 2 km driven
+    for sel in ['[data-tab="workshop"]', '[data-tab="autopilot"]', '[data-buy="clutch"]', '[data-tab="workshop"]', '[data-buy="power"]',
+                '[data-buy="gears"]', '[data-buy="rev"]']:  # the tabs first (the upgrade graph), a tap buys each
         pg.click(sel); pg.wait_for_timeout(100)
     print("after buying:", js("({ bank: progress.bank, levels: progress.levels, top: topGear(), redline: engine.redline })"))
     pg.screenshot(path=f"{OUT}/p_garage2.png")

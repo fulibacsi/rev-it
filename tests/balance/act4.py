@@ -3,9 +3,9 @@ The bot drives like act2.py's (Reckless auto-drive) with War Rig habits on top: 
 it takes the wheel, moves into that car's lane and rams it (the aids would brake or steer round), unless its own car is
 past 60% damage, and once it has Hunter, the aid that does the same, it leaves that to the aid; it holds the trigger whenever the reticle's car is in reach (the tank too, which it doesn't ram).
 After each race: metres pay the repairs and the rest becomes miles for the fleet (dues and tuning first, then more
-cars); parts buy the War Rig upgrades, the cheapest first (Auto gun too: it fires no more than the bot already does,
+cars); scrap buys the War Rig upgrades, the cheapest first (Auto gun too: it fires no more than the bot already does,
 but a phone player would buy it). Usage: act4.py [races] [seed] [overrides], the overrides
-some JavaScript run first to try other numbers, such as "PARTS.car = 20; UPGRADES.guns.base = 80"."""
+some JavaScript run first to try other numbers, such as "SCRAP.car = 20; UPGRADES.guns.base = 80"."""
 import json, sys
 from playwright.sync_api import sync_playwright
 from pathlib import Path
@@ -18,7 +18,7 @@ START = dict(power=10, rev=4, gears=3, tyres=4, time=6, clutch=1, gas=1, shift=1
              fleet=51, dues=3, fleetPace=3, fleetFlash=1)
 RESERVE = 3000   # metres kept back for the nitro refill and repairs
 FLEET = ["dues", "fleetPace", "fleet"]
-WARRIG = ["bullbar", "armour", "spikes", "guns", "autogun", "baddrivers", "hunter", "pack"]
+WARRIG = ["warrigTab", "bullbar", "armour", "spikes", "guns", "autogun", "baddrivers", "hunter", "pack"]  # the tab first
 RACES = int(sys.argv[1]) if len(sys.argv) > 1 else 60
 SEED = int(sys.argv[2]) if len(sys.argv) > 2 else None
 OVERRIDES = sys.argv[3] if len(sys.argv) > 3 else ""
@@ -40,13 +40,13 @@ with sync_playwright() as p:
     js("window.RACER_BOT = window.CRASH_DAMAGE = window.SEE_AHEAD = true")
     js(HABITS)
     if OVERRIDES: js(OVERRIDES + "; 0")
-    js(f"Object.assign(progress, {{ racing: true, finish: 1, points: 0, bank: {RESERVE}, miles: 0, parts: 0, totals: 0, wanted: 0, tanks: 0, damage: 0, broken: [], nitro: 0, levels: {json.dumps(START)} }})")
+    js(f"Object.assign(progress, {{ racing: true, finish: 1, points: 0, bank: {RESERVE}, miles: 0, scrap: 0, totals: 0, wanted: 0, tanks: 0, damage: 0, broken: [], nitro: 0, levels: {json.dumps(START)} }})")
     for race in range(1, RACES + 1):
         boss = js("bossRace()")
         # each race's traffic from a seed of its own, and what it did read in the same call: the page's own loop draws on
         # the seed and moves on between calls, so the results would move with the machine's load
         r = js(f"""(() => {{ {f"rng = {SEED * 1000 + race};" if SEED is not None else ""} simRun({{ ...progress.levels }}, 2, 1, {{}}, true);
-                  return {{ p: run.race && run.race.p, dnf: run.race && run.race.dnf, totals: run.totals, parts: run.parts, heat: Math.round(progress.wanted * 100),
+                  return {{ p: run.race && run.race.p, dnf: run.race && run.race.dnf, totals: run.totals, scrap: run.scrap, heat: Math.round(progress.wanted * 100),
                   dmg: Math.round(progress.damage), tank: run.tank ? Math.round(Math.max(0, run.tank.hp ?? tankHealth())) : null, beat: run.beatTank,
                   hit: run.race && run.race.dnf === 'head-on' ? (impact.car.police ? 'police' : 'traffic') : '' }}; }})()""")
         js("while (repair() && progress.damage > 0);")  # metres pay the repairs
@@ -56,10 +56,10 @@ with sync_playwright() as p:
             buyAll({json.dumps(WARRIG)}, true); buyAll({json.dumps(FLEET)}, false); return b.filter(x => !x.startsWith('fleet') || x.startsWith('fleetP')); }})()""")
         fleet = js("lvl('fleet')")
         res = ("P" + str(r["p"])) if r["p"] else r["dnf"] + (f" ({r['hit']})" if r["hit"] else "")
-        print(f"race {race:2}: {res:18} totals {r['totals']:2} +{r['parts']:3} parts  heat {r['heat']:3}%  dmg {r['dmg']:3}%  fleet {fleet:2}"
+        print(f"race {race:2}: {res:18} totals {r['totals']:2} +{r['scrap']:3} scrap  heat {r['heat']:3}%  dmg {r['dmg']:3}%  fleet {fleet:2}"
               + (f"  TANK {'beaten' if r['beat'] else str(r['tank']) + ' left'}" if boss else "") + f"  bought {' '.join(bought)}")
         if r["beat"]: print(f"tank beaten in race {race}"); break
     else: print(f"no tank beaten in {RACES} races")
     print("levels:", js("(() => { const l = progress.levels; return { bullbar: l.bullbar, armour: l.armour, spikes: l.spikes, guns: l.guns, fleet: l.fleet }; })()"),
-          "| parts left", js("progress.parts"), "| totals", js("progress.totals"))
+          "| scrap left", js("progress.scrap"), "| totals", js("progress.totals"))
     b.close(); print("ERRORS:", errs or "none")

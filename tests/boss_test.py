@@ -1,7 +1,7 @@
 """The final boss: at 100% heat the garage warns of the tank, and the next race has it. It holds the road about 80 m
 ahead of you in your lane, is the AR target ("TANK"), shells you (8% damage each, less with armour), and shrugs off
 rams; your guns and the gang's wear it down. Destroyed: TANK DOWN, the run stops there; the ending (heat back to 0,
-parts), and the next tank is tougher. Not destroyed by the bell: a DNF, and the heat drops to half."""
+scrap), and the next tank is tougher. Not destroyed by the bell: a DNF, and the heat drops to half."""
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
 CAR = ("power: 10, rev: 4, gears: 3, tyres: 4, time: 6, clutch: 1, gas: 1, shift: 1, engine: 2, reckless: 1, flash: 5, "
@@ -47,8 +47,8 @@ with sync_playwright() as p:
     check("guns 3: about 18 a shot, 4 a second", 50 <= h0 - js("run.tank.hp") <= 95, h0 - js("run.tank.hp"))
     # 5. destroyed: the ending
     js("progress.damage = 0; run.tank.hp = 10"); pg.keyboard.down("g"); pg.wait_for_function("run.tank.wreck", timeout=5000); pg.keyboard.up("g")
-    got = js("({ wanted: progress.wanted, tanks: progress.tanks, parts: run.parts })")
-    check("destroyed: heat back to 0, 300 parts, one tank beaten", got == {"wanted": 0, "tanks": 1, "parts": 300}, got)
+    got = js("({ wanted: progress.wanted, tanks: progress.tanks, scrap: run.scrap })")
+    check("destroyed: heat back to 0, 300 scrap, one tank beaten", got == {"wanted": 0, "tanks": 1, "scrap": 300}, got)
     pg.wait_for_timeout(300)
     got = js("({ phase: run.phase, left: Math.round(run.left), hud: $('run-dist').textContent, flash: $('flash').textContent })")
     check("TANK DOWN on the head-up display, the run stopped with time to spare", got["phase"] == "finish" and got["left"] > 5 and got["hud"] == "TANK DOWN" and got["flash"] == "TANK DOWN!", got)
@@ -56,7 +56,7 @@ with sync_playwright() as p:
     pg.wait_for_timeout(3000); check("held a while (4 s), longer than a finish", js("run.phase") == "finish", js("run.phase"))
     pg.wait_for_function("run.phase === 'garage'", timeout=5000)
     rep = js("$('report').textContent") # the garage is out of sight behind the ending
-    check("the ending, then play on: a result, not a DNF; the act's card says to push for the next", "+300 parts" in rep and "DNF" not in rep
+    check("the ending, then play on: a result, not a DNF; the act's card says to push for the next", "+300 scrap" in rep and "DNF" not in rep
           and "The tank is scrap" in card() and "the next one is tougher" in card(), [rep, card()])
     check("the next tank is half as tough again", js("tankHealth()") == 1500, js("tankHealth()"))
     got = js("({ menu: menuOpen, screen, text: $('menu').innerText })")

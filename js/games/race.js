@@ -17,53 +17,52 @@ const NITRO_REFILL = 100; // metres per second of nitro, refilled before each ru
 
 Object.assign(UPGRADES, { // the Black market (distance.js PAGES), paid in race points
   // prices: everything here costs about the 5,050 points the positions pay once, plus places gained along the way
-  grid: { name: 'Bribe the starter', tab: 'black', base: 1, growth: 1.035, // debug mode: every slot, to test what comes after
+  grid: { name: 'Bribe the starter', tab: 'black', base: 1, growth: 1.035, needs: ['blackTab'], // debug mode: every slot
           max: () => debugSave ? FIELD : FIELD + 1 - progress.finish,
           info: l => l ? `start P${FIELD + 1 - l}` : 'start at the back', locked: 'finish higher to unlock' },
-  rolling: { name: 'Jump the start', tab: 'black', max: ROLLING.length, base: 5, growth: 2.3,
+  rolling: { name: 'Jump the start', tab: 'black', max: ROLLING.length, base: 5, growth: 2.3, needs: ['grid'],
              gate: l => ROLLING[l][0] <= topGear() || 'needs Gearbox',
              info: l => l ? `${ROLLING[l - 1][1]} km/h in ${ordinal(ROLLING[l - 1][0])}` : 'standing start' },
-  reckless: { name: 'Reckless driving', tab: 'black', max: 1, base: 100,
+  reckless: { name: 'Reckless driving', tab: 'black', max: 1, base: 100, needs: ['blackTab'],
               info: () => 'the oncoming lanes are yours too. From now on, collisions damage the car' },
-  chicken: { name: 'Game of chicken', tab: 'black', max: 1, base: 75, needs: ['reckless', 'flash'], // the flash's next step: cheap
+  chicken: { name: 'Game of chicken', tab: 'black', max: 1, base: 75, needs: ['reckless', 'flashRecharge'], // the flash's next step: cheap
              info: () => 'flash now works on oncoming traffic: it swerves into its other lane, if there is room' },
   // the owner (14 Oct): pricey, the dearest here with 7th gear. 1,200 (Autocruise times 1.5 in effort) put the Black
   // market at 6,360 points against the ~5,200 act 2 pays, with 10 a race after P1. On sale only once 7th gear is
   // bought (18 Oct: a playtester spent the points on it and had none left for 7th gear, which the top 10 need; it
-  // doesn't make the car any quicker). A gate, not needs: one already bought keeps working without 7th gear
-  recklessCruise: { name: 'Reckless auto-drive', tab: 'black', max: 1, base: 600, needs: ['cruise', 'reckless'],
-                    gate: () => lvl('gear7') > 0 || 'needs 7th gear',
+  // doesn't make the car any quicker). It works on Autocruise in the oncoming lanes, whatever 7th gear does
+  recklessCruise: { name: 'Reckless auto-drive', tab: 'black', max: 1, base: 600, needs: ['blackTab', 'cruise', 'gear7'],
+                    on: ['cruise', 'reckless'],
                     info: () => 'adds to Autocruise: the oncoming lanes, chicken, the ECU tune and nitro, as far as ' +
                       'the car has them' },
-  cooling: { name: 'Cooling', tab: 'black', max: 3, base: 60, growth: 2, needs: ['reckless'],
+  cooling: { name: 'Cooling', tab: 'black', max: 3, base: 60, growth: 2, needs: ['ecuPower'],
              info: l => l ? `the engine heats up ${15 * l}% slower` : 'factory radiator' },
   ecuRev: { name: 'ECU: rev limit', tab: 'black', max: 4, base: 50, growth: 1.6, needs: ['reckless'],
             info: l => `+${300 * l} rpm past the factory redline` },
-  ecuPower: { name: 'ECU: power', tab: 'black', max: 4, base: 60, growth: 1.6, needs: ['reckless'],
+  ecuPower: { name: 'ECU: power', tab: 'black', max: 4, base: 60, growth: 1.6, needs: ['ecuRev'],
               info: l => `+${8 * l}% torque on top` },
   nitro: { name: 'Nitro', tab: 'black', max: 5, base: 100, growth: 1.5, needs: ['ecuPower'],
            info: l => `${nitroTank(l)} s tank: +${Math.round((NITRO - 1) * 100)}% torque, heat in the red. ` +
              `The NOS pedal (or N) floors the gas; refills cost ${NITRO_REFILL} m a second` },
-  gear7: { name: '7th gear', tab: 'black', max: 1, base: 600, needs: ['nitro'], gate: () => lvl('gears') < 3 ? 'needs 6 gears' : true,
+  gear7: { name: '7th gear', tab: 'black', max: 1, base: 600, needs: ['nitro', ['gears', 'max']],
            info: () => 'a tall overdrive: hundreds more km/h, if nitro gets you there' },
-  daredevil: { name: 'Daredevil', tab: 'black', max: 1, base: 200, gate: () => everythingElse() || 'max everything else first',
+  // the owner (23 Oct): not as strong as thought, so after Nitro maxed rather than everything else
+  daredevil: { name: 'Daredevil', tab: 'black', max: 1, base: 200, needs: [['nitro', 'max']],
                info: () => 'every second in the oncoming lanes puts 0.5 s back in the nitro tank' },
 });
 
-// the car and the Black market maxed, but for the grid and Daredevil itself (the Fleet and later pages don't count)
-const everythingElse = () => Object.entries(UPGRADES).every(([id, u]) => id === 'daredevil' || id === 'grid' ||
-  !['bank', 'points'].includes(wallet(u)) || lvl(id) >= maxOf(u));
 const startSlot = () => FIELD + 1 - lvl('grid'); // the position you start in; 101 is behind #100
 // stuck in the race (the owner, 22 Oct: a playtester never bought a grid slot, and raced from the back to the same few
 // points): three races in a row without a Black market buy, before P1. Then the wall in the way, for its hint
-// (distance.js HINTS): a better grid slot for sale; Reckless driving (the top 20 can't be caught in two lanes); 7th gear,
-// near the top (the top 10 cruise beyond 6th gear)
+// (distance.js HINTS): the Black market's tab; a better grid slot for sale; Reckless driving (the top 20 can't be
+// caught in two lanes); 7th gear, near the top (the top 10 cruise beyond 6th gear)
 const STUCK = 3;
 function raceWall() {
   if (progress.dry < STUCK || !progress.racing || progress.finish === 1) return null;
+  if (!pageOpen('black')) return 'black'; // its tab not bought: nothing of it to buy
   if (lvl('grid') < maxOf(UPGRADES.grid)) return 'grid';
   if (!lvl('reckless')) return 'reckless';
-  return !lvl('gear7') && progress.finish <= 20 ? 'gear7' : null;
+  return !lvl('gear7') && progress.finish <= 20 && inSight('gear7') ? 'gear7' : null; // never a card out of sight
 }
 
 function racer(n, z) {

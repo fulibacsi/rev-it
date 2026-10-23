@@ -105,7 +105,8 @@ const TUTORIALS = [
   { id: 'fleet', name: 'The Fleet', for: ['fleet', 'dues', 'fleetPace', 'fleetFlash', 'pack'], open: () => fleetSize() > 0, pages: [
     { title: 'YOUR FLEET',
       both: 'The racers you pay off race for you, in your colours: they give way when you come up behind them, and ' +
-        'move across to block a rival closing on them. Your place counts the rivals only.' },
+        'move across to block a rival closing on them. Your place counts the rivals only. At the finish their places ' +
+        'pay you miles, more the further up they are.' },
     { title: 'THE SONAR', at: '#sonar',
       both: 'On the A-pillar: the road 250 m ahead of you and behind, from above. You are the arrow; your fleet cars ' +
         'are green, the rivals white, the traffic yellow.' },
@@ -118,14 +119,14 @@ const TUTORIALS = [
         'above it.' },
     { title: 'TOTAL IT',
       both: 'Ram it: each bump is a hit (a nudge under 30 km/h is not; over 200 km/h totals it at once). At no health ' +
-        'it is totalled, and its parts are yours.' },
+        'it is totalled, and its scrap is yours.' },
     { title: 'THE WAR RIG PAGE', if: () => gangOpen(), // it opens with the first car totalled, after this pops up
-      both: 'Parts buy the War Rig page in the garage: a bull bar, armour, guns.' },
+      both: 'Scrap buys what is on the War Rig page in the garage: a bull bar, armour, guns.' },
   ] },
   { id: 'madness', name: 'Fuel madness', for: ['baddrivers'], open: () => lvl('baddrivers') > 0, pages: [
     { title: 'MAD FOR FUEL',
       both: 'Rusty, weaving cars are mad for fuel: no mirror, no indicator, and each jumps in front of you once. Ram one ' +
-        'that does and it is totalled, for double parts. Coming at you, they steer for you.' },
+        'that does and it is totalled, for double scrap. Coming at you, they steer for you.' },
   ] },
   { id: 'police', name: 'Police heat', open: () => gangOpen(), pages: [
     { title: 'THE SCANNER', at: '#scanner',

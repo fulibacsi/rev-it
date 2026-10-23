@@ -56,7 +56,7 @@ machine or session. Keep it current: update a section when a decision changes, a
     its high beams flashed from the one it has left. While you drive on its side it comes at you, steering for you
     until 1.2 s out as the police do, and won't swerve for a game of chicken; back on your side it leaves you be. A
     head-on with one isn't the end of the run (the owner, 18 Oct): a hard crash, most of your speed gone and a
-    head-on's damage (50%, less the armour), and the mad car totalled for its double parts ("HEAD-ON!"). With a sane
+    head-on's damage (50%, less the armour), and the mad car totalled for its double scrap ("HEAD-ON!"). With a sane
     driver a head-on still ends it. `oncoming_test.py` checks it; `act4.py` to the tank: 13, 17, 12, 15 races (14.25 on
     average, as before it: 15, 15, 13, 14), Reckless auto-drive taking the oncoming lanes;
   - the indicator blinks over the outer half of each car's own tail light.
@@ -214,7 +214,7 @@ machine or session. Keep it current: update a section when a decision changes, a
   tutorials' list). The pause menu's button with the act's name, and the garage's title ("ACT II · RACE ▸"), show the
   current one again (the owner's pick: both), with a line on where you stand (best place, fleet size, the heat and
   what it brings) and the last run in full. The garage keeps a line of the run's numbers (+metres, place and points,
-  dues, nitro refill, totals and parts, the heat): numbers get read, and a report after every run would be a tap
+  dues, nitro refill, totals and scrap, the heat): numbers get read, and a report after every run would be a tap
   every run (the owner's pick over a modal each run). Claude's call: the words.
 - **How to drive:** the first act's card points to HOW TO DRIVE, in the pause menu and the settings: the Driving tutorial and
   the full controls. The key help that sat at the foot of a desktop screen went there too.
@@ -228,7 +228,7 @@ machine or session. Keep it current: update a section when a decision changes, a
   1st, gas, clutch up, change up, change lanes, brake. Then one for each system, listed once it opens: Headlight
   flash, Driver aids (with the layers on top of Autocruise), Car stereo, The race (and how places pay), Reckless driving (with damage and
   chicken), ECU tune (and heat), Nitro, The Fleet (the sonar, the Hunting pack), The War Rig (the reticle, totals,
-  parts), Fuel madness, Police heat, Guns, The tank; a page about an upgrade shows once it is bought. A system's
+  scrap), Fuel madness, Police heat, Guns, The tank; a page about an upgrade shows once it is bought. A system's
   tutorial pops up once in the garage when it opens in play (bought, or come with a run: the race, the gang, the
   tank), never mid-run; several at once follow one another. Only in play: a save's systems from before the tutorials,
   or set up by a test, pop nothing up. Its ? sits on the cards of the upgrades it is for, once bought (the owner's
@@ -268,9 +268,17 @@ driving is act 1's game, and the robot takes over as the fantasy moves on.
 
 - **Runs:** 20 s, plus 5 s per Time level (50 s at most).
 - **The garage's pages:** **Workshop** (the car itself) and **Autopilot** (the robot driver), paid in metres; the
-  **Black market** (the illegal and forbidden, paid in race points) opens with the reveal. The price is
-  `base × growth^level`, rounded to tens of metres.
-  - A locked upgrade (none of it bought, something else needed first) shows only its name and what it needs, in a
+  **Black market** (the illegal and forbidden, paid in race points), the **Fleet** (miles) and the **War Rig** (scrap)
+  later. The price is `base × growth^level`, rounded to tens of metres.
+- **The upgrade graph** (the owner, 23 Oct): what needs what is the owner's graph, `docs/upgrade-graph.md`, the source
+  of truth (keep it up to date). Every tab is bought, so everything has a parent: the Workshop (100 m), the Autopilot
+  (500 m, after 2 km driven in all), the Black market (1 point, once the race is revealed), the Fleet (1 point, at P1),
+  the War Rig (1 scrap, with the first car totalled); a tap on a tab for sale buys it. On a new game the garage holds
+  only the Workshop's tab. A card shows once one of its parents is bought (a count on the arrow once met: 5 flashes,
+  maxed) and is bought with all of them; a tab waiting on a story moment stays out of sight till then. A save from
+  before keeps its pages: a tab counts as bought once anything on its page is.
+  - A locked upgrade (none of it bought, something else needed first) shows only its name and its whole rule, what
+    is done ticked and a parent out of sight as ??? (Flash recharge's, in act I, a teaser: the owner's call), in a
     dimmed, dashed card: what it does stays a surprise. A tab with an upgrade newly unlocked that you haven't looked at
     yet has a yellow ! until you open it (the owner's list, 14 Oct; what you've seen is kept in the save). Nothing on
     a page that isn't open yet counts, so neither gives the race away.
@@ -284,14 +292,14 @@ driving is act 1's game, and the robot takes over as the fantasy moves on.
   | Time | Workshop | 6 | 200 | 1.9 | +5 s a run |
   | Steering | Workshop | 3 | 300 | 2 | lane changes 40% quicker a level |
   | Headlight flash | Workshop | 10 | 300 | 1.25 | 1–10 flashes a run, refilled free; racers never yield |
-  | Flash recharge | Workshop | 5 | 2500 | 1.5 | a used flash back every 10 s, down to 2 s; needs 10 flashes; from the reveal on |
+  | Flash recharge | Workshop | 5 | 2500 | 1.5 | a used flash back every 10 s, down to 2 s; needs 5 flashes and Reckless driving |
   | Auto flash | Autopilot | 1 | 2000 | | needs 5 flashes |
   | Auto clutch | Autopilot | 1 | 700 | | centrifugal: can't stall or bog |
   | Auto gas | Autopilot | 1 | 800 | | launch revs, traction control |
   | Auto shift | Autopilot | 1 | 2500 | | needs Auto clutch |
   | Lane assist | Autopilot | 1 | 1500 | | last-moment swerve |
   | Autocruise | Autopilot | 1 | 6000 | | needs Lane assist, Auto gas, Auto shift |
-  | Engine swap | Workshop | 2 | 4000 | 2.5 | Boxer → V8 → Turbo I6 |
+  | Engine swap | Workshop | 2 | 4000 | 2.5 | Boxer → V8 (needs Power, Rev limit, Gearbox) → Turbo I6 (needs them maxed) |
 
 - **The aids** work the same pedals and lever as the player, so you can watch them.
   - They leave a control to you only while you touch it: your foot on the gas (no auto brake, no lift), on the
@@ -384,15 +392,15 @@ driving is act 1's game, and the robot takes over as the fantasy moves on.
 |---|---|---|---|---|
 | Bribe the starter (grid) | up to 100 | 1 | 1.035 | slot N needs a finish ahead of #N |
 | Reckless driving | 1 | 100 | | oncoming lanes; from now on collisions damage the car |
-| Game of chicken | 1 | 75 | | flashes work on oncoming cars: they swerve, room permitting; needs Headlight flash |
-| Reckless auto-drive | 1 | 600 | | autocruise in the oncoming lanes too, with chicken, the tune and nitro; needs Autocruise, on sale once 7th gear is bought (18 Oct: a playtester spent the points on it instead of 7th gear, which the top 10 need; it adds no pace; `act2.py`: P1 after 24, 22, 20, 20 races, unchanged, with 7th gear bought in the race P1 came) |
-| Cooling | 3 | 60 | 2 | heat rises 15% slower a level |
-| ECU: rev limit | 4 | 50 | 1.6 | +300 rpm past the factory redline a level |
-| ECU: power | 4 | 60 | 1.6 | +8% torque a level |
+| Game of chicken | 1 | 75 | | flashes work on oncoming cars: they swerve, room permitting; needs Reckless driving, Flash recharge |
+| Reckless auto-drive | 1 | 600 | | autocruise in the oncoming lanes too, with chicken, the tune and nitro; needs Autocruise and 7th gear (18 Oct: a playtester spent the points on it instead of 7th gear, which the top 10 need; it adds no pace; `act2.py`: P1 after 24, 22, 20, 20 races, unchanged, with 7th gear bought in the race P1 came) |
+| Cooling | 3 | 60 | 2 | heat rises 15% slower a level; needs ECU: power |
+| ECU: rev limit | 4 | 50 | 1.6 | +300 rpm past the factory redline a level; needs Reckless driving |
+| ECU: power | 4 | 60 | 1.6 | +8% torque a level; needs ECU: rev limit |
 | Nitro | 5 | 100 | 1.5 | tank of 2 s a level (to 10 s), +60% torque; needs ECU power |
-| 7th gear | 1 | 600 | | needs nitro and 6 gears |
-| Daredevil | 1 | 200 | | the oncoming lanes refill nitro, 0.5 s a second; needs everything else maxed |
-| Jump the start (rolling start) | 6 | 5 | 2.3 | each level needs the gear it starts in |
+| 7th gear | 1 | 600 | | needs Nitro and the Gearbox maxed (6 gears) |
+| Daredevil | 1 | 200 | | the oncoming lanes refill nitro, 0.5 s a second; needs Nitro maxed (23 Oct: it was everything else maxed, not as strong as thought) |
+| Jump the start (rolling start) | 6 | 5 | 2.3 | needs Bribe the starter; each level the gear it starts in |
 
 **Damage.** It starts with Reckless driving, and any collision causes it from then on. It is never cosmetic only.
 - **Rev limit:** −30 rpm per % of damage from the first hit (3,000 rpm lost at 100%), but never below idle + 1,500.
@@ -414,9 +422,11 @@ brakes nor lifts; Auto gas's traction control still trims it, so nitro doesn't s
 
 ### Act 3: the fleet
 
-**The Fleet** opens with your first win (P1), and never shows before it. ACT III's card says so after that race: "the
-racers you beat are open to offers". It is a garage page paid in **miles**.
-- **The Exchange** card turns metres into miles, one way, a mile for 1,609 m: a slider for how many, an "all
+**The Fleet** opens with your first win (P1), and never shows before it: its tab goes on sale then, for a point.
+ACT III's card says so after that race: "the racers you beat are open to offers". It is a garage page paid in
+**miles**.
+- **The Mile converter** (the owner's name, 23 Oct; it was the Exchange), free with the tab, turns metres into miles,
+  one way, a mile for 1,609 m: a slider for how many, an "all
   available" button, and the miles you have. Miles show in the garage's header too. The speedometer stays in km/h.
 - **Pay off a racer:** each one you pay off joins your fleet. It keeps its number, its slot in the 100-car field and
   its pace, in your colours (black with gold stripes).
@@ -440,7 +450,14 @@ racers you beat are open to offers". It is a garage page paid in **miles**.
   | Fleet flash | 1 | 15 | | a fleet car flashes a slower ordinary car up to 100 m ahead of it out of your lane (every 3 s at most; none of your flashes) |
 
   Dues are the act's income: a race nets you only about 1 mile after the nitro refill and repairs, while a fleet car
-  drives about 2.5 km a race. They pay metres, into the bank, so the Exchange stays the one way to miles.
+  drives about 2.5 km a race. They pay metres, into the bank, for the Mile converter.
+- **Team places** (the owner, 23 Oct: option A of three, after "there are no interaction with the fleet"): at the
+  finish each fleet car's place in the field pays a tenth of a mile for each ten places it is from the back (P92 to
+  P101 one step, P2 ten), straight into miles, so the more cars and the quicker they are, the more they pay. A tenth
+  (`act3.py`, two seeds each, races to 51 fleet cars): none 14–16, a quarter 9, 0.15 10, a tenth 12; the target is
+  10–15. By then the team pays about 15 miles a race, the dues about 35 through the converter. Claude's caveat, taken:
+  the fleet starts behind you (the slowest go first) and you never meet it, so your driving can't change what it
+  pays. It adds income, not interaction; that is the next brainstorm.
 - **The sonar:** the mirror is the timer, so there is no rear view. A sonar bolted to the left A-pillar, under the menu
   button, shows the road from above, 250 m ahead of you and behind, ahead up, you an arrow in the middle: its four
   lanes and the double yellow drawn (the lane lines going by as fast as the road), every car on it as a blip coloured
@@ -449,8 +466,9 @@ racers you beat are open to offers". It is a garage page paid in **miles**.
   (15 px apart, so a lane change shows), squeezed along (34 px for 250 m); faint lines at 100 m each way, and a sweep
   going round. It shows only with a fleet, and only on the road; it redraws 15 times a second. (Before, Claude's call:
   a fan behind you, your fleet cars only, to 500 m.)
-- **Simulated** (`act3.py`, seed 11, from P1 with act 2's car and 57k m): 51 fleet cars after 26 races buying dues
-  first, 71 buying the cheapest first (dues came only at race 46).
+- **Simulated** (`act3.py`, from P1 with act 2's car and 44k m, the tab bought first): 51 fleet cars after 12, 12,
+  10, 12 races with team places (23 Oct, seeds 1 to 4), a few cars bought every race. (13 Oct, seed 11, 57k m, before
+  the retune: 26 races buying dues first, 71 buying the cheapest first.)
 
 ### Act 4: the War Rig
 
@@ -470,11 +488,12 @@ on the horizon, and the guns would fire at nothing else).
   closing at under 30 km/h is only a nudge, and one at over 200 km/h totals the car at once: "OHKO!" (the owner's
   idea). A side-swipe always counts. A head-on is still your DNF, not a total. Your fleet cars can't be hurt. (It used
   to be 0.4 of the closing speed in km/h a ram: the simulations rammed at 130–300 km/h, so one ram often did it.)
-- **Totalled** at 0 health, a car skids onto the right shoulder, tipped and smoking, and stops; you collect its parts
+- **Totalled** at 0 health, a car skids onto the right shoulder, tipped and smoking, and stops; you collect its scrap
   (22 from traffic, 55 from a racer: see the balance results). A totalled rival is out of the race and you move up;
   results still pay by finishing position only, so wrecking can't be farmed for points.
-- **The War Rig page** opens with the first total, paid in parts. It is to the Fleet what the Black market is to the
-  Workshop.
+- **The War Rig page**: its tab is for sale with the first total (1 scrap), and the page is paid in **scrap** (called
+  parts until 23 Oct, the owner's rename: the records below from before keep the old word). It is to the Fleet what
+  the Black market is to the Workshop.
 
   | Upgrade | Levels | Base | Growth | Notes |
   |---|---|---|---|---|
@@ -489,7 +508,7 @@ on the horizon, and the guns would fire at nothing else).
   | Hunting pack | 1 | 150 | | fleet cars hunt as you do: the nearest car ahead of each, within 150 m, into its lane and into it; their guns on it too |
 
 - **Bad drivers** (the owner's idea, 18 Oct): the playtesters hated cars cutting in (fixed: traffic passes the way
-  drivers do), but in the War Rig a car jumping in front of you is a ram, worth parts and heat. Bought, ordinary
+  drivers do), but in the War Rig a car jumping in front of you is a ram, worth scrap and heat. Bought, ordinary
   traffic goes back to the old manners: no mirror check, no indicator, out whenever it is quicker than the car ahead
   (racers and your fleet keep theirs). A switch, like the aids. Through the game interface's `badDrivers()`, so the
   road stays the same for every other game.
@@ -497,7 +516,7 @@ on the horizon, and the guns would fire at nothing else).
   round it, autocruise doesn't brake for it or count it as a blocked lane (the owner, 18 Oct: as first built, the aids
   avoided the cut-ins, so it changed nothing in `act4.py`: the tank in races 25, 24, 23, 28 with it, 23, 24, 23, 23
   without). Taking those rams cost more than it paid (a ram costs speed and damage, and paid a third of a total: 26,
-  27, 24, 25 with it), so a car that cut in and gets rammed is totalled on the spot, full parts and heat: "HAD IT
+  27, 24, 25 with it), so a car that cut in and gets rammed is totalled on the spot, full scrap and heat: "HAD IT
   COMING!" (the owner's pick, 18 Oct). That changed nothing either (3.65 totals a race with it, 3.67 without): a bad
   driver only pulled out when stuck behind a slower car, and at act 4's speeds you were past before that lined up. So,
   in the owner's words, they now "jump in front of the player": a bad driver in your other lane, as you close on it
@@ -551,12 +570,12 @@ on the horizon, and the guns would fire at nothing else).
   past 60% damage, so it doesn't wreck you; your hand on the wheel overrides it. It is what `act4.py`'s bot did by
   hand, so the simulation now leaves the hunting to the aid once it has it. `hunter_test.py` checks all of it.
 - **Hunting pack** (the owner, 18 Oct: "Fleet should have an attack upgrade so they hunt just like you"; on the War
-  Rig page, paid in parts, and hunting "like you: anything", both the owner's picks): each fleet car hunts the nearest
+  Rig page, paid in scrap, and hunting "like you: anything", both the owner's picks): each fleet car hunts the nearest
   car ahead of it going your way within 150 m, rivals and traffic alike (police too; not the tank, whose fight has the
   gang alongside it). It moves into that car's lane, room permitting, and drives into it without passing it or backing
   off: a ram is a hit as yours are (34, the bull bar counting), every 1.5 s at most, and it falls back 4 m/s. Its guns,
   if any, fire on its prey too. It never moves into your lane in front of you (it gives way first, as ever). The
-  totals are yours: parts (double for a mad driver) and the gang's heat, with "THE GANG TOTALLED A CAR" (or the
+  totals are yours: scrap (double for a mad driver) and the gang's heat, with "THE GANG TOTALLED A CAR" (or the
   racer's number, or A POLICE CAR) on the head-up display. A fleet car looks for prey twice a second, the whole road
   for half the field being a lot of looking. `pack_test.py` checks it. Price, `act4.py` (cheapest first): at 150
   parts it is bought in races 8-12 and the tank falls in races 14, 16, 12, 12 (14, 16, 13, 14 without it); the race
@@ -580,7 +599,7 @@ on the horizon, and the guns would fire at nothing else).
   thumbs are busy. Your own trigger still works.
 
 - **The gang uses whatever it has.** With a bull bar a fleet car side-swipes a rival beside it, every 3 s at most (20
-  damage a level): it lurches across, then drives back into its lane. What it totals pays you the parts, and the rival
+  damage a level): it lurches across, then drives back into its lane. What it totals pays you the scrap, and the rival
   is out of the race. Ramming hurts your own car (2–25% a bump), so armour is the "illegal part" that makes a
   campaign of it possible.
 
@@ -612,7 +631,7 @@ DNF that halved the heat. Till then the act's card says "the army has a tank rea
 - **Destroyed:** the ending. TANK DOWN on the head-up display ("the road is yours"; GAME OVER until 20 Oct, which read
   like losing) and the run stops there, the tank burning, held for 4 s (the owner, 14 Oct: that's the end state);
   then the ending's screen. The garage: "The tank is scrap: the road is yours", 300
-  parts, the heat back to 0. You can still play on, the next tank half as tough again (1,500, then 2,000 ...), until
+  scrap, the heat back to 0. You can still play on, the next tank half as tough again (1,500, then 2,000 ...), until
   the menus are talked about.
 - **Lost** (wrecked, a head-on, or the bell with the tank still going): a DNF ("the tank held the road"), and the heat
   drops to half, so you have to push for it again.
@@ -692,6 +711,16 @@ DNF that halved the heat. Till then the act's card says "the army has a tank rea
   Chosen: ×2.2, 22 parts a car and 55 a racer, the heat 2.2% a car. A War Rig upgrade every one to four races, the
   heat at 100% one to three races before the guns, and the tank beaten at the first go every time. The prices are as
   they were: income grows, so everything comes sooner, in the same order.
+- **The upgrade graph (23 Oct),** the tabs bought, the needs redrawn and team places added; the owner's targets: act 1
+  15–25 runs, act 2 15–25, act 3 10–15, act 4 10–15 to the tank and 1–3 at it (51–83 in all, about 1 to 1.5 hours).
+  The simulations buy each tab first.
+  - Act 1: #100 first passed on run 19 (value) and 22 (cheapest first), both seeds; it was 17–19 and 21–23.
+  - Act 2: P1 after 17 and 16 races (seeds 1 and 2), Flash recharge bought on the way for Game of chicken.
+  - Act 3: 51 fleet cars after 12, 12, 10, 12 races (seeds 1 to 4); without team places 14–16.
+  - Act 4: the heat at 100% after 10 to 11 races, the tank beaten at the first go (races 11 and 12, seeds 1 and 2;
+    without team places 13 and 11; the game before this change 12 and 12): as it was, at the short end of the target.
+    Left as it is unless the owner wants it longer.
+  - In all about 56–63 races, inside the 51–83.
 - **Simulation tools** live in `tests/balance/` and are run from the repo root:
   - `act1.py [cheapest|value] [head-start curve or -] [traffic]`: when #100 is first passed;
   - `act2.py [races] [seed]`: races from the reveal to P1, the bot driving like Reckless auto-drive (`aids.js`). The

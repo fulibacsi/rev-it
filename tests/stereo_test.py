@@ -29,8 +29,8 @@ with sync_playwright() as p:
     pg = b.new_page(viewport={"width": 1440, "height": 900}); pg.on("pageerror", lambda e: errors.append(str(e))); js = pg.evaluate
     got_mp3 = []; pg.on("request", lambda r: r.url.endswith(".mp3") and got_mp3.append(r.url.rsplit("/", 1)[1]))
     pg.goto(URL)
-    js("localStorage.clear(); Object.assign(progress, { bank: 5000, runs: 3, toured: TUTORIALS.map(t => t.id) })")
-    pg.click('[data-play="distance"]'); pg.wait_for_timeout(300)
+    js("localStorage.clear(); Object.assign(progress, { bank: 5000, runs: 3, levels: { workshopTab: 1 }, toured: TUTORIALS.map(t => t.id) })")
+    pg.click('[data-play="distance"]'); pg.wait_for_timeout(300)  # the Workshop's tab bought: the stereo's card on it
     # 1. not bought: no stereo, nothing downloaded
     check("not bought: no lights, no head unit, no music, nothing downloaded",
           js("[getComputedStyle($('beat')).display, getComputedStyle($('stereo')).display, stereo.on]") == ["none", "none", False] and not got_mp3,

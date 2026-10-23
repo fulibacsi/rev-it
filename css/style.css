@@ -257,6 +257,10 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
 #tabs:empty { display: none; }
 #tabs button { flex: 1; padding: 5px 8px; font-weight: 600; }
 #tabs button.new::after { content: '!'; margin-left: 6px; color: #ffd23f; font-weight: 800; } /* something new unlocked */
+#tabs button.sale { border-style: dashed; color: var(--accent); } /* a tab for sale: a tap buys it */
+#tabs button.sale small { display: block; font-weight: 400; font-size: 11px; color: #9ab; }
+#tabs button.sale:disabled { color: #889; }
+.buy-tab { grid-column: 1 / -1; margin: 6px 0; color: #9ab; } /* a new game: nothing to see till the Workshop is bought */
 #engine-row button { flex: 1; }
 #cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
 .card { position: relative; display: flex; flex-direction: column; gap: 3px; padding: 7px 9px; border: 1px solid #262a36;

@@ -96,7 +96,7 @@ with sync_playwright() as p:
     walk(pj, "phone")
     # 6. a system's tutorial: popped up once when bought (on the phone, in the garage), its control lit; the card's ?
     #    opens it again (once bought), and HOW TO DRIVE lists it. A save set up with systems pops nothing up
-    pj("localStorage.clear(); Object.assign(progress, { bank: 9e6, runs: 3, levels: { clutch: 1 } }); closeMenu()")
+    pj("localStorage.clear(); Object.assign(progress, { bank: 9e6, runs: 3, levels: { clutch: 1, workshopTab: 1 } }); closeMenu()")
     ph.tap('[data-play="distance"]') if pj("menuOpen") else None; ph.wait_for_timeout(200)
     pj("play(DISTANCE); closeMenu(); renderGarage()"); ph.wait_for_timeout(200)
     check("a save with an aid bought before: nothing pops up", pj("menuOpen") is False, pj("[menuOpen, screen]"))

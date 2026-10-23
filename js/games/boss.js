@@ -7,9 +7,9 @@
 // tank still going) and it's a DNF, and the heat drops to half, so you have to push again. It comes only once you have
 // guns (unarmed, rams alone can't beat it).
 
-// its health, the m it keeps ahead of you, s between shells, the m they reach, % damage a hit, parts for beating it
+// its health, the m it keeps ahead of you, s between shells, the m they reach, % damage a hit, scrap for beating it
 // (1,000 health: the first level of guns, firing all race, just wins; act4.py)
-const TANK = { hp: 1000, gap: 80, reload: 2.5, reach: 250, hit: 8, parts: 300 };
+const TANK = { hp: 1000, gap: 80, reload: 2.5, reach: 250, hit: 8, scrap: 300 };
 const tankHealth = () => TANK.hp * (1 + 0.5 * progress.tanks); // each one beaten, the next is half as tough again
 const bossRace = () => arOn() && progress.wanted >= 1 && lvl('guns') > 0 && !wrecked(); // armed, not in limp mode
 
@@ -48,8 +48,8 @@ function tankDrive(c, dt) {
 function tankDown(c) {
   Object.assign(c, { wreck: true, hp: 0 });
   progress.tanks++;
-  progress.parts += TANK.parts;
-  run.parts += TANK.parts;
+  progress.scrap += TANK.scrap;
+  run.scrap += TANK.scrap;
   progress.wanted = 0;
   run.beatTank = true;
   finishRun();

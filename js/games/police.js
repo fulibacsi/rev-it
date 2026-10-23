@@ -4,7 +4,7 @@
 // in and brake; while you drive in the oncoming lanes they floor it at you head-on. Past the top the tank comes
 // (boss.js).
 
-// heat a total (by kind) or a shot: 2.2 times half the first guesses, in step with the parts, so 100% comes about as
+// heat a total (by kind) or a shot: 2.2 times half the first guesses, in step with the scrap, so 100% comes about as
 // the guns can be afforded and act 4 takes about 15 races (act4.py); a shot's is unchanged
 const WANTED = { car: 0.022, racer: 0.033, police: 0.088, gang: 0.011, shot: 0.00025 };
 function raiseHeat(by) { // debug mode: ten times quicker, to get to the tank

@@ -103,7 +103,7 @@ with sync_playwright() as p:
     ph.goto(URL); ph.wait_for_timeout(300)
     ph.evaluate("localStorage.clear(); settings.layout = 'touch'; applyLayout(); Object.assign(progress, { runs: 30, best: 2400, driven: 60000, time: 1800, racing: true, finish: 1, races: 20, tanks: 1, totals: 40, levels: { fleet: 51 } }); 0")
     # the act cards with the longest run behind them: a race, dues, a refill, totals, the tank
-    ph.evaluate("Object.assign(run, { gain: 23456, newBest: true, dues: 4567, refill: 900, totals: 4, parts: 132, beatTank: true, race: { start: 3, p: 1, points: 110, fresh: 100 } }); 0")
+    ph.evaluate("Object.assign(run, { gain: 23456, newBest: true, dues: 4567, refill: 900, totals: 4, scrap: 132, beatTank: true, race: { start: 3, p: 1, points: 110, fresh: 100 } }); 0")
     over = {}
     for s in SCREENS + [f"act {c}" for c in ph.evaluate("CARDS.map(c => c.id)")]:
         ph.evaluate(f"card = CARDS.find(c => c.id === '{s[4:]}'); showScreen('act'); 0" if s.startswith("act ") else f"showScreen('{s}'); 0"); ph.wait_for_timeout(80)

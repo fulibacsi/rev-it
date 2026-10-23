@@ -2,20 +2,20 @@
 // 100 race for you) it is a gang, and the windscreen gains an AR layer: a reticle and a health bar on the car ahead,
 // kept on it until you pass it or total it. Its first job for you: total a car. A ram is a hit (three for a car, five
 // for a racer, six for the police; a bull bar makes them count up to three times), and one closing at over 200 km/h
-// totals it outright; at 0 health it skids off onto the shoulder (road.js) and you collect its parts. A totalled rival
-// is out of the race (race.js position). The first total opens the War Rig page, paid in parts: it is to the Fleet
+// totals it outright; at 0 health it skids off onto the shoulder (road.js) and you collect its scrap. A totalled rival
+// is out of the race (race.js position). The first total opens the War Rig page, paid in scrap: it is to the Fleet
 // what the Black market is to the Workshop. Its gear is yours and the gang's: with a bull bar a fleet car side-swipes
 // a rival beside it; with guns (last) the wheel's red marker is your trigger and the gang shoots at rivals too; with
 // the Hunting pack the gang hunts as you do.
 Object.assign(UPGRADES, {
-  // prices in parts (22 a car, 55 a racer), from the simulations (tests/balance/act4.py, 14 and 18 Oct): about 15 races
+  // prices in scrap (22 a car, 55 a racer), from the simulations (tests/balance/act4.py, 14 and 18 Oct): about 15 races
   // from the gang to the tank, something to buy every few races, the guns as the last big save
-  bullbar: { name: 'Bull bar', tab: 'warrig', max: 3, base: 20, growth: 2.5,
+  bullbar: { name: 'Bull bar', tab: 'warrig', needs: ['warrigTab'], max: 3, base: 20, growth: 2.5,
              info: l => l ? `a hit hurts them ${Math.round(200 * l / 3)}% more and costs you less speed; the gang ` +
                `side-swipes rivals beside it (${20 * l} damage)` : 'the factory bumper' },
-  armour: { name: 'Armour plating', tab: 'warrig', max: 3, base: 30, growth: 2.5,
+  armour: { name: 'Armour plating', tab: 'warrig', needs: ['warrigTab'], max: 3, base: 30, growth: 2.5,
             info: l => l ? `collisions do ${25 * l}% less damage to your car` : 'factory panels' },
-  spikes: { name: 'Spiked hubs', tab: 'warrig', max: 1, base: 150,
+  spikes: { name: 'Spiked hubs', tab: 'warrig', needs: ['warrigTab'], max: 1, base: 150,
             info: () => 'a side-swipe (into a car while moving over) costs you no speed and counts one more hit; ' +
               "the gang's swipes do 30 more" },
   guns: { name: 'Guns', tab: 'warrig', max: 3, base: 400, growth: 2, needs: ['spikes'],
@@ -27,24 +27,24 @@ Object.assign(UPGRADES, {
   // the owner's idea (18 Oct; first called Bad drivers, the id kept so saves keep it): a share of ordinary traffic goes
   // mad for fuel, drops its manners and jumps in front of you (road.js mad), so a cut-in is a ram, not a crash to
   // avoid; MADNESS more of it a level, up to MAD_TOP; a switch, like the aids. A mad car carries stolen fuel: double
-  // parts, or buying it slowed act 4 down (act4.py: the tank in races 18-21, 16 without it). Prices: see act4.py
-  baddrivers: { name: 'Fuel madness', tab: 'warrig', max: 4, base: 30, growth: 2.5, toggle: true,
+  // scrap, or buying it slowed act 4 down (act4.py: the tank in races 18-21, 16 without it). Prices: see act4.py
+  baddrivers: { name: 'Fuel madness', tab: 'warrig', max: 4, base: 30, growth: 2.5, toggle: true, needs: ['bullbar'],
                 info: l => l ? `${Math.round(100 * madShare(l))}% of drivers mad for fuel` : 'drivers check their mirrors. ' +
-                  'Mad ones (rusty, weaving) jump in front of you; ram one that does: totalled. Stolen fuel: double parts' },
+                  'Mad ones (rusty, weaving) jump in front of you; ram one that does: totalled. Stolen fuel: double scrap' },
   // the owner's idea (18 Oct): autocruise hunts the car in the reticle (aids.js hunt), as act4.py's bot did by hand; a
   // switch. Price: a first guess, see act4.py
-  hunter: { name: 'Hunter', tab: 'warrig', max: 1, base: 100, needs: ['cruise'],
+  hunter: { name: 'Hunter', tab: 'warrig', max: 1, base: 100, needs: ['warrigTab', 'cruise', 'recklessCruise'], on: ['cruise'],
             info: () => 'adds to Autocruise (and Reckless auto-drive): it hunts the car in the reticle, into its lane ' +
               'and into it. Not the tank, and it backs off past 60% damage' },
   // the owner's idea (18 Oct): the stereo plays the War Rig's own music instead of synthwave (stereo.js: three tapes, the
   // owner's, made with Suno);
   // a switch, so synthwave is a tap away. No use for speed. Price: a first guess, see act4.py
-  warradio: { name: 'War Rig radio', tab: 'warrig', max: 1, base: 100, needs: ['stereo'],
+  warradio: { name: 'War Rig radio', tab: 'warrig', max: 1, base: 100, needs: ['warrigTab', 'stereo'], on: ['stereo'],
               info: () => "the stereo tunes in to the War Rig's own: three tapes of war rig anthems and darksynth" },
   // the owner's idea (18 Oct: "Fleet should have an attack upgrade so they hunt just like you"): each fleet car hunts
   // the nearest car ahead of it, rivals and traffic alike (prowl, road.js driveCar). Price: act4.py, bought a few
   // races before the tank (at 300 it came a race or two before it, at 600 after the guns)
-  pack: { name: 'Hunting pack', tab: 'warrig', max: 1, base: 150,
+  pack: { name: 'Hunting pack', tab: 'warrig', max: 1, base: 150, needs: ['hunter', 'dues', 'fleetPace', 'fleetFlash'],
           info: () => `fleet cars hunt as you do: the nearest car ahead of each, within ${PACK} m, into its lane and ` +
             'into it; and their guns, if any, on it' },
 });
@@ -56,8 +56,8 @@ const MADNESS = 0.25, MAD_TOP = 0.9;
 const madShare = l => Math.min(MAD_TOP, MADNESS * l);
 const GANG = FIELD / 2 + 1; // fleet cars that make a gang
 const health = c => c.tank ? tankHealth() : c.police ? 200 : c.racer ? 150 : 100; // full health (the tank: boss.js)
-// parts from a totalled car: 2.2 times the first guesses (with the heat), so act 4 takes about 15 races (act4.py)
-const PARTS = { car: 22, racer: 55 };
+// scrap from a totalled car: 2.2 times the first guesses (with the heat), so act 4 takes about 15 races (act4.py)
+const SCRAP = { car: 22, racer: 55 };
 const arOn = () => progress.racing && (fleetSize() >= GANG || progress.totals > 0);
 const gangOpen = () => progress.totals > 0; // the first job done: the War Rig page
 
@@ -112,20 +112,20 @@ function hurtCar(c, hp, gang) {
   c.hp = (c.hp ?? health(c)) - hp;
   if (c.hp <= 0) total(c, gang);
 }
-function total(c, gang, how) { // the parts are yours, whoever did it; the heat too (police.js); how: the HUD's word for it
+function total(c, gang, how) { // the scrap is yours, whoever did it; the heat too (police.js); how: the HUD's word for it
   if (c.tank) return tankDown(c); // boss.js
-  const parts = (c.racer ? PARTS.racer : PARTS.car) * (mad(c) ? 2 : 1); // a mad driver's stolen fuel (Fuel madness)
+  const scrap = (c.racer ? SCRAP.racer : SCRAP.car) * (mad(c) ? 2 : 1); // a mad driver's stolen fuel (Fuel madness)
   raiseHeat(gang ? WANTED.gang : c.police ? WANTED.police : c.racer ? WANTED.racer : WANTED.car);
   Object.assign(c, { wreck: true, hp: 0 });
   if (c === target) target = nextTarget(); // the reticle moves on at once: for a frame Hunter had nothing to hunt, and
                                            // autocruise steered away from the car it would hunt next
   progress.totals++;
-  progress.parts += parts;
-  run.parts += parts;
+  progress.scrap += scrap;
+  run.scrap += scrap;
   run.totals++;
   if (progress.totals === 1) run.firstTotal = true;
   const who = c.racer ? `#${c.racer}` : c.police ? 'A POLICE CAR' : 'A CAR'; // the Hunting pack hunts anything
-  flash(`${gang ? `THE GANG TOTALLED ${who}` : how ?? 'TOTALLED'} +${parts} PARTS`, '#ff6a4a', true);
+  flash(`${gang ? `THE GANG TOTALLED ${who}` : how ?? 'TOTALLED'} +${scrap} SCRAP`, '#ff6a4a', true);
 }
 
 // the gang at work (fleet.js teamwork): with a bull bar a fleet car side-swipes a rival beside it, every 3 s at most;
