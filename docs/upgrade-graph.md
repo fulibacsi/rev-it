@@ -104,7 +104,7 @@ flowchart TD
   cruise --> rcruise
   gear7 --> rcruise
 
-  autopilot -- P1 --> fleetTab
+  black -- P1 --> fleetTab
   fleetTab --> converter & payoff
   payoff --> dues & pace & fleetFlash
   flash -- "5+" --> fleetFlash
