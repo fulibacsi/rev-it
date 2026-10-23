@@ -212,7 +212,7 @@ machine or session. Keep it current: update a section when a decision changes, a
 - **The act cards** (the owner, 21 Oct: nobody read the words on top of the garage). A title card as each act starts,
   in the ending's look (the garage hidden behind it): a small "ACT II", the act's name, what it is about and what to
   do. DRIVE (on a new game, over the road, with a HOW TO DRIVE button into the Driving tutorial; its CONTINUE starts
-  the first run), ACT II · RACE (the reveal),
+  the first run, after the Driving tutorial on a first game), ACT II · RACE (the reveal),
   III · RECRUIT (the first win), IV · WAR (the gang); then, without a number, the last act's two turns: NO LAW OUT
   HERE (the first total) and THE ARMY SENDS A TANK. The first act has no number, nor does anything before the
   reveal (the owner, 21 Oct: "Act I" would say more is to come): the garage's title stays GARAGE and the pause
@@ -232,7 +232,9 @@ machine or session. Keep it current: update a section when a decision changes, a
   card sits at the top or the bottom, out of the control's way, and beside it when it is off to one side (the
   phone's lever is tall). ◀ ▶, the arrow keys, Space or a swipe turn the pages, dots show where you are; DONE or Esc
   go back to the list. Over a run the run stays paused. Driving, always there: start the engine, clutch down, into
-  1st, gas, clutch up, change up, change lanes, brake. Then one for each system, listed once it opens: Headlight
+  1st, gas, clutch up, change up, change lanes, brake. It pops up by itself in a new game's first run, after the DRIVE
+  card, the run paused, and DONE carries on into it (the owner, 23 Oct, who picked this over a coached run); not
+  after RESET PROGRESS (you have driven before), nor once read (any tutorial opened counts as seen). Then one for each system, listed once it opens: Headlight
   flash, Driver aids (with the layers on top of Autocruise), Car stereo, The race (and how places pay), Reckless driving (with damage and
   chicken), ECU tune (and heat), Nitro, The Fleet (the sonar, the Hunting pack), The War Rig (the reticle, totals,
   scrap), Fuel madness, Police heat, Guns, The tank; a page about an upgrade shows once it is bought. A system's
