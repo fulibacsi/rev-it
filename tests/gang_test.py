@@ -1,7 +1,7 @@
 """War Rig: nothing before 51 fleet cars; then the gang's first job (total a car) in the garage and the AR layer on the
 windscreen: a reticle and a health bar on the nearest car ahead, kept until you pass it. Bumps hurt the car you hit;
 at 0 health it skids onto the shoulder, out of your way, and pays scrap. A totalled rival is out of the race. The
-first total opens the War Rig page, paid in scrap; a bull bar hurts them more and costs you less speed. Armour takes
+first total puts the War Rig's tab on sale, the page paid in scrap; a bull bar hurts them more and costs you less speed. Armour takes
 off your damage, spiked hubs make a side-swipe free and harder; with a bull bar the gang side-swipes rivals. Guns,
 last: the wheel's red marker turns into the trigger (FIRE on it), shots hurt the car in the reticle within 200 m, and
 the gang shoots at rivals. The reticle moves to a nearer car when its own is out of reach, and starts afresh each race.
@@ -71,11 +71,12 @@ with sync_playwright() as p:
     js("window.r = rivals().find(c => c.racer === 30); Object.assign(r, { z: odo + 400, lane: 1, x: MY_LANES[1] })")
     p0 = js("position()"); js("total(r)"); p1 = js("position()")
     check("a totalled rival is out of the race: up a place", p1 == p0 - 1, f"P{p0} -> P{p1}")
-    # 7. the first total opens War Rig, paid in scrap
+    # 7. the first total puts the War Rig's tab on sale (1 scrap), a tap buys it; paid in scrap
     js("run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
     got = js("[$('act-title').textContent, currentCard().text(), currentCard().now?.()]")
-    check("the first job done: its card, War Rig open", "War Rig page is open" in got[1] and "War Rig" in tabs() and "scrap to spend" in js("$('bank').textContent"), [got, tabs()])
+    check("the first job done: its card, the War Rig's tab for sale", "War Rig tab is for sale" in got[1] and "War Rig1 scrap" in tabs() and "scrap to spend" in js("$('bank').textContent"), [got, tabs()])
     pg.click('[data-tab="warrig"]'); pg.wait_for_timeout(100)
+    check("a tap buys it: the War Rig page", "War Rig" in tabs() and js("garageTab") == "warrig", [tabs(), js("garageTab")])
     check("the Bull bar, paid in scrap", js("document.querySelector('[data-buy=\"bullbar\"]').textContent") == "20 scrap", js("document.querySelector('[data-buy=\"bullbar\"]')?.textContent"))
     js("progress.scrap = 100"); pg.click('[data-buy="bullbar"]'); pg.wait_for_timeout(100)
     check("bought: bull bar 1", js("[lvl('bullbar'), bullBar, progress.scrap]") == [1, 1, 80], js("[lvl('bullbar'), bullBar, progress.scrap]"))

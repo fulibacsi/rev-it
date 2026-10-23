@@ -1,4 +1,4 @@
-"""The Hunting pack (the War Rig page): each fleet car hunts the nearest car ahead of it going your way within 150 m,
+"""The Hunting pack (the War Rig page, once Hunter and the Fleet's three upgrades are bought): each fleet car hunts the nearest car ahead of it going your way within 150 m,
 rivals and traffic alike, as Hunter hunts for you: into its lane and into it, a hit a ram, until it is totalled (its
 scrap is yours). It never takes your lane in front of you, and without the upgrade the gang leaves traffic be."""
 from playwright.sync_api import sync_playwright
@@ -33,10 +33,12 @@ with sync_playwright() as p:
     pg = b.new_page(viewport={"width": 1440, "height": 900}); pg.on("pageerror", lambda e: errors.append(str(e))); js = pg.evaluate
     pg.goto(URL)
     js(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, runs: 40, totals: 1, bank: 10000, levels: {{ {CAR} }}, engine: 2 }}); 0")
-    pg.click('[data-play="distance"]'); pg.wait_for_timeout(200); js("refreshCar(); renderGarage(); 0")
+    pg.click('[data-play="distance"]'); pg.wait_for_timeout(200)
+    js("Object.assign(progress.levels, { warrigTab: 1, hunter: 1, dues: 1, fleetPace: 1, fleetFlash: 1 }); refreshCar(); renderGarage(); 0")
     pg.click('[data-tab="warrig"]'); pg.wait_for_timeout(100)
     got = js("document.querySelector('[data-buy=\"pack\"]')?.closest('.card').querySelector('b').textContent")
-    check("on the War Rig page", got == "Hunting pack", got)
+    check("on the War Rig page, with Hunter and the Fleet's three", got == "Hunting pack", got)
+    js("Object.assign(progress.levels, { hunter: 0, dues: 0, fleetPace: 0, fleetFlash: 0 }); refreshCar(); 0")  # the runs as before
     pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     # 1. without it: the fleet car keeps to its lane and leaves the car be
     js(f"({SETUP})([0, false, 100, 0])"); got = js(f"({WATCH})(5)")

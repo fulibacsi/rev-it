@@ -22,8 +22,8 @@ with sync_playwright() as p:
         js("traffic.forEach(c => { if (!c.racer) { c.dir = -1; c.x = LANES.oncoming[0]; } else c.z = odo - 9000; }); window.crashes = 0; "
            "if (!DISTANCE.crash0) { DISTANCE.crash0 = DISTANCE.crash; DISTANCE.crash = i => { crashes++; DISTANCE.crash0(i); }; } 0")
     # 1. prices, and auto flash from 5 flashes
-    js("Object.assign(progress, { bank: 9e6, levels: { flash: 4 } })")
-    check("auto flash locked with 4 flashes", js("whyNot('autoflash')") == "needs 5 flashes", js("whyNot('autoflash')"))
+    js("Object.assign(progress, { bank: 9e6, levels: { flash: 4, autopilotTab: 1 } })")
+    check("auto flash locked with 4 flashes", js("whyNot('autoflash')") == "needs Headlight flash 4/5", js("whyNot('autoflash')"))
     js("progress.levels.flash = 5")
     check("auto flash for sale with 5 flashes", js("whyNot('autoflash')") == "", js("whyNot('autoflash')"))
     print("   flash prices:", js("Array.from({ length: 10 }, (_, l) => { progress.levels.flash = l; return cost('flash'); })"))
@@ -79,10 +79,12 @@ with sync_playwright() as p:
           and got["crashes"] == 0, {"before": n0, **got})
     # 6. a game of chicken: in an oncoming lane a flash spends a charge and moves nobody, unless you have the upgrade;
     #    then the oncoming car in your lane swerves into its other lane, and there is no head-on
-    js("Object.assign(progress, { levels: { flash: 3 } })")
-    check("Game of chicken needs Reckless driving", js("whyNot('chicken')") == "needs Reckless driving", js("whyNot('chicken')"))
-    js("Object.assign(progress, { levels: { reckless: 1 } })")
-    check("Game of chicken needs Headlight flash", js("whyNot('chicken')") == "needs Headlight flash", js("whyNot('chicken')"))
+    js("Object.assign(progress, { levels: { flash: 5, blackTab: 1 } })")  # the graph: Reckless driving and Flash recharge
+    check("Game of chicken needs Reckless driving and Flash recharge", js("whyNot('chicken')") == "needs Reckless driving · Flash recharge",
+          js("whyNot('chicken')"))
+    js("Object.assign(progress, { levels: { flash: 5, blackTab: 1, reckless: 1 } })")
+    check("... Reckless driving bought: Flash recharge still", js("whyNot('chicken')") == "needs ✓ Reckless driving · Flash recharge",
+          js("whyNot('chicken')"))
     for chicken in [0, 1]:
         start(CAR + f", reckless: 1, flash: 3, chicken: {chicken}")
         js("traffic.forEach(c => { if (!c.racer) c.z = odo + 4000; }); lane = fromLane = 2; carX = ROAD_LANES[2]; "

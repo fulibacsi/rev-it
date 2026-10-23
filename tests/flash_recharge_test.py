@@ -1,4 +1,5 @@
-"""Flash recharge: on sale once the race is revealed (before, it held up the first act) and Headlight flash is maxed;
+"""Flash recharge: in sight from 5 flashes, Reckless driving a teaser (???) before the reveal; on sale with 5 flashes
+and Reckless driving (the owner's graph: before the reveal it held up the first act);
 a used flash comes back after 10 s at level 1 and 2 s at level 5, never past the run's full count; the refill shows as
 a line under the high-beam telltale; it doesn't change the reveal's head start."""
 from playwright.sync_api import sync_playwright
@@ -14,11 +15,14 @@ with sync_playwright() as p:
     pg.goto(URL); js = pg.evaluate
     # 1. the shop: only after 10 flashes, 10 s down to 2 s, the head start untouched
     js("localStorage.clear(); Object.assign(progress, { bank: 9e6, levels: { flash: 10 }, toured: TUTORIALS.map(t => t.id) })")
-    check("before the reveal: not on sale", js("whyNot('flashRecharge')") == "after the reveal", js("whyNot('flashRecharge')"))
-    js("progress.racing = true; progress.levels.flash = 9")
-    check("locked with 9 flashes", js("whyNot('flashRecharge')") == "needs 10 flashes", js("whyNot('flashRecharge')"))
-    js("progress.levels.flash = 10")
-    check("for sale with 10 flashes", js("whyNot('flashRecharge')") == "", js("whyNot('flashRecharge')"))
+    why = lambda: js("whyNot('flashRecharge')")
+    check("before the reveal: in sight from 5 flashes, Reckless driving a teaser (???)", js("shows('flashRecharge')") and why() == "needs ✓ Headlight flash 5/5 · ???", why())
+    js("Object.assign(progress, { racing: true, levels: { flash: 10, blackTab: 1 } })")
+    check("the Black market bought: it names Reckless driving", why() == "needs ✓ Headlight flash 5/5 · Reckless driving", why())
+    js("Object.assign(progress.levels, { flash: 4, reckless: 1 })")
+    check("locked with 4 flashes", why() == "needs Headlight flash 4/5 · ✓ Reckless driving", why())
+    js("progress.levels.flash = 5")
+    check("for sale with 5 flashes and Reckless driving", why() == "", why())
     times = js("[1, 2, 3, 4, 5].map(l => rechargeTime(l))")
     check("a flash back every 10, 8, 6, 4, 2 s", times == [10, 8, 6, 4, 2], times)
     print("   prices:", js("Array.from({ length: 5 }, (_, l) => { progress.levels.flashRecharge = l; return cost('flashRecharge'); })"))

@@ -1,5 +1,5 @@
-"""The Fleet: never shown before your first win; winning a race opens it (the garage says so), with miles in the
-header and the Exchange card: metres for miles, one way, 1,609 m a mile, a slider (dragged with a finger on the
+"""The Fleet: never shown before your first win; winning a race puts its tab on sale (the garage says so), a tap buys
+it, with miles in the header and the Mile converter: metres for miles, one way, 1,609 m a mile, a slider (dragged with a finger on the
 phone) and "all available". Racers paid off (the slowest first, each dearer, #1 never) race for you in your colours:
 they don't count against your position, give way when you come up behind them and block a rival closing on them.
 The fleet-wide upgrades: dues (a share of the fleet's metres at the finish), tuning (pace) and Fleet flash. The sonar
@@ -22,7 +22,7 @@ with sync_playwright() as p:
     cdp = ctx.new_cdp_session(pg); cdp.send("Emulation.setTouchEmulationEnabled", {"enabled": True, "maxTouchPoints": 5})
     cdp.send("Emulation.setSafeAreaInsetsOverride", {"insets": {"left": 59, "right": 59, "bottom": 21, "top": 0}})
     pg.goto(URL); pg.wait_for_timeout(300)
-    js(f"localStorage.clear(); settings.layout = 'touch'; applyLayout(); Object.assign(progress, {{ racing: true, finish: 2, bank: 10000, levels: {{ {CAR} }}, engine: 2, toured: TUTORIALS.map(t => t.id) }})")
+    js(f"localStorage.clear(); settings.layout = 'touch'; applyLayout(); Object.assign(progress, {{ racing: true, finish: 2, bank: 10000, levels: {{ {CAR}, blackTab: 1 }}, engine: 2, toured: TUTORIALS.map(t => t.id) }})")
     pg.tap('[data-play="distance"]'); pg.wait_for_timeout(200)
     tabs = lambda: js("[...document.querySelectorAll('#tabs button')].map(b => b.textContent)")
     # 1. before the first win: no Fleet, no miles, nothing that hints at them
@@ -32,13 +32,15 @@ with sync_playwright() as p:
     # 2. win a race: the Fleet opens, and the act moves on (its card pops up: tutorial_test)
     js("refreshCar()"); pg.tap("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     js("racers().forEach(c => c.z = odo - 9000); run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
-    check("a win opens the Fleet", tabs() == ["Workshop", "Autopilot", "Black market", "Fleet"], tabs())
+    check("a win puts the Fleet's tab on sale", tabs() == ["Workshop", "Autopilot", "Black market", "Fleet1 pt"], tabs())
+    pg.tap('[data-buy="fleetTab"]'); pg.wait_for_timeout(150)
+    check("a tap buys it: the Fleet page", tabs() == ["Workshop", "Autopilot", "Black market", "Fleet"] and js("garageTab") == "fleet", [tabs(), js("garageTab")])
     got = js("[$('act-title').textContent, currentCard().text(), currentCard().now?.()]")
     check("ACT III · RECRUIT, its card on the racers open to offers", got[0] == "ACT III · RECRUIT ▸" and "open to offers" in got[1], got)
     check("miles in the header", js("$('bank').textContent").endswith("· 0 mi to spend"), js("$('bank').textContent"))
-    # 3. the Exchange: the slider, then all available
+    # 3. the Mile converter: the slider, then all available
     js("progress.bank = 10000"); pg.tap('[data-tab="fleet"]'); pg.wait_for_timeout(200)
-    check("the Exchange card", js("!!document.querySelector('.card.exchange #exchange')") and js("$('exchange').max") == "6", js("$('exchange')?.max"))
+    check("the Mile converter", js("!!document.querySelector('.card.exchange #exchange')") and js("$('exchange').max") == "6", js("$('exchange')?.max"))
     s = js("$('exchange').getBoundingClientRect().toJSON()")
     y = s["y"] + s["height"] / 2
     for i, x in enumerate([s["x"] + 4, s["x"] + s["width"] * 0.35, s["x"] + s["width"] * 0.68]):  # a finger drags the thumb
