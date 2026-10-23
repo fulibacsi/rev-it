@@ -6,7 +6,8 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))  # tests/common.py
 from common import URL, launch
 ACT1 = dict(power=10, rev=4, gears=3, tyres=4, time=6, clutch=1, gas=1, shift=1, steer=1, cruise=1, engine=2, flash=5)
-ORDER = ["rolling", "reckless", "chicken", "recklessCruise", "cooling", "ecuRev", "ecuPower", "nitro", "gear7"]
+# Flash recharge: one level, in metres, for Game of chicken (the owner's graph, 23 Oct); Daredevil once Nitro is maxed
+ORDER = ["rolling", "reckless", "flashRecharge", "chicken", "recklessCruise", "cooling", "ecuRev", "ecuPower", "nitro", "gear7", "daredevil"]
 RACES = int(sys.argv[1]) if len(sys.argv) > 1 else 60
 SEED = int(sys.argv[2]) if len(sys.argv) > 2 else None  # another traffic seed: another sample of the same balance
 with sync_playwright() as p:
@@ -22,8 +23,8 @@ with sync_playwright() as p:
         js(f"{f'rng = {SEED * 1000 + race}; ' if SEED is not None else ''}simRun({json.dumps(lv)}, 2, 1, {{}}, true)")
         r = js("run.race"); dmg = js("Math.round(progress.damage)")
         js("while (repair() && progress.damage > 0);")  # metres pay the repairs
-        bought = js(f"""(() => {{ const b = []; let n = 0; while (buy('grid')) n++; if (n) b.push('grid+' + n);
-          for (let again = true; again;) {{ again = false; for (const id of {json.dumps(ORDER)}) if (buy(id)) {{ b.push(id + lvl(id)); again = true; break; }} }}
+        bought = js(f"""(() => {{ const b = []; let n = 0; if (buy('blackTab')) b.push('blackTab'); while (buy('grid')) n++; if (n) b.push('grid+' + n);
+          for (let again = true; again;) {{ again = false; for (const id of {json.dumps(ORDER)}) if ((id !== 'flashRecharge' || !lvl(id)) && buy(id)) {{ b.push(id + lvl(id)); again = true; break; }} }}
           return b; }})()""")
         total += r["points"] if r else 0
         res = f"P{r['p']}" if r and r["p"] else (r or {}).get("dnf", "?")

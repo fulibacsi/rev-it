@@ -1,7 +1,7 @@
 """War Rig: nothing before 51 fleet cars; then the gang's first job (total a car) in the garage and the AR layer on the
 windscreen: a reticle and a health bar on the nearest car ahead, kept until you pass it. Bumps hurt the car you hit;
-at 0 health it skids onto the shoulder, out of your way, and pays parts. A totalled rival is out of the race. The
-first total opens the War Rig page, paid in parts; a bull bar hurts them more and costs you less speed. Armour takes
+at 0 health it skids onto the shoulder, out of your way, and pays scrap. A totalled rival is out of the race. The
+first total opens the War Rig page, paid in scrap; a bull bar hurts them more and costs you less speed. Armour takes
 off your damage, spiked hubs make a side-swipe free and harder; with a bull bar the gang side-swipes rivals. Guns,
 last: the wheel's red marker turns into the trigger (FIRE on it), shots hurt the car in the reticle within 200 m, and
 the gang shoots at rivals. The reticle moves to a nearer car when its own is out of reach, and starts afresh each race.
@@ -25,7 +25,7 @@ with sync_playwright() as p:
     tabs = lambda: js("[...document.querySelectorAll('#tabs button')].map(b => b.textContent)")
     # 1. 50 fleet cars: no gang, no word of it
     start(50)
-    check("50 fleet cars: no War Rig, no task", "War Rig" not in tabs() and not re.search(r"gang|total|parts", js("$('garage').innerText"), re.I), tabs())
+    check("50 fleet cars: no War Rig, no task", "War Rig" not in tabs() and not re.search(r"gang|total|scrap", js("$('garage').innerText"), re.I), tabs())
     # 2. 51: the gang's first job, on the act's card; still no page
     start(51)
     got = js("[$('act-title').textContent, currentCard().text(), currentCard().now?.()]")
@@ -48,8 +48,8 @@ with sync_playwright() as p:
     pg.wait_for_function("cs[0].hp !== null", timeout=15000); pg.wait_for_timeout(100)
     got = js("({ hp: Math.round(cs[0].hp), bar: +getComputedStyle($('ar')).getPropertyValue('--hp'), kmh: Math.round(impact.kmh) })")
     check("a ram is a hit: 34 off the car's 100, and the bar shows it", got["hp"] == 66 and abs(got["bar"] - 0.66) < 0.02 and 30 <= got["kmh"] <= 200, got)
-    aside = lambda expr: js(f"""(() => {{ const p = {{ parts: progress.parts, totals: progress.totals, wanted: progress.wanted }},
-        r = {{ parts: run.parts, totals: run.totals, firstTotal: run.firstTotal }}, out = {expr}; Object.assign(progress, p); Object.assign(run, r);
+    aside = lambda expr: js(f"""(() => {{ const p = {{ scrap: progress.scrap, totals: progress.totals, wanted: progress.wanted }},
+        r = {{ scrap: run.scrap, totals: run.totals, firstTotal: run.firstTotal }}, out = {expr}; Object.assign(progress, p); Object.assign(run, r);
         return out; }})()""")  # made-up cars: the game's counts stay as they were
     got = aside("""[[100, false], [20, false], [250, false], [10, true]].map(([kmh, side]) => { const c = { v: 20, hp: null, racer: 0 };
         ram({ car: c, kmh, side, headOn: false }); return c.wreck ? 'total' : Math.round(c.hp ?? 100); })""")
@@ -57,12 +57,12 @@ with sync_playwright() as p:
     got = aside("""[{ v: 20, racer: 0 }, { v: 20, racer: 5 }, { v: 20, police: true }].map(c => { let n = 0;
         while (!c.wreck && n < 10) { ram({ car: c, kmh: 100, side: false, headOn: false }); n++; } return n; })""")
     check("hits to total, no bull bar: traffic 3, a racer 5, police 6", got == [3, 5, 6], got)
-    # 5. at 0 it is totalled: parts, off onto the shoulder, out of your way; the reticle moves on to the next car
+    # 5. at 0 it is totalled: scrap, off onto the shoulder, out of your way; the reticle moves on to the next car
     js("cs[0].hp = 1; Object.assign(cs[0], { z: odo + 25, v: 5, want: 5 }); cs[0].hit = -1e9; Object.assign(cs[1], { z: odo + 120 })")
     trace = js("""() => new Promise(res => { const out = []; const f = () => { if (cs[0].wreck) out.push([+cs[0].x.toFixed(2), +cs[0].v.toFixed(2), Math.round(cs[0].z - odo)]);
         out.length < 12 ? requestAnimationFrame(f) : res(out); }; requestAnimationFrame(f); })""")
-    got = js("({ parts: progress.parts, totals: progress.totals, run: run.parts, next: target === cs[1] })")
-    check("totalled: 22 parts, the next car in the reticle", got == {"parts": 22, "totals": 1, "run": 22, "next": True}, got)
+    got = js("({ scrap: progress.scrap, totals: progress.totals, run: run.scrap, next: target === cs[1] })")
+    check("totalled: 22 scrap, the next car in the reticle", got == {"scrap": 22, "totals": 1, "run": 22, "next": True}, got)
     xs, vs = [t[0] for t in trace], [t[1] for t in trace]
     check("the wreck skids towards the shoulder, slowing (then falls behind and is gone)", all(a < b for a, b in zip(xs, xs[1:])) and all(a >= b for a, b in zip(vs, vs[1:])) and js("crashes") <= 3,
           {"x": xs[::3], "v": vs[::3], "shoulder": js("+SHOULDER.toFixed(2)")})
@@ -71,27 +71,27 @@ with sync_playwright() as p:
     js("window.r = rivals().find(c => c.racer === 30); Object.assign(r, { z: odo + 400, lane: 1, x: MY_LANES[1] })")
     p0 = js("position()"); js("total(r)"); p1 = js("position()")
     check("a totalled rival is out of the race: up a place", p1 == p0 - 1, f"P{p0} -> P{p1}")
-    # 7. the first total opens War Rig, paid in parts
+    # 7. the first total opens War Rig, paid in scrap
     js("run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
     got = js("[$('act-title').textContent, currentCard().text(), currentCard().now?.()]")
-    check("the first job done: its card, War Rig open", "War Rig page is open" in got[1] and "War Rig" in tabs() and "parts to spend" in js("$('bank').textContent"), [got, tabs()])
+    check("the first job done: its card, War Rig open", "War Rig page is open" in got[1] and "War Rig" in tabs() and "scrap to spend" in js("$('bank').textContent"), [got, tabs()])
     pg.click('[data-tab="warrig"]'); pg.wait_for_timeout(100)
-    check("the Bull bar, paid in parts", js("document.querySelector('[data-buy=\"bullbar\"]').textContent") == "20 parts", js("document.querySelector('[data-buy=\"bullbar\"]')?.textContent"))
-    js("progress.parts = 100"); pg.click('[data-buy="bullbar"]'); pg.wait_for_timeout(100)
-    check("bought: bull bar 1", js("[lvl('bullbar'), bullBar, progress.parts]") == [1, 1, 80], js("[lvl('bullbar'), bullBar, progress.parts]"))
+    check("the Bull bar, paid in scrap", js("document.querySelector('[data-buy=\"bullbar\"]').textContent") == "20 scrap", js("document.querySelector('[data-buy=\"bullbar\"]')?.textContent"))
+    js("progress.scrap = 100"); pg.click('[data-buy="bullbar"]'); pg.wait_for_timeout(100)
+    check("bought: bull bar 1", js("[lvl('bullbar'), bullBar, progress.scrap]") == [1, 1, 80], js("[lvl('bullbar'), bullBar, progress.scrap]"))
     pg.screenshot(path=f"{OUT}/gang_garage.png")
     # Fuel madness (the owner, 18 Oct): levels of 25%, and a switch beside the next level's price once bought
     card = "[...document.querySelector('[data-buy=\"baddrivers\"], [data-toggle=\"baddrivers\"]').closest('.card').querySelectorAll('b, small, button:not(.tip)')].map(e => e.textContent)"
     got = js(card)
-    check("Fuel madness: its card, 30 parts, 25% at the first level", got[0] == "Fuel madness" and "double parts" in got[1] and got[1].endswith("→ 25% of drivers mad for fuel") and got[2:] == ["30 parts"], got)
-    js("progress.parts = 1000"); pg.click('[data-buy="baddrivers"]'); pg.wait_for_timeout(100)
+    check("Fuel madness: its card, 30 scrap, 25% at the first level", got[0] == "Fuel madness" and "double scrap" in got[1] and got[1].endswith("→ 25% of drivers mad for fuel") and got[2:] == ["30 scrap"], got)
+    js("progress.scrap = 1000"); pg.click('[data-buy="baddrivers"]'); pg.wait_for_timeout(100)
     got = js(card)
-    check("bought: the next level's price and an ON switch", got[2:] == ["75 parts", "ON"] and got[1] == "25% of drivers mad for fuel → 50% of drivers mad for fuel", got)
+    check("bought: the next level's price and an ON switch", got[2:] == ["75 scrap", "ON"] and got[1] == "25% of drivers mad for fuel → 50% of drivers mad for fuel", got)
     pg.click('[data-toggle="baddrivers"]'); pg.wait_for_timeout(100)
-    check("switched off", js(card)[2:] == ["75 parts", "OFF"] and js("progress.off.baddrivers") is True, js(card))
+    check("switched off", js(card)[2:] == ["75 scrap", "OFF"] and js("progress.off.baddrivers") is True, js(card))
     js("progress.levels.baddrivers = 4; renderGarage()")
     check("at the top (90%: still the odd sane driver): the switch alone", js(card)[1:] == ["90% of drivers mad for fuel", "OFF"], js(card))
-    js("delete progress.off.baddrivers; progress.levels.baddrivers = 0; progress.parts = 80; renderGarage()")
+    js("delete progress.off.baddrivers; progress.levels.baddrivers = 0; progress.scrap = 80; renderGarage()")
     # 8. the bull bar at 3: you carry on at the car's speed, and it takes 2.5 times the damage
     js("progress.levels.bullbar = 3; refreshCar()")
     got = js("(() => { const c = { v: 20, hp: null, racer: 0 }; speed = 60; bump(c); const kept = speed; ram(impact); return [Math.round(kept), c.wreck]; })()")
@@ -110,7 +110,7 @@ with sync_playwright() as p:
             const kept = speed; ram(impact); return { side: impact.side, kept: Math.round(kept), hp: Math.round(c.hp) }; })()""")
     got = [swipe(0), swipe(1)]
     check("spiked hubs: a side-swipe keeps your speed and counts one more hit (34)", got[0]["side"] and got[1]["kept"] == 32 and got[0]["kept"] < 20 and got[0]["hp"] - got[1]["hp"] == 34, got)
-    # 11. the gang: with a bull bar a fleet car side-swipes a rival beside it, every 3 s; parts are yours
+    # 11. the gang: with a bull bar a fleet car side-swipes a rival beside it, every 3 s; scrap is yours
     pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     def gang(bull):
         js(f"progress.levels.bullbar = {bull}; progress.levels.spikes = 0; refreshCar()")
@@ -198,7 +198,7 @@ with sync_playwright() as p:
         o.dir = 1; return r; })()""")
     check("an oncoming mad driver: its own car's mad front", got == {"mad": True, "own": True, "front": True}, got)
     got = aside("""(() => { Object.assign(m, { z: odo + 30, hp: null, wreck: false }); total(m); const r = [m.wreck, $('flash').textContent]; m.wreck = false; m.z = odo + 5000; return r; })()""")
-    check("a mad car's stolen fuel: double parts", got == [True, "TOTALLED +44 PARTS"], got)
+    check("a mad car's stolen fuel: double scrap", got == [True, "TOTALLED +44 SCRAP"], got)
     js("progress.levels.baddrivers = 0; 0")
     # with a bull bar, the aids take the ram of a car that has just cut in: lane assist and autocruise look past it
     got = js("""(() => { const c = traffic.find(c => !c.racer && !c.police && !c.wreck); Object.assign(c, { dir: 1, z: odo + 30, x: MY_LANES[lane], cut: 2 });
@@ -210,7 +210,7 @@ with sync_playwright() as p:
     check("a mad driver's cut-in, with a bull bar: the aids take the ram (not without one, nor once it has settled)", got == [False, True, True], got)
     got = aside("""(() => { const c = traffic.find(c => !c.racer && !c.police && !c.wreck); Object.assign(c, { dir: 1, z: odo + 30, cut: 2, hp: null });
         ram({ car: c, kmh: 60, side: false, headOn: false }); const r = [c.wreck, $('flash').textContent]; c.wreck = false; c.z = odo + 5000; return r; })()""")
-    check("Fuel madness: ram a car that cut in, it's totalled", got == [True, "HAD IT COMING! +22 PARTS"], got)
+    check("Fuel madness: ram a car that cut in, it's totalled", got == [True, "HAD IT COMING! +22 SCRAP"], got)
     # 17. the war kit shows on your car as bought, each part from its level up (the owner, 18 Oct); not in other games
     kit = "[...document.querySelectorAll('#kit > g')].filter(g => getComputedStyle(g).display !== 'none').map(g => g.dataset.kit)"
     js("Object.assign(progress.levels, { bullbar: 0, armour: 0, guns: 0, autogun: 0 }); renderKit(); 0")  # drawn now, not next frame

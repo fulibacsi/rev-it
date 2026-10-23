@@ -6,7 +6,9 @@ revs in a band, parked), **Speed signs**, **Distance** (an incremental game with
 drive**. Keyboard, mouse and touch all work at once; phones get their own layout.
 
 Design decisions, balance targets, the playtest history and the open questions are in
-[docs/design-notes.md](docs/design-notes.md). Read it before changing how Distance plays or pays.
+[docs/design-notes.md](docs/design-notes.md). Read it before changing how Distance plays or pays. What needs what in
+the garage is the owner's upgrade graph, [docs/upgrade-graph.md](docs/upgrade-graph.md): the source of truth when
+talking about upgrades. Keep it up to date with every change to an upgrade, a tab or what one needs.
 
 ## Working with the owner (fulibacsi)
 
@@ -35,8 +37,9 @@ Design decisions, balance targets, the playtest history and the open questions a
 - Keep the game **diegetic**: controls and readouts belong to the car (the light stalk, the mirror's timer, the
   windscreen head-up display, the cluster's lamps). A floating button was called out; nitro is a pedal on the gas pedal.
 - Never hint at the hidden race before it is revealed: no garage text about the white car ("a clear giveaway").
-  The same for everything locked (the owner, 22 Oct): a system is named only once its garage page is open, and a
-  control (its keys, its setting) only once the car has it.
+  The same for everything locked (the owner, 22 Oct): a system is named only once its garage page is open, a card
+  shows only once one of its parents is bought, with any parent still out of sight as ??? (the upgrade graph's rules),
+  and a control (its keys, its setting) only once the car has it.
 - Report what you verified and how. Balance claims come from the simulations in `tests/balance/`, not guesses.
 
 ## Code
@@ -105,6 +108,9 @@ uv run --no-project --with playwright playwright install chromium         # once
   reached in a run, and that includes levels a test sets between runs); the first act's on a new game (no runs yet). Tests not
   about them mark them all seen in their setup: `toured: TUTORIALS.map(t => t.id)` in `progress` (the cards are in
   that list).
+- Every garage tab is bought (the upgrade graph). A page counts as bought once anything on it is, so levels a test sets
+  open their pages; to buy the first thing on a page, set its tab too (`workshopTab: 1`, `autopilotTab`, `blackTab`,
+  `fleetTab`, `warrigTab`).
 - **Debug mode**, for playtesting: tap the menu's REV IT title 5 times (then OK). Distance plays a separate save,
   copied from the game the first time, with unlimited metres, points, miles and parts (shown as ∞), every grid slot
   for sale and police heat rising ten times quicker, so the later acts are quick to reach; the same again switches it

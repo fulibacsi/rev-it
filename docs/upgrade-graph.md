@@ -133,7 +133,7 @@ flowchart TD
 3. **Story conditions hide**: a tab waiting on one (P100, P1, a car totalled) stays out of sight until it is met and
    its parent bought. Any other condition (2 km driven) is part of its rule, in sight.
 4. **In sight and locked**, a card shows its name and its whole rule, what is done ticked. A parent still out of sight
-   shows as ???.
+   shows as ???: Flash recharge's in act I (Reckless driving) is a teaser, the owner's call.
 5. **A tab is bought by tapping it** in the tab row, where it shows with its price once in sight.
 6. **Free cards** (the Mile converter) follow the same rules, with no price.
 7. **Saves**: a tab counts as bought once any upgrade on it is owned, so players keep their pages.
@@ -200,31 +200,24 @@ Each upgrade and what it needs, one line each: the list to edit.
 - Hunter ← War Rig, Autocruise, Reckless auto-drive
 - Hunting pack ← Hunter, Fleet dues, Fleet tuning, Fleet flash
 
-## What changes against today's game
+## What changed (23 Oct), against the game before
 
-- **The tabs are bought**: today the Workshop and the Autopilot are open from the start, the Black market opens with
-  the reveal, the Fleet at P1, the War Rig with the first car totalled.
-- **Muscle V8** needs Power, Rev limit and Gearbox bought; today it is 4,000 m with nothing before it.
-- **JDM Turbo I6** needs the V8, and Power, Rev limit and Gearbox maxed; today 10,000 m after the V8.
-- **Flash recharge** needs 5 flashes and Reckless driving; today 10, and on sale only after the reveal.
-- **Game of chicken** needs Flash recharge; today Headlight flash.
-- **The ECU** is a chain: ECU: rev limit, then ECU: power, then Cooling and Nitro; today all three of the first need
-  only Reckless driving.
-- **Jump the start** needs Bribe the starter; today it is on sale with the Black market.
-- **Reckless auto-drive** needs the Black market, Autocruise and 7th gear; today Autocruise, Reckless driving, and 7th
-  gear bought.
-- **Daredevil** needs Nitro maxed; today everything else maxed.
+- **The tabs are bought**: the Workshop and the Autopilot were open from the start, the Black market opened with the
+  reveal, the Fleet at P1, the War Rig with the first car totalled.
+- **Muscle V8** needs Power, Rev limit and Gearbox bought; it was 4,000 m with nothing before it.
+- **JDM Turbo I6** needs the V8, and Power, Rev limit and Gearbox maxed; it was 10,000 m after the V8.
+- **Flash recharge** needs 5 flashes and Reckless driving; it needed 10, and was on sale only after the reveal.
+- **Game of chicken** needs Flash recharge; it needed Headlight flash.
+- **The ECU** is a chain: ECU: rev limit, then ECU: power, then Cooling and Nitro; the first three needed only Reckless
+  driving.
+- **Jump the start** needs Bribe the starter; it was on sale with the Black market.
+- **Reckless auto-drive** needs the Black market, Autocruise and 7th gear; it needed Autocruise, Reckless driving, and
+  7th gear bought.
+- **Daredevil** needs Nitro maxed; it needed everything else maxed.
 - **The Fleet** needs the Black market, and the **War Rig** the Fleet.
-- **Mile converter**: today's Exchange card (metres for miles), free, under the Fleet tab.
-- **Fuel madness** needs Bull bar; today nothing.
-- **Hunter** needs the War Rig, Autocruise and Reckless auto-drive; today Autocruise.
-- **Hunting pack** needs Hunter, Fleet dues, Fleet tuning and Fleet flash; today nothing.
+- **Mile converter**: the Exchange card (metres for miles), free, under the Fleet tab.
+- **Fuel madness** needs Bull bar; it needed nothing.
+- **Hunter** needs the War Rig, Autocruise and Reckless auto-drive; it needed Autocruise.
+- **Hunting pack** needs Hunter, Fleet dues, Fleet tuning and Fleet flash; it needed nothing.
 - **Scrap** replaces parts, the War Rig's money.
-
-## Open
-
-- **Flash recharge in act I.** Its first parent, Headlight flash 5+, comes long before the reveal, so by rule 1 its
-  card shows in act I with ??? for Reckless driving: a hint that more is coming. Show it like that, or keep a card
-  out of sight while a parent waits on a story condition?
-- **A player without the Autopilot tab at the reveal** has race points and no Black market to spend them in (its parent
-  is the Autopilot). The act II card could say so: "Buy the Autopilot tab: the Black market is behind it."
+- **Team places** (the Fleet, not an upgrade): at the finish each fleet car's place pays miles, more the further up.
