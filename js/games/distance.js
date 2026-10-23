@@ -96,8 +96,10 @@ function save() {
 }
 const forgetRun = () => Object.assign(run, { gain: null, race: null, revealed: false, won: false, dues: 0, team: 0, scrap: 0, totals: 0,
                                              firstTotal: false, boss: false, tank: null, beatTank: false, newBest: false, best: 0 });
-function resetProgress() { // a new game: the menu's "new game"
-  Object.assign(progress, FRESH());
+// RESET PROGRESS: a new game, by a player who has driven before, so its first run has no Driving tutorial (the owner,
+// 23 Oct)
+function resetProgress() {
+  Object.assign(progress, FRESH(), { toured: ['driving'] });
   save();
   forgetRun();
 }
@@ -379,11 +381,11 @@ function renderCard() {
   $('act-go').textContent = screenFrom.length ? '◀ BACK' : 'CONTINUE ▶';
 }
 // back where it came from (the pause menu), or, popped up or opened from the garage, on to the garage, and the next
-// card or tutorial the same run brought; a new game's, on to its first run (the rest pops up after it)
+// card or tutorial the same run brought; a new game's, on to the Driving tutorial and its first run
 function closeCard() {
   if (screenFrom.length) return showScreen(screenFrom.pop(), true);
   closeMenu();
-  if (run.phase === 'garage') popTour();
+  popTour();
 }
 
 // ---- garage ----
@@ -542,10 +544,10 @@ const DISTANCE = {
   engine: () => progress.engine, // the garage's engines, not the menu's
   tune: applyUpgrades,
   madness: () => run.phase === 'run' && !progress.off.baddrivers ? madShare(lvl('baddrivers')) : 0, // gang.js
-  start() { // a new game goes straight onto the road, its first act's card up first, alone: no garage before the first
-    // run, with nothing in it yet (the owner, 23 Oct)
+  start() { // a new game goes straight onto the road, its first act's card up first, then the Driving tutorial (unless
+    // seen): no garage before the first run, with nothing in it yet (the owner, 23 Oct)
     Object.assign(run, { phase: 'garage', best: progress.best }); shownPhase = null;
-    if (!progress.runs) { drive(); markTours('act1'); }
+    if (!progress.runs) { drive(); markTours('act1', 'driving'); }
     report('start'); // reporting.js
   },
   pause: () => save(), // the menu opened: the time played so far is kept

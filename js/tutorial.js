@@ -9,7 +9,8 @@
 // A page: title, at (the control to light up, a selector; none: the card alone; hidden in the garage, it shows while
 // the page is up), touch and desk (what to do, each way), both (said either way), if (only then)
 const TUTORIALS = [
-  { id: 'driving', name: 'Driving', pages: [
+  // always open: it pops up in a new game's first run, after the first act's card, unless seen (distance.js start)
+  { id: 'driving', name: 'Driving', open: () => true, pages: [
     { title: 'START THE ENGINE', at: '#key',
       touch: 'Turn the key to START and hold it there until the engine catches.',
       desk: 'Press Enter. Or with the mouse: drag the key to START and hold it until the engine catches.' },
@@ -156,6 +157,7 @@ function renderTutorials() {
   $('tutorials').innerHTML = opened().filter(t => t.pages).map(t => `<button data-tour="${t.id}">${t.name.toUpperCase()}</button>`).join('');
 }
 function openTour(id, popup = false) {
+  if (!progress.toured.includes(id)) { progress.toured.push(id); save(); } // seen: it pops up no more (the Driving one)
   Object.assign(tour, { id, page: 0, popup });
   document.activeElement?.blur(); // Space turns the page, not the button just clicked
   if (menuOpen) showScreen('tour'); else openMenu('tour');
@@ -167,9 +169,9 @@ function exitTour() {
 }
 // a system's tutorial, once, when it opens in play: open now, not before the purchase or the run (markTours), and not
 // shown yet. Only in play: a save's systems from before the tutorials, or set up by a test, pop nothing up. A new
-// game marks all but its first act's card (distance.js)
+// game marks all but its first act's card and the Driving tutorial (distance.js)
 let openBefore = null; // marked before a purchase or a run, and done with once its tutorials have popped up
-const markTours = (but) => { openBefore = new Set(opened().map(t => t.id).filter(id => id !== but)); };
+const markTours = (...but) => { openBefore = new Set(opened().map(t => t.id).filter(id => !but.includes(id))); };
 function popTour() {
   const t = openBefore && opened().find(t => t.open && !openBefore.has(t.id) && !progress.toured.includes(t.id));
   if (!t) { openBefore = null; return; }

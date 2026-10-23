@@ -102,7 +102,7 @@ with sync_playwright() as p:
     check("a save with an aid bought before: nothing pops up", pj("menuOpen") is False, pj("[menuOpen, screen]"))
     pj("document.querySelector('[data-buy=\"flash\"]').click()"); ph.wait_for_timeout(200)
     got = pj("[menuOpen, screen, tour.popup, $('tour-title').textContent, $('spot').classList.contains('lit'), progress.toured]")
-    check("bought: its tutorial pops up, the stalk lit", got[:5] == [True, "tour", True, "FLASH", True] and got[5] == ["flash"], got)
+    check("bought: its tutorial pops up, the stalk lit", got[:5] == [True, "tour", True, "FLASH", True] and got[5] == ["driving", "flash"], got)  # Driving: read from the list above
     ph.screenshot(path=f"{OUT}/tutorial_phone_flash.png")
     pj("$('tour-next').click()"); ph.wait_for_timeout(100)
     check("DONE: back in the garage", pj("[menuOpen, run.phase]") == [False, "garage"], pj("[menuOpen, run.phase]"))
@@ -129,7 +129,7 @@ with sync_playwright() as p:
     check("a run brings several: the cards, then the tutorials, each in turn", seen == ["RACE", "WAR", "NO LAW OUT HERE", "THE RACE", "THE FLEET",
           "THE WAR RIG", "POLICE HEAT"], seen)
     toured = pj("progress.toured")
-    check("all of them shown once", sorted(toured) == ["act2", "act4", "flash", "fleet", "nolaw", "police", "race", "warrig"], toured)
+    check("all of them shown once", sorted(toured) == ["act2", "act4", "driving", "flash", "fleet", "nolaw", "police", "race", "warrig"], toured)
     # 8. every system's page: lit round its control (shown for the page if the garage hides it), the card clear
     for name, pjs, page in [("phone", pj, ph), ("desktop", js, pg)]:
         pjs("Object.assign(progress, { racing: true, totals: 1, levels: { clutch: 1, cruise: 1, flash: 5, autoflash: 1, stereo: 1, reckless: 1, chicken: 1, "
@@ -165,5 +165,20 @@ with sync_playwright() as p:
           and "reticle" not in got[2], got[2])
     check("the War Rig's tutorial: the page's parts only once it is open", got[:2] == [True, False] and "guns" not in got[3] and "guns" in got[4],
           [got[:2], got[3][-60:], got[4][-60:]])
+    # 10. the first run of a first game: the DRIVE card, then Driving pops up by itself, the run paused behind it; DONE:
+    #     the run goes on. After RESET PROGRESS (you have driven before) the card, then straight into the run
+    fg = b.new_page(viewport={"width": 1440, "height": 900}); fg.on("pageerror", lambda e: errors.append(str(e))); fj = fg.evaluate
+    fg.goto(URL); fj("localStorage.clear()"); fg.reload(); fg.wait_for_timeout(300)
+    NOW = "[screen, menuOpen, run.phase, screen === 'tour' && [tour.id, tour.popup, $('tour-title').textContent]]"
+    fg.click('[data-play="distance"]'); fg.wait_for_timeout(300); fg.click("#act-go"); fg.wait_for_timeout(200)
+    got = fj(NOW); check("a first game: the DRIVE card, then Driving pops up, its first page, the run paused", got == ["tour", True, "starting", ["driving", True, "START THE ENGINE"]], got)
+    for _ in range(8): fg.click("#tour-next")
+    fg.wait_for_function("run.phase === 'run'", timeout=15000)
+    check("DONE: the run goes on; seen", fj("[menuOpen, progress.toured]") == [False, ["act1", "driving"]], fj("[menuOpen, progress.toured]"))
+    fj("run.left = 0.05"); fg.wait_for_function("run.phase === 'garage'", timeout=15000)  # the first run over: RESET PROGRESS is there
+    fg.keyboard.press("Escape"); fg.click("#to-main"); fg.click('[data-show="settings"]'); fg.once("dialog", lambda d: d.accept()); fg.click("#reset")
+    check("RESET PROGRESS: Driving counts as seen", fj("[progress.runs, progress.toured]") == [0, ["driving"]], fj("[progress.runs, progress.toured]"))
+    fg.click('[data-play="distance"]'); fg.wait_for_timeout(300); fg.click("#act-go"); fg.wait_for_timeout(200)
+    got = fj(NOW); check("after it, a new game: the DRIVE card, then the run, no tutorial", not got[1] and got[2] in ("starting", "countdown"), got)
     b.close()
 print("ERRORS:", errors or "none", "| FAILS:", fails or "none")

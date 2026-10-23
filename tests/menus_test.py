@@ -33,8 +33,8 @@ with sync_playwright() as p:
     pg.keyboard.press("Escape"); check("Esc: back to the card", js("screen") == "act", js("screen"))
     pg.click("#act-go"); pg.wait_for_timeout(100)
     got = js("[menuOpen, document.body.classList.contains('garage'), run.phase, progress.toured]")
-    check("CONTINUE: straight onto the road, the first run under way, no garage before it; the card seen",
-          got[:2] == [False, False] and got[2] in ("starting", "countdown") and got[3] == ["act1"], got)
+    check("CONTINUE: straight onto the road, the first run under way, no garage before it; the card seen, and Driving (read)",
+          got[:2] == [False, False] and got[2] in ("starting", "countdown") and got[3] == ["act1", "driving"], got)
     # 2. the run, then the pause menu: END RUN is there; exit to the main menu and CONTINUE goes back to the same run
     pg.wait_for_function("run.phase === 'run'", timeout=15000); pg.wait_for_timeout(500)
     pg.keyboard.press("Escape"); left = js("run.left")
