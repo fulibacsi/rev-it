@@ -101,6 +101,9 @@ machine or session. Keep it current: update a section when a decision changes, a
 - On the left in both layouts (the owner, 23 Oct: on a desktop it was right of the wheel, under the key, "on the wrong
   side"). On a desktop it sits below the stereo, its right edge at 17vw, clear of the stereo and the light stalk at any
   window shape; the key stays right of the wheel.
+  - The owner's reason: the left is much the better interface, and here that beats keeping it diegetic. The car
+    drives on the right with the driver left of centre, a left-hand-drive car, whose lever would be on the right; don't
+    move it back for realism.
 - An H gate, and every shift needs the clutch.
 - With a finger, the lever forgives a sloppy route. Once the finger has come out through neutral, anywhere deep in
   the top or bottom row puts the lever in the nearest column's slot, and it follows the finger if it drifts.
