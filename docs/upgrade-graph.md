@@ -12,7 +12,7 @@ five levels of it. A label on a tab's arrow is a condition besides the price.
 |---|---|---|---|
 | Workshop | 100 m | nothing: the first buy | |
 | Autopilot | 500 m | Workshop | 2 km+ driven |
-| Black market | 1 point | Autopilot | P100 |
+| Black market | 1 point | Workshop | P100 |
 | Fleet | 1 point | Black market | P1 |
 | War Rig | 1 scrap | Fleet | totalled a car |
 
@@ -95,7 +95,7 @@ flowchart TD
   clutch --> shift
   steer & shift & gas --> cruise
 
-  autopilot -- "P100" --> black
+  workshop -- "P100" --> black
   black --> grid & reckless & rcruise
   grid --> rolling
   reckless --> chicken & ecuRev
@@ -166,7 +166,7 @@ Each upgrade and what it needs, one line each: the list to edit.
 - Auto shift ← Auto clutch
 - Autocruise ← Lane assist, Auto shift, Auto gas
 
-### Black market (1 point; needs the Autopilot)
+### Black market (1 point; needs the Workshop, and reaching P100)
 
 - Bribe the starter ← Black market
 - Jump the start ← Bribe the starter
@@ -180,7 +180,7 @@ Each upgrade and what it needs, one line each: the list to edit.
 - 7th gear ← Nitro, Gearbox max
 - Reckless auto-drive ← Black market, Autocruise, 7th gear
 
-### Fleet (1 point; needs the Black market, and P1)
+### Fleet (1 point; needs the Black Market, and reaching P1)
 
 - Mile converter ← Fleet (free)
 - Pay off a racer ← Fleet
