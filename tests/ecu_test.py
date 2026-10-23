@@ -13,7 +13,7 @@ with sync_playwright() as p:
     cdp = ctx.new_cdp_session(pg); cdp.send("Emulation.setTouchEmulationEnabled", {"enabled": True, "maxTouchPoints": 5})
     pg.goto(URL); js = pg.evaluate
     def start(levels):
-        js(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, bank: 9e6, levels: {{ {levels} }}, engine: 2, toured: TUTORIALS.map(t => t.id) }})")
+        js(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, bank: 9e6, levels: {{ {levels} }}, engine: 2, runs: 1, toured: TUTORIALS.map(t => t.id) }})")
         if js("game.id") != "distance": pg.tap('[data-play="distance"]'); pg.wait_for_timeout(200)
         else: js("run.left = 0.1"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
         js("refreshCar()"); pg.tap("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)

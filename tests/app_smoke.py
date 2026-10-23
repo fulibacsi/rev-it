@@ -33,8 +33,8 @@ with sync_playwright() as p:
     # Distance with the keyboard
     kb.press("Escape"); pg.click("#to-main"); pg.click('[data-play="distance"]'); pg.wait_for_timeout(300)
     print("a new game's first card:", js("[screen, $('act-name').textContent]")); pg.click("#act-go"); pg.wait_for_timeout(100)
-    print("distance picked:", js("({ phase: run.phase, garage: document.body.classList.contains('garage'), gate: document.getElementById('gate').getAttribute('d') })"))
-    kb.press("Enter"); pg.wait_for_function("run.phase === 'countdown'", timeout=10000)
+    print("distance picked, straight onto the road:", js("({ phase: run.phase, garage: document.body.classList.contains('garage'), gate: document.getElementById('gate').getAttribute('d') })"))
+    pg.wait_for_function("run.phase === 'countdown'", timeout=10000)
     kb.down("Shift"); pg.wait_for_timeout(200); kb.press("ArrowUp"); pg.wait_for_timeout(400); kb.down(" ")
     pg.wait_for_function("run.phase === 'run'"); kb.up("Shift"); pg.wait_for_timeout(3000); print("distance run:", st(), js("run.left.toFixed(1)"))
     js("run.left = 0.2"); pg.wait_for_function("run.phase === 'garage'", timeout=10000); kb.up(" ")

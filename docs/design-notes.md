@@ -211,7 +211,8 @@ machine or session. Keep it current: update a section when a decision changes, a
   everything" doesn't belong on a win, and RESET PROGRESS in the settings does it.
 - **The act cards** (the owner, 21 Oct: nobody read the words on top of the garage). A title card as each act starts,
   in the ending's look (the garage hidden behind it): a small "ACT II", the act's name, what it is about and what to
-  do. DRIVE (on a new game, with a HOW TO DRIVE button into the Driving tutorial), ACT II · RACE (the reveal),
+  do. DRIVE (on a new game, over the road, with a HOW TO DRIVE button into the Driving tutorial; its CONTINUE starts
+  the first run), ACT II · RACE (the reveal),
   III · RECRUIT (the first win), IV · WAR (the gang); then, without a number, the last act's two turns: NO LAW OUT
   HERE (the first total) and THE ARMY SENDS A TANK. The first act has no number, nor does anything before the
   reveal (the owner, 21 Oct: "Act I" would say more is to come): the garage's title stays GARAGE and the pause
@@ -279,8 +280,9 @@ driving is act 1's game, and the robot takes over as the fantasy moves on.
 - **The upgrade graph** (the owner, 23 Oct): what needs what is the owner's graph, `docs/upgrade-graph.md`, the source
   of truth (keep it up to date). Every tab is bought, so everything has a parent: the Workshop (100 m), the Autopilot
   (500 m, after 2 km driven in all), the Black market (1 point, once the race is revealed), the Fleet (1 point, at P1),
-  the War Rig (1 scrap, with the first car totalled); a tap on a tab for sale buys it. On a new game the garage holds
-  only the Workshop's tab. A card shows once one of its parents is bought (a count on the arrow once met: 5 flashes,
+  the War Rig (1 scrap, with the first car totalled); a tap on a tab for sale buys it. A new game goes straight onto
+  the road, with no garage before its first run (the owner, 23 Oct: it held nothing to buy yet); after it the garage
+  holds only the Workshop's tab. A card shows once one of its parents is bought (a count on the arrow once met: 5 flashes,
   maxed) and is bought with all of them; a tab waiting on a story moment stays out of sight till then. A save from
   before keeps its pages: a tab counts as bought once anything on its page is.
   - A locked upgrade (none of it bought, something else needed first) shows only its name and its whole rule, what

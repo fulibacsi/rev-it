@@ -108,6 +108,9 @@ uv run --no-project --with playwright playwright install chromium         # once
   reached in a run, and that includes levels a test sets between runs); the first act's on a new game (no runs yet). Tests not
   about them mark them all seen in their setup: `toured: TUTORIALS.map(t => t.id)` in `progress` (the cards are in
   that list).
+- A new game (no runs yet) goes straight onto the road, its first run under way, with no garage before it. A test that
+  sets up a game and presses DRIVE sets `runs: 1` too (a game under way); one that sets levels for a new game sets them
+  before it starts (set mid-run, they pop their tutorial up after it, as a purchase would).
 - Every garage tab is bought (the upgrade graph). A page counts as bought once anything on it is, so levels a test sets
   open their pages; to buy the first thing on a page, set its tab too (`workshopTab: 1`, `autopilotTab`, `blackTab`,
   `fleetTab`, `warrigTab`).

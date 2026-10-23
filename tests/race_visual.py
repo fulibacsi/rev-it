@@ -8,7 +8,7 @@ with sync_playwright() as p:
     pg = b.new_page(viewport={"width": 1440, "height": 900}); pg.on("pageerror", lambda e: errors.append(str(e)))
     pg.goto(URL); js = pg.evaluate
     js("localStorage.clear()"); pg.reload(); pg.wait_for_timeout(300)
-    js(f"progress.levels = {FULL}; progress.engine = 2; progress.toured = TUTORIALS.map(t => t.id)")
+    js(f"progress.levels = {FULL}; progress.engine = 2; progress.toured = TUTORIALS.map(t => t.id); progress.runs = 1")
     pg.click('[data-play="distance"]'); pg.wait_for_timeout(200); pg.click("#drive")
     pg.wait_for_function("run.phase === 'run'", timeout=15000); pg.wait_for_timeout(2500)
     js("const c = racers()[0]; c.z = odo + 70; c.x = MY_LANES[1 - lane]; c.lane = 1 - lane")  # bring the quick car close

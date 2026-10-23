@@ -35,9 +35,9 @@ with sync_playwright() as p:
     ctx.route(f"{GATE}*", supabase)
     pg = ctx.new_page(); pg.on("pageerror", lambda e: "on purpose" in str(e) or errors.append(str(e))); js = pg.evaluate
     shown = lambda: js("[...document.querySelectorAll('#menu section:not([hidden]) button')].filter(b => !b.hidden && b.offsetParent).map(b => b.textContent.trim())")
-    def race():
-        pg.click('[data-play="distance"]'); pg.wait_for_timeout(200)
-        js("Object.assign(progress.levels, { clutch: 1, gas: 1, shift: 1 }); refreshCar()"); pg.click("#drive")
+    def race():  # a new game goes straight onto the road; one under way, from the garage
+        js("Object.assign(progress.levels, { clutch: 1, gas: 1, shift: 1 })"); pg.click('[data-play="distance"]'); pg.wait_for_timeout(200)
+        if js("run.phase === 'garage'"): pg.click("#drive")
         pg.wait_for_function("run.phase === 'run'", timeout=15000); pg.wait_for_timeout(800)
         js("run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000); pg.wait_for_timeout(300)
         pg.keyboard.press("Escape"); pg.click("#to-main")
