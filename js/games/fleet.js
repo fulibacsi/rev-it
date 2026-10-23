@@ -24,9 +24,10 @@ const inFleet = n => progress.racing && n > FIELD - fleetSize(); // racer n is y
 const fleetPace = () => 1 + 0.05 * lvl('fleetPace');
 // the dues for a run: a share of the metres your fleet drove from the grid, paid into the bank at the finish
 const fleetDues = () => Math.round(0.1 * lvl('dues') * racers().reduce((m, c) => m + (c.fleet ? Math.max(0, c.z - c.grid) : 0), 0));
-// team places (the owner, 23 Oct): at the finish each fleet car's place in the field pays miles, TEAM a mile for each
-// ten places it is from the back (P101 to P92 one, P2 ten), so more cars and quicker ones pay more (tests/balance/act3.py)
-const TEAM = 0.25;
+// team places (the owner, 23 Oct): at the finish each fleet car's place in the field pays miles, TEAM miles for each
+// ten places it is from the back (P101 to P92 one, P2 ten), so more cars and quicker ones pay more. A tenth of a mile:
+// the Fleet then takes 12 races to 51 cars (tests/balance/act3.py; a quarter took 9, none 14-16; the target 10-15)
+const TEAM = 0.1;
 const placeOf = c => 1 + FIELD - racers().length + (odo > c.z ? 1 : 0) + // everyone ahead of it, you included
   racers().filter(o => o !== c && !o.wreck && o.z > c.z).length;
 const teamMiles = () => Math.round(racers().filter(c => c.fleet && !c.wreck)

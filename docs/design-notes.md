@@ -450,7 +450,14 @@ ACT III's card says so after that race: "the racers you beat are open to offers"
   | Fleet flash | 1 | 15 | | a fleet car flashes a slower ordinary car up to 100 m ahead of it out of your lane (every 3 s at most; none of your flashes) |
 
   Dues are the act's income: a race nets you only about 1 mile after the nitro refill and repairs, while a fleet car
-  drives about 2.5 km a race. They pay metres, into the bank, so the Exchange stays the one way to miles.
+  drives about 2.5 km a race. They pay metres, into the bank, for the Mile converter.
+- **Team places** (the owner, 23 Oct: option A of three, after "there are no interaction with the fleet"): at the
+  finish each fleet car's place in the field pays a tenth of a mile for each ten places it is from the back (P92 to
+  P101 one step, P2 ten), straight into miles, so the more cars and the quicker they are, the more they pay. A tenth
+  (`act3.py`, two seeds each, races to 51 fleet cars): none 14–16, a quarter 9, 0.15 10, a tenth 12; the target is
+  10–15. By then the team pays about 15 miles a race, the dues about 35 through the converter. Claude's caveat, taken:
+  the fleet starts behind you (the slowest go first) and you never meet it, so your driving can't change what it
+  pays. It adds income, not interaction; that is the next brainstorm.
 - **The sonar:** the mirror is the timer, so there is no rear view. A sonar bolted to the left A-pillar, under the menu
   button, shows the road from above, 250 m ahead of you and behind, ahead up, you an arrow in the middle: its four
   lanes and the double yellow drawn (the lane lines going by as fast as the road), every car on it as a blip coloured
@@ -459,8 +466,9 @@ ACT III's card says so after that race: "the racers you beat are open to offers"
   (15 px apart, so a lane change shows), squeezed along (34 px for 250 m); faint lines at 100 m each way, and a sweep
   going round. It shows only with a fleet, and only on the road; it redraws 15 times a second. (Before, Claude's call:
   a fan behind you, your fleet cars only, to 500 m.)
-- **Simulated** (`act3.py`, seed 11, from P1 with act 2's car and 57k m): 51 fleet cars after 26 races buying dues
-  first, 71 buying the cheapest first (dues came only at race 46).
+- **Simulated** (`act3.py`, from P1 with act 2's car and 44k m, the tab bought first): 51 fleet cars after 12, 12,
+  10, 12 races with team places (23 Oct, seeds 1 to 4), a few cars bought every race. (13 Oct, seed 11, 57k m, before
+  the retune: 26 races buying dues first, 71 buying the cheapest first.)
 
 ### Act 4: the War Rig
 
@@ -703,6 +711,15 @@ DNF that halved the heat. Till then the act's card says "the army has a tank rea
   Chosen: ×2.2, 22 parts a car and 55 a racer, the heat 2.2% a car. A War Rig upgrade every one to four races, the
   heat at 100% one to three races before the guns, and the tank beaten at the first go every time. The prices are as
   they were: income grows, so everything comes sooner, in the same order.
+- **The upgrade graph (23 Oct),** the tabs bought, the needs redrawn and team places added; the owner's targets: act 1
+  15–25 runs, act 2 15–25, act 3 10–15, act 4 10–15 to the tank and 1–3 at it (51–83 in all, about 1 to 1.5 hours).
+  The simulations buy each tab first.
+  - Act 1: #100 first passed on run 19 (value) and 22 (cheapest first), both seeds; it was 17–19 and 21–23.
+  - Act 2: P1 after 17 and 16 races (seeds 1 and 2), Flash recharge bought on the way for Game of chicken.
+  - Act 3: 51 fleet cars after 12, 12, 10, 12 races (seeds 1 to 4); without team places 14–16.
+  - Act 4: the heat at 100% after 9 to 10 races, the tank beaten at the first go (races 11 and 12, seeds 1 and 2;
+    without team places 13 and 11). At the short end of the target. Left as it is unless the owner wants it longer.
+  - In all about 56–63 races, inside the 51–83.
 - **Simulation tools** live in `tests/balance/` and are run from the repo root:
   - `act1.py [cheapest|value] [head-start curve or -] [traffic]`: when #100 is first passed;
   - `act2.py [races] [seed]`: races from the reveal to P1, the bot driving like Reckless auto-drive (`aids.js`). The

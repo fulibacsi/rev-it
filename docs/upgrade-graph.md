@@ -220,4 +220,5 @@ Each upgrade and what it needs, one line each: the list to edit.
 - **Hunter** needs the War Rig, Autocruise and Reckless auto-drive; it needed Autocruise.
 - **Hunting pack** needs Hunter, Fleet dues, Fleet tuning and Fleet flash; it needed nothing.
 - **Scrap** replaces parts, the War Rig's money.
-- **Team places** (the Fleet, not an upgrade): at the finish each fleet car's place pays miles, more the further up.
+- **Team places** (the Fleet, not an upgrade): at the finish each fleet car's place pays miles, a tenth of a mile for
+  each ten places from the back (the act to 51 cars in 10–12 races; it took 14–16).
