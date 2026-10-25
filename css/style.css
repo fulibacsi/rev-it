@@ -209,6 +209,10 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
 #feedback-text { box-sizing: border-box; width: 100%; padding: 8px; resize: vertical; background: #12141e; color: #eee;
                  border: 1px solid #2c3140; border-radius: 6px; font: inherit; }
 #menu #feedback-note { min-height: 1.5em; margin: 6px 0 0; color: var(--accent); }
+/* typing it on a phone (main.js): the keyboard takes the lower half, so the form packs into the top, SEND in sight */
+.touch.typing #menu-panel { margin-top: 6px; }
+.touch.typing #menu h1, .touch.typing [data-screen="feedback"] p { display: none; }
+.touch.typing #feedback-text { height: 4em; }
 #game-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
 #game-list button { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; text-align: left; }
 #game-list b { font-size: 16px; color: #eee; letter-spacing: 1px; }

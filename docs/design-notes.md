@@ -189,6 +189,13 @@ machine or session. Keep it current: update a section when a decision changes, a
     player's stats always go with it; ticked, it needs a word (the stats are sent anyway), unticked it can go empty,
     and says so. Sent, the box clears and a thanks screen takes the form's place ("Thanks for your feedback!", ◀ BACK
     to where FEEDBACK came from: the owner, 22 Oct); a failed send stays on the form, the words kept.
+  - Typed on a phone, the form packs into the top of the screen (the title and the lines of text hidden, the box a
+    little shorter), so the box and SEND stay above the keyboard. Once the keyboard is down again the page and the menu
+    are scrolled back. The owner, 25 Oct, on an iPhone 14 Pro in Chrome inside itch.io's frame: after the keyboard the
+    layout fell apart, SEND off the screen, until the phone was turned. iOS scrolls a box into view and can leave the
+    view out of place (Apple's forum, thread 800125; WebKit bug 297779, iOS 26). Not checked on a real iPhone: if it
+    stays, the shift is in itch.io's page round the frame, out of the game's reach, and FEEDBACK could open a page of
+    its own instead.
   - sends, ticked, never during a run: a game of Distance starting, each run's end (the run, the save less the
     interface's lists: about 1 KB, about one a minute while playing), and the first five errors of a visit. A visit's
     random id, in memory only, groups them; nothing is kept on the device.

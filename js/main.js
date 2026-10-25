@@ -198,6 +198,18 @@ $('menu').oninput = e => { // the volume sliders, as they move; the feedback, as
   saveSettings();
   applyVolume();
 };
+// typing feedback (reporting.js): on a phone the keyboard takes the screen's lower half, so meanwhile the form packs
+// into the top (style.css .typing), SEND in sight. And iOS, which scrolls a box into view, can leave the page out of
+// place once the keyboard has gone (in itch.io's frame on an iPhone: SEND off the screen until the phone was turned,
+// the owner, 25 Oct), so then everything is scrolled back. Both after the keyboard is down: a tap on SEND lands first
+$('menu').addEventListener('focusin', e => { if (e.target.id === 'feedback-text') document.body.classList.add('typing'); });
+$('menu').addEventListener('focusout', e => {
+  if (e.target.id === 'feedback-text') setTimeout(() => {
+    if (document.activeElement === e.target) return; // back in the box
+    document.body.classList.remove('typing');
+    scrollTo(0, 0); $('menu').scrollTop = 0;
+  }, 400);
+});
 $('menu-button').onclick = () => openMenu();
 addEventListener('click', e => e.target.closest('button')?.blur()); // keys stay with the car, not a focused button
 
