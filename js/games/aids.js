@@ -36,10 +36,13 @@ function autoClutch(dt) {
 
 // auto gas: holds the launch revs on the line, otherwise flat out, shifts included (the limiter catches the revs
 // while the clutch is out). Once the clutch has caught up it is traction control: no more gas than the tyres can
-// take (worked out from the torque the engine makes at these revs), and well under that if they spin anyway.
+// take (worked out from the torque the engine makes at these revs), and well under that if they spin anyway. Your
+// foot on the brake lifts it off the gas on the move, as a driver would: it held the gas down, and braking by hand
+// slowed the car less than half as hard (25 Oct). Your nitro pedal still floors it
 function autoGas() {
   if (pushing()) return; // your own foot on the gas: it's yours (the nitro pedal only floors it, then this trims it)
   if (speed < 1 && (!gear || clutch < 0.05)) gasPedal = clamp(0.5 + (launchRpm() - rpm) / 800, 0, 1);
+  else if (touching('brake') && !nitroHeld) gasPedal = 0;
   // in neutral (mid-shift, or a gear knocked out while the tyres spin) the grip sum would divide by a ratio of 0
   else if (!gear || !locked && !spinning) gasPedal = 1;
   else {
@@ -168,8 +171,8 @@ function autoFlash() {
 // when nothing is coming for 6 s, or when whatever comes can be flashed out of the way (Game of chicken and a flash
 // left). It goes home when something it can't flash away comes within 3.5 s (cutting in beside a car only to escape a
 // head-on under 2 s away), or once your side is open again. While the tank is on the road it keeps to your side: it
-// can't be passed (the owner, 14 Oct); and while Hunter hunts, it leaves your side to it. It pushes the nitro pedal when a racer is close ahead, the tyres grip and it
-// isn't braking.
+// can't be passed (the owner, 14 Oct); and while Hunter hunts, it leaves your side to it. It pushes the nitro pedal when a racer is close ahead, the tyres grip and
+// neither it nor you is braking.
 let tunedRevs = true; // the aids rev into the tune now (see updateAids)
 // an oncoming car in your lane, under 4.5 s away, that a flash would make swerve: a game of chicken to play
 const facing = () => traffic.find(c => sameLane(c.x, carX) && swerves(c) && (c.z - odo) / Math.max(1, speed + c.v) < 4.5);
@@ -196,6 +199,6 @@ function recklessLanes() {
 }
 function recklessNitro() {
   const front = nearestRacers().front;
-  nitroByAid = run.phase === 'run' && progress.nitro > 0 && !pushing() && !cruiseBrake && !spinning && gear >= 2 &&
+  nitroByAid = run.phase === 'run' && progress.nitro > 0 && !pushing() && !touching('brake') && !cruiseBrake && !spinning && gear >= 2 &&
     !!front && front.z - odo < 500;
 }
