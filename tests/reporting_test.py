@@ -86,6 +86,8 @@ with sync_playwright() as p:
     js("settings.layout = 'touch'; applyLayout()"); pg.tap("#feedback-text"); pg.keyboard.type("The tank is too strong"); pg.wait_for_timeout(50)
     got = js("[document.body.classList.contains('typing'), Math.round($('feedback-send').getBoundingClientRect().bottom)]")
     check("typing on a phone: the form at the top, SEND in the top 160 px", got[0] and got[1] <= 160, got)
+    size = js("parseFloat(getComputedStyle($('feedback-text')).fontSize)")
+    check("the box's text at 16 px or more: iOS zooms in on a smaller one, and stays zoomed", size >= 16, size)
     check("a word: SEND on", not js("$('feedback-send').disabled"), "")
     pg.tap("#feedback-send"); pg.wait_for_timeout(600)
     check("SEND: the words go, then thanks", sent[-1].get("message") == "The tank is too strong" and js("screen") == "thanks", [sent[-1].get("message"), js("screen")])
