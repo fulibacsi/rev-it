@@ -81,10 +81,16 @@ with sync_playwright() as p:
           and run["screen"] == "844x390" and ev[0]["session"] == ev[-1]["session"] == f["session"], {k: run.get(k) for k in ["layout", "device", "screen", "act"]})
     pg.click("#to-stats"); pg.click('[data-show="feedback"]')
     check("ticked: empty, SEND is off, no word about it", js("[$('feedback-send').disabled, $('feedback-note').textContent]") == [True, ""], "")
-    pg.fill("#feedback-text", "The tank is too strong"); pg.wait_for_timeout(50)
+    # typed on a phone (an iPhone's keyboard takes the lower half): the form packs into the top, SEND in sight, and a tap
+    # on it sends; after, the form as it was, nothing scrolled (iOS could leave the page out of place: the owner, 25 Oct)
+    js("settings.layout = 'touch'; applyLayout()"); pg.tap("#feedback-text"); pg.keyboard.type("The tank is too strong"); pg.wait_for_timeout(50)
+    got = js("[document.body.classList.contains('typing'), Math.round($('feedback-send').getBoundingClientRect().bottom)]")
+    check("typing on a phone: the form at the top, SEND in the top 160 px", got[0] and got[1] <= 160, got)
     check("a word: SEND on", not js("$('feedback-send').disabled"), "")
-    pg.click("#feedback-send"); pg.wait_for_timeout(300)
+    pg.tap("#feedback-send"); pg.wait_for_timeout(600)
     check("SEND: the words go, then thanks", sent[-1].get("message") == "The tank is too strong" and js("screen") == "thanks", [sent[-1].get("message"), js("screen")])
+    got = js("[document.body.classList.contains('typing'), scrollY, $('menu').scrollTop]")
+    check("... the keyboard gone: the form as it was, nothing scrolled", got == [False, 0, 0], got)
     pg.click("[data-back]:visible"); pg.click('[data-show="feedback"]')
     status[0] = 500; pg.fill("#feedback-text", "again"); pg.click("#feedback-send"); pg.wait_for_timeout(300); status[0] = 201
     check("a failed send: says so on the form, the words kept", js("[screen, $('feedback-note').textContent, $('feedback-text').value]") == ["feedback", "Couldn't send it: try again later.", "again"],
