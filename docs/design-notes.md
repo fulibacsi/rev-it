@@ -324,6 +324,10 @@ driving is act 1's game, and the robot takes over as the fantasy moves on.
     clutch or the brake, your hand on the wheel or the lever. The nitro pedal isn't the gas pedal: pushing it,
     traction control carries on, but autocruise neither brakes nor lifts (the owner, 14 Oct: with every aid on, NOS
     should go). Reckless auto-drive's own nitro leaves autocruise as it is.
+  - Your foot on the brake also takes Auto gas off the gas while the car is moving (on the line it keeps the launch
+    revs), and Reckless auto-drive off the nitro; your nitro pedal still floors the gas. Until 25 Oct Auto gas held
+    the gas down while you braked, so braking by hand slowed the car less than half as hard (5.1 m/s² against the
+    brakes' 11.8 on maxed tyres; found looking at pit stops for act 3). `aids_touch_test.py` checks it.
   - With an ECU tune they rev into it in every gear while the engine is cool: the factory map from heat 0.6, until it
     has cooled below 0.4. Your foot on the gas, or nitro, take the tuned map whatever the heat.
   - Autocruise:
@@ -341,8 +345,8 @@ driving is act 1's game, and the robot takes over as the fantasy moves on.
       beside a car only to escape a head-on under 2 s away: a bump beats a DNF;
     - while the tank is on the road it keeps to your side and goes home as soon as it can: the tank can't be passed
       (the owner, 14 Oct, after the simulations lost tank fights to head-ons);
-    - it pushes the nitro pedal when a racer is within 500 m ahead, the tyres grip, it is in 2nd or higher and isn't
-      braking.
+    - it pushes the nitro pedal when a racer is within 500 m ahead, the tyres grip, it is in 2nd or higher and
+      neither it nor you is braking.
   - Auto flash only flashes a car that will move over, never a racer, nor the car in the War Rig's reticle (that one is
     to be rammed; the owner, 14 Oct: it flashed the targets away). It flashes under 4 s away, or as soon as autocruise
     starts braking for the car: closing at 150-190 km/h in act 4, autocruise braked from about 5 s out, and the gap it
