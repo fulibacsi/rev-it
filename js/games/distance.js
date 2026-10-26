@@ -372,8 +372,8 @@ TUTORIALS.unshift(
   // the gang's first car totalled, on the road (gang.js gangMoment): act IV (the owner, 27 Oct; it popped up in the
   // garage as the 51st was bought, and the next card, NO LAW OUT HERE, at the first total: one card now)
   { id: 'act4', act: 'IV', name: 'WAR', open: () => gangOpen(),
-    text: () => 'Totalled! No law out here any more. The whole crew rides as your gang now, and your car becomes a war ' +
-      'rig: the War Rig tab is for sale, paid in scrap.',
+    text: () => 'Totalled! No law out here any more. Your racers ride as your gang now, the oil still flowing, and your ' +
+      'car becomes a war rig: the War Rig tab is for sale, paid in scrap.',
     now: () => progress.wanted >= 1 ? `Police heat 100%: the army has a tank ready for when you are ${lvl('guns') ? 'repaired' : 'armed'}.`
       : `Every car totalled raises the police heat, now ${heatPct()}. At 100% the army sends a tank` +
         (lvl('guns') ? '.' : ', once you have guns.') },

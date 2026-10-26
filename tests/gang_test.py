@@ -20,7 +20,7 @@ with sync_playwright() as p:
     pg = b.new_page(viewport={"width": 1440, "height": 900}); pg.on("pageerror", lambda e: errors.append(str(e))); js = pg.evaluate
     pg.goto(URL)
     def start(fleet):
-        js(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, runs: 40, bank: 10000, levels: {{ {CAR}, fleet: {fleet} }}, engine: 2, toured: TUTORIALS.map(t => t.id) }})")
+        js(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, oil: 2, runs: 40, bank: 10000, levels: {{ {CAR}, fleet: {fleet} }}, engine: 2, toured: TUTORIALS.map(t => t.id) }})")
         if js("game.id") != "distance": pg.click('[data-play="distance"]'); pg.wait_for_timeout(200)
         js("refreshCar(); renderGarage()")
     tabs = lambda: js("[...document.querySelectorAll('#tabs button')].map(b => b.textContent)")

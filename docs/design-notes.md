@@ -689,7 +689,8 @@ a burnt-out shell; the first rusty car in the last races; then your crew rides o
   without its bars or spikes, and it drives like any other car.
 
 **Still to settle:** what points buy in act 3 (the Black market is mostly bought by then); every number above; and act
-4's Hunter role, with what it needs now that Fleet flash is gone (its own layer, with `act4.py`).
+4's Hunter role (its own layer, with `act4.py`; the owner, 27 Oct: one level of Crew tuning lets you in, as it does the
+Hunting pack, and the oil runs on through act 4).
 
 **Layers,** a PR each, the full suite before each merge, and every merge a working game (main is live):
 1. These notes and the upgrade graph.
@@ -717,12 +718,13 @@ car becomes a war rig."
 garage as the 51st was bought felt like a bug; it should happen on the road) nothing changes in the garage: about 5 s
 into the next run the gang's moment comes, the oil still running, and the War Rig tutorial pops up over the road (once a
 car is in the reticle) with its first job: total a car. The first car totalled leaves 3 s on the clock; then ACT IV ·
-WAR's card in the garage (NO LAW OUT HERE's words, once a card of its own), the War Rig tab for sale, and the whole crew
-races from then on. The windscreen gains an **AR layer** (red, like a gunsight): a reticle round the nearest car ahead
-going your way, its health bar above it, and "TOTAL IT" until the first job is done (a racer's number after). It stays
-on that car while it is within the guns' reach (200 m) until you pass it or total it, then moves to the next; further up
-the road it takes the nearest car ahead. Each race starts afresh (14 Oct fix: the reticle kept last race's car, out of
-sight on the horizon, and the guns would fire at nothing else).
+WAR's card in the garage (NO LAW OUT HERE's words, once a card of its own), the War Rig tab for sale, and your racers
+ride as the gang. The oil runs on through act IV (the owner, 27 Oct: it shouldn't disappear; by then the Foreman runs
+it, and the cars you go on paying off, up to 99, bring more). The windscreen gains an **AR layer** (red, like a
+gunsight): a reticle round the nearest car ahead going your way, its health bar above it, and "TOTAL IT" until the first
+job is done (a racer's number after). It stays on that car while it is within the guns' reach (200 m) until you pass it
+or total it, then moves to the next; further up the road it takes the nearest car ahead. Each race starts afresh (14 Oct
+fix: the reticle kept last race's car, out of sight on the horizon, and the guns would fire at nothing else).
 - **Damage:** a ram is a hit, 34 off the car's health: 100 for traffic, 150 for a racer, 200 for the police, so 3, 5
   and 6 hits; with a full bull bar (3 times a hit) 1, 2 and 2 (the owner's numbers, 14 Oct). From behind, a bump
   closing at under 30 km/h is only a nudge, and one at over 200 km/h totals the car at once: "OHKO!" (the owner's
