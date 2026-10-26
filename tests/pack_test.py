@@ -34,11 +34,11 @@ with sync_playwright() as p:
     pg.goto(URL)
     js(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, runs: 40, totals: 1, bank: 10000, levels: {{ {CAR} }}, engine: 2 }}); 0")
     pg.click('[data-play="distance"]'); pg.wait_for_timeout(200)
-    js("Object.assign(progress.levels, { warrigTab: 1, hunter: 1, dues: 1, fleetPace: 1, fleetFlash: 1 }); refreshCar(); renderGarage(); 0")
+    js("Object.assign(progress.levels, { warrigTab: 1, hunter: 1, dues: 1, fleetPace: 1 }); refreshCar(); renderGarage(); 0")
     pg.click('[data-tab="warrig"]'); pg.wait_for_timeout(100)
     got = js("document.querySelector('[data-buy=\"pack\"]')?.closest('.card').querySelector('b').textContent")
-    check("on the War Rig page, with Hunter and the Fleet's three", got == "Hunting pack", got)
-    js("Object.assign(progress.levels, { hunter: 0, dues: 0, fleetPace: 0, fleetFlash: 0 }); refreshCar(); 0")  # the runs as before
+    check("on the War Rig page, with Hunter and the Crew's two (Racing, Crew tuning)", got == "Hunting pack", got)
+    js("Object.assign(progress.levels, { hunter: 0, dues: 0, fleetPace: 0 }); refreshCar(); 0")  # the runs as before
     pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     # 1. without it: the fleet car keeps to its lane and leaves the car be
     js(f"({SETUP})([0, false, 100, 0])"); got = js(f"({WATCH})(5)")

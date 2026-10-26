@@ -233,7 +233,7 @@ addEventListener('keydown', e => {
   if (tourKey(e.key)) return e.preventDefault(); // a tutorial's pages (tutorial.js)
   if (e.key === 'Escape') return toggleMenu();
   if (menuOpen || e.target.closest?.('button') && e.key === ' ') return;
-  if (game.key?.(e.key)) return e.preventDefault();
+  if (game.key?.(e.key, e.repeat)) return e.preventDefault(); // repeat: held, not pressed again
   const n = Number(e.key);
   if (HELD_KEYS[e.key]) { e.preventDefault(); holdPedal(HELD_KEYS[e.key], true); }
   else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); if (!e.repeat) shiftBy(e.key === 'ArrowUp' ? 1 : -1); }

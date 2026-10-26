@@ -88,7 +88,7 @@ function headStart() {
 function raceField() {
   if (!progress.racing) return [racer(FIELD, headStart())];
   const s = startSlot(), cars = [];
-  for (let n = 1; n <= FIELD; n++) cars.push(racer(n, n < s ? (s - n) * RACER_GAP : -(n - s + 1) * RACER_GAP));
+  for (let n = 1; n <= FIELD; n++) if (!isRider(n)) cars.push(racer(n, n < s ? (s - n) * RACER_GAP : -(n - s + 1) * RACER_GAP)); // oil.js: riders ride with you
   return cars;
 }
 const racers = () => traffic.filter(c => c.racer);

@@ -50,20 +50,20 @@ with sync_playwright() as p:
     check("act III: the Black market maxed, Flash recharge too", got == [1, 100, 6, 1, 1, 4, 4, 3, 5, 1, 1, 1, 5], got)
     check("act III: nitro in the tank", js("progress.nitro") == 10, js("progress.nitro"))
     got = levels("fleetTab", "fleet", "dues")
-    check("act III: nothing of the Fleet bought", got == [0, 0, 0], got)
+    check("act III: nothing of the Crew bought", got == [0, 0, 0], got)
     check("act III: its card pops up", card() == ["act", "ACT III", "RECRUIT"], card())
 
     # act IV: the gang; the Fleet bought out to 51 cars; nothing of the War Rig
     to_act(3)
-    got = levels("fleetTab", "fleet", "dues", "fleetPace", "fleetFlash", "warrigTab", "bullbar")
-    check("act IV: the Fleet bought out, 51 cars: the gang; nothing of the War Rig", got == [1, 51, 5, 5, 1, 0, 0], got)
+    got = levels("fleetTab", "fleet", "dues", "fleetPace", "harvesting", "brewing", "sonarRange", "scouting", "overfill", "doubleUp", "warrigTab", "bullbar")
+    check("act IV: the Crew bought out, the oil's too, 51 cars: the gang; nothing of the War Rig", got == [1, 51, 5, 5, 5, 5, 2, 3, 4, 1, 0, 0], got)
     check("act IV: the AR layer on, no car totalled yet", js("[arOn(), progress.totals, progress.wanted]") == [True, 0, 0], js("[arOn(), progress.totals, progress.wanted]"))
     check("act IV: its card pops up", card() == ["act", "ACT IV", "WAR"], card())
 
     # back to act II: everything later sold
     to_act(1)
     got = levels("fleet", "fleetTab", "blackTab", "reckless", "nitro") + js("[progress.finish]")
-    check("back to act II: the Fleet and the Black market gone, no place", got == [0, 0, 0, 0, 0, 101], got)
+    check("back to act II: the Crew and the Black market gone, no place", got == [0, 0, 0, 0, 0, 101], got)
 
     # act I: a new game, straight onto the road with its card
     to_act(0)
