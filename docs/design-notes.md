@@ -1112,4 +1112,8 @@ these proposals are still open.
   - Extreme: land speed records, then a road off the planet.
   - Then a new game plus, with a legacy bonus.
   - A CB radio on the dash giving the crew orders on the road (follow, block, flat out): the owner's "act 6" material
-    (25 Oct), from the act 3 brainstorm.
+    (25 Oct), from the act 3 brainstorm (act 6 itself is the moving fortress since 27 Oct, below).
+  - **Act 6, the owner's plan for the future (27 Oct; a note only, nothing to build yet):** inventory tetris with the
+    parts collected from notable enemies (tanks, helicopters, any war rig), fitted together to build a real moving
+    fortress. It grows into a moving city that takes over all four lanes; the ending is a final "animation" of the
+    whole moving city going through the wasteland, with the crew following.
