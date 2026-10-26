@@ -861,8 +861,11 @@ lamp. It shows from the War Rig act on, only on the road; the garage's report gi
 **The final boss, the tank.** At 100% heat a card (THE ARMY SENDS A TANK) warns that the army has sent one, and the
 next race has it (not in limp mode). It waits until you have guns: rams alone can't beat it, so unarmed it was a sure
 DNF that halved the heat. Till then the act's card says "the army has a tank ready for when you are armed".
-- It comes into view 250 m up the road and holds the road about 80 m ahead of you, in your lane: you can't get away
-  from it or past it. It is the AR target ("TANK"), with 1,000 health.
+- Its race is a boss fight from the line (the owner, 27 Oct, after it seemed to turn up mid-run): as you drive off,
+  its card pops up over the road, and the tank waits 250 m up the road before the lights. The heat filling mid-race
+  never sends one into that race: the next race has it.
+- It holds the road about 80 m ahead of you, in your lane: you can't get away from it or past it. It is the AR target
+  ("TANK"), with 1,000 health.
 - It fires a shell at you every 2.5 s while you are within 250 m behind it: 8% damage a hit (armour takes a quarter
   off a level), with the shot, a jolt and the cracks to show it.
 - You and the gang outgun it: your guns, and the fleet's, which race up to join the fight (40 m/s quicker until
