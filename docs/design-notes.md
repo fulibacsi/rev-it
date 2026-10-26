@@ -566,7 +566,9 @@ brewers the next is a fair tactic (the owner's), since crude keeps.
 - **As built** (27 Oct): the puddle 1.4 km up the road (about 15 s after its tutorial at act 2's rolling start), the
   refinery 1.1 km past it. A run lasts 50 s, 2.2–4 km, so a refinery placed further on was often past the finish.
   The finish counts as passing whatever is still at work, so crude pumped or fuel brewed up to the bell counts; a run
-  that ends before the refinery brings it about 5 s into the next.
+  that ends before the refinery brings it about 5 s into the next. The tracker, ‹ SEND › (and S) and the windscreen's
+  tag show from the puddle's tutorial, not before (the owner, 27 Oct: from the start of the run they spoilt the
+  surprise and the tutorial); the puddle itself stands by the road from the start, a speck 1.4 km off.
 
 **On the road:**
 - **Spots** stand by the road on the right: oil spots (a nodding pumpjack) and refineries (towers and a flare). Each
