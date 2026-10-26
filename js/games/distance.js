@@ -490,6 +490,7 @@ function renderGarage(bought) {
     const tip = l && tourFor(id) ? `<button class="tip" data-tour="${tourFor(id)}" title="how it works">?</button>` : ''; // once bought
     return `<div class="card${id === bought ? ' bought' : ''}"><b>${u.name}</b>${tip}${pips}<small>${info}</small>${button}</div>`;
   }).join('');
+  syncRoles(); // oil.js: the role card's buttons, as far as the crew goes
 }
 
 $('garage').onclick = e => {
@@ -513,6 +514,7 @@ $('garage').onclick = e => {
 };
 
 $('garage').oninput = e => { // the Exchange's slider: only its button changes, so the drag carries on
+  if (e.target.dataset.role) return slideRole(e.target); // oil.js: the role card's
   if (e.target.id !== 'exchange') return;
   exchange = +e.target.value;
   const b = $('garage').querySelector('[data-exchange]');
