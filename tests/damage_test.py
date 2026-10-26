@@ -19,10 +19,12 @@ with sync_playwright() as p:
     js("progress.damage = 68"); js(f"({hit})(60)"); pg.wait_for_timeout(300); print("past 70%:", st())
     print("gate labels:", js("[...document.querySelectorAll('#gate-labels text')].map(t => t.textContent).join(' ')"))
     pg.screenshot(path=f"{OUT}/dmg_gate.png")
-    js("progress.damage = 95")
+    # the pops counted: the GEAR lamp's 2 s may be over before the wait below
+    js("window.pops = 0; if (!window.popOut0) { window.popOut0 = popOut; popOut = () => { pops++; popOut0(); }; } progress.damage = 95")
     for _ in range(4): pg.wait_for_timeout(1000); print("   at 95%:", js("({ gear, locked, thr: +throttle.toFixed(2), gasP: +gasPedal.toFixed(2), rpm: Math.round(rpm), red: engine.redline, kmh: Math.round(speed * 3.6), state, clutchP: +clutchPedal.toFixed(2) })"))
-    # about one pop in 6 s of game time: a minute of the clock, as a busy machine runs the game slower
-    pg.wait_for_function("popped > 0", timeout=60000); print("popped out at 95%:", st(), "| flash:", js("document.getElementById('flash').textContent"))
+    # about one pop in 6 s of game time: a minute of the clock, as a busy machine runs the game slower. A pop while the
+    # lines above print, and the gear left in neutral, used to leave the lamp's popped run out and the wait with nothing
+    pg.wait_for_function("pops > 0", timeout=60000); print("popped out at 95%:", st(), "| flash:", js("document.getElementById('flash').textContent"))
     # over the double yellow, into an oncoming car
     js("progress.damage = 30; applyUpgrades(); buildGate()")
     kb.press("ArrowLeft"); pg.wait_for_timeout(1200); kb.press("ArrowLeft"); pg.wait_for_timeout(1500)

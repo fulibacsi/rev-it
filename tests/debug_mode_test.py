@@ -29,7 +29,7 @@ with sync_playwright() as p:
     s = state()
     check("buying: the levels go up, the wallet stays full", s["power"] == 5 and s["bank"] == 1e9, s)
     check("the real save is untouched", real() == REAL, real())
-    got = js("(() => { progress.racing = true; progress.levels.fleet = 51; const w = progress.wanted; raiseHeat(0.02); const d = progress.wanted - w; progress.wanted = w; progress.levels.fleet = 0; return [maxOf(UPGRADES.grid), +d.toFixed(3)]; })()")
+    got = js("(() => { progress.racing = true; progress.levels.fleet = 51; progress.gang = true; const w = progress.wanted; raiseHeat(0.02); const d = progress.wanted - w; progress.wanted = w; progress.levels.fleet = 0; progress.gang = false; return [maxOf(UPGRADES.grid), +d.toFixed(3)]; })()")
     check("shortcuts: every grid slot for sale, heat ten times quicker", got == [100, 0.2], got)
     pg.screenshot(path=f"{OUT}/debug_garage.png")
     pg.reload(); pg.wait_for_timeout(300); s = state()

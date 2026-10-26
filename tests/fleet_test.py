@@ -1,6 +1,6 @@
 """The Crew (the Fleet until 26 Oct): never shown before your first win; winning a race puts its tab on sale (the
 garage says so), a tap buys it, with fuel in the header and the Fuel converter: metres for fuel, one way, at the pump
-price (1,609 m a litre with no crew), a slider (dragged with a finger on the phone) and "all available". Racers paid off
+price (7,500 m a litre with no crew), a slider (dragged with a finger on the phone) and "all available". Racers paid off
 (the slowest first, each dearer, #1 never) race for you in your colours: they don't count against your position, give
 way when you come up behind them and block a rival closing on them. Racing pays a share of the racers' metres at the
 finish, Crew tuning makes them quicker. The sonar on the A-pillar shows the road 250 m each way from above, ahead up:
@@ -39,7 +39,7 @@ with sync_playwright() as p:
     check("ACT III · RECRUIT, its card on the racers open to offers", got[0] == "ACT III · RECRUIT ▸" and "open to offers" in got[1], got)
     check("fuel in the header", js("$('bank').textContent").endswith("· 0 L to spend"), js("$('bank').textContent"))
     # 3. the Fuel converter: the slider, then all available
-    js("progress.bank = 10000"); pg.tap('[data-tab="fleet"]'); pg.wait_for_timeout(200)
+    js("progress.bank = 50000"); pg.tap('[data-tab="fleet"]'); pg.wait_for_timeout(200)
     check("the Fuel converter", js("!!document.querySelector('.card.exchange #exchange')") and js("$('exchange').max") == "6", js("$('exchange')?.max"))
     s = js("$('exchange').getBoundingClientRect().toJSON()")
     y = s["y"] + s["height"] / 2
@@ -47,14 +47,14 @@ with sync_playwright() as p:
         cdp.send("Input.dispatchTouchEvent", {"type": "touchStart" if i == 0 else "touchMove", "touchPoints": [{"x": x, "y": y, "id": 3}]}); pg.wait_for_timeout(60)
     cdp.send("Input.dispatchTouchEvent", {"type": "touchEnd", "touchPoints": [{"x": x, "y": y, "id": 3}]}); pg.wait_for_timeout(100)
     got = js("[+$('exchange').value, document.querySelector('[data-exchange]').textContent]")
-    check("a finger drags the slider; the button follows", got[0] >= 3 and got[1] == f"{got[0]} L for {got[0] * 1609:,} m", got)
+    check("a finger drags the slider; the button follows", got[0] >= 3 and got[1] == f"{got[0]} L for {got[0] * 7500:,} m", got)
     pg.screenshot(path=f"{OUT}/fleet_exchange_phone.png")
     n = got[0]; pg.tap("[data-exchange]"); pg.wait_for_timeout(100)
     got = js("({ bank: progress.bank, fuel: progress.fuel })")
-    check("exchanged: the metres gone, the fuel in", got == {"bank": 10000 - n * 1609, "fuel": n}, got)
+    check("exchanged: the metres gone, the fuel in", got == {"bank": 50000 - n * 7500, "fuel": n}, got)
     pg.tap("[data-exchange-all]"); pg.wait_for_timeout(100)
     got = js("({ bank: progress.bank, fuel: progress.fuel, all: document.querySelector('[data-exchange-all]').disabled })")
-    check("all available: every whole litre, the rest stays", got == {"bank": 10000 - 6 * 1609, "fuel": 6, "all": True}, got)
+    check("all available: every whole litre, the rest stays", got == {"bank": 50000 - 6 * 7500, "fuel": 6, "all": True}, got)
     check("the header shows them", js("$('bank').textContent").endswith("· 6 L to spend"), js("$('bank').textContent"))
     # 4. paying racers off: the slowest first, each a little dearer; #1 won't sell
     js("progress.fuel = 100"); pg.wait_for_timeout(50); js("renderGarage()")

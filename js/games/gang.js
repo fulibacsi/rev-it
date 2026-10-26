@@ -1,6 +1,8 @@
-// The War Rig, Distance's fourth act (called Mad Max until 18 Oct). Once your fleet outnumbers the rivals (51 of the
-// 100 race for you) it is a gang, and the windscreen gains an AR layer: a reticle and a health bar on the car ahead,
-// kept on it until you pass it or total it. Its first job for you: total a car. A ram is a hit (three for a car, five
+// The War Rig, Distance's fourth act (called Mad Max until 18 Oct). Once your crew outnumbers the rivals (51 of the
+// 100 race for you) it is a gang: about 5 s into the next run the windscreen gains an AR layer, a reticle and a health
+// bar on the car ahead, kept on it until you pass it or total it, and its tutorial pops up on the road. Its first job
+// for you: total a car; the run ends 3 s later, and act IV's card follows (the owner, 27 Oct: on the road, not in the
+// garage, where the crew's roles used to vanish as the 51st was bought). A ram is a hit (three for a car, five
 // for a racer, six for the police; a bull bar makes them count up to three times), and one closing at over 200 km/h
 // totals it outright; at 0 health it skids off onto the shoulder (road.js) and you collect its scrap. A totalled rival
 // is out of the race (race.js position). The first total opens the War Rig page, paid in scrap: it is to the Fleet
@@ -58,8 +60,17 @@ const GANG = FIELD / 2 + 1; // fleet cars that make a gang
 const health = c => c.tank ? tankHealth() : c.police ? 200 : c.racer ? 150 : 100; // full health (the tank: boss.js)
 // scrap from a totalled car: 2.2 times the first guesses (with the heat), so act 4 takes about 15 races (act4.py)
 const SCRAP = { car: 22, racer: 55 };
-const arOn = () => progress.racing && (fleetSize() >= GANG || progress.totals > 0);
-const gangOpen = () => progress.totals > 0; // the first job done: the War Rig page
+const arOn = () => progress.racing && (progress.gang || progress.totals > 0); // the AR layer: from the gang's moment
+const gangOpen = () => progress.totals > 0; // the first job done: act IV, the War Rig page; the oil's roles are over
+// the gang's moment: about 5 s into the first run with 51 of the field yours, the oil still running; the tutorial waits
+// for a car in the reticle to show it (else it pops up in the garage after the run)
+function gangMoment() {
+  if (!progress.gang) {
+    if (progress.racing && fleetSize() >= GANG && runTime() - run.left > 5) { progress.gang = true; save(); }
+    return;
+  }
+  if (!gangOpen() && target?.seen && !progress.toured.includes('warrig')) openTour('warrig', true);
+}
 
 // the target: the nearest car ahead going your way (not one of yours, not a wreck), kept while it is in your guns'
 // reach until you pass it or total it; further up the road, the nearest again. Gone when it is off the road (a run
@@ -71,6 +82,7 @@ function nextTarget() {
   return t;
 }
 function updateGang(dt) { // every frame of a run
+  gangMoment();
   if (!arOn()) { target = null; return; }
   if (run.tank && !run.tank.wreck) target = run.tank; // boss.js: the tank, while it lasts
   else if (!target || target.wreck || target.dir < 0 || target.z < odo || target.z - odo > RANGE || !traffic.includes(target))
@@ -123,7 +135,7 @@ function total(c, gang, how) { // the scrap is yours, whoever did it; the heat t
   progress.scrap += scrap;
   run.scrap += scrap;
   run.totals++;
-  if (progress.totals === 1) run.firstTotal = true;
+  if (progress.totals === 1) { run.firstTotal = true; run.left = Math.min(run.left, 3); } // the first job done: 3 s more
   const who = c.racer ? `#${c.racer}` : c.police ? 'A POLICE CAR' : 'A CAR'; // the Hunting pack hunts anything
   flash(`${gang ? `THE GANG TOTALLED ${who}` : how ?? 'TOTALLED'} +${scrap} SCRAP`, '#ff6a4a', true);
 }

@@ -310,9 +310,19 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
 .card.locked { border-style: dashed; opacity: 0.5; } /* only its name and what it needs: what it does is a surprise */
 .card.exchange { grid-column: span 2; border-color: #3a5a8a; }
 .card.exchange input { width: 100%; margin: 2px 0; accent-color: var(--accent); touch-action: pan-x; }
-.card.roles .role { display: flex; align-items: center; gap: 4px; white-space: nowrap; } /* a role, its count, − and + */
-.card.roles .role b + button { margin-left: auto; }
+/* the role card (oil.js): wide, the crew's split as a bar in the roles' colours, a slider for each role between − and + */
+.card.roles { grid-column: span 2; border-color: #2f6b46; --racer: #3f6; --harvester: #ffb03a; --brewer: #7ab8ff; }
+.card.roles .split { display: flex; height: 10px; margin: 2px 0 4px; border-radius: 5px; overflow: hidden; background: #262a36; }
+.card.roles .split i { display: block; min-width: 0; transition: flex-grow 0.1s; }
+.card.roles .role { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.card.roles .role > b { min-width: 2ch; }
+.card.roles .role small { min-height: 0; }
 .card.roles .role button { min-width: 30px; }
+.card.roles .role input { flex: 1; min-width: 60px; margin: 0; touch-action: pan-x; }
+.card.roles .racer { color: var(--racer); } .card.roles .split .racer { background: var(--racer); }
+.card.roles .harvester { color: var(--harvester); } .card.roles .split .harvester { background: var(--harvester); }
+.card.roles .brewer { color: var(--brewer); } .card.roles .split .brewer { background: var(--brewer); }
+.card.roles .harvester input { accent-color: var(--harvester); } .card.roles .brewer input { accent-color: var(--brewer); }
 @keyframes bought { from { background: #3a3410; } }
 #garage footer { display: flex; justify-content: flex-end; align-items: center; position: sticky; bottom: -14px;
                  margin: 0 -16px -14px; padding: 10px 16px 14px; background: #0b0d16; } /* DRIVE stays in view */

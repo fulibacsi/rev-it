@@ -69,11 +69,19 @@ with sync_playwright() as p:
     js("garageTab = 'fleet'; renderGarage()")
     text = js("$('cards').innerText")
     check("the role card: racers 0, harvesters 3, brewers 2", "Roles" in text and "Racers 0" in text.replace("\n", " ") and "Harvesters 3" in text.replace("\n", " "), text[:200])
+    slide = lambda r, v: js(f"""(() => {{ const s = document.querySelector('input[data-role="{r}"]'); s.value = {v}; s.dispatchEvent(new Event('input', {{ bubbles: true }}));
+        const bar = r => +document.querySelector(`.roles .split .${{r}}`).style.flexGrow;
+        return [role('harvester'), role('brewer'), racersOf(), +s.value, bar('racer'), bar('harvester'), bar('brewer'), !!document.querySelector('input[data-role="{r}"]')]; }})()""")
+    got = slide("harvester", 1)
+    check("the harvesters' slider down to 1: two racers again, the bar and the card follow, the slider still there", got == [1, 2, 2, 1, 2, 1, 2, True], got)
+    got = slide("brewer", 5)
+    check("the brewers' slider up to 5: as far as the racers go, 4, and it stops there", got == [1, 4, 0, 4, 0, 1, 4, True], got)
+    js("progress.roles = { harvester: 3, brewer: 2 }; renderGarage()")
     pg.tap('[data-role="harvester"][data-by="-1"]'); pg.wait_for_timeout(100)
     check("a harvester back to racing: one racer on the grid", js("[racersOf(), role('harvester'), riders()]") == [1, 2, 4], js("[racersOf(), role('harvester'), riders()]"))
     pg.screenshot(path=f"{OUT}/oil_garage_phone.png")
     got = js("[pumpPrice(), (() => { const l = progress.levels.fleet; progress.levels.fleet = 51; const p = pumpPrice(); progress.levels.fleet = l; return p; })()]")
-    check("the pump price climbs with the crew: 1,609 m a litre with none, three times at the gang", got[1] == 3 * 1609 or abs(got[1] - 4827) <= 1, got)
+    check("the pump price climbs with the crew: 7,500 m a litre with none, three times at the gang", got[1] == 3 * 7500, got)
     # 5. a normal run: spots drawn ahead, the same for the same run
     a = js("(() => { plan = null; return nextSpots().map(s => [s.kind, s.count, Math.round(s.z)]); })()")
     b2 = js("(() => { plan = null; return nextSpots().map(s => [s.kind, s.count, Math.round(s.z)]); })()")
@@ -97,9 +105,9 @@ with sync_playwright() as p:
     check("the run over before the refinery: it comes 1.1 km on, about 5 s into the next; brewing at the finish, the oil is on", got == [0, "refinery", 1100, 2, 2], got)
     # 7. team places pay points; at the gang the whole crew races and the oil stops
     check("team places pay points", "team places" in js("runLine()") and "pts" in js("runLine()") or js("run.team") == 0, js("runLine()"))
-    got = js("(() => { progress.levels.fleet = 51; const r = [crewOn(), riders(), raceField().filter(c => c.fleet).length]; progress.levels.fleet = 5; return r; })()")
-    check("at the gang: the whole crew races, nobody rides", got == [False, 0, 51], got)
-    got = js("(() => { const was = [progress.oil, progress.levels.fleet]; progress.oil = 0; progress.levels.fleet = 51; const r = whyNot('dues'); [progress.oil, progress.levels.fleet] = was; return r; })()")
+    got = js("(() => { progress.levels.fleet = 51; const at51 = crewOn(); progress.totals = 1; const r = [at51, crewOn(), riders(), raceField().filter(c => c.fleet).length]; progress.levels.fleet = 5; progress.totals = 0; return r; })()")  # riders: 2 harvesters, 2 brewers
+    check("at 51 the roles stay; act IV too (the oil runs on): the riders off the grid, the racers its gang", got == [True, True, 4, 47], got)
+    got = js("(() => { const was = [progress.oil, progress.levels.fleet]; progress.oil = 0; progress.levels.fleet = 51; progress.gang = true; const r = whyNot('dues'); [progress.oil, progress.levels.fleet] = was; progress.gang = false; return r; })()")
     check("a save that reached the gang before the oil: Racing still on sale (the Hunting pack needs it)", got in ("", "short"), got)
     # the foreshadowing, by the crew's size: a station with the pump price, NO FUEL, boarded up; a shell; rusty cars
     got = js("""(() => { const was = [progress.levels.fleet, odo, run.phase, run.spots], r = []; Object.assign(run, { phase: 'run', spots: [] }); odo = 800;
@@ -107,7 +115,7 @@ with sync_playwright() as p:
           r.push([m.find(x => x.kind === 'station')?.value, m.some(x => x.kind === 'shell'), omenRust()]); }
         [progress.levels.fleet, odo, run.phase, run.spots] = was; return r; })()""")
     check("the foreshadowing: the pump price on a station's board, then NO FUEL, then boarded up and a burnt-out shell, then rusty cars",
-          got == [["2,240", False, 0], ["NO FUEL", False, 0], ["", True, 0], ["", True, 0.06]], got)
+          got == [[f"{round(7500 * (1 + 2 * 10 / 51)):,}", False, 0], ["NO FUEL", False, 0], ["", True, 0], ["", True, 0.06]], got)  # the pump price at 10
     got = js("""(() => { const a = [stationSprite('2,240'), stationSprite('NO FUEL'), stationSprite(''), wreckSprite(trafficLook(3).rear)];
         const l = rustLook(trafficLook(5)); a.push(l.rear, l.front, l.beams); return a.every(c => c.width > 0 && c.height > 0); })()""")
     check("their sprites draw: the stations, the shell, a rusty car from behind, in front and flashing", got, "")

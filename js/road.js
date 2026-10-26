@@ -274,7 +274,8 @@ function stationSprite(board) {
     }
     g.fillStyle = '#ffc861'; for (let i = 0; i < 5; i++) g.fillRect(w * (0.09 + 0.12 * i), h * 0.29, 12, 5); // lamps under the canopy
     const out = board === 'NO FUEL';
-    g.fillStyle = out ? '#ff4a3a' : '#ffb03a'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = `bold ${h * 0.1}px monospace`;
+    g.fillStyle = out ? '#ff4a3a' : '#ffb03a'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.font = `bold ${h * (board.length > 5 ? 0.085 : 0.1)}px monospace`; // 13,382 as well as 8,971
     if (out) { g.fillText('NO', w * 0.89, h * 0.12); g.fillText('FUEL', w * 0.89, h * 0.24); } else g.fillText(board, w * 0.89, h * 0.18);
   }));
   return STATIONS.get(board);

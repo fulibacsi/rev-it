@@ -23,10 +23,12 @@ Object.assign(UPGRADES, {
               info: l => l ? `a spot takes ${25 * l}% more cars than it needs, each pumping its share` : 'a full spot takes no more' },
   wells: { name: 'Deep wells', tab: 'fleet', max: 4, base: 15, growth: 2.5, needs: ['harvesting'],
            info: l => l ? `oil spots hold ${25 * l}% more` : 'oil spots as they come' },
-  doubleUp: { name: 'Double up', tab: 'fleet', max: 1, base: 60, needs: ['overfill'],
+  doubleUp: { name: 'Double up', tab: 'fleet', max: 1, base: 25, needs: ['overfill'],
               info: () => 'a press of SEND sends two cars' },
-  // the act's automation (the owner, 26 Oct: Double up first, then the Foreman), as Auto gun is act 4's
-  foreman: { name: 'Foreman', tab: 'fleet', max: 1, base: 150, needs: ['doubleUp', ['scouting', 'max'], ['sonarRange', 'max']],
+  // the act's automation (the owner, 26 Oct: Double up first, then the Foreman), as Auto gun is act 4's; within reach
+  // well before the 51st (the owner, 27 Oct: an earlier unlock, to help reach 51; it needed Scouting and Sonar range
+  // maxed, and with them about 430 L, out of the act's reach)
+  foreman: { name: 'Foreman', tab: 'fleet', max: 1, base: 60, needs: ['doubleUp'],
              info: () => 'sends your crew for you, where you would; your own SEND still works' },
 });
 const fmtL = n => (Math.round(n * 10) / 10).toString();
@@ -45,8 +47,9 @@ const twice = () => lvl('doubleUp') > 0 && !progress.off.doubleUp; // a switch, 
 const foremanOn = () => lvl('foreman') > 0 && !progress.off.foreman;
 
 // ---- the roles: racers race in their slots; harvesters and brewers ride with you. They are the crew's first paid off
-// (the slowest, #100 down), so the racers on the grid are its quickest. From the gang on (act 4) the whole crew races
-const crewOn = () => progress.racing && fleetSize() > 0 && !arOn();
+// (the slowest, #100 down), so the racers on the grid are its quickest, and in act IV they are the gang. The oil runs on
+// through act IV (the owner, 27 Oct: it shouldn't disappear; by then the Foreman runs it, and more cars bring more)
+const crewOn = () => progress.racing && fleetSize() > 0;
 const role = r => crewOn() ? Math.min(progress.roles[r] ?? 0, fleetSize()) : 0;
 const riders = () => role('harvester') + role('brewer');
 const racersOf = () => fleetSize() - riders(); // your crew on the grid
@@ -68,7 +71,7 @@ const roll = () => ((dice = (dice * 48271) % 2147483647) - 1) / 2147483646;
 const between = (a, b) => a + (b - a) * roll();
 const biggest = () => 3 + Math.round(5 * Math.min(1, fleetSize() / GANG));
 const ROAD_END = 7000; // m: no run gets further
-const OIL_RATE = 0.07, BREW_RATE = 0.2; // L/s a car pumps, and a car brews of crude, at a spot
+const OIL_RATE = 0.1, BREW_RATE = 0.3; // L/s a car pumps, and a car brews of crude, at a spot
 function drawSpots() {
   const spots = [], big = biggest(), deep = 1 + 0.25 * lvl('wells');
   for (let z = between(300, 500), first = true; z < ROAD_END; z += roll() < 0.55 ? between(150, 350) : between(500, 900), first = false) {
@@ -116,7 +119,7 @@ function scouted() {
 // 2.2-4 km). The run over before the refinery, it comes about 5 s into the next; a spot missed comes again (Claude's
 // calls)
 const SCRIPT = 5; // cars before the oil
-const scripted = () => crewOn() && progress.oil < 2 && fleetSize() >= SCRIPT;
+const scripted = () => crewOn() && progress.oil < 2 && fleetSize() >= SCRIPT; // a save past the 5th from before the oil too
 const FIRST_PUDDLE = { kind: 'oil', z: 1400, count: 3, rate: 0.1, reserve: 60, scripted: true }; // richer than most: a first taste
 const FIRST_REFINERY = { kind: 'refinery', count: 2, rate: 0.15, scripted: true }; // z: 1.1 km on from where you are
 const newSpot = (s, z = s.z) => ({ ...s, z, crew: 0, coming: [], done: false, got: 0, seen: null });
@@ -242,7 +245,7 @@ function crewMarks() {
 // it climbs with your crew; then NO FUEL; then boarded up; a burnt-out shell on the shoulder; and in the last races
 // before the gang, the first rusty cars in the traffic (road.js draws them). Act 3 only, from the first of your crew to
 // the gang; where and when are Claude's calls: by the crew's size, two stations a run, the shell between them
-const omen = () => crewOn() ? fleetSize() / GANG : -1; // how far into act 3 (-1: not in it)
+const omen = () => crewOn() && !gangOpen() ? fleetSize() / GANG : -1; // how far into act 3 (-1: not in it)
 const omenRust = () => run.phase === 'run' && omen() >= 0.85 ? 0.06 : 0; // DISTANCE.rust: a car in 16 or so
 function omenMarks() {
   const f = omen(), out = [], near = z => z > odo - 30 && z - odo < 1600;
@@ -300,16 +303,41 @@ function renderCrew() {
   if ($('crew-send').firstChild.nodeValue !== word) $('crew-send').firstChild.nodeValue = word;
 }
 
-// ---- the garage: who does what (from the oil on), and what Scouting has seen of the next run. A racer moved into a
-// role leaves the grid; one moved out races again
+// ---- the garage: who does what (from the oil on), and what Scouting has seen of the next run. A wide card: the crew's
+// split as a bar in the roles' colours, a slider for each role (the owner, 27 Oct: the counts were hard to take in),
+// and − and + for a car at a time. A racer moved into a role leaves the grid; one moved out races again; the racers
+// are the rest
+const ROLES = [['racer', 'Racers'], ['harvester', 'Harvesters'], ['brewer', 'Brewers']];
+const shownRoles = () => ROLES.filter(([r]) => r !== 'brewer' || progress.oil >= 2);
+const countOf = r => r === 'racer' ? racersOf() : role(r);
 function roleCard() {
   if (progress.oil < 1 || !crewOn()) return '';
-  const row = (r, name) => `<span class="role">${name} <b>${role(r)}</b><button data-role="${r}" data-by="-1"` +
-    `${role(r) ? '' : ' disabled'}>−</button><button data-role="${r}" data-by="1"${racersOf() ? '' : ' disabled'}>+</button></span>`;
-  return `<div class="card roles"><b>Roles</b><small>racers race for metres and places · harvesters pump crude · ` +
-    `brewers brew it into fuel · a car with no spot to work earns nothing${scouted() ? ` · <i>${scouted()}</i>` : ''}</small>` +
-    `<span class="role">Racers <b>${racersOf()}</b></span>${row('harvester', 'Harvesters')}` +
-    `${progress.oil >= 2 ? row('brewer', 'Brewers') : ''}</div>`;
+  const row = ([r, name]) => `<span class="role ${r}">${name} <b>${countOf(r)}</b>` + (r === 'racer' ? '<small>the rest</small>'
+    : `<button data-role="${r}" data-by="-1">−</button><input type="range" data-role="${r}" min="0" max="${fleetSize()}" ` +
+      `value="${role(r)}"><button data-role="${r}" data-by="1">+</button>`) + '</span>';
+  return `<div class="card roles"><b>Roles · ${fleetSize()} cars</b><div class="split">` +
+    shownRoles().map(([r]) => `<i class="${r}" style="flex-grow: ${countOf(r)}"></i>`).join('') + '</div>' +
+    shownRoles().map(row).join('') + '<small>racers race for metres and places · harvesters pump crude · brewers brew it ' +
+    `into fuel · a car with no spot to work earns nothing${scouted() ? ` · <i>${scouted()}</i>` : ''}</small></div>`;
+}
+function syncRoles() { // the card as the crew is now: its bar, counts, sliders and buttons
+  const card = $('cards').querySelector('.roles');
+  if (!card) return;
+  for (const [r] of shownRoles()) {
+    card.querySelector(`.split .${r}`).style.flexGrow = countOf(r);
+    card.querySelector(`.role.${r} b`).textContent = countOf(r);
+    const slider = card.querySelector(`input[data-role="${r}"]`);
+    if (!slider) continue;
+    slider.value = role(r);
+    card.querySelector(`.role.${r} [data-by="-1"]`).disabled = !role(r);
+    card.querySelector(`.role.${r} [data-by="1"]`).disabled = !racersOf();
+  }
+}
+function slideRole(slider) { // a slider as it moves: as far as the racers go, the card only, so the drag carries on
+  makeRole(slider.dataset.role, +slider.value - role(slider.dataset.role));
+  plan = null;
+  save();
+  syncRoles();
 }
 
 // ---- the tutorials: popped up mid-run by the script, and kept under HOW TO DRIVE

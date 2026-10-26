@@ -32,7 +32,7 @@ with sync_playwright() as p:
     b = launch(p, args=["--autoplay-policy=no-user-gesture-required"])
     pg = b.new_page(viewport={"width": 1440, "height": 900}); pg.on("pageerror", lambda e: errors.append(str(e))); js = pg.evaluate
     pg.goto(URL)
-    js(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, runs: 40, totals: 1, bank: 10000, levels: {{ {CAR} }}, engine: 2 }}); 0")
+    js(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, oil: 2, runs: 40, totals: 1, bank: 10000, levels: {{ {CAR} }}, engine: 2 }}); 0")
     pg.click('[data-play="distance"]'); pg.wait_for_timeout(200)
     js("Object.assign(progress.levels, { warrigTab: 1, hunter: 1, dues: 1, fleetPace: 1 }); refreshCar(); renderGarage(); 0")
     pg.click('[data-tab="warrig"]'); pg.wait_for_timeout(100)
