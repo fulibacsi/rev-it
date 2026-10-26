@@ -253,6 +253,7 @@ function startRun() { // back to the start line, engine running, in neutral, hel
   copClock = copEvery(); // police.js: the first police car after a while
   run.refill = run.limp ? 0 : refillNitro(); // limping: keep the metres for the repair
   crewRun(); // oil.js: this run's spots
+  if (run.boss) sendTank(); // boss.js: up the road, waiting
 }
 
 function finishRun(dnf) { // dnf: why the run ended early (a crash), if it did
@@ -526,6 +527,7 @@ function drive() {
   startRun();
   passedBest = shownReveal = false;
   startEngine(); // the key turns itself
+  if (run.boss) openCard('tanksent'); // boss.js: a boss fight, said so over the road before the lights (the owner, 27 Oct)
 }
 
 // the tapes the stereo plays (stereo.js): the War Rig radio's while it is bought and switched on (gang.js), or synthwave

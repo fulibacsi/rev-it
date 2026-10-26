@@ -1,4 +1,5 @@
-"""The final boss: at 100% heat the garage warns of the tank, and the next race has it. It holds the road about 80 m
+"""The final boss: at 100% heat the garage warns of the tank, and the next race has it (never the race the heat fills
+in): its card pops up over the road as you drive off, the tank already up the road, waiting. It holds the road about 80 m
 ahead of you in your lane, is the AR target ("TANK"), shells you (8% damage each, less with armour), and shrugs off
 rams; your guns and the gang's wear it down. Destroyed: TANK DOWN, the run stops there; the ending (heat back to 0,
 scrap), and the next tank is tougher. Not destroyed by the bell: a DNF, and the heat drops to half."""
@@ -18,19 +19,30 @@ with sync_playwright() as p:
         js(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, oil: 2, runs: 80, bank: 10000, totals: 5, wanted: {wanted}, tanks: {tanks}, damage: 0, broken: [], levels: {{ {CAR}, armour: {armour} }}, engine: 2 }})")
         if js("game.id") != "distance": pg.click('[data-play="distance"]'); pg.wait_for_timeout(200)
         elif js("run.phase") != "garage": js("run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
-        js("refreshCar(); forgetRun(); renderGarage()")
+        js("closeMenu(); openBefore = null; refreshCar(); forgetRun(); renderGarage()")  # no pop-ups from the race before
     def race():
-        pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
+        pg.click("#drive"); pg.wait_for_timeout(300)
+        if js("menuOpen && screen === 'act'"): pg.click("#act-go")
+        pg.wait_for_function("run.phase === 'run'", timeout=15000)
         js("traffic.forEach(c => { if (c.racer) c.z = odo - (c.fleet ? 3000 : 9000); else if (!c.tank) Object.assign(c, { dir: -1, x: LANES.oncoming[1], police: false }); }); copClock = 999; 0")
     # 1. 99%: no tank; 100%: the act's card (the pause menu's, the garage's title) warns of it
     card = lambda: js("[currentCard().id, currentCard().text(), currentCard().now()].join(' | ')")
     garage(0.99); check("99% heat: no tank", not js("bossRace()") and card().startswith("act4 |"), card())
+    race(); js("raiseHeat(1)"); pg.wait_for_timeout(1500)
+    check("the heat filling mid-race: no tank in that race", js("[progress.wanted, run.boss, !!run.tank, traffic.some(c => c.tank)]") == [1, False, False, False],
+          js("[progress.wanted, run.boss, !!run.tank, traffic.some(c => c.tank)]"))
     garage(1); check("100% heat: the act's card warns of the tank", js("bossRace()") and card().startswith("tanksent |") and "the army has sent a tank" in card(), card())
     js("progress.levels.guns = 0; renderGarage()")
     check("100% heat but no guns: no tank yet, the card says it waits", not js("bossRace()") and card().startswith("act4 |") and "a tank ready for when you are armed" in card(), card())
     js("progress.levels.guns = 3; refreshCar(); renderGarage()")
-    # 2. the race: the tank appears up the road, comes back to about 80 m ahead, in your lane, the AR on it
-    race(); pg.wait_for_function("run.tank", timeout=5000)
+    # 2. the race: its card over the road before the lights, the tank waiting up the road; then it comes back to about
+    # 80 m ahead, in your lane, the AR on it
+    pg.click("#drive"); pg.wait_for_timeout(300)
+    got = js("[menuOpen && screen, $('act-name').textContent, run.phase, !!run.tank && Math.round(run.tank.z - odo), run.tank && run.tank.dir]")
+    check("DRIVE at 100% heat: the tank's card over the road before the lights, the tank waiting 250 m up", got == ["act", "THE ARMY SENDS A TANK", "starting", 250, 1], got)
+    pg.screenshot(path=f"{OUT}/boss_card.png")
+    pg.click("#act-go"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
+    js("traffic.forEach(c => { if (c.racer) c.z = odo - (c.fleet ? 3000 : 9000); else if (!c.tank) Object.assign(c, { dir: -1, x: LANES.oncoming[1], police: false }); }); copClock = 999; 0")
     pg.wait_for_function("speed > 25", timeout=20000); pg.wait_for_timeout(5000)
     got = js("({ gap: Math.round(run.tank.z - odo), lane: run.tank.lane === lane, target: target === run.tank, label: $('ar-label').textContent })")
     check("the tank: about 80 m ahead of you, in your lane, in the reticle as TANK", 60 <= got["gap"] <= 110 and got["lane"] and got["target"] and got["label"] == "TANK", got)
