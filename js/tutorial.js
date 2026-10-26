@@ -116,10 +116,10 @@ const TUTORIALS = [
   ] },
   { id: 'warrig', name: 'The War Rig', for: ['bullbar', 'armour', 'spikes'], open: () => arOn(), pages: [
     { title: 'THE RETICLE', at: '#ar',
-      both: 'Your crew is a gang now. On the windscreen, the car ahead going your way is in the reticle, its health ' +
-        'above it.' },
+      both: '51 of the field race for you: your crew is a gang now. On the windscreen, the car ahead going your way is ' +
+        'in the reticle, its health above it.' },
     { title: 'TOTAL IT',
-      both: 'Ram it: each bump is a hit (a nudge under 30 km/h is not; over 200 km/h totals it at once). At no health ' +
+      both: 'Its first job for you: total a car. Ram it: each bump is a hit (a nudge under 30 km/h is not; over 200 km/h totals it at once). At no health ' +
         'it is totalled, and its scrap is yours.' },
     { title: 'THE WAR RIG PAGE', if: () => gangOpen(), // it opens with the first car totalled, after this pops up
       both: 'Scrap buys what is on the War Rig page in the garage: a bull bar, armour, guns.' },

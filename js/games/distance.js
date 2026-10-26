@@ -77,13 +77,13 @@ const SAVE_KEY = 'car-rev-incremental';
 // off: aids switched off; racing: the race has been revealed; points: race points; finish: best finishing position;
 // damage: % (damage.js), broken: gears it broke; nitro: seconds in the tank; fuel: the Crew's money (miles until 26
 // Oct), crude: litres in the tank, oil: how far the oil is on (0, 1 the first crude, 2 the first fuel), roles: the
-// crew's harvesters and brewers, pace: your m/s of late (oil.js); scrap: the
+// crew's harvesters and brewers, pace: your m/s of late (oil.js); gang: the gang's moment has come, scrap: the
 // War Rig's, from totals: cars totalled (gang.js); wanted: police heat, 0 to 1 (police.js); tanks: tanks beaten (boss.js);
 // tape: the one in the stereo (stereo.js); time: seconds played, driven: metres in all, races: runs raced (the
 // menu's STATS)
 const FRESH = () => ({ bank: 0, best: 0, runs: 0, levels: {}, off: {}, engine: 0, racing: false, points: 0, finish: 101,
                        damage: 0, broken: [], nitro: 0, fuel: 0, crude: 0, oil: 0, roles: { harvester: 0, brewer: 0 }, pace: 70,
-                       scrap: 0, totals: 0, wanted: 0, tanks: 0, tape: 0,
+                       gang: false, scrap: 0, totals: 0, wanted: 0, tanks: 0, tape: 0,
                        time: 0, driven: 0, races: 0, seen: [], toured: [], dry: 0 }); // seen: upgrades seen unlocked (the tabs' !);
                                                        // toured: tutorials popped up (tutorial.js); dry: races in a row
                                                        // without a Black market buy (race.js raceWall)
@@ -142,7 +142,8 @@ const ACTS = [
     wallets: { bank: 44000, points: 10 }, moment: () => { progress.finish = 1; } }, // the first win (P1 pays 10)
   { pages: ['workshop', 'autopilot', 'black', 'fleet'], cap: () => ({ fleet: GANG - 1 }), // gang.js loads later
     story: { runs: 55, races: 35, driven: 250000, best: 5000, racing: true, finish: 1, oil: 2 }, // the oil on (oil.js)
-    wallets: { bank: 3000 }, moment: () => { progress.levels.fleet = GANG; } }, // the gang
+    wallets: { bank: 3000, scrap: 22 }, // and the first total's scrap (gang.js SCRAP.car: it loads later)
+    moment: () => { progress.levels.fleet = GANG; Object.assign(progress, { gang: true, totals: 1 }); } }, // the first total
 ];
 function debugAct(act) {
   if (!debugSave) return;
@@ -252,6 +253,7 @@ function startRun() { // back to the start line, engine running, in neutral, hel
   copClock = copEvery(); // police.js: the first police car after a while
   run.refill = run.limp ? 0 : refillNitro(); // limping: keep the metres for the repair
   crewRun(); // oil.js: this run's spots
+  if (run.boss) sendTank(); // boss.js: up the road, waiting
 }
 
 function finishRun(dnf) { // dnf: why the run ended early (a crash), if it did
@@ -349,7 +351,7 @@ function exchangeCard() {
 // ---- the act cards (the owner, 21 Oct: nobody read the words on top of the garage) ----
 // A title card as each act starts, in the ending's look: what the act is about and what to do. The first has no
 // number, nor does anything else before the reveal: no word of acts to come (the owner, 21 Oct); ACT II is the first.
-// The last act has two more, without a number, at its turns: the first total, and the tank. Each pops up once, before any tutorial that
+// The last act has one more, without a number, at its turn: the tank. Each pops up once, before any tutorial that
 // opens with it: they ride first in the tutorials' list (tutorial.js). The pause menu and the garage's title show the
 // current one again, with where you stand and the last run in full; the garage keeps a line of the run's numbers
 TUTORIALS.unshift(
@@ -365,14 +367,14 @@ TUTORIALS.unshift(
   { id: 'act3', act: 'III', name: 'RECRUIT', open: () => fleetOpen(),
     text: () => 'P1! The racers you beat are open to offers. Buy the Crew tab and pay them off in fuel, from the ' +
       'converter: they race for you, in your colours, and their places at the finish pay you points.',
-    now: () => !fleetSize() ? 'None of the field races for you yet.' : progress.oil ? `Your crew: ${racersOf()} racing, ` +
+    now: () => progress.gang ? 'Your crew is a gang now: ram the car in the reticle until its health bar is empty.'
+      : !fleetSize() ? 'None of the field races for you yet.' : progress.oil ? `Your crew: ${racersOf()} racing, ` +
       `${role('harvester')} harvesting, ${role('brewer')} brewing.` : `${fleetSize()} of the field race${fleetSize() === 1 ? 's' : ''} for you.` },
-  { id: 'act4', act: 'IV', name: 'WAR', open: () => arOn(),
-    text: () => `${GANG} of the field race for you: your crew is a gang now. Its first job for you: total a car.`,
-    now: () => 'Ram the car in the reticle until its health bar is empty.' },
-  { id: 'nolaw', name: 'NO LAW OUT HERE', open: () => gangOpen(),
-    text: () => 'Totalled! No law out here any more. The gang is yours, and your car becomes a war rig: the War Rig tab ' +
-      'is for sale, paid in scrap.',
+  // the gang's first car totalled, on the road (gang.js gangMoment): act IV (the owner, 27 Oct; it popped up in the
+  // garage as the 51st was bought, and the next card, NO LAW OUT HERE, at the first total: one card now)
+  { id: 'act4', act: 'IV', name: 'WAR', open: () => gangOpen(),
+    text: () => 'Totalled! No law out here any more. Your racers ride as your gang now, the oil still flowing, and your ' +
+      'car becomes a war rig: the War Rig tab is for sale, paid in scrap.',
     now: () => progress.wanted >= 1 ? `Police heat 100%: the army has a tank ready for when you are ${lvl('guns') ? 'repaired' : 'armed'}.`
       : `Every car totalled raises the police heat, now ${heatPct()}. At 100% the army sends a tank` +
         (lvl('guns') ? '.' : ', once you have guns.') },
@@ -527,6 +529,7 @@ function drive() {
   startRun();
   passedBest = shownReveal = false;
   startEngine(); // the key turns itself
+  if (run.boss) openCard('tanksent'); // boss.js: a boss fight, said so over the road before the lights (the owner, 27 Oct)
 }
 
 // the tapes the stereo plays (stereo.js): the War Rig radio's while it is bought and switched on (gang.js), or synthwave

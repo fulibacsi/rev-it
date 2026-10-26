@@ -103,9 +103,9 @@ with sync_playwright() as p:
     check("the run over before the refinery: it comes 1.1 km on, about 5 s into the next; brewing at the finish, the oil is on", got == [0, "refinery", 1100, 2, 2], got)
     # 7. team places pay points; at the gang the whole crew races and the oil stops
     check("team places pay points", "team places" in js("runLine()") and "pts" in js("runLine()") or js("run.team") == 0, js("runLine()"))
-    got = js("(() => { progress.levels.fleet = 51; const r = [crewOn(), riders(), raceField().filter(c => c.fleet).length]; progress.levels.fleet = 5; return r; })()")
-    check("at the gang: the whole crew races, nobody rides", got == [False, 0, 51], got)
-    got = js("(() => { const was = [progress.oil, progress.levels.fleet]; progress.oil = 0; progress.levels.fleet = 51; const r = whyNot('dues'); [progress.oil, progress.levels.fleet] = was; return r; })()")
+    got = js("(() => { progress.levels.fleet = 51; const at51 = crewOn(); progress.totals = 1; const r = [at51, crewOn(), riders(), raceField().filter(c => c.fleet).length]; progress.levels.fleet = 5; progress.totals = 0; return r; })()")  # riders: 2 harvesters, 2 brewers
+    check("at 51 the roles stay; act IV too (the oil runs on): the riders off the grid, the racers its gang", got == [True, True, 4, 47], got)
+    got = js("(() => { const was = [progress.oil, progress.levels.fleet]; progress.oil = 0; progress.levels.fleet = 51; progress.gang = true; const r = whyNot('dues'); [progress.oil, progress.levels.fleet] = was; progress.gang = false; return r; })()")
     check("a save that reached the gang before the oil: Racing still on sale (the Hunting pack needs it)", got in ("", "short"), got)
     # the foreshadowing, by the crew's size: a station with the pump price, NO FUEL, boarded up; a shell; rusty cars
     got = js("""(() => { const was = [progress.levels.fleet, odo, run.phase, run.spots], r = []; Object.assign(run, { phase: 'run', spots: [] }); odo = 800;
