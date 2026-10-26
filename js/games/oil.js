@@ -47,8 +47,9 @@ const twice = () => lvl('doubleUp') > 0 && !progress.off.doubleUp; // a switch, 
 const foremanOn = () => lvl('foreman') > 0 && !progress.off.foreman;
 
 // ---- the roles: racers race in their slots; harvesters and brewers ride with you. They are the crew's first paid off
-// (the slowest, #100 down), so the racers on the grid are its quickest. From the gang on (act 4) the whole crew races
-const crewOn = () => progress.racing && fleetSize() > 0 && !arOn();
+// (the slowest, #100 down), so the racers on the grid are its quickest, and in act IV they are the gang. The oil runs on
+// through act IV (the owner, 27 Oct: it shouldn't disappear; by then the Foreman runs it, and more cars bring more)
+const crewOn = () => progress.racing && fleetSize() > 0;
 const role = r => crewOn() ? Math.min(progress.roles[r] ?? 0, fleetSize()) : 0;
 const riders = () => role('harvester') + role('brewer');
 const racersOf = () => fleetSize() - riders(); // your crew on the grid
@@ -118,7 +119,7 @@ function scouted() {
 // 2.2-4 km). The run over before the refinery, it comes about 5 s into the next; a spot missed comes again (Claude's
 // calls)
 const SCRIPT = 5; // cars before the oil
-const scripted = () => crewOn() && progress.oil < 2 && fleetSize() >= SCRIPT;
+const scripted = () => crewOn() && progress.oil < 2 && fleetSize() >= SCRIPT; // a save past the 5th from before the oil too
 const FIRST_PUDDLE = { kind: 'oil', z: 1400, count: 3, rate: 0.1, reserve: 60, scripted: true }; // richer than most: a first taste
 const FIRST_REFINERY = { kind: 'refinery', count: 2, rate: 0.15, scripted: true }; // z: 1.1 km on from where you are
 const newSpot = (s, z = s.z) => ({ ...s, z, crew: 0, coming: [], done: false, got: 0, seen: null });
@@ -244,7 +245,7 @@ function crewMarks() {
 // it climbs with your crew; then NO FUEL; then boarded up; a burnt-out shell on the shoulder; and in the last races
 // before the gang, the first rusty cars in the traffic (road.js draws them). Act 3 only, from the first of your crew to
 // the gang; where and when are Claude's calls: by the crew's size, two stations a run, the shell between them
-const omen = () => crewOn() ? fleetSize() / GANG : -1; // how far into act 3 (-1: not in it)
+const omen = () => crewOn() && !gangOpen() ? fleetSize() / GANG : -1; // how far into act 3 (-1: not in it)
 const omenRust = () => run.phase === 'run' && omen() >= 0.85 ? 0.06 : 0; // DISTANCE.rust: a car in 16 or so
 function omenMarks() {
   const f = omen(), out = [], near = z => z > odo - 30 && z - odo < 1600;

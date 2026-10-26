@@ -15,7 +15,7 @@ with sync_playwright() as p:
     pg = b.new_page(viewport={"width": 1440, "height": 900}); pg.on("pageerror", lambda e: errors.append(str(e))); js = pg.evaluate
     pg.goto(URL)
     def garage(wanted, tanks=0, armour=0):
-        js(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, runs: 80, bank: 10000, totals: 5, wanted: {wanted}, tanks: {tanks}, damage: 0, broken: [], levels: {{ {CAR}, armour: {armour} }}, engine: 2 }})")
+        js(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, oil: 2, runs: 80, bank: 10000, totals: 5, wanted: {wanted}, tanks: {tanks}, damage: 0, broken: [], levels: {{ {CAR}, armour: {armour} }}, engine: 2 }})")
         if js("game.id") != "distance": pg.click('[data-play="distance"]'); pg.wait_for_timeout(200)
         elif js("run.phase") != "garage": js("run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
         js("refreshCar(); forgetRun(); renderGarage()")
@@ -24,10 +24,10 @@ with sync_playwright() as p:
         js("traffic.forEach(c => { if (c.racer) c.z = odo - (c.fleet ? 3000 : 9000); else if (!c.tank) Object.assign(c, { dir: -1, x: LANES.oncoming[1], police: false }); }); copClock = 999; 0")
     # 1. 99%: no tank; 100%: the act's card (the pause menu's, the garage's title) warns of it
     card = lambda: js("[currentCard().id, currentCard().text(), currentCard().now()].join(' | ')")
-    garage(0.99); check("99% heat: no tank", not js("bossRace()") and card().startswith("nolaw |"), card())
+    garage(0.99); check("99% heat: no tank", not js("bossRace()") and card().startswith("act4 |"), card())
     garage(1); check("100% heat: the act's card warns of the tank", js("bossRace()") and card().startswith("tanksent |") and "the army has sent a tank" in card(), card())
     js("progress.levels.guns = 0; renderGarage()")
-    check("100% heat but no guns: no tank yet, the card says it waits", not js("bossRace()") and card().startswith("nolaw |") and "a tank ready for when you are armed" in card(), card())
+    check("100% heat but no guns: no tank yet, the card says it waits", not js("bossRace()") and card().startswith("act4 |") and "a tank ready for when you are armed" in card(), card())
     js("progress.levels.guns = 3; refreshCar(); renderGarage()")
     # 2. the race: the tank appears up the road, comes back to about 80 m ahead, in your lane, the AR on it
     race(); pg.wait_for_function("run.tank", timeout=5000)

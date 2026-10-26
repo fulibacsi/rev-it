@@ -53,11 +53,11 @@ with sync_playwright() as p:
     check("act III: nothing of the Crew bought", got == [0, 0, 0], got)
     check("act III: its card pops up", card() == ["act", "ACT III", "RECRUIT"], card())
 
-    # act IV: the gang; the Fleet bought out to 51 cars; nothing of the War Rig
+    # act IV: the first car totalled; the Crew bought out to 51 cars; nothing of the War Rig
     to_act(3)
     got = levels("fleetTab", "fleet", "dues", "fleetPace", "harvesting", "brewing", "sonarRange", "scouting", "overfill", "doubleUp", "warrigTab", "bullbar")
     check("act IV: the Crew bought out, the oil's too, 51 cars: the gang; nothing of the War Rig", got == [1, 51, 5, 5, 5, 5, 2, 3, 4, 1, 0, 0], got)
-    check("act IV: the AR layer on, no car totalled yet", js("[arOn(), progress.totals, progress.wanted]") == [True, 0, 0], js("[arOn(), progress.totals, progress.wanted]"))
+    check("act IV: the AR layer on, the first car totalled, the oil running on", js("[arOn(), progress.totals, progress.wanted, crewOn()]") == [True, 1, 0, True], js("[arOn(), progress.totals, progress.wanted, crewOn()]"))
     check("act IV: its card pops up", card() == ["act", "ACT IV", "WAR"], card())
 
     # back to act II: everything later sold
