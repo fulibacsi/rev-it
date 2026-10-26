@@ -126,10 +126,10 @@ with sync_playwright() as p:
     while pj("menuOpen") and len(seen) < 10:
         seen.append(pj("screen === 'act' ? $('act-name').textContent : $('tour-name').textContent.split(' · ')[0]"))
         pj("screen === 'act' ? closeCard() : exitTour()"); ph.wait_for_timeout(50)
-    check("a run brings several: the cards, then the tutorials, each in turn", seen == ["RACE", "WAR", "NO LAW OUT HERE", "THE RACE", "THE CREW",
+    check("a run brings several: the cards, then the tutorials, each in turn", seen == ["RACE", "WAR", "THE RACE", "THE CREW",
           "THE WAR RIG", "POLICE HEAT"], seen)
     toured = pj("progress.toured")
-    check("all of them shown once", sorted(toured) == ["act2", "act4", "driving", "flash", "fleet", "nolaw", "police", "race", "warrig"], toured)
+    check("all of them shown once", sorted(toured) == ["act2", "act4", "driving", "flash", "fleet", "police", "race", "warrig"], toured)
     # 8. every system's page: lit round its control (shown for the page if the garage hides it), the card clear
     for name, pjs, page in [("phone", pj, ph), ("desktop", js, pg)]:
         pjs("Object.assign(progress, { racing: true, totals: 1, levels: { clutch: 1, cruise: 1, flash: 5, autoflash: 1, stereo: 1, reckless: 1, chicken: 1, "
@@ -158,7 +158,7 @@ with sync_playwright() as p:
     js("closeMenu(); openMenu('help')"); got = js("document.querySelector('[data-screen=help]').innerText")
     check("all bought: their keys", "change lanes · F flash · N nitro · G fire · M next tape · 1–3 engine" in got, got[:160])
     js("showScreen('settings')"); check("... and Music in SETTINGS", "Music" in js("document.querySelector('[data-screen=settings]').innerText"), "")
-    got = js("""(() => { closeMenu(); Object.assign(progress, { totals: 0, levels: { cruise: 1, reckless: 1, recklessCruise: 1, fleet: 51 } });
+    got = js("""(() => { closeMenu(); Object.assign(progress, { totals: 0, gang: true, levels: { cruise: 1, reckless: 1, recklessCruise: 1, fleet: 51 } });
       const words = id => pagesOf(tutorial(id)).map(p => `${p.title} ${p.both ?? ''}`).join(' ');
       const before = [arOn(), gangOpen(), words('aids'), words('warrig')]; progress.totals = 1; return [...before, words('warrig')]; })()""")
     check("Reckless auto-drive bought, Hunter not: the aids' pages don't name it", "RECKLESS AUTO-DRIVE" in got[2] and "Hunter" not in got[2]
