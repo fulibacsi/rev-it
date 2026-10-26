@@ -605,9 +605,11 @@ each free car of the crew, or the run is drawn again, a few times at most, keepi
 - A run at act 3 is 50 s and 2.2–4 km at about 60 m/s, so a spot 500 m off is only 8 s away: the first guesses left
   the crew at a spot 6–12% of the time, making 1–3 L a race, and the act would have taken well over 30 races. The
   tracker reaches **1 km** (Sonar range: 2 km, then 3 km), and the spots are closer together: the first oil spot
-  300–500 m up the road, then 150–350 m (a cluster, 55% of the time) or 500–900 m (a gap); a refinery 600–900 m up,
-  then every 1,000–1,600 m, nudged clear of the oil spots (it used to be dropped when it fell on one, which left most
-  runs with none).
+  300–500 m up the road, then 150–350 m (a cluster, 55% of the time) or 500–900 m (a gap); a refinery 400–700 m up,
+  then every 700–1,100 m, nudged clear of the oil spots (it used to be dropped when it fell on one, which left most
+  runs with none). Refineries were 600–900 m up, then every 1,000–1,600 m, until the owner's playtest of 27 Oct
+  ("refineries are a bit scarce by run 3-4"): in a 2.8 km run, 2 against 6 oil spots, and the longest stretch without
+  one 1.4 km (the median of a quick model of the draw); now 2.8, and 1 km.
 - Oil spots hold their count of cars, the biggest 3 + 5 × crew/51 (0/3 when the oil comes at the 5th car, 0/8 at
   the gang); a refinery 0.4–0.6 of that. A harvester pumps 0.1 L of crude a second (0.07 until the converter's
   retune, below), a brewer brews 0.3 L a second of it (0.2), 2:1 into fuel. An oil spot holds 10–20 s of
@@ -702,6 +704,9 @@ the crew, as the oil runs on through act 4):
   grows to 79, Racing and Crew tuning reach 3, and the Hunting pack (one level of Crew tuning lets you in, the
   owner's call of 27 Oct) comes in race 9. **As built** with Raiders (27 Oct, seeds 1 and 2): Raiders bought in races
   9 and 8, the tank beaten in races 13 and 12, the crew 78 and 77 by then.
+- **More refineries** (27 Oct, above; seeds 1 and 2): **51 crew after 12 races** on both (14 before), the bot's tank
+  still near empty at each finish, payback 0.8–7 runs, oil all but 0–15% of the fuel; act 4's tank in races 14 and 13
+  (a head-on and a wreck on seed 1), the oil still 20–40 L a race.
 
 **Foreshadowing,** without a word: the pump price climbs; stations that aren't yours show NO FUEL, then get boarded up;
 a burnt-out shell; the first rusty car in the last races; then your crew rides out as the gang.
