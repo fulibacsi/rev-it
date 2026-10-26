@@ -13,7 +13,7 @@ with sync_playwright() as p:
     b = launch(p, args=["--autoplay-policy=no-user-gesture-required"])
     pg = b.new_page(viewport={"width": 1440, "height": 900}); pg.on("pageerror", lambda e: errors.append(str(e))); js = pg.evaluate
     pg.goto(URL)
-    js(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, runs: 60, bank: 10000, totals: 1, levels: {{ {CAR} }}, engine: 2 }})")
+    js(f"localStorage.clear(); Object.assign(progress, {{ racing: true, finish: 1, oil: 2, runs: 60, bank: 10000, totals: 1, levels: {{ {CAR} }}, engine: 2 }})")
     pg.click('[data-play="distance"]'); pg.wait_for_timeout(200); js("refreshCar()")
     # 1. what raises the heat
     got = js("""(() => { const d = []; for (const [c, gang] of [[{}, false], [{ racer: 5 }, false], [{ police: true }, false], [{ racer: 6 }, true]]) {
@@ -61,7 +61,7 @@ with sync_playwright() as p:
     cdp = ctx.new_cdp_session(ph); cdp.send("Emulation.setTouchEmulationEnabled", {"enabled": True, "maxTouchPoints": 5})
     cdp.send("Emulation.setSafeAreaInsetsOverride", {"insets": {"left": 59, "right": 59, "bottom": 21, "top": 0}})
     ph.goto(URL); ph.wait_for_timeout(300)
-    ph.evaluate(f"localStorage.clear(); settings.layout = 'touch'; applyLayout(); Object.assign(progress, {{ racing: true, finish: 1, runs: 60, totals: 1, wanted: 0.62, levels: {{ {CAR} }}, engine: 2 }})")
+    ph.evaluate(f"localStorage.clear(); settings.layout = 'touch'; applyLayout(); Object.assign(progress, {{ racing: true, finish: 1, oil: 2, runs: 60, totals: 1, wanted: 0.62, levels: {{ {CAR} }}, engine: 2 }})")
     ph.tap('[data-play="distance"]'); ph.wait_for_timeout(200); ph.evaluate("refreshCar()"); ph.tap("#drive"); ph.wait_for_function("run.phase === 'run'", timeout=15000); ph.wait_for_timeout(300)
     box = lambda sel: ph.evaluate(f"(() => {{ const r = $('{sel}').getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; }})()")
     apart = lambda a, c: a[2] <= c[0] or c[2] <= a[0] or a[3] <= c[1] or c[3] <= a[1]

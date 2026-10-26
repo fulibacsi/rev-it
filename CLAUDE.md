@@ -122,4 +122,6 @@ uv run --no-project --with playwright playwright install chromium         # once
   off and the real game comes back as it was. In a test: `settings.debug = true; applyDebug()`. Its main menu has
   "start at act I II III IV" in the corner: the debug game set to that act's start, the pages before it bought out as
   the upgrade graph allows, everything later gone, the act's card popping up (`debugAct` in `distance.js`; its `ACTS`
-  say what each act's start is, so a change to an act's story or pages goes there too).
+  say what each act's start is, so a change to an act's story or pages goes there too). Beside it, "money ∞" switches
+  the bottomless wallets off ("money as in play", `settings.debugMoney`): they empty, then fill and empty as in play,
+  and an act starts with the wallets its simulation starts with (act 2's 44,000 m at P1, act 4's 3,000 m).

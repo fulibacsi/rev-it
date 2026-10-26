@@ -152,7 +152,8 @@ machine or session. Keep it current: update a section when a decision changes, a
   over a phone's data on every first visit was too much for tapes mostly not played): the save's tape while the main
   menu is up, the next one while a tape plays, so a tap changes tapes at once. An iPhone loads no media before it
   plays, whatever the page asks, so ahead means downloaded into memory. On an iPhone a tape plays only from a tap:
-  the first tap while it should be playing starts it (untested on a phone: emulation only). The menu pauses it. A row
+  the first tap while it should be playing starts it (untested on a phone: emulation only). The menu pauses it; a
+  tutorial or an act's card popping up only hushes the car, and the tape plays on (the owner, 27 Oct). A row
   of lights in the cluster's hood jumps with the beat, now the kick drum heard in the music's bass (a jump over its
   recent level); on the phone that is all there is: the dash is full. On a desktop a head unit in the dash, left of
   the cluster, shows the tape (a name too long for it scrolls) and an 8-band equaliser. A tap on the lights or the
@@ -688,7 +689,8 @@ a burnt-out shell; the first rusty car in the last races; then your crew rides o
   without its bars or spikes, and it drives like any other car.
 
 **Still to settle:** what points buy in act 3 (the Black market is mostly bought by then); every number above; and act
-4's Hunter role, with what it needs now that Fleet flash is gone (its own layer, with `act4.py`).
+4's Hunter role (its own layer, with `act4.py`; the owner, 27 Oct: one level of Crew tuning lets you in, as it does the
+Hunting pack, and the oil runs on through act 4).
 
 **Layers,** a PR each, the full suite before each merge, and every merge a working game (main is live):
 1. These notes and the upgrade graph.
@@ -716,12 +718,13 @@ car becomes a war rig."
 garage as the 51st was bought felt like a bug; it should happen on the road) nothing changes in the garage: about 5 s
 into the next run the gang's moment comes, the oil still running, and the War Rig tutorial pops up over the road (once a
 car is in the reticle) with its first job: total a car. The first car totalled leaves 3 s on the clock; then ACT IV ·
-WAR's card in the garage (NO LAW OUT HERE's words, once a card of its own), the War Rig tab for sale, and the whole crew
-races from then on. The windscreen gains an **AR layer** (red, like a gunsight): a reticle round the nearest car ahead
-going your way, its health bar above it, and "TOTAL IT" until the first job is done (a racer's number after). It stays
-on that car while it is within the guns' reach (200 m) until you pass it or total it, then moves to the next; further up
-the road it takes the nearest car ahead. Each race starts afresh (14 Oct fix: the reticle kept last race's car, out of
-sight on the horizon, and the guns would fire at nothing else).
+WAR's card in the garage (NO LAW OUT HERE's words, once a card of its own), the War Rig tab for sale, and your racers
+ride as the gang. The oil runs on through act IV (the owner, 27 Oct: it shouldn't disappear; by then the Foreman runs
+it, and the cars you go on paying off, up to 99, bring more). The windscreen gains an **AR layer** (red, like a
+gunsight): a reticle round the nearest car ahead going your way, its health bar above it, and "TOTAL IT" until the first
+job is done (a racer's number after). It stays on that car while it is within the guns' reach (200 m) until you pass it
+or total it, then moves to the next; further up the road it takes the nearest car ahead. Each race starts afresh (14 Oct
+fix: the reticle kept last race's car, out of sight on the horizon, and the guns would fire at nothing else).
 - **Damage:** a ram is a hit, 34 off the car's health: 100 for traffic, 150 for a racer, 200 for the police, so 3, 5
   and 6 hits; with a full bull bar (3 times a hit) 1, 2 and 2 (the owner's numbers, 14 Oct). From behind, a bump
   closing at under 30 km/h is only a nudge, and one at over 200 km/h totals the car at once: "OHKO!" (the owner's
@@ -1115,4 +1118,8 @@ these proposals are still open.
   - Extreme: land speed records, then a road off the planet.
   - Then a new game plus, with a legacy bonus.
   - A CB radio on the dash giving the crew orders on the road (follow, block, flat out): the owner's "act 6" material
-    (25 Oct), from the act 3 brainstorm.
+    (25 Oct), from the act 3 brainstorm (act 6 itself is the moving fortress since 27 Oct, below).
+  - **Act 6, the owner's plan for the future (27 Oct; a note only, nothing to build yet):** inventory tetris with the
+    parts collected from notable enemies (tanks, helicopters, any war rig), fitted together to build a real moving
+    fortress. It grows into a moving city that takes over all four lanes; the ending is a final "animation" of the
+    whole moving city going through the wasteland, with the crew following.
