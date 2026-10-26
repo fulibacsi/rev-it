@@ -62,10 +62,11 @@ function makeRole(r, n) { // the script turns racers into harvesters or brewers;
 
 // ---- a run's spots, drawn ahead of it (at the finish of the run before: crewPlan) on dice of their own, so the
 // traffic's stay as they were. Oil spots in clusters and gaps, the first a rich one, refineries further apart (nudged
-// clear of the oil), all of them bigger as the crew grows (from 0/3 to about 0/8 at the gang: the owner, 26 Oct,
-// "moderately"). The spacing and rates: tests/balance/act3.py, 51 crew in 11-13 races (27 Oct). The check that the
-// income stays steady for sensible play: five drawings, and the one whose yield for a model player (your pace of late,
-// 1 s to react, 4 presses a second) is in the middle (Claude's call, for "within 25% of the target")
+// clear of the oil; closer since the owner's playtest of 27 Oct: "a bit scarce by run 3-4"), all of them bigger as the
+// crew grows (from 0/3 to about 0/8 at the gang: the owner, 26 Oct, "moderately"). The spacing and rates:
+// tests/balance/act3.py, 51 crew in 12 races (27 Oct). The check that the income stays steady for sensible play: five
+// drawings, and the one whose yield for a model player (your pace of late, 1 s to react, 4 presses a second) is in the
+// middle (Claude's call, for "within 25% of the target")
 let dice = 1;
 const roll = () => ((dice = (dice * 48271) % 2147483647) - 1) / 2147483646;
 const between = (a, b) => a + (b - a) * roll();
@@ -78,7 +79,7 @@ function drawSpots() {
     const count = first ? big : Math.max(2, big - Math.floor(roll() * 3)), rate = OIL_RATE * (first ? 1.3 : 0.7 + 0.6 * roll());
     spots.push({ kind: 'oil', z, count, rate, reserve: count * rate * between(10, 20) * deep });
   }
-  if (progress.oil >= 2) for (let z = between(600, 900); z < ROAD_END; z += between(1000, 1600)) {
+  if (progress.oil >= 2) for (let z = between(400, 700); z < ROAD_END; z += between(700, 1100)) {
     while (spots.some(s => Math.abs(s.z - z) < 100)) z += 60; // not on top of an oil spot
     spots.push({ kind: 'refinery', z, count: Math.max(2, Math.round(big * (0.4 + 0.2 * roll()))), rate: BREW_RATE * (0.8 + 0.4 * roll()) });
   }
