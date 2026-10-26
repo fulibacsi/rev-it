@@ -59,11 +59,18 @@ flowchart TD
   end
   subgraph F["Crew · 1 point"]
     fleetTab(["Crew tab"])
-    converter["Mile converter"]
+    converter["Fuel converter"]
     payoff["Pay off a racer"]
-    dues["Racing"]
     pace["Crew tuning"]
-    fleetFlash["Crew flash"]
+    dues["Racing"]
+    harvesting["Harvesting"]
+    brewing["Brewing"]
+    crude["Crude tank"]
+    sonar["Sonar range"]
+    scouting["Scouting"]
+    overfill["Overfill"]
+    wells["Deep wells"]
+    double["Double up"]
   end
   subgraph R["War Rig · 1 scrap"]
     warrig(["War Rig tab"])
@@ -110,8 +117,13 @@ flowchart TD
 
   black -- P1 --> fleetTab
   fleetTab --> converter & payoff
-  payoff --> dues & pace & fleetFlash
-  flash -- "5+" --> fleetFlash
+  payoff --> pace
+  fleetTab -- "the first crude" --> dues & harvesting
+  fleetTab -- "the first fuel" --> brewing
+  harvesting --> crude & sonar & wells
+  sonar --> scouting
+  harvesting & brewing --> overfill
+  overfill --> double
 
   fleetTab -- "totalled a car" --> warrig
   warrig --> bullbar & armour & spikes & radio & hunter
@@ -122,7 +134,7 @@ flowchart TD
   cruise --> hunter
   rcruise --> hunter
   hunter --> pack
-  dues & pace & fleetFlash --> pack
+  dues & pace --> pack
 ```
 
 ## The rules
@@ -135,7 +147,7 @@ flowchart TD
 4. **In sight and locked**, a card shows its name and its whole rule, what is done ticked. A parent still out of sight
    shows as ???: Flash recharge's in act I (Reckless driving) is a teaser, the owner's call.
 5. **A tab is bought by tapping it** in the tab row, where it shows with its price once in sight.
-6. **Free cards** (the Mile converter) follow the same rules, with no price.
+6. **Free cards** (the Fuel converter) follow the same rules, with no price.
 7. **Saves**: a tab counts as bought once any upgrade on it is owned, so players keep their pages.
 8. **Scrap** is the War Rig's money (it was parts), in the save too.
 
@@ -182,11 +194,18 @@ Each upgrade and what it needs, one line each: the list to edit.
 
 ### Crew (1 point; needs the Black Market, and reaching P1; the Fleet until 26 Oct)
 
-- Mile converter ← Crew (free)
+- Fuel converter ← Crew (free; the Mile converter until 26 Oct)
 - Pay off a racer ← Crew
-- Racing ← Pay off a racer (Fleet dues until 26 Oct)
 - Crew tuning ← Pay off a racer (Fleet tuning)
-- Crew flash ← Pay off a racer, Headlight flash 5+ (Fleet flash)
+- Racing ← Crew, the first crude (Fleet dues)
+- Harvesting ← Crew, the first crude
+- Brewing ← Crew, the first fuel
+- Crude tank ← Harvesting
+- Sonar range ← Harvesting
+- Scouting ← Sonar range
+- Deep wells ← Harvesting
+- Overfill ← Harvesting, Brewing
+- Double up ← Overfill
 
 ### War Rig (1 scrap; needs the Crew, and a car totalled)
 
@@ -198,69 +217,21 @@ Each upgrade and what it needs, one line each: the list to edit.
 - Auto gun ← Guns
 - War Rig radio ← War Rig, Car stereo
 - Hunter ← War Rig, Autocruise, Reckless auto-drive
-- Hunting pack ← Hunter, Racing, Crew tuning, Crew flash
+- Hunting pack ← Hunter, Racing, Crew tuning
 
-## The Crew page (decided 26 Oct, to build)
+## The Crew page (26 Oct)
 
-Act 3 is being rebuilt as the crew (design notes: Act 3 redesign). The Fleet became the Crew on 26 Oct: the tab, the
-page and the cards renamed (Fleet dues is Racing, Fleet tuning Crew tuning, Fleet flash Crew flash), the ids kept for
-the saves. Until its layers land, the graph above is the game as built; each layer moves its part into it.
-
-The tab: **Crew** (the Fleet renamed), 1 point, needs the Black market, and P1, as before. The War Rig needs the Crew.
-
-```mermaid
-flowchart TD
-  subgraph C["Crew · 1 point"]
-    crewTab(["Crew tab"])
-    converter["Fuel converter"]
-    payoff["Pay off a racer"]
-    tuning["Crew tuning"]
-    racing["Racing"]
-    harvesting["Harvesting"]
-    brewing["Brewing"]
-    crude["Crude tank"]
-    sonar["Sonar range"]
-    scouting["Scouting"]
-    overfill["Overfill"]
-    wells["Deep wells"]
-    double["Double up"]
-    foreman["Foreman"]
-  end
-  black(["Black market tab"]) -- P1 --> crewTab
-  crewTab --> converter & payoff
-  payoff --> tuning
-  crewTab -- "the first crude" --> racing & harvesting
-  crewTab -- "the first fuel" --> brewing
-  harvesting --> crude & sonar
-  sonar --> scouting
-  harvesting & brewing --> overfill
-  harvesting --> wells
-  overfill --> double
-  double --> foreman
-  scouting -- max --> foreman
-  sonar -- max --> foreman
-```
-
-- Fuel converter ← Crew (free; the Mile converter renamed)
-- Pay off a racer ← Crew
-- Crew tuning ← Pay off a racer (Fleet tuning renamed)
-- Racing ← Crew, the first crude (Fleet dues renamed)
-- Harvesting ← Crew, the first crude
-- Brewing ← Crew, the first fuel
-- Crude tank ← Harvesting
-- Sonar range ← Harvesting
-- Scouting ← Sonar range
-- Overfill ← Harvesting, Brewing
-- Deep wells ← Harvesting
-- Double up ← Overfill
-- Foreman ← Double up, Scouting max, Sonar range max
+Act 3 rebuilt as the crew (design notes: Act 3 redesign). The Fleet became the Crew on 26 Oct: the tab, the page and
+the cards renamed (Fleet dues is Racing, Fleet tuning Crew tuning), the ids kept for the saves. The crew's oil came
+with the next layer, in the graph above. Still to build: the **Foreman** (← Double up, Scouting max, Sonar range max),
+which sends the crew for you.
 
 **The first crude** and **the first fuel** come in the scripted run after the 5th car (the oil puddle, then the
 refinery). They are story conditions, and on a card they hide as a tab's do (rule 3): no role or role upgrade is named
 before the run that brings it.
 
-**Goes:** Fleet flash (it never fired at P1), team places' miles (they pay points), miles (fuel, one for one). **To
-settle with act 4's layer:** the Hunting pack becomes the Hunter role, and what it needs now that Fleet flash is gone.
+**Gone:** Fleet flash (it never fired at P1), team places' miles (they pay points), miles (fuel, one for one). **To
+settle with act 4's layer:** the Hunting pack becomes the Hunter role.
 
 ## What changed (23 Oct), against the game before
 

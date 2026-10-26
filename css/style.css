@@ -114,6 +114,33 @@ body:not([data-game="distance"]) #kit { display: none; }
 #sonar-blips .red { fill: #f33; }
 #sonar-blips .blue { fill: #39f; }
 #sonar-blips .tank { fill: #f22; }
+/* act 3's crew (oil.js): the tracker on the sonar's right, ‹ SEND › under them, the tag on the windscreen over the spot
+   picked, the crude tank on the right A-pillar (the police scanner's place, which comes only in act 4, when the whole
+   crew races and the tank goes) */
+#tracker { display: none; position: fixed; left: calc(5vw + 116px); top: 96px; width: 43px; pointer-events: none; }
+.has-crew #tracker { display: block; }
+#track-spots text { font: 700 8.5px monospace; }
+#track-spots .short { fill: #ec4; } #track-spots .coming { fill: #9df; } #track-spots .pumping { fill: #3f6; }
+#track-spots .sel { fill: none; stroke: #fff; stroke-width: 1; }
+#crew-ctl { display: none; position: fixed; left: calc(5vw + 10px); top: 190px; gap: 5px; }
+.has-crew #crew-ctl { display: flex; }
+#crew-ctl button { height: 36px; min-width: 38px; padding: 0 8px; border-radius: 7px; border: 1px solid #2f6b46; background: #0d1f16e6;
+                   color: #9fe8b8; font: 700 15px system-ui, sans-serif; touch-action: none; }
+#crew-ctl button:active { background: #1d6b3a; }
+#crew-send { min-width: 70px !important; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+#crew-free { font: 600 9px monospace; color: #6c9; margin-top: 2px; }
+#crew-tag { display: none; position: fixed; transform: translate(-50%, calc(-100% - 10px)); pointer-events: none; padding: 2px 7px;
+            border: 1px solid #3f6; border-radius: 4px; background: #06241499; color: #9fe8b8; font: 700 12px monospace;
+            white-space: nowrap; filter: drop-shadow(0 0 3px #3f68); }
+.tag-on #crew-tag { display: block; }
+#tank { display: none; position: fixed; right: 5vw; top: 96px; width: 60px; pointer-events: none; }
+.has-tank #tank { display: block; }
+.garage #tracker, .garage #crew-ctl, .garage #crew-tag, .garage #tank { display: none; }
+.touch #tracker { left: calc(var(--edge-l) + 71px); top: calc(max(8px, env(safe-area-inset-top)) + 42px); width: 31px; }
+.touch #crew-ctl { left: calc(var(--edge-l) - 8px); top: calc(max(8px, env(safe-area-inset-top)) + 112px); gap: 4px; }
+.touch #crew-ctl button { height: 34px; min-width: 34px; }
+.touch #crew-send { min-width: 56px !important; }
+.touch #tank { right: calc(var(--edge-r) - 24px); top: calc(max(8px, env(safe-area-inset-top)) + 42px); width: 44px; }
 #stalk, #stalk-hit { display: none; }
 .has-flash #stalk, .has-flash #stalk-hit { display: inline; }
 #stalk-hit { pointer-events: stroke; cursor: pointer; touch-action: none; }
@@ -283,6 +310,9 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
 .card.locked { border-style: dashed; opacity: 0.5; } /* only its name and what it needs: what it does is a surprise */
 .card.exchange { grid-column: span 2; border-color: #3a5a8a; }
 .card.exchange input { width: 100%; margin: 2px 0; accent-color: var(--accent); touch-action: pan-x; }
+.card.roles .role { display: flex; align-items: center; gap: 4px; white-space: nowrap; } /* a role, its count, − and + */
+.card.roles .role b + button { margin-left: auto; }
+.card.roles .role button { min-width: 30px; }
 @keyframes bought { from { background: #3a3410; } }
 #garage footer { display: flex; justify-content: flex-end; align-items: center; position: sticky; bottom: -14px;
                  margin: 0 -16px -14px; padding: 10px 16px 14px; background: #0b0d16; } /* DRIVE stays in view */

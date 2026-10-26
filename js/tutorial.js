@@ -103,11 +103,11 @@ const TUTORIALS = [
     { title: 'THE BOTTLE', at: '#nos-gauge',
       both: 'The gauge in the cluster shows what is left. The garage refills it, for metres.' },
   ] },
-  { id: 'fleet', name: 'The Crew', for: ['fleet', 'dues', 'fleetPace', 'fleetFlash', 'pack'], open: () => fleetSize() > 0, pages: [
+  { id: 'fleet', name: 'The Crew', for: ['fleet', 'dues', 'fleetPace', 'pack'], open: () => fleetSize() > 0, pages: [
     { title: 'YOUR CREW',
       both: 'The racers you pay off race for you, in your colours: they give way when you come up behind them, and ' +
         'move across to block a rival closing on them. Your place counts the rivals only. At the finish their places ' +
-        'pay you miles, more the further up they are.' },
+        'pay you points, more the further up they are.' },
     { title: 'THE SONAR', at: '#sonar',
       both: 'On the A-pillar: the road 250 m ahead of you and behind, from above. You are the arrow; your crew ' +
         'are green, the rivals white, the traffic yellow.' },

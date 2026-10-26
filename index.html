@@ -91,6 +91,26 @@
   </g>
   <text x="66" y="85" font-size="8" fill="#778" text-anchor="middle" letter-spacing="2">SONAR</text>
 </svg>
+<svg id="tracker" viewBox="0 0 44 92"> <!-- on the sonar's right: the spots ahead on a log scale (oil.js) -->
+  <rect x="2" y="3" width="40" height="86" rx="10" fill="#15151b" stroke="#2c2c36" stroke-width="3"/>
+  <rect x="6" y="9" width="32" height="68" rx="4" fill="#062414"/>
+  <path d="M9,13 V74" stroke="#1d6b3a" stroke-width="1" stroke-dasharray="1 2"/>
+  <g id="track-spots"></g>
+  <text x="22" y="85" font-size="7" fill="#778" text-anchor="middle" letter-spacing="1">AHEAD</text>
+</svg>
+<div id="crew-ctl"> <!-- under the sonar: the spot before, a car to it, the spot after (oil.js) -->
+  <button id="crew-prev" title="the spot before (or ,)">‹</button><button id="crew-send" title="send a car to it (or S)">SEND<small id="crew-free"></small></button><button id="crew-next" title="the spot after (or .)">›</button>
+</div>
+<div id="crew-tag"></div> <!-- on the windscreen, over the spot picked: what it is (oil.js) -->
+<svg id="tank" viewBox="0 0 60 92"> <!-- bolted to the right A-pillar: the crude tank (oil.js) -->
+  <path d="M44,22 H60 M44,62 H60" stroke="#24242c" stroke-width="7"/>
+  <rect x="4" y="3" width="42" height="86" rx="12" fill="#15151b" stroke="#2c2c36" stroke-width="3"/>
+  <rect x="12" y="16" width="26" height="56" rx="5" fill="#0d0a0f" stroke="#3a3a46" stroke-width="1"/>
+  <rect id="tank-fill" x="12" y="72" width="26" height="0" rx="4" fill="#3b2410"/>
+  <path d="M15,20 V68" stroke="#ffffff22" stroke-width="2"/> <!-- the sight glass's shine -->
+  <text id="tank-lcd" x="25" y="12" font-size="8" fill="#8f8" text-anchor="middle" font-family="monospace">0/20</text>
+  <text x="25" y="83" font-size="7" fill="#778" text-anchor="middle" letter-spacing="1">CRUDE</text>
+</svg>
 
 <div id="hud">
   <div id="flash"></div>
@@ -352,6 +372,7 @@
 <script src="js/games/distance.js"></script>
 <script src="js/games/race.js"></script>
 <script src="js/games/fleet.js"></script>
+<script src="js/games/oil.js"></script>
 <script src="js/games/gang.js"></script>
 <script src="js/games/police.js"></script>
 <script src="js/games/boss.js"></script>

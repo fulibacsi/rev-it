@@ -444,11 +444,10 @@ brakes nor lifts; Auto gas's traction control still trims it, so nitro doesn't s
 
 ### Act 3: the fleet
 
-The game as built, in the words of 26 Oct: the Fleet is the **Crew** (its tab, page and cards; Fleet dues is Racing,
-Fleet tuning Crew tuning, Fleet flash Crew flash; the ids and save keys kept), the rest as below. It is being rebuilt as
-the crew (decided 26 Oct): see
-[Act 3 redesign](#act-3-redesign-the-crew-decided-26-oct-to-build) below, which replaces this section layer by layer as
-each lands.
+The act as it was until 26 Oct, kept for its history. It was rebuilt as the crew (decided 26 Oct, built 26–27 Oct):
+see [Act 3 redesign](#act-3-redesign-the-crew-decided-26-oct-built-2627-oct) below, the game as built. What carried
+over: the tab and its price, paying off racers (the slowest first, 3.5% dearer each), giving way and blocking, team
+places (in points now), Racing (Fleet dues) and Crew tuning (Fleet tuning), and the sonar.
 
 **The Fleet** opens with your first win (P1), and never shows before it: its tab goes on sale then, for a point.
 ACT III's card says so after that race: "the racers you beat are open to offers". It is a garage page paid in
@@ -498,12 +497,13 @@ ACT III's card says so after that race: "the racers you beat are open to offers"
   10, 12 races with team places (23 Oct, seeds 1 to 4), a few cars bought every race. (13 Oct, seed 11, 57k m, before
   the retune: 26 races buying dues first, 71 buying the cheapest first.)
 
-### Act 3 redesign: the crew (decided 26 Oct, to build)
+### Act 3 redesign: the crew (decided 26 Oct, built 26–27 Oct)
 
 The owner's brief (25 Oct): "there is no interaction with the fleet, nothing new to do, no exciting upgrade"; the
 playtesters found the Fleet slow; act 1 is mechanical driving, act 2 lane control, act 4 hunting cars, and act 3
 "nothing but buying the same upgrades 51 times". This is what the brainstorm of 25–26 Oct settled on, to build in
-layers, a PR each. Until a layer lands, the section above is the game as built.
+layers, a PR each. Built 26–27 Oct, with the numbers measured since (marked **as built**); still to build: the
+Foreman, the foreshadowing and act 4's Hunter role.
 
 **Measured first** (25 Oct, scratch runs in the page: act 2's car at P1, `act3.py`'s bot):
 - The fleet starts in its own slots, 120 m apart behind you. The nearest fleet car was 8.2–8.5 km behind you all race
@@ -557,6 +557,10 @@ next is a fair tactic (the owner's), since crude keeps.
     tutorial, about 15 s to send two, and it brews until you pass it;
   - the role card opens in the garage after the run.
 - Claude's call: if the puddle goes by uncrewed, the scripted run comes again.
+- **As built** (27 Oct): the puddle 1.4 km up the road (about 15 s after its tutorial at act 2's rolling start), the
+  refinery 1.1 km past it. A run lasts 50 s, 2.2–4 km, so a refinery placed further on was often past the finish.
+  The finish counts as passing whatever is still at work, so crude pumped or fuel brewed up to the bell counts; a run
+  that ends before the refinery brings it about 5 s into the next.
 
 **On the road:**
 - **Spots** stand by the road on the right: oil spots (a nodding pumpjack) and refineries (towers and a flare). Each
@@ -586,6 +590,22 @@ A **check** keeps the income steady for sensible play, without godlike reactions
 can fill) must earn within about 25% of the target for the size of your crew, and find about 1.3 places in reach for
 each free car of the crew, or the run is drawn again, a few times at most, keeping the closest.
 
+**As built** (27 Oct, `oil.js`; the numbers from `act3.py` and a quick model of it, in that order):
+- A run at act 3 is 50 s and 2.2–4 km at about 60 m/s, so a spot 500 m off is only 8 s away: the first guesses left
+  the crew at a spot 6–12% of the time, making 1–3 L a race, and the act would have taken well over 30 races. The
+  tracker reaches **1 km** (Sonar range: 2 km, then 3 km), and the spots are closer together: the first oil spot
+  300–500 m up the road, then 150–350 m (a cluster, 55% of the time) or 500–900 m (a gap); a refinery 600–900 m up,
+  then every 1,000–1,600 m, nudged clear of the oil spots (it used to be dropped when it fell on one, which left most
+  runs with none).
+- Oil spots hold their count of cars, the biggest 3 + 5 × crew/51 (0/5 when the oil comes, with the 19 cars or so
+  act 2's metres buy, 0/8 at the gang); a refinery 0.4–0.6 of that. A harvester pumps 0.07 L of crude a second (the
+  first puddle 0.1: a first taste), a brewer brews 0.2 L a second of it, 2:1 into fuel. An oil spot holds 10–20 s of
+  its full crew's pumping.
+- The check is simpler: each run is drawn five times, and the one whose yield for the model player sits in the
+  middle is the one you get. The draw doesn't size the spots to your riders: you do, on the role card. A sensible split
+  rides about as many cars as there are places in reach (1 for each 1.3 places), with enough harvesters for the
+  biggest oil spot and enough brewers for the biggest refinery; the rest race.
+
 **Scouting** (an upgrade) lists what is on the next run before it, "4 oil, 1 refinery", with no positions, sizes or
 rates (the owner: so the garage doesn't turn into over-analysis); its levels cover more of the run.
 
@@ -604,7 +624,7 @@ over as litres, one for one.
 | Harvesting | 5 | 5 | 3 | harvesters pump 20% more a level |
 | Brewing | 5 | 5 | 3 | brewers get more fuel from the crude: 2:1 towards 1:1 |
 | Crude tank | 3 | 10 | 2.5 | a bigger tank |
-| Sonar range | 2 | 10 | 3 | the tracker reaches 1 km, then 2 km (500 m before) |
+| Sonar range | 2 | 10 | 3 | the tracker reaches 2 km, then 3 km (1 km before; the first guess was 500 m, 1 km, 2 km) |
 | Scouting | 3 | 15 | 2.5 | lists the run's first 2 km, then 4 km, then all of it |
 | Overfill | 4 | 20 | 2.5 | a spot takes 25% more cars than its count a level, up to twice as many; each one past the count adds its share of the rate |
 | Deep wells | 4 | 15 | 2.5 | oil spots hold 25% more a level, up to twice as much |
@@ -623,7 +643,8 @@ wait (an estimate from the first guesses, not a simulation). So the room grows w
 - Overfill lets a spot take up to twice its count, and Deep wells make oil spots hold up to twice as much, so the
   extra cars don't just drain them sooner (the owner's): a 0/6 takes 12;
 - Sonar range brings more spots into reach;
-- the draw keeps about 1.3 places in reach for each free car, so there is always a choice and never a crowd;
+- the draw keeps about 1.3 places in reach for each free car, so there is always a choice and never a crowd (as
+  built, the player keeps it, by how many ride: see the spots above);
 - a car with no spot to work earns nothing (the owner, 26 Oct: the player should balance the roles). The role card is
   where a bad split gets fixed, and the room in reach keeps idle cars rare when the split is sensible. A share of the
   metres an idle car rides is kept in reserve, should idling feel harsh in play.
@@ -636,6 +657,24 @@ run is behind you: the racers' metres turn into fuel at the Fuel converter, and 
 core loop doesn't merge until these are in their bands. As the spots grow, so does the mashing: Double up first, then
 the Foreman (the owner, 26 Oct).
 
+**Measured** (27 Oct, `act3.py`, seeds 1 and 2; the bot rides cars to fit the room, saves for Harvesting and Sonar
+range, buys a bigger tank when it ends a run full, and otherwise the cheapest of the cars and upgrades):
+- **51 crew after 12 races, both seeds** (the target 10–15): the first win's race, the scripted run, then 10 more.
+  The converter buys 19 cars with act 2's metres; after the oil, 3–6 cars a race.
+- **At a spot** 46–70% of the riders' time, about 57% on average: the bottom of the 60–90% band. What's left is the
+  run's shape: a car is free again only as you pass its spot, and waits for the next one to come into reach.
+- **Payback** 2.1–7.4 runs, rising through the act (about 3 early, 5–7 by the 40th car): above the 2–4 aimed for.
+  The bot spends nearly everything on cars, and income per car stays at 0.7–1.1 L a race while a car's price
+  triples. Bringing it down without shortening the act needs the upgrades to soak up more of the income (a player
+  who buys them is slower to 51 than the bot); a question for the owner.
+- **Oil's share** of the fuel 84–100% (the target at least two-thirds); the converter adds about a litre a race.
+- **Upgrades bought** by the end: Harvesting 1, Sonar range 1, Crew tuning 1, Brewing 1. The bot gets nowhere near
+  Double up (60 L) or the Foreman (150 L, after Scouting and Sonar range maxed, another 200 L or so): the act's
+  whole income after the cars is about 40 L. As priced, "hands-free by the end of the act" doesn't happen; another
+  question for the owner.
+- **Act 4** (`act4.py` seed 1, after the change: team places pay points, not fuel): the tank beaten in race 13 (11–12
+  before), at the first go.
+
 **Foreshadowing,** without a word: the pump price climbs; stations that aren't yours show NO FUEL, then get boarded up;
 a burnt-out shell; the first rusty car in the last races; then your crew rides out as the gang.
 
@@ -647,9 +686,10 @@ a burnt-out shell; the first rusty car in the last races; then your crew rides o
 2. The Fleet renamed the Crew, in words only (built 26 Oct).
 3. The core loop: spots on the road, the tracker, `<` SEND `>`, the windscreen tag, the roles, crude and its tank,
    refineries and brewers, fuel as the money, the Fuel converter's pump price, the role card, team places in points,
-   the scripted run; `act3.py`'s bot learns to send, retuned to 10–15 races. The biggest layer: it may come as a few
-   PRs merged together, so the live game never has crude with nothing to spend it on.
-4. Sonar range, Scouting, the Crude tank, Racing, Harvesting, Brewing, Overfill, Deep wells and Double up.
+   the scripted run; `act3.py`'s bot learns to send, retuned to 10–15 races. Built 27 Oct, with layer 4 in the same PR,
+   so the live game never has crude with nothing to spend it on.
+4. Sonar range, Scouting, the Crude tank, Racing, Harvesting, Brewing, Overfill, Deep wells and Double up (built 27
+   Oct).
 5. The Foreman.
 6. The foreshadowing.
 7. Act 4's Hunter role.
@@ -909,7 +949,8 @@ DNF that halved the heat. Till then the act's card says "the army has a tank rea
   - `act1.py [cheapest|value] [head-start curve or -] [traffic]`: when #100 is first passed;
   - `act2.py [races] [seed]`: races from the reveal to P1, the bot driving like Reckless auto-drive (`aids.js`). The
     traffic seed alone moves the result by up to 7 races, so compare a few seeds;
-  - `act3.py [races] [seed] [order|cheapest]`: races from the first win to 51 fleet cars, buying the Fleet's upgrades;
+  - `act3.py [races] [seed] [overrides]`: races from the first win to 51 crew, the bot sending the crew to the spots
+    and buying the Crew page's upgrades; it reports the share of time at a spot, payback and oil's share of the fuel;
   - `act4.py [races] [seed] [overrides]`: races from the gang to beating the tank, the bot ramming the reticle's car
     and holding the trigger; the overrides are JavaScript to try other numbers (`"TANK.hp = 1200"`);
   - `cruise.py [runs] [plain|reckless]`: autocruise at speed through traffic: metres a run, time on the brake, crashes;

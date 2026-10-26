@@ -206,6 +206,45 @@ const TANK_SPRITE = sprite(300, 230, (g, w, h) => { // the final boss (Distance)
   g.fillStyle = '#ddd'; g.font = `bold ${h * 0.16}px sans-serif`; g.textAlign = 'center'; g.fillText('★', w / 2, h * 0.7);
   g.fillStyle = '#a22'; g.fillRect(w * 0.12, h * 0.5, w * 0.08, h * 0.05); g.fillRect(w * 0.8, h * 0.5, w * 0.08, h * 0.05);
 });
+// act 3's spots by the road (oil.js), in the palms' sunset silhouette with lamps lit: an oil puddle on the sand, a
+// pumpjack nodding (two frames, the beam up and down), a refinery with its flare flickering (two frames)
+const PUDDLE = sprite(240, 48, (g, w, h) => {
+  const pool = g.createRadialGradient(w * 0.45, h * 0.45, 2, w / 2, h / 2, w * 0.5);
+  pool.addColorStop(0, '#2b1f3a'); pool.addColorStop(0.5, '#140d18'); pool.addColorStop(1, '#0a070c');
+  g.fillStyle = pool; g.beginPath(); g.ellipse(w / 2, h / 2, w * 0.48, h * 0.42, 0, 0, 2 * Math.PI); g.fill();
+  for (const [c, r] of [['#7a3cff55', 0.3], ['#30d0a055', 0.22], ['#ffb03a44', 0.14]]) { // the sheen
+    g.strokeStyle = c; g.lineWidth = 3; g.beginPath(); g.ellipse(w * 0.42, h * 0.42, w * r, h * r * 0.9, -0.1, 0.2, 2.6); g.stroke();
+  }
+});
+const JACK = [-1, 1].map(tilt => sprite(220, 160, (g, w, h) => {
+  g.fillStyle = g.strokeStyle = '#2a1430';
+  g.fillRect(w * 0.08, h * 0.9, w * 0.86, h * 0.1); // the skid
+  g.lineWidth = 7; g.beginPath(); g.moveTo(w * 0.36, h * 0.9); g.lineTo(w * 0.5, h * 0.3); g.lineTo(w * 0.64, h * 0.9); g.stroke(); // the post
+  g.save(); g.translate(w * 0.5, h * 0.3); g.rotate(tilt * 0.12); // the walking beam, nodding
+  g.fillRect(-w * 0.38, -6, w * 0.7, 12);
+  g.beginPath(); g.moveTo(-w * 0.38, -16); g.quadraticCurveTo(-w * 0.48, 4, -w * 0.38, 28); g.lineTo(-w * 0.33, 28); g.lineTo(-w * 0.33, -16); g.fill(); // the horse's head
+  g.fillStyle = '#ffc861'; g.beginPath(); g.arc(0, 0, 3, 0, 2 * Math.PI); g.fill(); g.fillStyle = '#2a1430'; // a lamp at the pivot
+  g.restore();
+  const head = [w * 0.5 - Math.cos(tilt * 0.12) * w * 0.4, h * 0.3 - Math.sin(tilt * 0.12) * w * 0.4 + 24];
+  g.lineWidth = 2; g.beginPath(); g.moveTo(...head); g.lineTo(head[0], h * 0.86); g.stroke(); // the rod, down the well
+  g.fillRect(head[0] - 6, h * 0.84, 12, h * 0.06);
+  g.beginPath(); g.arc(w * 0.8, h * 0.66, 15, 0, 2 * Math.PI); g.fill(); // the crank and its counterweight
+  g.fillRect(w * 0.76, h * 0.66, w * 0.08, h * 0.24);
+}));
+const REFINERY = [0, 1].map(lick => sprite(320, 240, (g, w, h) => {
+  g.fillStyle = '#2a1430';
+  for (const [x, cw, ch] of [[0.14, 0.09, 0.62], [0.27, 0.07, 0.48], [0.62, 0.1, 0.7]]) { // the columns
+    g.beginPath(); g.roundRect(w * x, h * (1 - ch), w * cw, h * ch, 8); g.fill();
+  }
+  g.beginPath(); g.arc(w * 0.45, h * 0.84, w * 0.08, Math.PI, 0); g.fill(); g.fillRect(w * 0.37, h * 0.84, w * 0.16, h * 0.16); // a tank
+  g.fillRect(w * 0.06, h * 0.86, w * 0.88, h * 0.14); // the plant
+  g.fillRect(w * 0.84, h * 0.12, w * 0.02, h * 0.78); // the flare stack
+  const flame = g.createRadialGradient(w * 0.85, h * 0.08, 1, w * 0.85, h * 0.1, w * (lick ? 0.07 : 0.05));
+  flame.addColorStop(0, '#fff3b0'); flame.addColorStop(0.4, '#ff9a2e'); flame.addColorStop(1, '#ff4a1a00');
+  g.fillStyle = flame; g.beginPath(); g.ellipse(w * 0.85, h * (lick ? 0.06 : 0.08), w * (lick ? 0.05 : 0.04), h * (lick ? 0.1 : 0.07), 0, 0, 2 * Math.PI); g.fill();
+  g.fillStyle = '#ffc861'; // lamps on the columns
+  for (const [x, y] of [[0.185, 0.45], [0.185, 0.62], [0.305, 0.6], [0.67, 0.38], [0.67, 0.55], [0.67, 0.72]]) g.fillRect(w * x, h * y, 3, 3);
+}));
 const RACERS = new Map(); // racers' rear views by number: kitted, racing stripes, and the number once the race is revealed
 const FONT = ['111101101101111', '010110010010111', '111001111100111', '111001111001111', '101101111001001', '111100111001111',
   '111100111101111', '111001001001001', '111101111101111', '111101111001111']; // 0-9, 3 wide and 5 high, row by row
@@ -402,9 +441,9 @@ function skid(c, dt) {
   c.x += clamp(SHOULDER - c.x, -4 * dt, 4 * dt);
 }
 
-// this frame's racers not in your fleet, and the cars not in the race, in the road's own order: what your fleet looks
-// for (fleet.js, gang.js) a frame, each of its cars searching the whole road was most of the traffic's work in act 4
-let RIVALS = [], ORDINARY = [];
+// this frame's racers not in your crew, in the road's own order: what your racers look for (fleet.js, gang.js) a
+// frame, each of them searching the whole road was most of the traffic's work in act 4
+let RIVALS = [];
 // a head-on with a mad driver (Fuel madness) isn't the end of your run (the owner, 18 Oct): you lose most of your speed
 // and the game hears of a hard crash (Distance: heavy damage, and the mad car totalled); it ends up spun round, stopped
 function madHeadOn(c) {
@@ -414,11 +453,12 @@ function madHeadOn(c) {
   Object.assign(c, { dir: 1, v: 0, want: 0, swerve: null });
 }
 function updateTraffic(dt, clock) {
-  RIVALS = traffic.filter(o => o.racer && !o.fleet); ORDINARY = traffic.filter(o => !o.racer);
+  RIVALS = traffic.filter(o => o.racer && !o.fleet);
   for (const c of traffic) {
     if (c.wreck) skid(c, dt);
     else if (c.police) policeDrive(c, dt); // police.js
     else if (c.tank) tankDrive(c, dt); // boss.js
+    else if (c.runner) runnerDrive(c, dt); // a car of your crew on its way to a spot (oil.js)
     else if (c.dir > 0) driveCar(c, dt);
     else { // oncoming: a mad driver steers for you while you are on its side, until 1.2 s out (as the police do)
       if (mad(c) && lane > 1 && (c.z - odo) / Math.max(1, speed + c.v) > 1.2) c.x += clamp(carX - c.x, -3 * dt, 3 * dt);
@@ -428,8 +468,8 @@ function updateTraffic(dt, clock) {
     const d = c.z - odo;
     if (c.d > 0 && d <= 0) whoosh(Math.abs(speed - c.dir * c.v) * 3.6, c.x < carX ? -0.7 : 0.7); // went past the driver
     c.d = d;
-    if (c.racer || c.passing || c.tank) { /* racers stay where they are, however far: their places are the race; a
-      police car comes up from behind; the tank holds the road */ }
+    if (c.racer || c.passing || c.tank || c.runner) { /* racers stay where they are, however far: their places are the
+      race; a police car comes up from behind; the tank holds the road; a car of your crew goes on to its spot */ }
     else if (d < -40 || c.dir > 0 && d < -8 && c.v < speed - 1) spawnAhead(c); // left behind: back to the horizon
     else if (d > ROAD.draw * ROAD.segment + 100) { // pulled away: comes up from behind instead, in a lane you're not in
       spawnCar(c, -30);
@@ -465,6 +505,11 @@ const MARKS = {
   best: v => ({ x: 0, w: 2 * (ROAD.half + ROAD.rumble), h: 5.6, img: bannerSprite(v) }),
   board: v => ({ x: ROAD.half + 2, w: 1.6, h: 3, img: boardSprite(v) }),
   sign: v => ({ x: ROAD.half + 2, w: 1.5, h: 4.1, img: signSprite(v) }),
+  // act 3's spots (oil.js crewMarks), off the road on the right, and your crew's cars parked at one
+  puddle: () => ({ x: ROAD.half + 6, w: 6, h: 1.2, img: PUDDLE }),
+  jack: () => ({ x: ROAD.half + 8, w: 8, h: 5.8, img: JACK[Math.floor(performance.now() / 700) % 2] }),
+  refinery: () => ({ x: ROAD.half + 17, w: 20, h: 15, img: REFINERY[Math.floor(performance.now() / 180) % 2] }),
+  parked: v => { const img = racerSprite(v.n, true, true).rear; return { x: ROAD.half + 2.6 + 2.3 * v.side, w: CAR_M, h: CAR_M * img.height / img.width, img }; },
 };
 function drawRoad(g, w, h, dt) {
   const depth = 1 / Math.tan(ROAD.fov / 2 * Math.PI / 180), horizon = h * ROAD.horizon, k0 = w / 2;
@@ -530,13 +575,14 @@ function drawRoad(g, w, h, dt) {
   };
 
   // sprites, far to near: palms, traffic and the game's marks (x: metres from the centre line, w/h: metres)
-  const marks = (game.marks?.() ?? []).map(m => ({ z: m.z, ...MARKS[m.kind](m.value) }));
+  const marks = (game.marks?.() ?? []).map(m => ({ z: m.z, ...MARKS[m.kind](m.value), ref: m.ref })); // ref: told where it is
   const look = c => c.wreck ? wreckSprite(lookOf(c).rear) : c.dir > 0 ? lookOf(c).rear : c.beams ? lookOf(c).beams : lookOf(c).front;
   const placed = c => { const img = look(c), w = c.w ?? (img.pixel ? CAR_M : 1.8); // a car's art sets its height
     return { z: c.z, x: c.x + weave(c), w, h: c.h ?? (img.pixel ? w * img.height / img.width : 1.4), img, car: c }; };
   const ahead = [...traffic.map(placed), ...marks]
     .map(o => ({ ...o, d: o.z - odo })).filter(o => o.d > 2 && o.d < (ROAD.draw - 2) * ROAD.segment).sort((p, q) => q.d - p.d);
-  for (const c of traffic) c.seen = null; // where each car is on the screen (canvas px), when it is to be seen
+  for (const c of [...traffic, ...marks.map(m => m.ref).filter(Boolean)]) c.seen = null; // where each car (and a mark that
+                                                                    // asks: an act 3 spot) is on the screen, canvas px
   const blinkOn = performance.now() % 660 < 330; // indicators: about 1.5 flashes a second
   let t = 0;
   for (let n = ROAD.draw - 1; n > 0; n--) {
@@ -550,7 +596,8 @@ function drawRoad(g, w, h, dt) {
       const o = ahead[t++], f = (o.d - a.z) / ROAD.segment, b = proj[n + 1] || a;
       const k = a.k + (b.k - a.k) * f, cx = a.x + (b.x - a.x) * f, cy = a.y + (b.y - a.y) * f;
       if (o.h * k > 1) drawClipped(o.img, cx + (o.x - o.w / 2) * k, cy - o.h * k, o.w * k, o.h * k, clip[n]); // not a dot far off
-      if (o.car && cy - o.h * k < clip[n]) o.car.seen = [cx + (o.x - o.w / 2) * k, cy - o.h * k, o.w * k, o.h * k];
+      const who = o.car ?? o.ref;
+      if (who && cy - o.h * k < clip[n]) who.seen = [cx + (o.x - o.w / 2) * k, cy - o.h * k, o.w * k, o.h * k];
       const side = o.car && indicator(o.car); // over the outer half of a tail light (the art's, else where a car's is)
       const L = side && (o.img.lamps?.[side < 0 ? 0 : 1] ?? (side < 0 ? [0.03, 0.5, 0.25, 0.64] : [0.75, 0.5, 0.97, 0.64]));
       const outer = L && (side < 0 ? [L[0], (L[0] + L[2]) / 2] : [(L[0] + L[2]) / 2, L[2]]);
