@@ -679,6 +679,20 @@ range, buys a bigger tank when it ends a run full, and otherwise the cheapest of
 - **Act 4** (`act4.py` seed 1, after the change: team places pay points, not fuel): the tank beaten in race 13 (11–12
   before), at the first go.
 
+**Retuned** (27 Oct, the owner's playtest: the converter 7,500 m a litre, the oil 0.1 L/s a harvester and 0.3 a brewer,
+Double up 25 L, the Foreman 60 L after it alone; `act3.py` seeds 1 and 2, `act4.py` seed 1 with its bot now running
+the crew, as the oil runs on through act 4):
+- **Act 3:** the converter buys exactly 5 cars with act 2's metres (less a 3,000 m reserve), the oil comes in the next
+  race, and **51 crew after 14 races** on both seeds (the target 10–15). The bot saves two or three races for
+  Harvesting and Sonar range before buying more cars, then 4–8 a race.
+- **At a spot** 40–80% of the riders' time (about 60%); **payback** 0.9–6.6 runs, 1–2 for the first 20 cars; **oil**
+  84–100% of the fuel. The act earns about 194 L of fuel in all (seed 1).
+- **The Foreman's path** (Harvesting, Brewing, Overfill, Double up, the Foreman: 115 L) is within that, for a player
+  who wants it more than cars; the bot, which sends as the Foreman does, never buys it.
+- **Act 4:** the tank beaten in race 13, at the first go, as before. The oil pays 20–40 L a race there, so the crew
+  grows to 79, Racing and Crew tuning reach 3, and the Hunting pack (one level of Crew tuning lets you in, the
+  owner's call of 27 Oct) comes in race 9.
+
 **Foreshadowing,** without a word: the pump price climbs; stations that aren't yours show NO FUEL, then get boarded up;
 a burnt-out shell; the first rusty car in the last races; then your crew rides out as the gang.
 - **As built** (27 Oct, `oil.js` omens; where and when are Claude's calls): from your first crew car to the gang, two
