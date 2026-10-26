@@ -40,7 +40,7 @@ with sync_playwright() as p:
     js("window.RACER_BOT = window.CRASH_DAMAGE = window.SEE_AHEAD = true")
     js(HABITS)
     if OVERRIDES: js(OVERRIDES + "; 0")
-    js(f"Object.assign(progress, {{ racing: true, finish: 1, points: 0, bank: {RESERVE}, fuel: 0, scrap: 0, totals: 0, wanted: 0, tanks: 0, damage: 0, broken: [], nitro: 0, levels: {json.dumps(START)} }})")
+    js(f"Object.assign(progress, {{ racing: true, finish: 1, points: 0, bank: {RESERVE}, fuel: 0, oil: 2, scrap: 0, totals: 0, wanted: 0, tanks: 0, damage: 0, broken: [], nitro: 0, levels: {json.dumps(START)} }})")
     for race in range(1, RACES + 1):
         boss = js("bossRace()")
         # each race's traffic from a seed of its own, and what it did read in the same call: the page's own loop draws on

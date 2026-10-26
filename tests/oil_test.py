@@ -31,7 +31,7 @@ with sync_playwright() as p:
     pg.tap("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     js("traffic.forEach(c => { if (!c.racer) c.z = odo + 5000; })")
     got = js("run.spots.map(s => [s.kind, s.count, Math.round(s.z)])")
-    check("the 5th car's run: an oil puddle, 0/3, 2 km up the road", got == [["oil", 3, 2000]], got)
+    check("the 5th car's run: an oil puddle, 0/3, 1.4 km up the road", got == [["oil", 3, 1400]], got)
     check("the tracker and ‹ SEND › show, with the puddle on it", js("document.body.classList.contains('has-crew') && $('track-spots').children.length === 1"), js("$('track-spots').innerHTML")[:120])
     pg.wait_for_function("menuOpen && screen === 'tour'", timeout=10000)
     got = js("[tour.id, progress.roles.harvester, racersOf(), +run.t.toFixed(1)]")
@@ -53,7 +53,7 @@ with sync_playwright() as p:
     # 3. past the puddle: they come back; the refinery, two brewers, its tutorial
     js("odo = run.spots[0].z + 10"); pg.wait_for_function("menuOpen && screen === 'tour'", timeout=5000)
     got = js("[run.spots[0].done, free('oil'), progress.oil, tour.id, progress.roles.brewer, racersOf(), run.spots[1].kind, Math.round(run.spots[1].z - odo)]")
-    check("past it: its crew back, the oil met; a refinery 1.6 km on, the last two racers brewers, its tutorial", got == [True, 3, 1, "refinery", 2, 0, "refinery", 1600] or (got[:7] == [True, 3, 1, "refinery", 2, 0, "refinery"] and 1550 < got[7] <= 1600), got)
+    check("past it: its crew back, the oil met; a refinery 1.1 km on, the last two racers brewers, its tutorial", got[:7] == [True, 3, 1, "refinery", 2, 0, "refinery"] and 1050 < got[7] <= 1100, got)
     while js("menuOpen"): pg.tap("#tour-next"); pg.wait_for_timeout(100)
     js("run.pick = run.spots[1]"); pg.tap("#crew-send"); pg.tap("#crew-send"); pg.wait_for_timeout(1900)
     c0 = js("progress.crude"); pg.wait_for_timeout(600)
@@ -89,6 +89,10 @@ with sync_playwright() as p:
     got = js("""(() => { Object.assign(run, { spots: [newSpot({ kind: 'oil', z: odo + 900, count: 2, rate: 5, reserve: 999 })] });
         run.spots[0].crew = 2; progress.crude = 0; for (let i = 0; i < 600; i++) crewTick(1 / 60); run.phase = 'garage'; return [progress.crude, tankSize()]; })()""")
     check("the tank's size: no more crude than it holds", got[0] == got[1], got)
+    got = js("""(() => { const was = [progress.oil, progress.crude]; progress.oil = 1; progress.crude = 4; crewRun(); const r = [run.spots.length];
+        run.phase = 'run'; for (let i = 0; i < 312; i++) crewTick(1 / 60); const s = run.spots[0]; r.push(s && s.kind, s && Math.round(s.z - odo), progress.roles.brewer);
+        s.crew = 2; crewTick(1); crewEnd(); r.push(progress.oil); run.phase = 'garage'; [progress.oil, progress.crude] = was; return r; })()""")
+    check("the run over before the refinery: it comes 1.1 km on, about 5 s into the next; brewing at the finish, the oil is on", got == [0, "refinery", 1100, 2, 2], got)
     # 7. team places pay points; at the gang the whole crew races and the oil stops
     check("team places pay points", "team places" in js("runLine()") and "pts" in js("runLine()") or js("run.team") == 0, js("runLine()"))
     got = js("(() => { progress.levels.fleet = 51; const r = [crewOn(), riders(), raceField().filter(c => c.fleet).length]; progress.levels.fleet = 5; return r; })()")

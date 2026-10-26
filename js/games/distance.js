@@ -257,6 +257,7 @@ function finishRun(dnf) { // dnf: why the run ended early (a crash), if it did
   run.dues = fleetDues(); // fleet.js
   progress.bank += run.dues;
   run.team = run.race ? teamPoints() : 0; // fleet.js: your racers' places pay points
+  crewEnd(); // oil.js: what is still at work counts
   progress.points += run.team;
   progress.pace += 0.3 * (run.gain / Math.max(1, runTime() - run.left) - progress.pace); // your m/s of late (oil.js)
   run.won = was > 1 && progress.finish === 1; // the first win opens the Crew

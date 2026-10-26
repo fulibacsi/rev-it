@@ -30,7 +30,7 @@ const fmtL = n => (Math.round(n * 10) / 10).toString();
 const fmtKm = m => m < 1000 ? `${m} m` : `${m / 1000} km`;
 const TANK_L = [20, 35, 60, 100];        // litres of crude the tank holds a level
 const tankSize = (l = lvl('crudeTank')) => TANK_L[l];
-const REACH = [500, 1000, 2000];       // m the tracker reaches a level of Sonar range
+const REACH = [1000, 2000, 3000];      // m the tracker reaches a level of Sonar range: 1 km is 16 s at act 3's 60 m/s
 const reach = (l = lvl('sonarRange')) => REACH[l];
 const SCOUT = [2000, 4000];            // m of the run Scouting lists a level (the last level: all of it)
 const brewRatio = (l = lvl('brewing')) => 2 - 0.2 * l; // litres of crude a litre of fuel
@@ -38,6 +38,7 @@ const ARRIVE = 1.6;                     // s a car takes to get to its spot; Cre
 const arrive = () => ARRIVE * (1 - 0.1 * lvl('fleetPace'));
 const cap = s => Math.floor(s.count * (1 + 0.25 * lvl('overfill'))); // cars a spot takes
 const harvest = () => 1 + 0.2 * lvl('harvesting');
+const twice = () => lvl('doubleUp') > 0 && !progress.off.doubleUp; // a switch, as every one-level card is
 
 // ---- the roles: racers race in their slots; harvesters and brewers ride with you. They are the crew's first paid off
 // (the slowest, #100 down), so the racers on the grid are its quickest. From the gang on (act 4) the whole crew races
@@ -53,24 +54,27 @@ function makeRole(r, n) { // the script turns racers into harvesters or brewers;
 }
 
 // ---- a run's spots, drawn ahead of it (at the finish of the run before: crewPlan) on dice of their own, so the
-// traffic's stay as they were. Oil spots in clusters and gaps, the first a rich one, refineries further apart, all of
-// them bigger as the crew grows (from 0/3 to about 0/8 at the gang: the owner, 26 Oct, "moderately"). The check that
-// the income stays steady for sensible play: five drawings, and the one whose yield for a model player (your pace of
-// late, 1 s to react, 4 presses a second) is in the middle (Claude's call, for "within 25% of the target")
+// traffic's stay as they were. Oil spots in clusters and gaps, the first a rich one, refineries further apart (nudged
+// clear of the oil), all of them bigger as the crew grows (from 0/3 to about 0/8 at the gang: the owner, 26 Oct,
+// "moderately"). The spacing and rates: tests/balance/act3.py, 51 crew in 11-13 races (27 Oct). The check that the
+// income stays steady for sensible play: five drawings, and the one whose yield for a model player (your pace of late,
+// 1 s to react, 4 presses a second) is in the middle (Claude's call, for "within 25% of the target")
 let dice = 1;
 const roll = () => ((dice = (dice * 48271) % 2147483647) - 1) / 2147483646;
 const between = (a, b) => a + (b - a) * roll();
 const biggest = () => 3 + Math.round(5 * Math.min(1, fleetSize() / GANG));
 const ROAD_END = 7000; // m: no run gets further
+const OIL_RATE = 0.07, BREW_RATE = 0.2; // L/s a car pumps, and a car brews of crude, at a spot
 function drawSpots() {
   const spots = [], big = biggest(), deep = 1 + 0.25 * lvl('wells');
-  for (let z = between(400, 700), first = true; z < ROAD_END; z += roll() < 0.55 ? between(250, 500) : between(800, 1500), first = false) {
-    const count = first ? big : Math.max(2, big - Math.floor(roll() * 3)), rate = 0.1 * (first ? 1.3 : 0.7 + 0.6 * roll());
+  for (let z = between(300, 500), first = true; z < ROAD_END; z += roll() < 0.55 ? between(150, 350) : between(500, 900), first = false) {
+    const count = first ? big : Math.max(2, big - Math.floor(roll() * 3)), rate = OIL_RATE * (first ? 1.3 : 0.7 + 0.6 * roll());
     spots.push({ kind: 'oil', z, count, rate, reserve: count * rate * between(10, 20) * deep });
   }
-  if (progress.oil >= 2) for (let z = between(900, 1400); z < ROAD_END; z += between(1500, 2500))
-    if (!spots.some(s => Math.abs(s.z - z) < 120)) // not on top of an oil spot
-      spots.push({ kind: 'refinery', z, count: Math.max(2, Math.round(big * (0.4 + 0.3 * roll()))), rate: 0.15 * (0.8 + 0.4 * roll()) });
+  if (progress.oil >= 2) for (let z = between(600, 900); z < ROAD_END; z += between(1000, 1600)) {
+    while (spots.some(s => Math.abs(s.z - z) < 100)) z += 60; // not on top of an oil spot
+    spots.push({ kind: 'refinery', z, count: Math.max(2, Math.round(big * (0.4 + 0.2 * roll()))), rate: BREW_RATE * (0.8 + 0.4 * roll()) });
+  }
   return spots.sort((a, b) => a.z - b.z).map(s => Object.assign(s, { crew: 0, coming: [], done: false, got: 0, seen: null }));
 }
 function yieldOf(spots) { // what a model player makes of a run, in fuel (the crude at what it would brew)
@@ -104,17 +108,27 @@ function scouted() {
 
 // ---- the script (the owner, 26 Oct): the run after the 5th car, about 5 s in, an oil puddle (0/3) and three of your
 // racers made harvesters, its tutorial; past it with crude in the tank, a refinery (0/2) and your last two racers made
-// brewers, its tutorial. 15 s or so to send them each time. Missed, it comes again (Claude's call)
+// brewers, its tutorial. 15 s or so to send them each time (at act 2's 250 km/h rolling start: a run is 50 s and
+// 2.2-4 km). The run over before the refinery, it comes about 5 s into the next; a spot missed comes again (Claude's
+// calls)
 const SCRIPT = 5; // cars before the oil
 const scripted = () => crewOn() && progress.oil < 2 && fleetSize() >= SCRIPT;
-const FIRST_PUDDLE = { kind: 'oil', z: 2000, count: 3, rate: 0.1, reserve: 60, scripted: true };
-const FIRST_REFINERY = { kind: 'refinery', count: 2, rate: 0.15, scripted: true }; // z: 1.6 km on from where you are
+const FIRST_PUDDLE = { kind: 'oil', z: 1400, count: 3, rate: 0.1, reserve: 60, scripted: true }; // richer than most: a first taste
+const FIRST_REFINERY = { kind: 'refinery', count: 2, rate: 0.15, scripted: true }; // z: 1.1 km on from where you are
 const newSpot = (s, z = s.z) => ({ ...s, z, crew: 0, coming: [], done: false, got: 0, seen: null });
 function crewRun() { // startRun: this run's spots
   Object.assign(run, { spots: [], pick: null, t: 0, told: false, crude: 0, fuel: 0, worked: 0, sent: 0 });
-  if (scripted()) run.spots = progress.oil === 0 ? [newSpot(FIRST_PUDDLE)] : [newSpot(FIRST_REFINERY, 1500)];
+  if (scripted()) run.spots = progress.oil === 0 ? [newSpot(FIRST_PUDDLE)] : [];
   else run.spots = nextSpots();
   plan = null;
+}
+function firstRefinery() { // the script's second half: the refinery, your last two racers made brewers, its tutorial
+  run.spots.push(newSpot(FIRST_REFINERY, odo + 1100));
+  makeRole('brewer', 2 - progress.roles.brewer);
+  if (!progress.toured.includes('refinery')) openTour('refinery', true);
+}
+function crewEnd() { // finishRun: the spots still at work count as passed
+  for (const s of run.spots ?? []) if (!s.done) spotDone(s, true);
 }
 
 // ---- the run: cars on their way get there, a full spot pays until you are past it (or it is dry), and then its
@@ -124,13 +138,18 @@ const free = kind => role(kind === 'oil' ? 'harvester' : 'brewer') - busy(kind);
 const spotsAhead = () => run.spots.filter(s => !s.done && s.z > odo && (s.scripted || s.z - odo <= reach())); // the tracker's
 function crewTick(dt) {
   for (let i = traffic.length; i--;) if (traffic[i].gone) traffic.splice(i, 1); // runners there, or out of sight
-  if (!run.spots?.length) return;
+  if (!crewOn()) return;
   run.t += dt;
-  if (scripted() && progress.oil === 0 && !run.told && run.t > 5) { // the puddle's tutorial, about 5 s in
+  if (scripted() && !run.told && run.t > 5) { // about 5 s in: the puddle's tutorial, or the refinery still to come
     run.told = true;
-    makeRole('harvester', 3 - progress.roles.harvester); // once: a puddle missed comes again with the same three
-    if (!progress.toured.includes('oil')) openTour('oil', true);
+    if (progress.oil > 0) firstRefinery();
+    else {
+      makeRole('harvester', 3 - progress.roles.harvester); // once: a puddle missed comes again with the same three
+      if (!progress.toured.includes('oil')) openTour('oil', true);
+    }
   }
+  if (!run.spots?.length) return;
+  for (const s of spotsAhead()) s.shown ??= run.t; // when it came on the tracker
   for (const s of run.spots) {
     while (s.coming.length && s.coming[0] <= run.t) { s.coming.shift(); s.crew++; }
     if (s.done) continue;
@@ -147,17 +166,15 @@ function crewTick(dt) {
   }
   if (!run.pick || run.pick.done || !spotsAhead().includes(run.pick)) run.pick = spotsAhead().find(s => s.crew + s.coming.length < s.count) ?? spotsAhead()[0] ?? null;
 }
-function spotDone(s) {
+function spotDone(s, end) { // passed, dry, or (end) the run over
   s.done = true; s.coming = []; // its crew is yours again (busy counts only what isn't done)
-  if (s.got >= 0.05) flash(`+${fmtL(s.got)} L ${s.kind === 'oil' ? 'CRUDE' : 'FUEL'}`, '#5f5', false);
-  if (!s.scripted) return;
-  if (s.kind === 'oil' && s.got > 0 && progress.oil === 0) { // past the puddle with crude: the refinery
+  if (!end && s.got >= 0.05) flash(`+${fmtL(s.got)} L ${s.kind === 'oil' ? 'CRUDE' : 'FUEL'}`, '#5f5', false);
+  if (!s.scripted || s.got <= 0) return;
+  if (s.kind === 'oil' && progress.oil === 0) { // past the puddle with crude: the refinery
     progress.oil = 1;
-    run.spots.push(newSpot(FIRST_REFINERY, odo + 1600));
-    makeRole('brewer', 2 - progress.roles.brewer);
-    if (!progress.toured.includes('refinery')) openTour('refinery', true);
+    if (!end) { run.told = true; firstRefinery(); }
   }
-  if (s.kind === 'refinery' && s.got > 0) { progress.oil = 2; plan = null; } // the first fuel: the oil is on
+  if (s.kind === 'refinery') { progress.oil = 2; plan = null; } // the first fuel: the oil is on
 }
 // < and >: the spot before or after the one picked, on the tracker; SEND: a car of yours to it (two with Double up),
 // if one of the right role is free and the spot has room
@@ -169,7 +186,7 @@ function send() {
   const s = run.pick;
   if (run.phase !== 'run' || !s || s.done) return false;
   let sent = 0;
-  for (let n = lvl('doubleUp') ? 2 : 1; n > 0 && free(s.kind) > 0 && s.crew + s.coming.length < cap(s); n--) {
+  for (let n = twice() ? 2 : 1; n > 0 && free(s.kind) > 0 && s.crew + s.coming.length < cap(s); n--) {
     s.coming.push(run.t + arrive());
     runner(s);
     sent++;
@@ -177,6 +194,16 @@ function send() {
   beep(sent ? 990 : 180, 0.04);
   if (!sent) flash(s.crew + s.coming.length >= cap(s) ? 'FULL' : `NO ${s.kind === 'oil' ? 'HARVESTER' : 'BREWER'} FREE`, '#fb3', false);
   return sent > 0;
+}
+// where a sensible player would send a car now (tests/balance/act3.py's bot): a spot a second after it shows, the one
+// with the most to pay before you pass it that the free cars can fill, the short ones before the full ones (Overfill)
+function bestSpot() {
+  const v = Math.max(20, speed), worth = s => payRate(s) * Math.max(0, (s.z - odo) / v - arrive());
+  const fits = s => { const want = s.count - s.crew - s.coming.length;
+    return want > 0 ? want <= free(s.kind) : s.crew + s.coming.length < cap(s) && free(s.kind) > 0; };
+  const open = spotsAhead().filter(s => run.t - s.shown >= 1 && fits(s) && (s.kind === 'oil' || progress.crude > 0));
+  const short = open.filter(s => s.crew + s.coming.length < s.count);
+  return (short.length ? short : open).sort((a, b) => worth(b) - worth(a))[0] ?? null;
 }
 // a car you send comes past you on the right shoulder and races off to its spot, quicker and quicker (drawn only:
 // road.js updateTraffic leaves it to runnerDrive), until it is there or out of sight

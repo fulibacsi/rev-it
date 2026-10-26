@@ -310,6 +310,9 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
 .card.locked { border-style: dashed; opacity: 0.5; } /* only its name and what it needs: what it does is a surprise */
 .card.exchange { grid-column: span 2; border-color: #3a5a8a; }
 .card.exchange input { width: 100%; margin: 2px 0; accent-color: var(--accent); touch-action: pan-x; }
+.card.roles .role { display: flex; align-items: center; gap: 4px; white-space: nowrap; } /* a role, its count, − and + */
+.card.roles .role b + button { margin-left: auto; }
+.card.roles .role button { min-width: 30px; }
 @keyframes bought { from { background: #3a3410; } }
 #garage footer { display: flex; justify-content: flex-end; align-items: center; position: sticky; bottom: -14px;
                  margin: 0 -16px -14px; padding: 10px 16px 14px; background: #0b0d16; } /* DRIVE stays in view */
