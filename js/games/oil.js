@@ -23,10 +23,12 @@ Object.assign(UPGRADES, {
               info: l => l ? `a spot takes ${25 * l}% more cars than it needs, each pumping its share` : 'a full spot takes no more' },
   wells: { name: 'Deep wells', tab: 'fleet', max: 4, base: 15, growth: 2.5, needs: ['harvesting'],
            info: l => l ? `oil spots hold ${25 * l}% more` : 'oil spots as they come' },
-  doubleUp: { name: 'Double up', tab: 'fleet', max: 1, base: 60, needs: ['overfill'],
+  doubleUp: { name: 'Double up', tab: 'fleet', max: 1, base: 25, needs: ['overfill'],
               info: () => 'a press of SEND sends two cars' },
-  // the act's automation (the owner, 26 Oct: Double up first, then the Foreman), as Auto gun is act 4's
-  foreman: { name: 'Foreman', tab: 'fleet', max: 1, base: 150, needs: ['doubleUp', ['scouting', 'max'], ['sonarRange', 'max']],
+  // the act's automation (the owner, 26 Oct: Double up first, then the Foreman), as Auto gun is act 4's; within reach
+  // well before the 51st (the owner, 27 Oct: an earlier unlock, to help reach 51; it needed Scouting and Sonar range
+  // maxed, and with them about 430 L, out of the act's reach)
+  foreman: { name: 'Foreman', tab: 'fleet', max: 1, base: 60, needs: ['doubleUp'],
              info: () => 'sends your crew for you, where you would; your own SEND still works' },
 });
 const fmtL = n => (Math.round(n * 10) / 10).toString();
@@ -68,7 +70,7 @@ const roll = () => ((dice = (dice * 48271) % 2147483647) - 1) / 2147483646;
 const between = (a, b) => a + (b - a) * roll();
 const biggest = () => 3 + Math.round(5 * Math.min(1, fleetSize() / GANG));
 const ROAD_END = 7000; // m: no run gets further
-const OIL_RATE = 0.07, BREW_RATE = 0.2; // L/s a car pumps, and a car brews of crude, at a spot
+const OIL_RATE = 0.1, BREW_RATE = 0.3; // L/s a car pumps, and a car brews of crude, at a spot
 function drawSpots() {
   const spots = [], big = biggest(), deep = 1 + 0.25 * lvl('wells');
   for (let z = between(300, 500), first = true; z < ROAD_END; z += roll() < 0.55 ? between(150, 350) : between(500, 900), first = false) {

@@ -126,8 +126,6 @@ flowchart TD
   harvesting & brewing --> overfill
   overfill --> double
   double --> foreman
-  scouting -- max --> foreman
-  sonar -- max --> foreman
 
   fleetTab -- "totalled a car" --> warrig
   warrig --> bullbar & armour & spikes & radio & hunter
@@ -210,7 +208,7 @@ Each upgrade and what it needs, one line each: the list to edit.
 - Deep wells ← Harvesting
 - Overfill ← Harvesting, Brewing
 - Double up ← Overfill
-- Foreman ← Double up, Scouting max, Sonar range max
+- Foreman ← Double up (Scouting max and Sonar range max too until 27 Oct)
 
 ### War Rig (1 scrap; needs the Crew, and a car totalled)
 

@@ -71,7 +71,7 @@ with sync_playwright() as p:
     check("a harvester back to racing: one racer on the grid", js("[racersOf(), role('harvester'), riders()]") == [1, 2, 4], js("[racersOf(), role('harvester'), riders()]"))
     pg.screenshot(path=f"{OUT}/oil_garage_phone.png")
     got = js("[pumpPrice(), (() => { const l = progress.levels.fleet; progress.levels.fleet = 51; const p = pumpPrice(); progress.levels.fleet = l; return p; })()]")
-    check("the pump price climbs with the crew: 1,609 m a litre with none, three times at the gang", got[1] == 3 * 1609 or abs(got[1] - 4827) <= 1, got)
+    check("the pump price climbs with the crew: 7,500 m a litre with none, three times at the gang", got[1] == 3 * 7500, got)
     # 5. a normal run: spots drawn ahead, the same for the same run
     a = js("(() => { plan = null; return nextSpots().map(s => [s.kind, s.count, Math.round(s.z)]); })()")
     b2 = js("(() => { plan = null; return nextSpots().map(s => [s.kind, s.count, Math.round(s.z)]); })()")
