@@ -221,8 +221,9 @@ machine or session. Keep it current: update a section when a decision changes, a
   in the ending's look (the garage hidden behind it): a small "ACT II", the act's name, what it is about and what to
   do. DRIVE (on a new game, over the road, with a HOW TO DRIVE button into the Driving tutorial; its CONTINUE starts
   the first run, after the Driving tutorial on a first game), ACT II · RACE (the reveal),
-  III · RECRUIT (the first win), IV · WAR (the gang); then, without a number, the last act's two turns: NO LAW OUT
-  HERE (the first total) and THE ARMY SENDS A TANK. The first act has no number, nor does anything before the
+  III · RECRUIT (the first win), IV · WAR (the first car totalled: it was the gang's 51st car, bought in the garage,
+  and NO LAW OUT HERE a card of its own at the first total, until the owner moved act IV onto the road, 27 Oct); then,
+  without a number, the last act's turn: THE ARMY SENDS A TANK. The first act has no number, nor does anything before the
   reveal (the owner, 21 Oct: "Act I" would say more is to come): the garage's title stays GARAGE and the pause
   menu's button reads WHAT TO DO, so ACT II is the first the game says of acts. The owner's picks: verbs for the names, the tank a turn in act 4
   rather than an act of its own. Each pops up once, before any tutorial that opens with it (they ride first in the
@@ -711,12 +712,16 @@ Road*, and the nod is wanted: an apocalypse turning ordinary people into savages
 trademark. The page opens with an outlaw's line: "No law out here any more. The gang is yours, and your
 car becomes a war rig."
 
-**The gang:** once 51 of the 100 race for you, your fleet is a gang. ACT IV's card gives its first job: total a car. The
-windscreen gains an **AR layer** (red, like a gunsight): a reticle round the nearest car ahead going your way, its
-health bar above it, and "TOTAL IT" until the first job is done (a racer's number after). It stays on that car while
-it is within the guns' reach (200 m) until you pass it or total it, then moves to the next; further up the road it
-takes the nearest car ahead. Each race starts afresh (14 Oct fix: the reticle kept last race's car, out of sight
-on the horizon, and the guns would fire at nothing else).
+**The gang:** once 51 of the 100 race for you, your crew is a gang. Since 27 Oct (the owner: the roles vanishing in the
+garage as the 51st was bought felt like a bug; it should happen on the road) nothing changes in the garage: about 5 s
+into the next run the gang's moment comes, the oil still running, and the War Rig tutorial pops up over the road (once a
+car is in the reticle) with its first job: total a car. The first car totalled leaves 3 s on the clock; then ACT IV ·
+WAR's card in the garage (NO LAW OUT HERE's words, once a card of its own), the War Rig tab for sale, and the whole crew
+races from then on. The windscreen gains an **AR layer** (red, like a gunsight): a reticle round the nearest car ahead
+going your way, its health bar above it, and "TOTAL IT" until the first job is done (a racer's number after). It stays
+on that car while it is within the guns' reach (200 m) until you pass it or total it, then moves to the next; further up
+the road it takes the nearest car ahead. Each race starts afresh (14 Oct fix: the reticle kept last race's car, out of
+sight on the horizon, and the guns would fire at nothing else).
 - **Damage:** a ram is a hit, 34 off the car's health: 100 for traffic, 150 for a racer, 200 for the police, so 3, 5
   and 6 hits; with a full bull bar (3 times a hit) 1, 2 and 2 (the owner's numbers, 14 Oct). From behind, a bump
   closing at under 30 km/h is only a nudge, and one at over 200 km/h totals the car at once: "OHKO!" (the owner's

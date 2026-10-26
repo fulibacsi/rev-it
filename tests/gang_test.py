@@ -1,5 +1,6 @@
-"""War Rig: nothing before 51 fleet cars; then the gang's first job (total a car) in the garage and the AR layer on the
-windscreen: a reticle and a health bar on the nearest car ahead, kept until you pass it. Bumps hurt the car you hit;
+"""War Rig: nothing before 51 crew cars, nor in the garage at 51 (the owner, 27 Oct); then, about 5 s into the next run,
+the gang's moment on the road: its tutorial (total a car) and the AR layer on the windscreen, a reticle and a health
+bar on the nearest car ahead, kept until you pass it. The first car totalled leaves 3 s on the clock, then act IV. Bumps hurt the car you hit;
 at 0 health it skids onto the shoulder, out of your way, and pays scrap. A totalled rival is out of the race. The
 first total puts the War Rig's tab on sale, the page paid in scrap; a bull bar hurts them more and costs you less speed. Armour takes
 off your damage, spiked hubs make a side-swipe free and harder; with a bull bar the gang side-swipes rivals. Guns,
@@ -26,17 +27,26 @@ with sync_playwright() as p:
     # 1. 50 fleet cars: no gang, no word of it
     start(50)
     check("50 fleet cars: no War Rig, no task", "War Rig" not in tabs() and not re.search(r"gang|total|scrap", js("$('garage').innerText"), re.I), tabs())
-    # 2. 51: the gang's first job, on the act's card; still no page
+    # 2. 51: nothing changes in the garage: still act III, no reticle, no page
     start(51)
-    got = js("[$('act-title').textContent, currentCard().text(), currentCard().now?.()]")
-    check("51 fleet cars: ACT IV · WAR, the gang's first job on its card", got[0] == "ACT IV · WAR ▸" and "total a car" in got[1] and "War Rig" not in tabs(), got)
-    # 3. on the road: the reticle on the nearest car ahead, at full health, labelled
+    got = js("[$('act-title').textContent, arOn(), crewOn()]")
+    check("51 crew cars: still act III in the garage, no gang yet", got == ["ACT III · RECRUIT ▸", False, True] and "War Rig" not in tabs(), [got, tabs()])
+    # 3. on the road: about 5 s in, the gang's moment, its tutorial once a car is in the reticle; the reticle on the
+    # nearest car ahead, at full health, labelled
+    js("progress.toured = progress.toured.filter(id => id !== 'warrig')")
     pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     js("""traffic.forEach(c => { if (!c.racer) { c.dir = -1; c.x = LANES.oncoming[0]; c.z = odo + 4000; } else if (!c.fleet) c.z = odo - 9000; else c.z = odo - 3000; });
         window.crashes = 0; if (!DISTANCE.crash0) { DISTANCE.crash0 = DISTANCE.crash; DISTANCE.crash = i => { crashes++; DISTANCE.crash0(i); }; } 0""")
     pg.wait_for_function("speed > 20", timeout=20000)
-    js("""window.cs = traffic.filter(c => !c.racer); [[0, 60], [1, 90]].forEach(([l, d], i) => Object.assign(cs[i], { dir: 1, lane: l, x: MY_LANES[l], z: odo + d, v: 12, want: 12, cool: 99, hp: null }));
-        lane = fromLane = 0; carX = MY_LANES[0]""")
+    js("""window.cs = traffic.filter(c => !c.racer); Object.assign(cs[2], { dir: 1, lane: 1, x: MY_LANES[1], z: odo + 150, v: speed, want: 90, cool: 99 })""") # one well ahead
+    pg.wait_for_function("menuOpen && screen === 'tour'", timeout=20000)
+    got = js("[tour.id, progress.gang, arOn(), +(runTime() - run.left).toFixed(1), $('tour-title').textContent]")
+    check("about 5 s in: the gang's moment, its tutorial over the paused run", got[:3] == ["warrig", True, True] and 5 <= got[3] < 8 and got[4] == "THE RETICLE", got)
+    pg.screenshot(path=f"{OUT}/gang_moment.png")
+    while js("menuOpen"): js("turnTour(1)"); pg.wait_for_timeout(50)
+    js("""Object.assign(cs[2], { dir: -1, x: LANES.oncoming[0], z: odo + 4000 });
+        [[0, 60], [1, 90]].forEach(([l, d], i) => Object.assign(cs[i], { dir: 1, lane: l, x: MY_LANES[l], z: odo + d, v: 12, want: 12, cool: 99, hp: null }));
+        lane = fromLane = 0; carX = MY_LANES[0]; target = null""")
     pg.wait_for_timeout(300)
     got = js("""(() => { const r = $('ar').getBoundingClientRect(), k = canvas.clientWidth / canvas.width, s = target && target.seen;
         return { on: getComputedStyle($('ar')).display, target: target === cs[0], label: $('ar-label').textContent,
@@ -49,8 +59,8 @@ with sync_playwright() as p:
     got = js("({ hp: Math.round(cs[0].hp), bar: +getComputedStyle($('ar')).getPropertyValue('--hp'), kmh: Math.round(impact.kmh) })")
     check("a ram is a hit: 34 off the car's 100, and the bar shows it", got["hp"] == 66 and abs(got["bar"] - 0.66) < 0.02 and 30 <= got["kmh"] <= 200, got)
     aside = lambda expr: js(f"""(() => {{ const p = {{ scrap: progress.scrap, totals: progress.totals, wanted: progress.wanted }},
-        r = {{ scrap: run.scrap, totals: run.totals, firstTotal: run.firstTotal }}, out = {expr}; Object.assign(progress, p); Object.assign(run, r);
-        return out; }})()""")  # made-up cars: the game's counts stay as they were
+        r = {{ scrap: run.scrap, totals: run.totals, firstTotal: run.firstTotal, left: run.left }}, out = {expr}; Object.assign(progress, p); Object.assign(run, r);
+        return out; }})()""")  # made-up cars: the game's counts (and the clock a first total cuts) stay as they were
     got = aside("""[[100, false], [20, false], [250, false], [10, true]].map(([kmh, side]) => { const c = { v: 20, hp: null, racer: 0 };
         ram({ car: c, kmh, side, headOn: false }); return c.wreck ? 'total' : Math.round(c.hp ?? 100); })""")
     check("a nudge (20 km/h) does nothing, over 200 km/h it's an instant total, a side-swipe always counts", got == [66, 100, "total", 66], got)
@@ -63,6 +73,7 @@ with sync_playwright() as p:
         out.length < 12 ? requestAnimationFrame(f) : res(out); }; requestAnimationFrame(f); })""")
     got = js("({ scrap: progress.scrap, totals: progress.totals, run: run.scrap, next: target === cs[1] })")
     check("totalled: 22 scrap, the next car in the reticle", got == {"scrap": 22, "totals": 1, "run": 22, "next": True}, got)
+    check("the first job done: 3 s left on the clock", 0 < js("run.left") <= 3 and js("run.phase") == "run", js("[run.left, run.phase]"))
     xs, vs = [t[0] for t in trace], [t[1] for t in trace]
     check("the wreck skids towards the shoulder, slowing (then falls behind and is gone)", all(a < b for a, b in zip(xs, xs[1:])) and all(a >= b for a, b in zip(vs, vs[1:])) and js("crashes") <= 3,
           {"x": xs[::3], "v": vs[::3], "shoulder": js("+SHOULDER.toFixed(2)")})
@@ -74,7 +85,7 @@ with sync_playwright() as p:
     # 7. the first total puts the War Rig's tab on sale (1 scrap), a tap buys it; paid in scrap
     js("run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
     got = js("[$('act-title').textContent, currentCard().text(), currentCard().now?.()]")
-    check("the first job done: its card, the War Rig's tab for sale", "War Rig tab is for sale" in got[1] and "War Rig1 scrap" in tabs() and "scrap to spend" in js("$('bank').textContent"), [got, tabs()])
+    check("the first job done: ACT IV, the War Rig's tab for sale", got[0] == "ACT IV · WAR ▸" and "War Rig tab is for sale" in got[1] and "War Rig1 scrap" in tabs() and "scrap to spend" in js("$('bank').textContent"), [got, tabs()])
     pg.click('[data-tab="warrig"]'); pg.wait_for_timeout(100)
     check("a tap buys it: the War Rig page", "War Rig" in tabs() and js("garageTab") == "warrig", [tabs(), js("garageTab")])
     check("the Bull bar, paid in scrap", js("document.querySelector('[data-buy=\"bullbar\"]').textContent") == "20 scrap", js("document.querySelector('[data-buy=\"bullbar\"]')?.textContent"))

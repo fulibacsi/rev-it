@@ -45,8 +45,9 @@ const twice = () => lvl('doubleUp') > 0 && !progress.off.doubleUp; // a switch, 
 const foremanOn = () => lvl('foreman') > 0 && !progress.off.foreman;
 
 // ---- the roles: racers race in their slots; harvesters and brewers ride with you. They are the crew's first paid off
-// (the slowest, #100 down), so the racers on the grid are its quickest. From the gang on (act 4) the whole crew races
-const crewOn = () => progress.racing && fleetSize() > 0 && !arOn();
+// (the slowest, #100 down), so the racers on the grid are its quickest. From act IV (the first car totalled, gang.js)
+// the whole crew races
+const crewOn = () => progress.racing && fleetSize() > 0 && !gangOpen();
 const role = r => crewOn() ? Math.min(progress.roles[r] ?? 0, fleetSize()) : 0;
 const riders = () => role('harvester') + role('brewer');
 const racersOf = () => fleetSize() - riders(); // your crew on the grid
@@ -116,7 +117,7 @@ function scouted() {
 // 2.2-4 km). The run over before the refinery, it comes about 5 s into the next; a spot missed comes again (Claude's
 // calls)
 const SCRIPT = 5; // cars before the oil
-const scripted = () => crewOn() && progress.oil < 2 && fleetSize() >= SCRIPT;
+const scripted = () => crewOn() && progress.oil < 2 && fleetSize() >= SCRIPT && fleetSize() < GANG; // a save at the gang without it: none
 const FIRST_PUDDLE = { kind: 'oil', z: 1400, count: 3, rate: 0.1, reserve: 60, scripted: true }; // richer than most: a first taste
 const FIRST_REFINERY = { kind: 'refinery', count: 2, rate: 0.15, scripted: true }; // z: 1.1 km on from where you are
 const newSpot = (s, z = s.z) => ({ ...s, z, crew: 0, coming: [], done: false, got: 0, seen: null });
