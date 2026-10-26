@@ -266,7 +266,7 @@ function omenMarks() {
 const ROWS = 4, ROW = 15; // rows on the tracker, and their height in its frame (the nearest at the bottom, y 63)
 const fmtAhead = d => d < 1000 ? `${Math.round(d / 10) * 10}m` : `${(d / 1000).toFixed(1)}k`;
 function trackRows() { // the four round the spot picked: one nearer, if there is one, and the rest further on
-  const list = spotsAhead(), i = Math.max(0, list.indexOf(run.pick));
+  const list = spotsAhead().sort((a, b) => a.z - b.z), i = Math.max(0, list.indexOf(run.pick));
   const from = Math.max(0, Math.min(i - 1, list.length - ROWS));
   return list.slice(from, from + ROWS);
 }

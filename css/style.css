@@ -136,8 +136,8 @@ body:not([data-game="distance"]) #kit { display: none; }
 #tank { display: none; position: fixed; right: 5vw; top: 96px; width: 60px; pointer-events: none; }
 .has-tank #tank { display: block; }
 .garage #tracker, .garage #crew-ctl, .garage #crew-tag, .garage #tank { display: none; }
-.touch #tracker { left: calc(var(--edge-l) + 71px); top: calc(max(8px, env(safe-area-inset-top)) + 42px); width: 100px; }
-.touch #crew-ctl { left: calc(var(--edge-l) - 8px); top: calc(max(8px, env(safe-area-inset-top)) + 112px); gap: 4px; }
+.touch #tracker { left: calc(var(--edge-l) + 71px); top: calc(max(8px, env(safe-area-inset-top)) + 42px); width: 112px; }
+.touch #crew-ctl { left: calc(var(--edge-l) - 8px); top: calc(max(8px, env(safe-area-inset-top)) + 122px); gap: 4px; }
 .touch #crew-ctl button { height: 34px; min-width: 34px; }
 .touch #crew-send { min-width: 56px !important; }
 .touch #tank { right: calc(var(--edge-r) - 24px); top: calc(max(8px, env(safe-area-inset-top)) + 42px); width: 44px; }
