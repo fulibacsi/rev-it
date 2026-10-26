@@ -2,7 +2,7 @@
 // under way: the heat filling mid-run sends it to the next; the owner, 27 Oct). Its card pops up over the road as you
 // drive off, so it is plainly a boss fight, and the tank waits up the road from the line. It holds the road
 // about 80 m ahead of you, so you can't get away from it, and fires a shell at you every 2.5 s while you are within
-// 250 m behind it. You and the gang have to outgun it: your guns, and the fleet's, which race up to join the fight.
+// 250 m behind it. You and your raiders have to outgun it: your guns, and theirs, sent at it (gang.js raiders).
 // Rams barely scratch it. Destroy it and that is the ending: TANK DOWN, the run stops there with the tank burning,
 // then the ending's screen (WARLORD OF THE COAST ROAD, main.js); the road is yours and the heat goes back to 0. You can
 // still play on (the next tank is tougher). Lose (wrecked, head-on, or the bell with the

@@ -83,7 +83,7 @@ flowchart TD
     autogun["Auto gun"]
     radio["War Rig radio"]
     hunter["Hunter"]
-    pack["Hunting pack"]
+    pack["Raiders"]
   end
 
   workshop --> power & rev & gears & tyres & time & steering & stereo & flash
@@ -220,7 +220,7 @@ Each upgrade and what it needs, one line each: the list to edit.
 - Auto gun ← Guns
 - War Rig radio ← War Rig, Car stereo
 - Hunter ← War Rig, Autocruise, Reckless auto-drive
-- Hunting pack ← Hunter, Racing, Crew tuning
+- Raiders ← Hunter, Racing, Crew tuning (the Hunting pack until 27 Oct: a role of the crew's now)
 
 ## The Crew page (26 Oct)
 
@@ -232,8 +232,9 @@ with the next layer, and the Foreman (it sends the crew for you) after it, all i
 refinery). They are story conditions, and on a card they hide as a tab's do (rule 3): no role or role upgrade is named
 before the run that brings it.
 
-**Gone:** Fleet flash (it never fired at P1), team places' miles (they pay points), miles (fuel, one for one). **To
-settle with act 4's layer:** the Hunting pack becomes the Hunter role.
+**Gone:** Fleet flash (it never fired at P1), team places' miles (they pay points), miles (fuel, one for one). **Act
+4's layer** (27 Oct): the Hunting pack became Raiders, a role on the role card once bought, its card where the pack's
+was.
 
 ## What changed (23 Oct), against the game before
 

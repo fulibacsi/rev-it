@@ -417,9 +417,7 @@ function driveCar(c, dt) { // follow at a safe distance, or pull out and pass
   const mine = MY_LANES.findIndex(x => sameLane(x, carX)), reach = (c.z - odo - MY_FRONT) / Math.max(0.1, speed - c.v);
   if (bad && !c.jumped && mine >= 0 && mine !== c.lane && Math.abs(c.x - MY_LANES[c.lane]) < 0.2 && reach > 0.8 && reach < 2)
     Object.assign(c, { jumped: true, lane: mine, yielding: true, cut: 3, cool: LANE_GAP.car });
-  const hunting = lead && lead === c.prey; // a fleet car on the hunt (gang.js prowl): no passing it, no backing off
-  if (hunting) { aim = Math.max(aim, lead.v + 3); c.signal = 0; }
-  else if (lead && gap < 2 * safe && lead.v < c.want) {
+  if (lead && gap < 2 * safe && lead.v < c.want) {
     const [pass, mirror, signal] = bad ? [0, 0, 0] : [PASS, MIRROR, SIGNAL];
     const other = 1 - c.lane, clear = () => roomAt(c, MY_LANES[other], 20, 30, mirror);
     let moved = false;
@@ -438,10 +436,7 @@ function driveCar(c, dt) { // follow at a safe distance, or pull out and pass
   c.x += clamp(MY_LANES[c.lane] - c.x, -lat * dt, lat * dt);
   if (Math.abs(c.x - MY_LANES[c.lane]) < 0.05) c.yielding = false;
   c.z += c.v * dt;
-  if (lead && c.z > lead.z - CAR_LEN - 0.5) { // never into it, unless hunting it
-    if (hunting) gangRam(c, lead);
-    c.z = lead.z - CAR_LEN - 0.5; c.v = Math.min(c.v, lead.v);
-  }
+  if (lead && c.z > lead.z - CAR_LEN - 0.5) { c.z = lead.z - CAR_LEN - 0.5; c.v = Math.min(c.v, lead.v); } // never into it
 }
 
 // the side a car going your way indicates (-1 left, 1 right, 0 not): while it waits to pull out, and as it moves over;
@@ -496,6 +491,7 @@ function updateTraffic(dt, clock) {
     else if (c.police) policeDrive(c, dt); // police.js
     else if (c.tank) tankDrive(c, dt); // boss.js
     else if (c.runner) runnerDrive(c, dt); // a car of your crew on its way to a spot (oil.js)
+    else if (c.raider) raiderDrive(c, dt); // a raider of your crew after its car (gang.js)
     else if (c.dir > 0) driveCar(c, dt);
     else { // oncoming: a mad driver steers for you while you are on its side, until 1.2 s out (as the police do)
       if (mad(c) && lane > 1 && (c.z - odo) / Math.max(1, speed + c.v) > 1.2) c.x += clamp(carX - c.x, -3 * dt, 3 * dt);
@@ -505,8 +501,9 @@ function updateTraffic(dt, clock) {
     const d = c.z - odo;
     if (c.d > 0 && d <= 0) whoosh(Math.abs(speed - c.dir * c.v) * 3.6, c.x < carX ? -0.7 : 0.7); // went past the driver
     c.d = d;
-    if (c.racer || c.passing || c.tank || c.runner) { /* racers stay where they are, however far: their places are the
-      race; a police car comes up from behind; the tank holds the road; a car of your crew goes on to its spot */ }
+    if (c.racer || c.passing || c.tank || c.runner || c.raider) { /* racers stay where they are, however far: their places
+      are the race; a police car comes up from behind; the tank holds the road; a car of your crew goes on to its spot,
+      or after its car */ }
     else if (d < -40 || c.dir > 0 && d < -8 && c.v < speed - 1) spawnAhead(c); // left behind: back to the horizon
     else if (d > ROAD.draw * ROAD.segment + 100) { // pulled away: comes up from behind instead, in a lane you're not in
       spawnCar(c, -30);
@@ -514,7 +511,7 @@ function updateTraffic(dt, clock) {
       c.x = MY_LANES[c.lane];
     }
     // you ran into it: your front into its back, sideways into it while changing lanes, or head-on
-    const touching = !c.wreck && sameLane(c.x, carX) && c.z < odo + MY_FRONT && c.z + CAR_LEN > odo - MY_REAR && clock - c.hit > 1.5;
+    const touching = !c.wreck && !c.raider && sameLane(c.x, carX) && c.z < odo + MY_FRONT && c.z + CAR_LEN > odo - MY_REAR && clock - c.hit > 1.5;
     if (touching) { c.hit = clock; c.dir > 0 ? bump(c) : mad(c) ? madHeadOn(c) : headOn(c); }
     // an oncoming car with you in its lane: flashes its lights and sounds its horn, once, about 3 s out
     c.beams = Math.max(0, (c.beams ?? 0) - dt);
