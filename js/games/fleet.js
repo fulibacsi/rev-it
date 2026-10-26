@@ -14,7 +14,7 @@ Object.assign(UPGRADES, {
            info: l => !l ? 'every racer for themselves' : l === 1 ? '#100 races for you'
              : `#${FIELD + 1 - l} to #100 race for you` },
   // Fleet dues until 26 Oct: the racer's own upgrade now, with the roles (the first crude; or at the gang, for a save
-  // that got there before the oil: the Hunting pack needs it); the role upgrades and tuning grow steeply (the owner, 26
+  // that got there before the oil: Raiders need it); the role upgrades and tuning grow steeply (the owner, 26
   // Oct). Crew flash went (it never fired at P1: the racers are far behind you)
   dues: { name: 'Racing', tab: 'fleet', max: 5, base: 5, growth: 3, needs: ['fleetTab'], story: () => progress.oil >= 1 || arOn(),
           info: l => l ? `each racer pays you ${10 * l}% of the metres it drives` : 'your racers drive for nothing' },
@@ -55,25 +55,18 @@ function renderSonar() {
   $('sonar-dash').style.strokeDashoffset = -(odo * 34 / SONAR) % 6; // the lane lines go by as fast as the road does
 }
 
-// a racer of yours at work, before it drives on (road.js driveCar): out of your way, then after its prey (the Hunting
-// pack, gang.js) or in the way of a rival
+// a racer of yours at work, before it drives on (road.js driveCar): out of your way, or in the way of a rival. From act
+// IV it only races, flat out for metres and places (the owner, 27 Oct: you hunt now, there is no road to clear for
+// you; the war is the raiders', gang.js)
 function teamwork(c, dt) {
+  if (gangOpen()) return;
   const other = MY_LANES[1 - c.lane], you = c.z - odo; // m it is ahead of you
-  if (arOn()) gangwork(c, dt); // a gang now (gang.js)
-  if (run.tank) c.want = run.tank.wreck ? pace(c.racer) * fleetPace() // the tank (boss.js): up to the fight, 40 m/s
-    : run.tank.v + (c.z < run.tank.z - 60 ? 40 : 0);                 // quicker, then alongside it; after it, own pace
   if (c.cool || Math.abs(c.x - MY_LANES[c.lane]) > 0.2) return; // settled first, like any car
   if (you > 0 && you < 250 && sameLane(carX, c.x) && speed > c.v + 2) { // you, coming up behind it in its lane
     if (roomAt(c, other, 12, 25)) Object.assign(c, { lane: 1 - c.lane, yielding: true, cool: 2 });
     return;
   }
   const yours = x => sameLane(carX, x) && you > 0 && you < 250; // that lane is yours behind it: never block you
-  if (c.prey) { // into its prey's lane, room permitting
-    const to = MY_LANES.findIndex(x => sameLane(x, c.prey.x));
-    if (to >= 0 && to !== c.lane && !yours(MY_LANES[to]) && roomAt(c, MY_LANES[to], 8, c.prey.z - c.z - 1))
-      Object.assign(c, { lane: to, cool: 2 });
-    return;
-  }
   // a rival close behind, faster, in (or heading for) the other lane: it moves across in front of it. It waits 2 s
   // between moves and a racer 5 s, so a blocked rival rarely gets past
   const rival = RIVALS.find(o => !o.wreck && MY_LANES[o.lane] === other && o.z < c.z && c.z - o.z < 60 && o.want > c.v);

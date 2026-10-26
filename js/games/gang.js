@@ -6,23 +6,21 @@
 // for a racer, six for the police; a bull bar makes them count up to three times), and one closing at over 200 km/h
 // totals it outright; at 0 health it skids off onto the shoulder (road.js) and you collect its scrap. A totalled rival
 // is out of the race (race.js position). The first total opens the War Rig page, paid in scrap: it is to the Fleet
-// what the Black market is to the Workshop. Its gear is yours and the gang's: with a bull bar a fleet car side-swipes
-// a rival beside it; with guns (last) the wheel's red marker is your trigger and the gang shoots at rivals too; with
-// the Hunting pack the gang hunts as you do.
+// what the Black market is to the Workshop. Its gear is yours and your raiders': with guns (last) the wheel's red
+// marker is your trigger. From act IV your racers only race (the owner, 27 Oct); the Raiders card makes raiding a
+// role of the crew's: raiders ride with you, and SEND sends them at the car in the reticle (below).
 Object.assign(UPGRADES, {
   // prices in scrap (22 a car, 55 a racer), from the simulations (tests/balance/act4.py, 14 and 18 Oct): about 15 races
   // from the gang to the tank, something to buy every few races, the guns as the last big save
   bullbar: { name: 'Bull bar', tab: 'warrig', needs: ['warrigTab'], max: 3, base: 20, growth: 2.5,
-             info: l => l ? `a hit hurts them ${Math.round(200 * l / 3)}% more and costs you less speed; the gang ` +
-               `side-swipes rivals beside it (${20 * l} damage)` : 'the factory bumper' },
+             info: l => l ? `a hit hurts them ${Math.round(200 * l / 3)}% more and costs you less speed` : 'the factory bumper' },
   armour: { name: 'Armour plating', tab: 'warrig', needs: ['warrigTab'], max: 3, base: 30, growth: 2.5,
             info: l => l ? `collisions do ${25 * l}% less damage to your car` : 'factory panels' },
   spikes: { name: 'Spiked hubs', tab: 'warrig', needs: ['warrigTab'], max: 1, base: 150,
-            info: () => 'a side-swipe (into a car while moving over) costs you no speed and counts one more hit; ' +
-              "the gang's swipes do 30 more" },
+            info: () => 'a side-swipe (into a car while moving over) costs you no speed and counts one more hit' },
   guns: { name: 'Guns', tab: 'warrig', max: 3, base: 400, growth: 2, needs: ['spikes'],
           info: l => l ? `the wheel's red marker (or G) fires at the car in the reticle: ${GUN * l} damage a shot, ` +
-            `4 a second, up to ${RANGE} m; the gang fires at rivals once a second` : 'unarmed' },
+            `4 a second, up to ${RANGE} m` : 'unarmed' },
   // the owner's idea (14 Oct): on a phone your thumbs are busy steering and on the pedals
   autogun: { name: 'Auto gun', tab: 'warrig', max: 1, base: 200, needs: ['guns'],
              info: () => 'fires for you whenever the car in the reticle is in reach and in sight; the marker reads AUTO' },
@@ -43,15 +41,14 @@ Object.assign(UPGRADES, {
   // a switch, so synthwave is a tap away. No use for speed. Price: a first guess, see act4.py
   warradio: { name: 'War Rig radio', tab: 'warrig', max: 1, base: 100, needs: ['warrigTab', 'stereo'], on: ['stereo'],
               info: () => "the stereo tunes in to the War Rig's own: three tapes of war rig anthems and darksynth" },
-  // the owner's idea (18 Oct: "Fleet should have an attack upgrade so they hunt just like you"): each fleet car hunts
-  // the nearest car ahead of it, rivals and traffic alike (prowl, road.js driveCar). Price: act4.py, bought a few
-  // races before the tank (at 300 it came a race or two before it, at 600 after the guns)
-  pack: { name: 'Hunting pack', tab: 'warrig', max: 1, base: 150, needs: ['hunter', 'dues', 'fleetPace'], // Crew flash went (26 Oct)
-          info: () => `your crew hunt as you do: the nearest car ahead of each, within ${PACK} m, into its lane and ` +
-            'into it; and their guns, if any, on it' },
+  // the owner's idea (18 Oct: "Fleet should have an attack upgrade so they hunt just like you"), the Hunting pack until
+  // 27 Oct: every crew car hunted the car ahead of it. Now a role (the owner: Raiders, riding with you, sent with SEND);
+  // the id kept for the saves. Price: act4.py
+  pack: { name: 'Raiders', tab: 'warrig', max: 1, base: 150, needs: ['hunter', 'dues', 'fleetPace'],
+          info: () => 'your crew can ride as raiders: the car in the reticle shows on the tracker, and SEND sends one at ' +
+            'it, to ram it till it is totalled: your bull bar and guns are its too' },
 });
-const GUN = 6, RANGE = 200; // damage a shot a level; m your guns reach (the gang's: 80)
-const PACK = 150; // m ahead of it a fleet car hunts (the Hunting pack): as far as Hunter first did
+const GUN = 6, RANGE = 200; // damage a shot a level; m your guns reach (a raider's: 80)
 // the share of drivers gone mad a level of Fuel madness, up to 90% (the owner, 18 Oct: "there should be still an
 // occasional sane person")
 const MADNESS = 0.25, MAD_TOP = 0.9;
@@ -136,48 +133,46 @@ function total(c, gang, how) { // the scrap is yours, whoever did it; the heat t
   run.scrap += scrap;
   run.totals++;
   if (progress.totals === 1) { run.firstTotal = true; run.left = Math.min(run.left, 3); } // the first job done: 3 s more
-  const who = c.racer ? `#${c.racer}` : c.police ? 'A POLICE CAR' : 'A CAR'; // the Hunting pack hunts anything
+  const who = c.racer ? `#${c.racer}` : c.police ? 'A POLICE CAR' : 'A CAR'; // raiders ram anything
   flash(`${gang ? `THE GANG TOTALLED ${who}` : how ?? 'TOTALLED'} +${scrap} SCRAP`, '#ff6a4a', true);
 }
 
-// the gang at work (fleet.js teamwork): with a bull bar a fleet car side-swipes a rival beside it, every 3 s at most;
-// it lurches across, then drives back into its lane
-function gangwork(c, dt) {
-  c.rammed = Math.max(0, (c.rammed ?? 0) - dt);
-  c.gun = Math.max(0, (c.gun ?? 0) - dt);
-  prowl(c, dt);
-  // a shot a second at the tank within 200 m, or its prey or a rival up to 80 m ahead of it (or beside it)
-  if (lvl('guns') && !c.gun) {
-    const o = run.tank && !run.tank.wreck && Math.abs(run.tank.z - c.z) < 200 ? run.tank
-      : c.prey && c.prey.z - c.z < 80 ? c.prey : RIVALS.find(o => !o.wreck && o.z > c.z - CAR_LEN && o.z - c.z < 80);
-    if (o) { c.gun = 1; tracers.push([c, o, performance.now()]); hurtCar(o, GUN * lvl('guns'), true); }
-  }
-  if (!lvl('bullbar') || c.rammed) return;
-  const o = RIVALS.find(o => !o.wreck && Math.abs(o.z - c.z) < CAR_LEN && Math.abs(o.x - c.x) > 1 &&
-    Math.abs(o.x - c.x) < 4.5);
-  if (!o) return;
-  c.rammed = 3;
-  c.x += Math.sign(o.x - c.x) * 0.9;
-  hurtCar(o, 20 * lvl('bullbar') + (spikes ? 30 : 0), true);
+// ---- raiders (the owner, 27 Oct: the Hunting pack as a role, riding with you as harvesters and brewers do): the car in
+// the reticle is on the tracker as a target (oil.js), and SEND sends a raider at it, up the shoulder and into it: a ram
+// every 1.5 s (the bull bar counts, and the tank takes a fifth, as yours do) and its guns, if any, once a second, until
+// it is totalled or you pass it; then it rides with you again. Up to RAID raiders a car, the tank RAID_TANK
+const RAID = 3, RAID_TANK = 6;
+const raiding = () => traffic.filter(c => c.raider && !c.gone);
+function raidAhead() { // the reticle's car as a tracker row, while you have raiders (the same row while it is the target)
+  const t = target;
+  if (!role('raider') || !arOn() || !t || t.wreck || t.dir < 0 || t.z < odo + 5) return null;
+  if (run.raid?.car !== t) run.raid = { kind: 'raid', car: t, shown: run.t, get z() { return this.car.z; }, get done() { return this.car.wreck; } };
+  return run.raid;
 }
-// the Hunting pack: a fleet car's prey (c.prey) is the nearest car ahead of it going your way within PACK m, not one
-// of yours, kept while it stays in reach; looked for twice a second (the whole road, for half the field, is a
-// lot of looking). Nothing while the tank is on the road: the gang's place is alongside it (fleet.js teamwork)
-function prowl(c, dt) {
-  c.seek = Math.max(0, (c.seek ?? 0) - dt);
-  if (!lvl('pack') || run.tank && !run.tank.wreck) { c.prey = null; return; }
-  const fair = o => o && !o.wreck && !o.fleet && !o.tank && o.dir > 0 && o.z > c.z && o.z - c.z < PACK;
-  if (!fair(c.prey)) c.prey = null;
-  if (c.prey || c.seek) return;
-  c.seek = 0.5;
-  for (const o of traffic) if (fair(o) && (!c.prey || o.z < c.prey.z)) c.prey = o;
+const raidersOn = r => raiding().filter(c => c.raider === r.car).length;
+const raidCap = r => r.car.tank ? RAID_TANK : RAID;
+function sendRaider(r) { // up the right shoulder, as a car sent to a spot goes (oil.js runner)
+  const n = FIELD - (run.sent++ % Math.max(1, riders()));
+  traffic.push({ raider: r.car, fleet: true, dir: 1, x: SHOULDER - 0.6, z: odo - 20, v: speed + 15, look: racerSprite(n, true, true),
+                 d: NaN, hit: -Infinity, seen: null, rammed: 0, gun: 0 });
 }
-// ... and runs into it (road.js driveCar): a hit, as yours are (the bull bar counts), and it falls back a little
-function gangRam(c, o) {
+function raiderDrive(c, dt) { // road.js updateTraffic: after its car, then into it
+  const o = c.raider;
+  if (o.wreck || !traffic.includes(o) || o.z < odo - 40 || c.z - odo > 900) { c.gone = true; return; } // back with you
+  c.rammed = Math.max(0, c.rammed - dt);
+  c.gun = Math.max(0, c.gun - dt);
+  const gap = o.z - c.z - CAR_LEN;
+  c.v = gap > 30 ? Math.min(c.v + 30 * dt, Math.max(speed, o.v) + 60) : o.v + clamp(gap, 0, 15);
+  c.z += c.v * dt;
+  c.x += clamp(o.x - c.x, -3 * dt, 3 * dt); // off the shoulder, into its lane
+  if (gap < 0.5 && Math.abs(o.x - c.x) < 1.2) { c.z = o.z - CAR_LEN - 0.5; raidRam(c, o); }
+  if (lvl('guns') && !c.gun && gap < 80) { c.gun = 1; tracers.push([c, o, performance.now()]); hurtCar(o, GUN * lvl('guns'), true); }
+}
+function raidRam(c, o) { // a hit, as yours are, and it falls back a little
   if (c.rammed) return;
   c.rammed = 1.5;
   c.v = Math.min(c.v, o.v) - 4;
-  hurtCar(o, HIT * (1 + 2 / 3 * lvl('bullbar')), true);
+  hurtCar(o, HIT * (1 + 2 / 3 * lvl('bullbar')) * (o.tank ? 0.2 : 1), true);
 }
 
 // the AR layer: the reticle round the target where it is on the screen (road.js keeps c.seen), its health above it;

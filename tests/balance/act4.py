@@ -1,9 +1,10 @@
-"""The fourth act, simulated: from the gang (51 fleet cars, the car and fleet as act 3 leaves them) to beating the tank.
+"""The fourth act, simulated: from the gang (51 crew, the car and crew as act 3 leaves them) to beating the tank.
 The bot drives like act2.py's (Reckless auto-drive) with War Rig habits on top: within 150 m of the car in the reticle
 it takes the wheel, moves into that car's lane and rams it (the aids would brake or steer round), unless its own car is
 past 60% damage, and once it has Hunter, the aid that does the same, it leaves that to the aid; it holds the trigger whenever the reticle's car is in reach (the tank too, which it doesn't ram).
 It runs the crew as act3.py's bot does (the oil runs on through act 4: the owner, 27 Oct): sends with oil.js's
-bestSpot, and splits the roles before each race by the room on the road, the rest racing as the gang. After each race:
+bestSpot (raiders at the car in the reticle first, once it has the Raiders card), and splits the roles before each race
+by the room on the road, up to 6 raiders, the rest racing. After each race:
 metres pay the repairs and the rest becomes fuel at the pump price; fuel buys Racing and tuning first, then more cars;
 scrap buys the War Rig upgrades, the cheapest first (Auto gun too: it fires no more than the bot already does, but a
 phone player would buy it). Usage: act4.py [races] [seed] [overrides], the overrides
@@ -61,8 +62,9 @@ with sync_playwright() as p:
         js("""(() => { const m = Math.max(30, progress.pace) * runTime(), spots = nextSpots().filter(s => s.z < m), big = biggest(), n = fleetSize();
             const room = spots.reduce((k, s) => k + cap(s), 0) * reach() / m, want = Math.min(n, Math.round(room / 1.3));
             const share = progress.crude > 0.6 * tankSize() ? 0.5 : progress.crude < 0.2 * tankSize() ? 0.25 : 0.35;
-            const brew = Math.min(n - big, Math.max(Math.ceil(big * 0.6), Math.round(want * share)));
-            progress.roles = { harvester: Math.min(n - brew, Math.max(big, want - brew)), brewer: brew }; plan = null; })()""")
+            const brew = Math.min(n - big, Math.max(Math.ceil(big * 0.6), Math.round(want * share))), harv = Math.min(n - brew, Math.max(big, want - brew));
+            const raid = lvl('pack') ? Math.min(n - brew - harv, 6) : 0; // raiders: three on the car, three coming and going
+            progress.roles = { harvester: harv, brewer: brew, raider: raid }; plan = null; })()""")
         bought = js(f"""(() => {{ const b = [], buyAll = (ids, cheapest) => {{ for (;;) {{ const ok = ids.filter(id => !whyNot(id));
             if (!ok.length) return; const id = cheapest ? ok.sort((a, c) => cost(a) - cost(c))[0] : ok[0]; buy(id); b.push(id + lvl(id)); }} }};
             buyAll({json.dumps(WARRIG)}, true); buyAll({json.dumps(FLEET)}, false); return b.filter(x => !x.startsWith('fleet') || x.startsWith('fleetP')); }})()""")

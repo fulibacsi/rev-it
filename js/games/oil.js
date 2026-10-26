@@ -51,7 +51,7 @@ const foremanOn = () => lvl('foreman') > 0 && !progress.off.foreman;
 // through act IV (the owner, 27 Oct: it shouldn't disappear; by then the Foreman runs it, and more cars bring more)
 const crewOn = () => progress.racing && fleetSize() > 0;
 const role = r => crewOn() ? Math.min(progress.roles[r] ?? 0, fleetSize()) : 0;
-const riders = () => role('harvester') + role('brewer');
+const riders = () => role('harvester') + role('brewer') + role('raider'); // raiders ride with you too (gang.js)
 const racersOf = () => fleetSize() - riders(); // your crew on the grid
 const isRider = n => inFleet(n) && n > FIELD - riders(); // race.js raceField: not on the grid
 function makeRole(r, n) { // the script turns racers into harvesters or brewers; the role card moves them about
@@ -124,7 +124,7 @@ const FIRST_PUDDLE = { kind: 'oil', z: 1400, count: 3, rate: 0.1, reserve: 60, s
 const FIRST_REFINERY = { kind: 'refinery', count: 2, rate: 0.15, scripted: true }; // z: 1.1 km on from where you are
 const newSpot = (s, z = s.z) => ({ ...s, z, crew: 0, coming: [], done: false, got: 0, seen: null });
 function crewRun() { // startRun: this run's spots
-  Object.assign(run, { spots: [], pick: null, t: 0, told: false, crude: 0, fuel: 0, worked: 0, sent: 0 });
+  Object.assign(run, { spots: [], pick: null, raid: null, t: 0, told: false, crude: 0, fuel: 0, worked: 0, sent: 0 });
   if (scripted()) run.spots = progress.oil === 0 ? [newSpot(FIRST_PUDDLE)] : [];
   else run.spots = nextSpots();
   plan = null;
@@ -140,9 +140,12 @@ function crewEnd() { // finishRun: the spots still at work count as passed
 
 // ---- the run: cars on their way get there, a full spot pays until you are past it (or it is dry), and then its
 // crew is yours to send again
-const busy = kind => run.spots.reduce((n, s) => n + (s.kind === kind && !s.done ? s.crew + s.coming.length : 0), 0);
-const free = kind => role(kind === 'oil' ? 'harvester' : 'brewer') - busy(kind);
-const spotsAhead = () => run.spots.filter(s => !s.done && s.z > odo && (s.scripted || s.z - odo <= reach())); // the tracker's
+const ROLE_OF = { oil: 'harvester', refinery: 'brewer', raid: 'raider' }; // who works what
+const busy = kind => kind === 'raid' ? raiding().length // gang.js: raiders on the road
+  : run.spots.reduce((n, s) => n + (s.kind === kind && !s.done ? s.crew + s.coming.length : 0), 0);
+const free = kind => role(ROLE_OF[kind]) - busy(kind);
+const spotsAhead = () => run.spots.filter(s => !s.done && s.z > odo && (s.scripted || s.z - odo <= reach()));
+const trackAhead = () => { const r = raidAhead(); return (r ? [...spotsAhead(), r] : spotsAhead()).sort((a, b) => a.z - b.z); }; // the tracker's
 function crewTick(dt) {
   for (let i = traffic.length; i--;) if (traffic[i].gone) traffic.splice(i, 1); // runners there, or out of sight
   if (!crewOn()) return;
@@ -171,7 +174,8 @@ function crewTick(dt) {
       progress.crude -= used; s.got += fuel; progress.fuel += fuel; run.fuel += fuel;
     }
   }
-  if (!run.pick || run.pick.done || !spotsAhead().includes(run.pick)) run.pick = spotsAhead().find(s => s.crew + s.coming.length < s.count) ?? spotsAhead()[0] ?? null;
+  if (!run.pick || run.pick.done || !trackAhead().includes(run.pick)) // a raid picked stays on raids as the target changes
+    run.pick = (run.pick?.kind === 'raid' ? raidAhead() : null) ?? spotsAhead().find(s => s.crew + s.coming.length < s.count) ?? trackAhead()[0] ?? null;
   if (foremanOn() && run.t >= (run.foreman ?? 0)) { // the Foreman: four presses a second, where you would send them
     const s = bestSpot();
     if (s) { send(s, true); run.foreman = run.t + 0.25; }
@@ -190,25 +194,29 @@ function spotDone(s, end) { // passed, dry, or (end) the run over
 // < and >: the spot before or after the one picked, on the tracker; SEND: a car of yours to it (two with Double up),
 // if one of the right role is free and the spot has room; the Foreman sends to the spot of its choosing
 function pickSpot(by) {
-  const list = spotsAhead(), i = list.indexOf(run.pick);
+  const list = trackAhead(), i = list.indexOf(run.pick);
   if (list.length) run.pick = list[Math.max(0, Math.min(list.length - 1, i + by))];
 }
 function send(s = run.pick, quiet = false) { // quiet: the Foreman's, without a beep or a word
   if (run.phase !== 'run' || !s || s.done) return false;
+  const room = () => s.kind === 'raid' ? raidersOn(s) < raidCap(s) : s.crew + s.coming.length < cap(s); // gang.js: a raid
   let sent = 0;
-  for (let n = twice() ? 2 : 1; n > 0 && free(s.kind) > 0 && s.crew + s.coming.length < cap(s); n--) {
-    s.coming.push(run.t + arrive());
-    runner(s);
+  for (let n = twice() ? 2 : 1; n > 0 && free(s.kind) > 0 && room(); n--) {
+    if (s.kind === 'raid') sendRaider(s);
+    else { s.coming.push(run.t + arrive()); runner(s); }
     sent++;
   }
   if (quiet) return sent > 0;
   beep(sent ? 990 : 180, 0.04);
-  if (!sent) flash(s.crew + s.coming.length >= cap(s) ? 'FULL' : `NO ${s.kind === 'oil' ? 'HARVESTER' : 'BREWER'} FREE`, '#fb3', false);
+  if (!sent) flash(!room() ? 'FULL' : `NO ${ROLE_OF[s.kind].toUpperCase()} FREE`, '#fb3', false);
   return sent > 0;
 }
-// where a sensible player would send a car now (tests/balance/act3.py's bot): a spot a second after it shows, the one
-// with the most to pay before you pass it that the free cars can fill, the short ones before the full ones (Overfill)
+// where a sensible player would send a car now (tests/balance/act3.py's bot): a raider at the car in the reticle while
+// there is room on it and it is within the guns' reach; else a spot a second after it shows, the one with the most to
+// pay before you pass it that the free cars can fill, the short ones before the full ones (Overfill)
 function bestSpot() {
+  const r = raidAhead();
+  if (r && free('raid') > 0 && raidersOn(r) < raidCap(r) && r.z - odo < RANGE) return r;
   const v = Math.max(20, speed), worth = s => payRate(s) * Math.max(0, (s.z - odo) / v - arrive());
   const fits = s => { const want = s.count - s.crew - s.coming.length;
     return want > 0 ? want <= free(s.kind) : s.crew + s.coming.length < cap(s) && free(s.kind) > 0; };
@@ -265,12 +273,20 @@ function omenMarks() {
 // tank on the right A-pillar. Redrawn with the sonar, 15 times a second
 const ROWS = 4, ROW = 15; // rows on the tracker, and their height in its frame (the nearest at the bottom, y 63)
 const fmtAhead = d => d < 1000 ? `${Math.round(d / 10) * 10}m` : `${(d / 1000).toFixed(1)}k`;
-function trackRows() { // the four round the spot picked: one nearer, if there is one, and the rest further on
-  const list = spotsAhead().sort((a, b) => a.z - b.z), i = Math.max(0, list.indexOf(run.pick));
-  const from = Math.max(0, Math.min(i - 1, list.length - ROWS));
-  return list.slice(from, from + ROWS);
+function trackRows() { // the four round the spot picked: one nearer, if there is one, and the rest further on; the
+  const r = raidAhead(), list = spotsAhead().sort((a, b) => a.z - b.z), n = r ? ROWS - 1 : ROWS; // reticle's car always
+  const i = Math.max(0, list.indexOf(run.pick)), from = Math.max(0, Math.min(i - 1, list.length - n));
+  return [...list.slice(from, from + n), ...(r ? [r] : [])].sort((a, b) => a.z - b.z);
 }
 const kindName = s => s.kind === 'oil' ? 'OIL' : 'REFINERY';
+function raidRow(r, y) { // the car in the reticle (gang.js): a diamond, the raiders on it, its health, how far
+  const hp = Math.max(0, r.car.hp ?? health(r.car)) / health(r.car);
+  return `<g class="raid${r === run.pick ? ' pick' : ''}">` +
+    (r === run.pick ? `<rect class="sel" x="7" y="${y - 7}" width="106" height="14" rx="2"/>` : '') +
+    `<path d="M14,${y - 5} l5,5 l-5,5 l-5,-5 z"/><text x="22" y="${y + 3.5}">${raidersOn(r)}/${raidCap(r)}</text>` +
+    `<text x="78" y="${y + 3.5}" text-anchor="end">${Math.round(100 * hp)}%</text>` +
+    `<text x="110" y="${y + 3.5}" text-anchor="end">${fmtAhead(r.z - odo)}</text></g>`;
+}
 const payRate = s => s.kind === 'oil' ? s.rate * s.count * harvest() : s.rate * s.count / brewRatio(); // L/s, full
 let crewAt = 0;
 function renderCrew() {
@@ -291,14 +307,16 @@ function renderCrew() {
   text('tank-lcd', `${fmtL(progress.crude)}/${tankSize()}`);
   if (!on) return;
   $('track-spots').innerHTML = trackRows().map((s, i) => {
-    const y = 59 - i * ROW, n = s.crew + s.coming.length; // the row's middle: the nearest lowest
+    const y = 59 - i * ROW; // the row's middle: the nearest lowest
+    if (s.kind === 'raid') return raidRow(s, y);
+    const n = s.crew + s.coming.length;
     const icon = s.kind === 'oil' ? `<circle cx="14" cy="${y}" r="4"/>` : `<rect x="10" y="${y - 4}" width="8" height="8"/>`;
     return `<g class="${s.crew >= s.count ? 'pumping' : n >= s.count ? 'coming' : 'short'}${s === run.pick ? ' pick' : ''}">` +
       (s === run.pick ? `<rect class="sel" x="7" y="${y - 7}" width="106" height="14" rx="2"/>` : '') +
       `${icon}<text x="22" y="${y + 3.5}">${n}/${s.count}</text><text x="78" y="${y + 3.5}" text-anchor="end">` +
       `${fmtL(payRate(s))}/s</text><text x="110" y="${y + 3.5}" text-anchor="end">${fmtAhead(s.z - odo)}</text></g>`;
   }).join('');
-  text('crew-free', `${free('oil')}H ${role('brewer') ? `${free('refinery')}B` : ''}`);
+  text('crew-free', `${free('oil')}H${role('brewer') ? ` ${free('refinery')}B` : ''}${role('raider') ? ` ${free('raid')}R` : ''}`);
   const word = foremanOn() ? 'AUTO' : 'SEND'; // the Foreman sends for you, as AUTO on the trigger fires for you (gang.js)
   if ($('crew-send').firstChild.nodeValue !== word) $('crew-send').firstChild.nodeValue = word;
 }
@@ -307,8 +325,8 @@ function renderCrew() {
 // split as a bar in the roles' colours, a slider for each role (the owner, 27 Oct: the counts were hard to take in),
 // and − and + for a car at a time. A racer moved into a role leaves the grid; one moved out races again; the racers
 // are the rest
-const ROLES = [['racer', 'Racers'], ['harvester', 'Harvesters'], ['brewer', 'Brewers']];
-const shownRoles = () => ROLES.filter(([r]) => r !== 'brewer' || progress.oil >= 2);
+const ROLES = [['racer', 'Racers'], ['harvester', 'Harvesters'], ['brewer', 'Brewers'], ['raider', 'Raiders']];
+const shownRoles = () => ROLES.filter(([r]) => (r !== 'brewer' || progress.oil >= 2) && (r !== 'raider' || lvl('pack') > 0));
 const countOf = r => r === 'racer' ? racersOf() : role(r);
 function roleCard() {
   if (progress.oil < 1 || !crewOn()) return '';
@@ -318,7 +336,8 @@ function roleCard() {
   return `<div class="card roles"><b>Roles · ${fleetSize()} cars</b><div class="split">` +
     shownRoles().map(([r]) => `<i class="${r}" style="flex-grow: ${countOf(r)}"></i>`).join('') + '</div>' +
     shownRoles().map(row).join('') + '<small>racers race for metres and places · harvesters pump crude · brewers brew it ' +
-    `into fuel · a car with no spot to work earns nothing${scouted() ? ` · <i>${scouted()}</i>` : ''}</small></div>`;
+    `into fuel${lvl('pack') ? ' · raiders ram the car in the reticle, for scrap' : ''} · a car with no spot to work ` +
+    `earns nothing${scouted() ? ` · <i>${scouted()}</i>` : ''}</small></div>`;
 }
 function syncRoles() { // the card as the crew is now: its bar, counts, sliders and buttons
   const card = $('cards').querySelector('.roles');

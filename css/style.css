@@ -121,6 +121,7 @@ body:not([data-game="distance"]) #kit { display: none; }
 .has-crew #tracker { display: block; }
 #track-spots text { font: 700 10px monospace; }
 #track-spots .short { fill: #ec4; } #track-spots .coming { fill: #9df; } #track-spots .pumping { fill: #3f6; }
+#track-spots .raid { fill: #ff6a4a; } /* the car in the reticle, for your raiders (gang.js): the War Rig's red */
 #track-spots .sel { fill: none; stroke: #fff; stroke-width: 1.2; }
 #crew-ctl { display: none; position: fixed; left: calc(5vw + 10px); top: 190px; gap: 5px; }
 .has-crew #crew-ctl { display: flex; }
@@ -311,7 +312,7 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
 .card.exchange { grid-column: span 2; border-color: #3a5a8a; }
 .card.exchange input { width: 100%; margin: 2px 0; accent-color: var(--accent); touch-action: pan-x; }
 /* the role card (oil.js): wide, the crew's split as a bar in the roles' colours, a slider for each role between − and + */
-.card.roles { grid-column: span 2; border-color: #2f6b46; --racer: #3f6; --harvester: #ffb03a; --brewer: #7ab8ff; }
+.card.roles { grid-column: span 2; border-color: #2f6b46; --racer: #3f6; --harvester: #ffb03a; --brewer: #7ab8ff; --raider: #ff6a4a; }
 .card.roles .split { display: flex; height: 10px; margin: 2px 0 4px; border-radius: 5px; overflow: hidden; background: #262a36; }
 .card.roles .split i { display: block; min-width: 0; transition: flex-grow 0.1s; }
 .card.roles .role { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
@@ -323,6 +324,8 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
 .card.roles .harvester { color: var(--harvester); } .card.roles .split .harvester { background: var(--harvester); }
 .card.roles .brewer { color: var(--brewer); } .card.roles .split .brewer { background: var(--brewer); }
 .card.roles .harvester input { accent-color: var(--harvester); } .card.roles .brewer input { accent-color: var(--brewer); }
+.card.roles .raider { color: var(--raider); } .card.roles .split .raider { background: var(--raider); }
+.card.roles .raider input { accent-color: var(--raider); }
 @keyframes bought { from { background: #3a3410; } }
 #garage footer { display: flex; justify-content: flex-end; align-items: center; position: sticky; bottom: -14px;
                  margin: 0 -16px -14px; padding: 10px 16px 14px; background: #0b0d16; } /* DRIVE stays in view */

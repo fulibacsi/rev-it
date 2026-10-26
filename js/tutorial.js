@@ -103,7 +103,7 @@ const TUTORIALS = [
     { title: 'THE BOTTLE', at: '#nos-gauge',
       both: 'The gauge in the cluster shows what is left. The garage refills it, for metres.' },
   ] },
-  { id: 'fleet', name: 'The Crew', for: ['fleet', 'dues', 'fleetPace', 'pack'], open: () => fleetSize() > 0, pages: [
+  { id: 'fleet', name: 'The Crew', for: ['fleet', 'dues', 'fleetPace'], open: () => fleetSize() > 0, pages: [
     { title: 'YOUR CREW',
       both: 'The racers you pay off race for you, in your colours: they give way when you come up behind them, and ' +
         'move across to block a rival closing on them. Your place counts the rivals only. At the finish their places ' +
@@ -111,8 +111,6 @@ const TUTORIALS = [
     { title: 'THE SONAR', at: '#sonar',
       both: 'On the A-pillar: the road 250 m ahead of you and behind, from above. You are the arrow; your crew ' +
         'are green, the rivals white, the traffic yellow.' },
-    { title: 'THE HUNTING PACK', if: () => lvl('pack') > 0,
-      both: 'Each of your crew hunts the nearest car ahead of it, as you do: into its lane and into it.' },
   ] },
   { id: 'warrig', name: 'The War Rig', for: ['bullbar', 'armour', 'spikes'], open: () => arOn(), pages: [
     { title: 'THE RETICLE', at: '#ar',
@@ -123,6 +121,14 @@ const TUTORIALS = [
         'it is totalled, and its scrap is yours.' },
     { title: 'THE WAR RIG PAGE', if: () => gangOpen(), // it opens with the first car totalled, after this pops up
       both: 'Scrap buys what is on the War Rig page in the garage: a bull bar, armour, guns.' },
+  ] },
+  { id: 'raiders', name: 'Raiders', for: ['pack'], open: () => lvl('pack') > 0, pages: [ // a role since 27 Oct, the Hunting pack before (gang.js)
+    { title: 'RAIDERS',
+      both: 'Your crew can ride with you as raiders now: on the Crew page, the role card sets how many, as it does ' +
+        'harvesters and brewers. Your racers just race.' },
+    { title: 'SEND A RAIDER', at: '#tracker',
+      both: 'The car in the reticle is on the tracker, a red diamond. Pick it, then SEND: a raider comes up the shoulder ' +
+        'and rams it till it is totalled, with guns if you have them, then rides with you again. Up to three a car.' },
   ] },
   { id: 'madness', name: 'Fuel madness', for: ['baddrivers'], open: () => lvl('baddrivers') > 0, pages: [
     { title: 'MAD FOR FUEL',
@@ -137,7 +143,7 @@ const TUTORIALS = [
   { id: 'guns', name: 'Guns', for: ['guns', 'autogun'], open: () => lvl('guns') > 0, pages: [
     { title: 'FIRE', at: '#fire',
       touch: 'Hold the red marker at the top of the wheel.', desk: 'Hold G, or the red marker at the top of the wheel.',
-      both: 'Four shots a second at the car in the reticle, up to 200 m. The gang fires too.' },
+      both: 'Four shots a second at the car in the reticle, up to 200 m.' },
     { title: 'AUTO GUN', at: '#fire', if: () => lvl('autogun') > 0, both: 'It fires for you; the marker reads AUTO.' },
   ] },
   { id: 'tank', name: 'The tank', open: () => bossRace() || progress.tanks > 0, pages: [

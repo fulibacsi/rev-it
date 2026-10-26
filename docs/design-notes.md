@@ -246,8 +246,8 @@ machine or session. Keep it current: update a section when a decision changes, a
   card, the run paused, and DONE carries on into it (the owner, 23 Oct, who picked this over a coached run); not
   after RESET PROGRESS (you have driven before), nor once read (any tutorial opened counts as seen). Then one for each system, listed once it opens: Headlight
   flash, Driver aids (with the layers on top of Autocruise), Car stereo, The race (and how places pay), Reckless driving (with damage and
-  chicken), ECU tune (and heat), Nitro, The Fleet (the sonar, the Hunting pack), The War Rig (the reticle, totals,
-  scrap), Fuel madness, Police heat, Guns, The tank; a page about an upgrade shows once it is bought. A system's
+  chicken), ECU tune (and heat), Nitro, The Fleet (the sonar), The War Rig (the reticle, totals,
+  scrap), Raiders, Fuel madness, Police heat, Guns, The tank; a page about an upgrade shows once it is bought. A system's
   tutorial pops up once in the garage when it opens in play (bought, or come with a run: the race, the gang, the
   tank), never mid-run; several at once follow one another. Only in play: a save's systems from before the tutorials,
   or set up by a test, pop nothing up. Its ? sits on the cards of the upgrades it is for, once bought (the owner's
@@ -504,8 +504,7 @@ ACT III's card says so after that race: "the racers you beat are open to offers"
 The owner's brief (25 Oct): "there is no interaction with the fleet, nothing new to do, no exciting upgrade"; the
 playtesters found the Fleet slow; act 1 is mechanical driving, act 2 lane control, act 4 hunting cars, and act 3
 "nothing but buying the same upgrades 51 times". This is what the brainstorm of 25–26 Oct settled on, to build in
-layers, a PR each. Built 26–27 Oct, with the numbers measured since (marked **as built**); still to build:
-act 4's Hunter role.
+layers, a PR each. Built 26–27 Oct, with the numbers measured since (marked **as built**), act 4's Raiders the last.
 
 **Measured first** (25 Oct, scratch runs in the page: act 2's car at P1, `act3.py`'s bot):
 - The fleet starts in its own slots, 120 m apart behind you. The nearest fleet car was 8.2–8.5 km behind you all race
@@ -544,11 +543,13 @@ save keys stay): every racer you pay off. Each has a role, and only racers earn 
   left on the Black market stays in reach; Racing (Fleet dues renamed) pays a share of the metres racers drive.
 - **Harvester:** rides with you and works oil spots.
 - **Brewer** (the owner's name): rides with you and works refineries, turning crude into fuel.
-- **Hunter,** in act 4: the Hunting pack as a role (the owner's idea), named only once the War Rig page is open.
+- **Raider** (the owner's name, 27 Oct: "more badass, more diegetic with the world"; Hunter in the plan), in act 4: the
+  Hunting pack as a role (the owner's idea), named only once its card is bought. Rides with you and is sent at the car
+  in the reticle (Act 4: Raiders).
 
 The roles are split on a card in the garage, free to change between runs: since 27 Oct (the owner: the counts were
 hard to take in) a wide card, the crew's split as a bar in the roles' colours (racers green, harvesters amber,
-brewers blue), a slider for each role with − and + beside it, the racers the rest. All harvesters this run and all
+brewers blue, raiders red), a slider for each role with − and + beside it, the racers the rest. All harvesters this run and all
 brewers the next is a fair tactic (the owner's), since crude keeps.
 
 **How it opens** (the owner, 26 Oct):
@@ -696,7 +697,8 @@ the crew, as the oil runs on through act 4):
   who wants it more than cars; the bot, which sends as the Foreman does, never buys it.
 - **Act 4:** the tank beaten in race 13, at the first go, as before. The oil pays 20–40 L a race there, so the crew
   grows to 79, Racing and Crew tuning reach 3, and the Hunting pack (one level of Crew tuning lets you in, the
-  owner's call of 27 Oct) comes in race 9.
+  owner's call of 27 Oct) comes in race 9. **As built** with Raiders (27 Oct, seeds 1 and 2): Raiders bought in races
+  9 and 8, the tank beaten in races 13 and 12, the crew 78 and 77 by then.
 
 **Foreshadowing,** without a word: the pump price climbs; stations that aren't yours show NO FUEL, then get boarded up;
 a burnt-out shell; the first rusty car in the last races; then your crew rides out as the gang.
@@ -709,9 +711,7 @@ a burnt-out shell; the first rusty car in the last races; then your crew rides o
   44th (85%), one ordinary car in about 16 is rusty: act 4's mad paint (rust, a primer panel, holes, a light out),
   without its bars or spikes, and it drives like any other car.
 
-**Still to settle:** what points buy in act 3 (the Black market is mostly bought by then); every number above; and act
-4's Hunter role (its own layer, with `act4.py`; the owner, 27 Oct: one level of Crew tuning lets you in, as it does the
-Hunting pack, and the oil runs on through act 4).
+**Still to settle:** what points buy in act 3 (the Black market is mostly bought by then); every number above.
 
 **Layers,** a PR each, the full suite before each merge, and every merge a working game (main is live):
 1. These notes and the upgrade graph.
@@ -726,7 +726,7 @@ Hunting pack, and the oil runs on through act 4).
    shows, four cars a second, the most to pay before you pass it that the free cars can fill), without a beep; SEND
    reads AUTO while it is on, as the trigger does with Auto gun.
 6. The foreshadowing (built 27 Oct).
-7. Act 4's Hunter role.
+7. Act 4's Raiders (built 27 Oct).
 
 ### Act 4: the War Rig
 
@@ -740,7 +740,8 @@ garage as the 51st was bought felt like a bug; it should happen on the road) not
 into the next run the gang's moment comes, the oil still running, and the War Rig tutorial pops up over the road (once a
 car is in the reticle) with its first job: total a car. The first car totalled leaves 3 s on the clock; then ACT IV ·
 WAR's card in the garage (NO LAW OUT HERE's words, once a card of its own), the War Rig tab for sale, and your racers
-ride as the gang. The oil runs on through act IV (the owner, 27 Oct: it shouldn't disappear; by then the Foreman runs
+just race (the owner, 27 Oct: "The player no longer races, the player hunts - no need to clear the road": they no
+longer give way to you, block rivals, side-swipe or shoot; the fighting is the raiders'). The oil runs on through act IV (the owner, 27 Oct: it shouldn't disappear; by then the Foreman runs
 it, and the cars you go on paying off, up to 99, bring more). The windscreen gains an **AR layer** (red, like a
 gunsight): a reticle round the nearest car ahead going your way, its health bar above it, and "TOTAL IT" until the first
 job is done (a racer's number after). It stays on that car while it is within the guns' reach (200 m) until you pass it
@@ -760,15 +761,15 @@ fix: the reticle kept last race's car, out of sight on the horizon, and the guns
 
   | Upgrade | Levels | Base | Growth | Notes |
   |---|---|---|---|---|
-  | Bull bar | 3 | 20 | 2.5 | a hit counts 2/3 more a level (3 times at 3); you keep more speed (at 3, you carry on at the car's speed); the gang side-swipes rivals |
+  | Bull bar | 3 | 20 | 2.5 | a hit counts 2/3 more a level (3 times at 3); you keep more speed (at 3, you carry on at the car's speed); a raider's rams count it too |
   | Armour plating | 3 | 30 | 2.5 | collisions do 25% less damage to your car a level |
-  | Spiked hubs | 1 | 150 | | a side-swipe (into a car while moving over) costs you no speed and counts one more hit; the gang's 30 more damage |
-  | Guns | 3 | 400 | 2 | needs Spiked hubs: 6 damage a shot a level, 4 shots a second, up to 200 m; the gang fires too |
+  | Spiked hubs | 1 | 150 | | a side-swipe (into a car while moving over) costs you no speed and counts one more hit |
+  | Guns | 3 | 400 | 2 | needs Spiked hubs: 6 damage a shot a level, 4 shots a second, up to 200 m; a raider fires once a second |
   | Auto gun | 1 | 200 | | needs Guns: fires for you while the reticle's car is in reach and in sight; the marker reads AUTO; ON/OFF in the garage |
   | Fuel madness | 4 | 30 | 2.5 | 25% of ordinary drivers mad a level, 90% at the top: rusty, weaving, no mirror check or indicator, and each jumps in front of you once; ram one that cut in and it's totalled; a mad car pays double parts; ON/OFF in the garage |
   | War Rig radio | 1 | 100 | | needs the Car stereo: it plays the War Rig's own three tapes instead of synthwave; ON/OFF in the garage |
   | Hunter | 1 | 100 | | needs Autocruise: it hunts the car in the reticle, into its lane and into it (not the tank; it backs off past 60% damage); ON/OFF in the garage |
-  | Hunting pack | 1 | 150 | | fleet cars hunt as you do: the nearest car ahead of each, within 150 m, into its lane and into it; their guns on it too |
+  | Raiders | 1 | 150 | | needs Hunter, Racing and a level of Crew tuning: raiding becomes a role of the crew's, sent with SEND at the reticle's car (below) |
 
 - **Bad drivers** (the owner's idea, 18 Oct): the playtesters hated cars cutting in (fixed: traffic passes the way
   drivers do), but in the War Rig a car jumping in front of you is a ram, worth scrap and heat. Bought, ordinary
@@ -832,7 +833,7 @@ fix: the reticle kept last race's car, out of sight on the horizon, and the guns
   in races 14, 16, 13, 14 (14, 15, 12, 13 before). Not the tank (the guns are for that), not an oncoming car, and not
   past 60% damage, so it doesn't wreck you; your hand on the wheel overrides it. It is what `act4.py`'s bot did by
   hand, so the simulation now leaves the hunting to the aid once it has it. `hunter_test.py` checks all of it.
-- **Hunting pack** (the owner, 18 Oct: "Fleet should have an attack upgrade so they hunt just like you"; on the War
+- **Hunting pack** (18–27 Oct; Raiders since, below. The owner, 18 Oct: "Fleet should have an attack upgrade so they hunt just like you"; on the War
   Rig page, paid in scrap, and hunting "like you: anything", both the owner's picks): each fleet car hunts the nearest
   car ahead of it going your way within 150 m, rivals and traffic alike (police too; not the tank, whose fight has the
   gang alongside it). It moves into that car's lane, room permitting, and drives into it without passing it or backing
@@ -855,16 +856,30 @@ fix: the reticle kept last race's car, out of sight on the horizon, and the guns
 - **Guns,** last: the red marker at the top of the steering wheel becomes the trigger, with FIRE written on it (G on
   the keyboard). Held, it fires 4 shots a second from twin guns on the bonnet at the car in the reticle, if it is
   within 200 m and in sight; yellow tracers and a muzzle flash show each shot, and a miss goes off into the distance.
-  The gang fires too: a fleet car shoots a rival up to 80 m ahead of it (or beside it) once a second. Before guns the
-  marker is just part of the rim.
+  A raider fires too, once a second at its car within 80 m. Before guns the marker is just part of the rim.
 - **Auto gun** (the owner's idea, 14 Oct; Claude's calls: the price, AUTO on the marker): it holds the trigger for
   you, only while the reticle's car is within reach and in sight, so no shot (and no heat) is wasted. On a phone your
   thumbs are busy. Your own trigger still works.
 
-- **The gang uses whatever it has.** With a bull bar a fleet car side-swipes a rival beside it, every 3 s at most (20
-  damage a level): it lurches across, then drives back into its lane. What it totals pays you the scrap, and the rival
-  is out of the race. Ramming hurts your own car (2–25% a bump), so armour is the "illegal part" that makes a
-  campaign of it possible.
+- **The gang used whatever it had** (14–27 Oct): with a bull bar a fleet car side-swiped a rival beside it, every 3 s
+  at most (20 damage a level, 30 more with spiked hubs), and with guns it shot a rival up to 80 m ahead once a second.
+  Since 27 Oct the racers only race, and your bull bar and guns are the raiders'. Ramming hurts your own car (2–25% a
+  bump), so armour is the "illegal part" that makes a campaign of it possible.
+- **Raiders** (the owner, 27 Oct): the Hunting pack made a role of the crew's, once act 3 gave the crew roles. The
+  card (the Hunting pack's, the id `pack` kept for the saves; 150 scrap, needing Hunter, Racing and a level of Crew
+  tuning, as the pack did) opens the role on the role card, in red beside harvesters and brewers. Raiders ride with you
+  as harvesters and brewers do, and SEND sends them (the owner's picks; Claude offered them sending themselves too):
+  the car in the reticle is a row on the tracker, a red diamond pinned under the spots, with its raiders out of the
+  most it takes (3, the tank 6), its health and how far it is; `<` `>` pick it, and SEND sends a raider up the right
+  shoulder, as a harvester goes to a spot (FULL, or NO RAIDER FREE). A raider closes on its car (up to 60 m/s quicker
+  than the faster of you and it), moves into its lane and rams it: a hit as yours are (34, the bull bar counting; the
+  tank takes a fifth), every 1.5 s at most, falling back 4 m/s after each; with guns it fires once a second within
+  80 m. When its car is totalled ("THE GANG TOTALLED A CAR", the scrap yours, the gang's heat), when you pass the car,
+  or when the raider is 900 m up the road, it rides with you again. The Foreman sends raiders too: the raid first while
+  a raider is free and the car is within the guns' reach (200 m). `raiders_test.py` checks it. Claude's calls: the
+  caps, the speeds, the shoulder. `act4.py`'s bot makes up to 6 of the crew raiders once it has the card (3 on the car,
+  3 coming and going): Raiders bought in races 9 and 8 (seeds 1 and 2), the tank in races 13 and 12, against 13 with
+  the Hunting pack (seed 1).
 
 **Police heat** (`progress.wanted`, 0 to 100%) shows on a **police scanner** bolted to the right A-pillar, opposite
 the sonar: an LCD ("HEAT 37%", "PURSUIT" while police are on the road), ten lights from green to red, and a red and blue
@@ -892,8 +907,8 @@ DNF that halved the heat. Till then the act's card says "the army has a tank rea
   ("TANK"), with 1,000 health.
 - It fires a shell at you every 2.5 s while you are within 250 m behind it: 8% damage a hit (armour takes a quarter
   off a level), with the shot, a jolt and the cracks to show it.
-- You and the gang outgun it: your guns, and the fleet's, which race up to join the fight (40 m/s quicker until
-  they are with it) and shoot it from within 200 m. A ram does a fifth of its usual damage.
+- You and your raiders outgun it: your guns, and up to 6 raiders sent at it (since 27 Oct; before, the racers raced
+  up to join the fight, 40 m/s quicker, and shot it from within 200 m). A ram does a fifth of its usual damage.
 - **Destroyed:** the ending. TANK DOWN on the head-up display ("the road is yours"; GAME OVER until 20 Oct, which read
   like losing) and the run stops there, the tank burning, held for 4 s (the owner, 14 Oct: that's the end state);
   then the ending's screen. The garage: "The tank is scrap: the road is yours", 300

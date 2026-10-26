@@ -82,7 +82,7 @@ const SAVE_KEY = 'car-rev-incremental';
 // tape: the one in the stereo (stereo.js); time: seconds played, driven: metres in all, races: runs raced (the
 // menu's STATS)
 const FRESH = () => ({ bank: 0, best: 0, runs: 0, levels: {}, off: {}, engine: 0, racing: false, points: 0, finish: 101,
-                       damage: 0, broken: [], nitro: 0, fuel: 0, crude: 0, oil: 0, roles: { harvester: 0, brewer: 0 }, pace: 70,
+                       damage: 0, broken: [], nitro: 0, fuel: 0, crude: 0, oil: 0, roles: { harvester: 0, brewer: 0, raider: 0 }, pace: 70,
                        gang: false, scrap: 0, totals: 0, wanted: 0, tanks: 0, tape: 0,
                        time: 0, driven: 0, races: 0, seen: [], toured: [], dry: 0 }); // seen: upgrades seen unlocked (the tabs' !);
                                                        // toured: tutorials popped up (tutorial.js); dry: races in a row
@@ -373,13 +373,14 @@ TUTORIALS.unshift(
   // the gang's first car totalled, on the road (gang.js gangMoment): act IV (the owner, 27 Oct; it popped up in the
   // garage as the 51st was bought, and the next card, NO LAW OUT HERE, at the first total: one card now)
   { id: 'act4', act: 'IV', name: 'WAR', open: () => gangOpen(),
-    text: () => 'Totalled! No law out here any more. Your racers ride as your gang now, the oil still flowing, and your ' +
-      'car becomes a war rig: the War Rig tab is for sale, paid in scrap.',
+    text: () => 'Totalled! No law out here any more. Your car becomes a war rig, the oil still flowing, and your racers ' +
+      'just race: the War Rig tab is for sale, paid in scrap.',
     now: () => progress.wanted >= 1 ? `Police heat 100%: the army has a tank ready for when you are ${lvl('guns') ? 'repaired' : 'armed'}.`
       : `Every car totalled raises the police heat, now ${heatPct()}. At 100% the army sends a tank` +
         (lvl('guns') ? '.' : ', once you have guns.') },
   { id: 'tanksent', name: 'THE ARMY SENDS A TANK', open: () => bossRace() || progress.tanks > 0,
-    text: () => 'Police heat 100%: the army has sent a tank. It is waiting up the road: outgun it, with the gang.',
+    text: () => 'Police heat 100%: the army has sent a tank. It is waiting up the road: outgun it' +
+      (lvl('pack') ? ', and send your raiders at it.' : '.'),
     now: () => bossRace() ? '' : `The tank is scrap and the road is yours (${progress.tanks} beaten). Push the heat ` +
       `to 100% again, now ${heatPct()}, and the next one is tougher.` },
 );

@@ -3,9 +3,9 @@ the gang's moment on the road: its tutorial (total a car) and the AR layer on th
 bar on the nearest car ahead, kept until you pass it. The first car totalled leaves 3 s on the clock, then act IV. Bumps hurt the car you hit;
 at 0 health it skids onto the shoulder, out of your way, and pays scrap. A totalled rival is out of the race. The
 first total puts the War Rig's tab on sale, the page paid in scrap; a bull bar hurts them more and costs you less speed. Armour takes
-off your damage, spiked hubs make a side-swipe free and harder; with a bull bar the gang side-swipes rivals. Guns,
-last: the wheel's red marker turns into the trigger (FIRE on it), shots hurt the car in the reticle within 200 m, and
-the gang shoots at rivals. The reticle moves to a nearer car when its own is out of reach, and starts afresh each race.
+off your damage, spiked hubs make a side-swipe free and harder; your racers only race (no side-swipes, no shots: the
+war is the raiders', raiders_test). Guns, last: the wheel's red marker turns into the trigger (FIRE on it), shots hurt
+the car in the reticle within 200 m. The reticle moves to a nearer car when its own is out of reach, and starts afresh each race.
 Auto gun fires for you at the reticle's car while it is in reach, and the marker reads AUTO."""
 import re
 from playwright.sync_api import sync_playwright
@@ -122,7 +122,7 @@ with sync_playwright() as p:
             const kept = speed; ram(impact); return { side: impact.side, kept: Math.round(kept), hp: Math.round(c.hp) }; })()""")
     got = [swipe(0), swipe(1)]
     check("spiked hubs: a side-swipe keeps your speed and counts one more hit (34)", got[0]["side"] and got[1]["kept"] == 32 and got[0]["kept"] < 20 and got[0]["hp"] - got[1]["hp"] == 34, got)
-    # 11. the gang: with a bull bar a fleet car side-swipes a rival beside it, every 3 s; scrap is yours
+    # 11. act IV: your racers only race (the owner, 27 Oct): a bull bar or not, a racer of yours leaves a rival beside it be
     pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     def gang(bull):
         js(f"progress.levels.bullbar = {bull}; progress.levels.spikes = 0; refreshCar()")
@@ -132,7 +132,7 @@ with sync_playwright() as p:
             Object.assign(r, { lane: 1, x: MY_LANES[1], z: odo + 300, v: 30, want: 30, cool: 99, hp: null, wreck: false });
             setTimeout(() => res(Math.round(r.hp ?? 150)), 1000); })""")
     got = [gang(0), gang(2)]
-    check("bull bar 2: the gang side-swipes the rival beside it (40); without one it doesn't", got == [150, 110], got)
+    check("your racers only race: no side-swipe at the rival beside them, bull bar or not", got == [150, 150], got)
     # 12. guns: before them the marker is part of the rim; with them it is the trigger
     js("progress.levels.bullbar = 0; progress.levels.guns = 0; refreshCar()"); pg.wait_for_timeout(100)
     m = js("(() => { const r = $('trigger').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; })()")
@@ -158,13 +158,13 @@ with sync_playwright() as p:
     js("window.near = traffic.find(c => !c.racer && c !== tg); Object.assign(near, { dir: 1, lane: 0, x: MY_LANES[0], z: odo + 80, v: speed, want: speed, cool: 99, hp: null, wreck: false })")
     pg.wait_for_timeout(200); pg.keyboard.up("g")
     check("a nearer car while the reticle's is out of reach: the reticle moves to it", js("target === near"), js("target && Math.round(target.z - odo)"))
-    # 13. the gang shoots: a fleet car with a rival 50 m ahead of it, a shot a second
+    # 13. nor do they shoot: a racer of yours with a rival 50 m ahead of it, guns or not
     got = js("""() => new Promise(res => { const f = racers().find(c => c.fleet), r = rivals().find(c => c.racer === 25);
         traffic.forEach(c => { if (c !== f && c !== r) c.z = c.racer ? odo - 9000 : odo + 5000; });
         Object.assign(f, { lane: 0, x: MY_LANES[0], z: odo + 300, v: 30, want: 30, cool: 99, gun: 0 });
         Object.assign(r, { lane: 0, x: MY_LANES[0], z: odo + 350, v: 30, want: 30, cool: 99, hp: null, wreck: false });
         setTimeout(() => res(Math.round(r.hp ?? 150)), 1500); })""")
-    check("the gang shoots at a rival ahead: 12 a second (one or two shots in 1.5 s)", got in (126, 138), got)
+    check("your racers don't shoot at a rival ahead", got == 150, got)
     # 14. Auto gun: it fires by itself at the reticle's car in reach, not out of reach; switched off, it doesn't
     js("progress.levels.autogun = 1; refreshCar()")
     js(f"({place})(60)"); pg.wait_for_function("target === tg && tg.seen", timeout=5000); pg.wait_for_timeout(1000)
