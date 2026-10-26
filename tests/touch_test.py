@@ -68,6 +68,9 @@ with sync_playwright() as p:
     pg.tap("#menu-button"); pg.wait_for_timeout(200); pg.tap("#to-main"); pg.tap('[data-play="distance"]'); pg.wait_for_timeout(300)
     pg.screenshot(path=f"{OUT}/t_garage.png")
     print("garage fits:", js("[document.getElementById('garage').scrollHeight, document.getElementById('garage').clientHeight]"))
+    # the taps took the page fullscreen (goFullscreen), and Chromium won't resize a fullscreen window: leave it first
+    print("fullscreen before turning:", js("!!document.fullscreenElement"))
+    js("document.fullscreenElement && document.exitFullscreen()"); pg.wait_for_function("!document.fullscreenElement")
     pg.set_viewport_size({"width": 390, "height": 844}); pg.wait_for_timeout(200); pg.screenshot(path=f"{OUT}/t_portrait.png")
     print("portrait overlay shown:", js("getComputedStyle(document.getElementById('rotate')).display"))
     ctx.close()
