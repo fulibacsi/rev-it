@@ -87,9 +87,9 @@ with sync_playwright() as p:
     check("Flash recharge for sale now, Reckless driving bought", rule("Flash recharge") is None and "Flash recharge" in cards(), [rule("Flash recharge"), cards()])
     check("Workshop: still in metres", set(prices()) == {"m"}, prices())
     # 5. the story tabs: out of sight till their moment
-    check("no Fleet before P1, no War Rig before a car totalled", not any(t.startswith(("Fleet", "War Rig")) for t in tabs()), tabs())
+    check("no Crew before P1, no War Rig before a car totalled", not any(t.startswith(("Crew", "War Rig")) for t in tabs()), tabs())
     set_("progress.finish = 1")
-    check("P1: the Fleet's tab for a point", tabs()[3:] == ["Fleet 1 pt"], tabs())
+    check("P1: the Crew's tab for a point", tabs()[3:] == ["Crew 1 pt"], tabs())
     set_("Object.assign(progress, { totals: 1 }); progress.levels.fleetTab = 1")
     check("a car totalled: the War Rig's tab, 1 scrap, none to spend", tabs()[4:] == ["War Rig 1 scrap [off]"], tabs())
     # 6. a save from before the tabs: its pages kept, nothing for sale

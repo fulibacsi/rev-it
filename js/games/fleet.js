@@ -12,12 +12,12 @@ Object.assign(UPGRADES, {
            needs: ['fleetTab'],
            info: l => !l ? 'every racer for themselves' : l === 1 ? '#100 races for you'
              : `#${FIELD + 1 - l} to #100 race for you` },
-  dues: { name: 'Fleet dues', tab: 'fleet', max: 5, base: 5, growth: 2, needs: ['fleet'],
-          info: l => l ? `each fleet car pays you ${10 * l}% of the metres it drives` : 'your fleet drives for nothing' },
-  fleetPace: { name: 'Fleet tuning', tab: 'fleet', max: 5, base: 3, growth: 2, needs: ['fleet'],
-               info: l => l ? `fleet cars ${5 * l}% quicker` : 'fleet cars at their old pace' },
-  fleetFlash: { name: 'Fleet flash', tab: 'fleet', max: 1, base: 15, needs: ['fleet', ['flash', 5]],
-                info: () => 'a fleet car flashes slower traffic ahead of it out of your lane' },
+  dues: { name: 'Racing', tab: 'fleet', max: 5, base: 5, growth: 2, needs: ['fleet'], // Fleet dues until 26 Oct
+          info: l => l ? `each racer pays you ${10 * l}% of the metres it drives` : 'your racers drive for nothing' },
+  fleetPace: { name: 'Crew tuning', tab: 'fleet', max: 5, base: 3, growth: 2, needs: ['fleet'],
+               info: l => l ? `your racers ${5 * l}% quicker` : 'your racers at their old pace' },
+  fleetFlash: { name: 'Crew flash', tab: 'fleet', max: 1, base: 15, needs: ['fleet', ['flash', 5]],
+                info: () => 'a racer of yours flashes slower traffic ahead of it out of your lane' },
 });
 const fleetSize = () => lvl('fleet');
 const inFleet = n => progress.racing && n > FIELD - fleetSize(); // racer n is yours

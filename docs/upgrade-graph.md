@@ -13,8 +13,8 @@ five levels of it. A label on a tab's arrow is a condition besides the price.
 | Workshop | 100 m | nothing: the first buy | |
 | Autopilot | 500 m | Workshop | 2 km+ driven |
 | Black market | 1 point | Workshop | P100 |
-| Fleet | 1 point | Black market | P1 |
-| War Rig | 1 scrap | Fleet | totalled a car |
+| Crew (the Fleet until 26 Oct) | 1 point | Black market | P1 |
+| War Rig | 1 scrap | Crew | totalled a car |
 
 ## The graph
 
@@ -57,13 +57,13 @@ flowchart TD
     gear7["7th gear"]
     rcruise["Reckless auto-drive"]
   end
-  subgraph F["Fleet · 1 point"]
-    fleetTab(["Fleet tab"])
+  subgraph F["Crew · 1 point"]
+    fleetTab(["Crew tab"])
     converter["Mile converter"]
     payoff["Pay off a racer"]
-    dues["Fleet dues"]
-    pace["Fleet tuning"]
-    fleetFlash["Fleet flash"]
+    dues["Racing"]
+    pace["Crew tuning"]
+    fleetFlash["Crew flash"]
   end
   subgraph R["War Rig · 1 scrap"]
     warrig(["War Rig tab"])
@@ -180,15 +180,15 @@ Each upgrade and what it needs, one line each: the list to edit.
 - 7th gear ← Nitro, Gearbox max
 - Reckless auto-drive ← Black market, Autocruise, 7th gear
 
-### Fleet (1 point; needs the Black Market, and reaching P1)
+### Crew (1 point; needs the Black Market, and reaching P1; the Fleet until 26 Oct)
 
-- Mile converter ← Fleet (free)
-- Pay off a racer ← Fleet
-- Fleet dues ← Pay off a racer
-- Fleet tuning ← Pay off a racer
-- Fleet flash ← Pay off a racer, Headlight flash 5+
+- Mile converter ← Crew (free)
+- Pay off a racer ← Crew
+- Racing ← Pay off a racer (Fleet dues until 26 Oct)
+- Crew tuning ← Pay off a racer (Fleet tuning)
+- Crew flash ← Pay off a racer, Headlight flash 5+ (Fleet flash)
 
-### War Rig (1 scrap; needs the Fleet, and a car totalled)
+### War Rig (1 scrap; needs the Crew, and a car totalled)
 
 - Bull bar ← War Rig
 - Fuel madness ← Bull bar
@@ -198,13 +198,13 @@ Each upgrade and what it needs, one line each: the list to edit.
 - Auto gun ← Guns
 - War Rig radio ← War Rig, Car stereo
 - Hunter ← War Rig, Autocruise, Reckless auto-drive
-- Hunting pack ← Hunter, Fleet dues, Fleet tuning, Fleet flash
+- Hunting pack ← Hunter, Racing, Crew tuning, Crew flash
 
 ## The Crew page (decided 26 Oct, to build)
 
-Act 3 is being rebuilt as the crew (design notes: Act 3 redesign). The Fleet becomes the Crew: the tab, the page and
-the cards renamed, the ids kept for the saves. Until its layers land, the graph above is the game as built; each layer
-moves its part into it.
+Act 3 is being rebuilt as the crew (design notes: Act 3 redesign). The Fleet became the Crew on 26 Oct: the tab, the
+page and the cards renamed (Fleet dues is Racing, Fleet tuning Crew tuning, Fleet flash Crew flash), the ids kept for
+the saves. Until its layers land, the graph above is the game as built; each layer moves its part into it.
 
 The tab: **Crew** (the Fleet renamed), 1 point, needs the Black market, and P1, as before. The War Rig needs the Crew.
 

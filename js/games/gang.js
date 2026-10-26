@@ -45,7 +45,7 @@ Object.assign(UPGRADES, {
   // the nearest car ahead of it, rivals and traffic alike (prowl, road.js driveCar). Price: act4.py, bought a few
   // races before the tank (at 300 it came a race or two before it, at 600 after the guns)
   pack: { name: 'Hunting pack', tab: 'warrig', max: 1, base: 150, needs: ['hunter', 'dues', 'fleetPace', 'fleetFlash'],
-          info: () => `fleet cars hunt as you do: the nearest car ahead of each, within ${PACK} m, into its lane and ` +
+          info: () => `your crew hunt as you do: the nearest car ahead of each, within ${PACK} m, into its lane and ` +
             'into it; and their guns, if any, on it' },
 });
 const GUN = 6, RANGE = 200; // damage a shot a level; m your guns reach (the gang's: 80)

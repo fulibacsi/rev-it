@@ -444,7 +444,9 @@ brakes nor lifts; Auto gas's traction control still trims it, so nitro doesn't s
 
 ### Act 3: the fleet
 
-The game as built. It is being rebuilt as the crew (decided 26 Oct): see
+The game as built, in the words of 26 Oct: the Fleet is the **Crew** (its tab, page and cards; Fleet dues is Racing,
+Fleet tuning Crew tuning, Fleet flash Crew flash; the ids and save keys kept), the rest as below. It is being rebuilt as
+the crew (decided 26 Oct): see
 [Act 3 redesign](#act-3-redesign-the-crew-decided-26-oct-to-build) below, which replaces this section layer by layer as
 each lands.
 
@@ -642,7 +644,7 @@ a burnt-out shell; the first rusty car in the last races; then your crew rides o
 
 **Layers,** a PR each, the full suite before each merge, and every merge a working game (main is live):
 1. These notes and the upgrade graph.
-2. The Fleet renamed the Crew, in words only.
+2. The Fleet renamed the Crew, in words only (built 26 Oct).
 3. The core loop: spots on the road, the tracker, `<` SEND `>`, the windscreen tag, the roles, crude and its tank,
    refineries and brewers, fuel as the money, the Fuel converter's pump price, the role card, team places in points,
    the scripted run; `act3.py`'s bot learns to send, retuned to 10–15 races. The biggest layer: it may come as a few

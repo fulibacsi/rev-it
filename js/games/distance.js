@@ -45,7 +45,7 @@ const UPGRADES = {
   autopilotTab: { name: 'Autopilot', opens: 'autopilot', max: 1, base: 500, built: 0, needs: ['workshopTab'],
                   gate: () => progress.driven >= TO_AUTOPILOT || `${Math.floor(progress.driven / 100) / 10} of ${TO_AUTOPILOT / 1000} km driven` },
   blackTab: { name: 'Black market', opens: 'black', max: 1, base: 1, wallet: 'points', needs: ['workshopTab'], story: () => progress.racing },
-  fleetTab: { name: 'Fleet', opens: 'fleet', max: 1, base: 1, wallet: 'points', needs: ['blackTab'], story: () => fleetOpen() },
+  fleetTab: { name: 'Crew', opens: 'fleet', max: 1, base: 1, wallet: 'points', needs: ['blackTab'], story: () => fleetOpen() },
   warrigTab: { name: 'War Rig', opens: 'warrig', max: 1, base: 1, wallet: 'scrap', needs: ['fleetTab'], story: () => gangOpen() },
 };
 const TO_AUTOPILOT = 2000; // m driven in all before the Autopilot tab is for sale (the owner's graph)
@@ -148,7 +148,7 @@ function debugAct(act) {
 // points (race.js fills it); the Fleet, paid in miles (fleet.js); War Rig, paid in scrap (gang.js). Each is a tab you
 // buy (the owner's graph, 23 Oct): the Black market's once the race is revealed, the Fleet's once you have won a race,
 // the War Rig's once you have totalled a car. Each page's currency: the key in progress, and its unit
-const PAGES = [['workshop', 'Workshop'], ['autopilot', 'Autopilot'], ['black', 'Black market'], ['fleet', 'Fleet'],
+const PAGES = [['workshop', 'Workshop'], ['autopilot', 'Autopilot'], ['black', 'Black market'], ['fleet', 'Crew'],
                ['warrig', 'War Rig']];
 const WALLETS = { workshop: 'bank', autopilot: 'bank', black: 'points', fleet: 'miles', warrig: 'scrap' };
 const UNITS = { bank: 'm', points: 'pts', miles: 'mi', scrap: 'scrap' };
@@ -249,7 +249,7 @@ function finishRun(dnf) { // dnf: why the run ended early (a crash), if it did
   progress.bank += run.dues;
   run.team = run.race ? teamMiles() : 0; // fleet.js: your fleet's places pay miles
   progress.miles += run.team;
-  run.won = was > 1 && progress.finish === 1; // the first win opens the Fleet
+  run.won = was > 1 && progress.finish === 1; // the first win opens the Crew
   save();
   const { gain, newBest, race, dues, team, refill, totals, scrap, boss, beatTank, limp } = run;
   report('run', { run: { gain, newBest, race, dues, team, refill, totals, scrap, boss, beatTank, limp } }); // reporting.js
@@ -338,11 +338,11 @@ TUTORIALS.unshift(
     now: () => (progress.finish <= FIELD ? `Your best place: P${progress.finish}.` : '') +
       (hint() ? ` Stuck? ${hint()}.` : '') },
   { id: 'act3', act: 'III', name: 'RECRUIT', open: () => fleetOpen(),
-    text: () => 'P1! The racers you beat are open to offers. Buy the Fleet tab and pay them off in miles: they race ' +
+    text: () => 'P1! The racers you beat are open to offers. Buy the Crew tab and pay them off in miles: they race ' +
       'for you, in your colours, and their places at the finish pay you miles.',
     now: () => `${fleetSize() || 'None'} of the field race${fleetSize() === 1 ? 's' : ''} for you.` },
   { id: 'act4', act: 'IV', name: 'WAR', open: () => arOn(),
-    text: () => `${GANG} of the field race for you: your fleet is a gang now. Its first job for you: total a car.`,
+    text: () => `${GANG} of the field race for you: your crew is a gang now. Its first job for you: total a car.`,
     now: () => 'Ram the car in the reticle until its health bar is empty.' },
   { id: 'nolaw', name: 'NO LAW OUT HERE', open: () => gangOpen(),
     text: () => 'Totalled! No law out here any more. The gang is yours, and your car becomes a war rig: the War Rig tab ' +
@@ -373,7 +373,7 @@ function runLine() {
   if (run.gain == null) return '';
   return [`<b>+${fmt(run.gain)} m</b>${run.newBest ? ' new best!' : ''}`,
     r && (r.dnf ? `<b>DNF</b> ${dnf(r)}` : `<b>P${r.p}</b> +${r.points} pts`),
-    run.team && `team places +${fmt(run.team)} mi`, run.dues && `fleet dues +${fmt(run.dues)} m`,
+    run.team && `team places +${fmt(run.team)} mi`, run.dues && `racing +${fmt(run.dues)} m`,
     run.refill && `nitro refill −${fmt(run.refill)} m`,
     run.totals && `totalled ${run.totals}, +${fmt(run.scrap)} scrap`, run.beatTank && `the tank scrapped, +${TANK.scrap} scrap`,
     arOn() && `police heat ${heatPct()}`, hint() && `<i>stuck? ${hint()}</i>`]
@@ -388,7 +388,7 @@ function runRows() {
     if (r) rows.push(['Race', r.dnf ? `DNF: ${dnf(r)}` : `${r.start > FIELD ? 'from the back' : 'from P' + r.start} to P${r.p}`],
       ['Points', `+${r.points}` + (r.fresh ? ` (${r.fresh} for new places)` : '')]);
     if (run.team) rows.push(['Team places', `+${fmt(run.team)} mi`]);
-    if (run.dues) rows.push(['Fleet dues', `+${fmt(run.dues)} m`]);
+    if (run.dues) rows.push(['Racing', `+${fmt(run.dues)} m`]);
     if (run.refill) rows.push(['Nitro refill', `−${fmt(run.refill)} m`]);
     if (run.totals) rows.push(['Totalled', `${run.totals}, +${fmt(run.scrap)} scrap`]);
     if (run.beatTank) rows.push(['The tank', `scrapped, +${TANK.scrap} scrap`]);
@@ -587,7 +587,7 @@ const DISTANCE = {
     const time = Math.floor(progress.time / 60), s = [['Time played', time < 60 ? `${time} min` : `${Math.floor(time / 60)} h ${time % 60} min`],
       ['Runs', fmt(progress.runs)], ['Best run', `${fmt(progress.best)} m`], ['Distance driven', `${fmt(progress.driven)} m`]];
     if (progress.racing) s.push(['Races', fmt(progress.races)], ['Best place', `P${progress.finish}`]);
-    if (fleetOpen()) s.push(['Fleet', `${fleetSize()} cars`]);
+    if (fleetOpen()) s.push(['Crew', `${fleetSize()} cars`]);
     if (gangOpen()) s.push(['Cars totalled', fmt(progress.totals)]);
     if (progress.tanks) s.push(['Tanks beaten', fmt(progress.tanks)]);
     return s;
