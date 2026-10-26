@@ -125,10 +125,14 @@ function renderMenu() {
   $('stats-list').innerHTML = $('win-stats').innerHTML = rows;
   for (const b of $('menu').querySelectorAll('.build')) b.textContent = BUILD;
 }
+// paused: the engine falls silent too. A tutorial or an act's card popping up over the game only hushes the car: the
+// stereo plays on (the owner, 27 Oct: reading in sudden silence felt odd)
+const POPUPS = ['tour', 'act'];
+const hush = on => { if (carBus) carBus.gain.value = on ? 0 : carVolume; };
 function openMenu(name) {
   menuOpen = true;
   document.body.classList.add('menu');
-  ctx?.suspend(); // paused: the engine falls silent too
+  if (POPUPS.includes(name)) hush(true); else ctx?.suspend();
   game.pause?.();
   screenFrom = [];
   showScreen(name ?? (playing ? 'pause' : 'main'), true);
@@ -136,6 +140,7 @@ function openMenu(name) {
 function closeMenu() {
   menuOpen = false;
   document.body.classList.remove('menu');
+  hush(false);
   ctx?.resume();
 }
 function toggleMenu() { if (!menuOpen) openMenu(); else if (playing) closeMenu(); }

@@ -152,7 +152,8 @@ machine or session. Keep it current: update a section when a decision changes, a
   over a phone's data on every first visit was too much for tapes mostly not played): the save's tape while the main
   menu is up, the next one while a tape plays, so a tap changes tapes at once. An iPhone loads no media before it
   plays, whatever the page asks, so ahead means downloaded into memory. On an iPhone a tape plays only from a tap:
-  the first tap while it should be playing starts it (untested on a phone: emulation only). The menu pauses it. A row
+  the first tap while it should be playing starts it (untested on a phone: emulation only). The menu pauses it; a
+  tutorial or an act's card popping up only hushes the car, and the tape plays on (the owner, 27 Oct). A row
   of lights in the cluster's hood jumps with the beat, now the kick drum heard in the music's bass (a jump over its
   recent level); on the phone that is all there is: the dash is full. On a desktop a head unit in the dash, left of
   the cluster, shows the tape (a name too long for it scrolls) and an 8-band equaliser. A tap on the lights or the
