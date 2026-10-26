@@ -57,7 +57,7 @@ talking about upgrades. Keep it up to date with every change to an upgrade, a ta
 - `js/games/`: `levels.js` (adaptive levels for Rev and Speed signs), `rev.js`, `signs.js`, `distance.js` (garage,
   upgrades, runs, save, the act cards), `race.js` (the hidden race, the Black market's upgrades, scoring), `fleet.js` (the Crew:
   paid-off racers and their teamwork), `oil.js` (the crew's roles, the oil spots and refineries, the tracker, crude and
-  fuel), `gang.js` (War Rig: the AR target, totals, parts, guns), `police.js` (police
+  fuel, the Foreman, act 3's foreshadowing), `gang.js` (War Rig: the AR target, totals, parts, guns), `police.js` (police
   heat, the scanner, police cars), `boss.js` (the tank, the ending), `damage.js` (damage, heat, nitro), `aids.js`
   (Distance's driver aids: robot feet and hands working the same pedals and lever as the player).
 - Saves: `localStorage` keys `car-rev-settings` and `car-rev-incremental` (Distance progress). Keep these names so

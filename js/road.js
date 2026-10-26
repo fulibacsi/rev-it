@@ -169,7 +169,12 @@ function madLook(look) {
   return look.mad ??= lazyLook({ rear: () => madSprite(spec, 'rear'), front: () => madSprite(spec, 'front'),
     beams: () => madSprite(spec, 'front', true) }, { madOf: look });
 }
-function madSprite(spec, side, beams) { // from behind, or in front (bars over the windscreen, a spiked bull bar)
+function rustLook(look) { // the first rusty cars on the road (act 3's foreshadowing, oil.js): gone to seed, not yet armed
+  const { spec } = look;
+  return look.rust ??= lazyLook({ rear: () => madSprite(spec, 'rear', false, true), front: () => madSprite(spec, 'front', false, true),
+    beams: () => madSprite(spec, 'front', true, true) }, { rustOf: look });
+}
+function madSprite(spec, side, beams, plain) { // from behind, or in front (bars over the windscreen, a spiked bull bar); plain: no bars or spikes
   const v = CAR_ART[spec.model][side], pad = 4, [gx0, gy0, gx1, gy1] = v.glass, [bx0, , bx1, by1] = v.body, bw = bx1 - bx0, low = by1 - gy1;
   const primer = (x, y) => y > gy1 && x - bx0 > bw * (spec.k % 2 ? 0.64 : 0.14) && x - bx0 < bw * (spec.k % 2 ? 0.84 : 0.34) && '#7c7a70';
   const parts = side === 'rear' ? [v.car, v.bumpers[spec.bumper], v.spoilers[spec.spoiler]] : [v.car, v.bumpers[spec.front]];
@@ -181,6 +186,7 @@ function madSprite(spec, side, beams) { // from behind, or in front (bars over t
   const dead = (v.lamps ?? v.lights)[1]; // the right tail light's outer half, or the right headlight, out
   if (dead && v.lamps) at('#2a0c0c', (dead[0] + dead[2]) / 2, dead[1], (dead[2] - dead[0]) / 2, dead[3] - dead[1]);
   else if (dead) at('#24242a', dead[0], dead[1], dead[2] - dead[0], dead[3] - dead[1]);
+  if (plain) return beams ? glare(c, v, pad) : c;
   for (const f of [0.25, 0.5, 0.75]) { at('#1e1e22', gx0 + f * (gx1 - gx0), gy0, 2, gy1 - gy0); at('#6a6a72', gx0 + f * (gx1 - gx0), gy0, 1, gy1 - gy0); } // bars
   at('#1e1e22', gx0 + 2, (gy0 + gy1) / 2, gx1 - gx0 - 4, 2); at('#6a6a72', gx0 + 2, (gy0 + gy1) / 2, gx1 - gx0 - 4, 1);
   const spike = (x, y) => { at('#e2e2ea', x, y - 4, 1, 4); at('#8c8c96', x + 1, y - 3, 1, 3); at('#55555c', x - 1, y - 1, 1, 1); }; // steel, lit on its left
@@ -190,11 +196,13 @@ function madSprite(spec, side, beams) { // from behind, or in front (bars over t
   at('#3c3c42', bx0, py, bw, 4); at('#a4a4ae', bx0, py, bw, 1); at('#1e1e22', bx0, py + 3, bw, 1);
   for (let i = 1; i < 8; i++) at('#c8c8d0', bx0 + i * bw / 8, py + 2);
   for (let i = 0; i < 6; i++) spike(bx0 + (i + 0.5) * bw / 6 - 1, py); // spikes along it
-  if (beams) { // flashing you with the one headlight it has left
-    const l = v.lights[0] ?? [bw * 0.1, (v.glass[3] + by1) / 2, bw * 0.3, (v.glass[3] + by1) / 2 + 4], g = c.getContext('2d');
-    const x = (l[0] + l[2]) / 2, y = (l[1] + l[3]) / 2 + pad, glow = g.createRadialGradient(x, y, 1, x, y, c.width * 0.3);
-    glow.addColorStop(0, '#ffffff'); glow.addColorStop(1, '#fff6c800'); g.fillStyle = glow; g.fillRect(0, 0, c.width, c.height);
-  }
+  return beams ? glare(c, v, pad) : c;
+}
+function glare(c, v, pad) { // flashing you with the one headlight it has left
+  const [bx0, , bx1, by1] = v.body, bw = bx1 - bx0;
+  const l = v.lights[0] ?? [bw * 0.1, (v.glass[3] + by1) / 2, bw * 0.3, (v.glass[3] + by1) / 2 + 4], g = c.getContext('2d');
+  const x = (l[0] + l[2]) / 2, y = (l[1] + l[3]) / 2 + pad, glow = g.createRadialGradient(x, y, 1, x, y, c.width * 0.3);
+  glow.addColorStop(0, '#ffffff'); glow.addColorStop(1, '#fff6c800'); g.fillStyle = glow; g.fillRect(0, 0, c.width, c.height);
   return c;
 }
 const TANK_SPRITE = sprite(300, 230, (g, w, h) => { // the final boss (Distance), from behind: hull, tracks, turret, gun
@@ -245,6 +253,32 @@ const REFINERY = [0, 1].map(lick => sprite(320, 240, (g, w, h) => {
   g.fillStyle = '#ffc861'; // lamps on the columns
   for (const [x, y] of [[0.185, 0.45], [0.185, 0.62], [0.305, 0.6], [0.67, 0.38], [0.67, 0.55], [0.67, 0.72]]) g.fillRect(w * x, h * y, 3, 3);
 }));
+// act 3's foreshadowing (oil.js omenMarks), in the same silhouette: a fuel station, its board the pump price, then NO FUEL,
+// then boarded up (board '': its lamps out, planks across the pumps and the board)
+const STATIONS = new Map();
+function stationSprite(board) {
+  if (!STATIONS.has(board)) STATIONS.set(board, sprite(360, 200, (g, w, h) => {
+    g.fillStyle = '#2a1430';
+    g.fillRect(0, h * 0.93, w, h * 0.07); // the forecourt
+    g.fillRect(w * 0.04, h * 0.2, w * 0.66, h * 0.09); // the canopy, on two posts
+    for (const x of [0.12, 0.58]) g.fillRect(w * x, h * 0.29, w * 0.03, h * 0.64);
+    for (const x of [0.27, 0.42]) { g.beginPath(); g.roundRect(w * x, h * 0.62, w * 0.06, h * 0.31, 4); g.fill(); } // the pumps
+    g.fillRect(w * 0.885, h * 0.3, w * 0.025, h * 0.63); // the board, on its pole
+    g.fillRect(w * 0.79, h * 0.04, w * 0.2, h * 0.28);
+    if (!board) { // boarded up
+      g.strokeStyle = '#5a3a2a'; g.lineWidth = 6;
+      for (const [x0, y0, x1, y1] of [[0.24, 0.66, 0.51, 0.88], [0.24, 0.88, 0.51, 0.66], [0.8, 0.07, 0.98, 0.29]]) {
+        g.beginPath(); g.moveTo(w * x0, h * y0); g.lineTo(w * x1, h * y1); g.stroke();
+      }
+      return;
+    }
+    g.fillStyle = '#ffc861'; for (let i = 0; i < 5; i++) g.fillRect(w * (0.09 + 0.12 * i), h * 0.29, 12, 5); // lamps under the canopy
+    const out = board === 'NO FUEL';
+    g.fillStyle = out ? '#ff4a3a' : '#ffb03a'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = `bold ${h * 0.1}px monospace`;
+    if (out) { g.fillText('NO', w * 0.89, h * 0.12); g.fillText('FUEL', w * 0.89, h * 0.24); } else g.fillText(board, w * 0.89, h * 0.18);
+  }));
+  return STATIONS.get(board);
+}
 const RACERS = new Map(); // racers' rear views by number: kitted, racing stripes, and the number once the race is revealed
 const FONT = ['111101101101111', '010110010010111', '111001111100111', '111001111001111', '101101111001001', '111100111001111',
   '111100111101111', '111001001001001', '111101111101111', '111101111001111']; // 0-9, 3 wide and 5 high, row by row
@@ -367,6 +401,8 @@ const PASS = 10 / 3.6, MIRROR = 4, SIGNAL = 1;
 // dice, so the road is the same as before for everyone else
 const mad = c => !c.racer && !c.fleet && !c.police && !c.tank &&
   c.serial * 0.6180339887 % 1 < (game.madness?.() ?? 0);
+// the first rusty cars (the game's rust(): the share of ordinary cars gone to rust, 0 to 1; Distance's act 3, oil.js)
+const rusty = c => !c.racer && !c.fleet && !c.police && !c.tank && c.serial * 0.3819660113 % 1 < (game.rust?.() ?? 0);
 function driveCar(c, dt) { // follow at a safe distance, or pull out and pass
   const lead = leader(c), gap = lead ? lead.z - c.z - CAR_LEN : Infinity, safe = 8 + 1.2 * c.v;
   let aim = c.want;
@@ -497,7 +533,7 @@ function roadSlope(pos) { return elevation(pos + 0.5) - elevation(pos - 0.5); }
 
 // a mad driver's car is rusty and weaves in its lane, drawn only (its place on the road stays put), so you know it
 // from afar (the owner left the look to Claude, 18 Oct)
-const lookOf = c => mad(c) && c.look.spec ? madLook(c.look) : c.look;
+const lookOf = c => !c.look.spec ? c.look : mad(c) ? madLook(c.look) : rusty(c) ? rustLook(c.look) : c.look;
 const weave = c => mad(c) && !c.wreck ? 0.3 * Math.sin(performance.now() / 250 + c.serial) : 0; // m, about every 1.6 s
 // the game's marks by kind, each sprite made only for its own kind (all three were, for every mark: the best banner,
 // a 640 px canvas, was redrawn for each distance board ahead, every frame, and a speed sign kept for each distance)
@@ -510,6 +546,9 @@ const MARKS = {
   jack: () => ({ x: ROAD.half + 8, w: 8, h: 5.8, img: JACK[Math.floor(performance.now() / 700) % 2] }),
   refinery: () => ({ x: ROAD.half + 17, w: 20, h: 15, img: REFINERY[Math.floor(performance.now() / 180) % 2] }),
   parked: v => { const img = racerSprite(v.n, true, true).rear; return { x: ROAD.half + 2.6 + 2.3 * v.side, w: CAR_M, h: CAR_M * img.height / img.width, img }; },
+  // its foreshadowing (oil.js omenMarks): a fuel station, and a burnt-out shell on the shoulder
+  station: v => ({ x: ROAD.half + 13, w: 13, h: 7.2, img: stationSprite(v) }),
+  shell: v => { const img = wreckSprite(trafficLook(v).rear); return { x: SHOULDER + 0.8, w: CAR_M, h: CAR_M * img.height / img.width, img }; },
 };
 function drawRoad(g, w, h, dt) {
   const depth = 1 / Math.tan(ROAD.fov / 2 * Math.PI / 180), horizon = h * ROAD.horizon, k0 = w / 2;

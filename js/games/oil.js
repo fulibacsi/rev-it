@@ -238,6 +238,23 @@ function crewMarks() {
   return out;
 }
 
+// ---- the foreshadowing (the owner, 26 Oct: without a word): a fuel station up the road, its board the pump price as
+// it climbs with your crew; then NO FUEL; then boarded up; a burnt-out shell on the shoulder; and in the last races
+// before the gang, the first rusty cars in the traffic (road.js draws them). Act 3 only, from the first of your crew to
+// the gang; where and when are Claude's calls: by the crew's size, two stations a run, the shell between them
+const omen = () => crewOn() ? fleetSize() / GANG : -1; // how far into act 3 (-1: not in it)
+const omenRust = () => run.phase === 'run' && omen() >= 0.85 ? 0.06 : 0; // DISTANCE.rust: a car in 16 or so
+function omenMarks() {
+  const f = omen(), out = [], near = z => z > odo - 30 && z - odo < 1600;
+  if (f < 0) return out;
+  const clear = z => { while (run.spots?.some(s => Math.abs(s.z - z) < 70)) z += 80; return z; }; // not on a spot
+  const board = f < 0.4 ? fmt(pumpPrice()) : f < 0.7 ? 'NO FUEL' : '';
+  for (const at of [900, 3300]) { const z = clear(at); if (near(z)) out.push({ z, kind: 'station', value: board }); }
+  const z = clear(2100);
+  if (f >= 0.6 && near(z)) out.push({ z, kind: 'shell', value: progress.runs * 37 % TRAFFIC });
+  return out;
+}
+
 // ---- what you see: the tracker on the sonar's right (the owner's: on the far left your hand would hide it), the
 // spots ahead on a log scale, near ones spread out, far ones packed close; a tag on the windscreen on the spot picked,
 // in the head-up display's look and the sonar's green (not act 4's red gunsight, which stays new); the crude tank on

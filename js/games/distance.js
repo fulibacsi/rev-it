@@ -306,7 +306,7 @@ function roadMarks() {
   const marks = [];
   for (let m = Math.max(100, Math.ceil(odo / 100) * 100); m < odo + 1500; m += 100) marks.push({ z: m, kind: 'board', value: m });
   if (run.best) marks.push({ z: run.best, kind: 'best', value: run.best });
-  marks.push(...crewMarks()); // oil.js: act 3's spots, and your crew's cars at them
+  marks.push(...crewMarks(), ...omenMarks()); // oil.js: act 3's spots, your crew's cars at them, and its foreshadowing
   return marks;
 }
 
@@ -594,6 +594,7 @@ const DISTANCE = {
   engine: () => progress.engine, // the garage's engines, not the menu's
   tune: applyUpgrades,
   madness: () => run.phase === 'run' && !progress.off.baddrivers ? madShare(lvl('baddrivers')) : 0, // gang.js
+  rust: () => omenRust(), // oil.js (it loads later)
   start() { // a new game goes straight onto the road, its first act's card up first, then the Driving tutorial (unless
     // seen): no garage before the first run, with nothing in it yet (the owner, 23 Oct)
     Object.assign(run, { phase: 'garage', best: progress.best }); shownPhase = null;
