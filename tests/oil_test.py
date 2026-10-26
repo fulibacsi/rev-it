@@ -99,6 +99,16 @@ with sync_playwright() as p:
     check("at the gang: the whole crew races, nobody rides", got == [False, 0, 51], got)
     got = js("(() => { const was = [progress.oil, progress.levels.fleet]; progress.oil = 0; progress.levels.fleet = 51; const r = whyNot('dues'); [progress.oil, progress.levels.fleet] = was; return r; })()")
     check("a save that reached the gang before the oil: Racing still on sale (the Hunting pack needs it)", got in ("", "short"), got)
+    # the foreshadowing, by the crew's size: a station with the pump price, NO FUEL, boarded up; a shell; rusty cars
+    got = js("""(() => { const was = [progress.levels.fleet, odo, run.phase, run.spots], r = []; Object.assign(run, { phase: 'run', spots: [] }); odo = 800;
+        for (const n of [10, 25, 40, 47]) { progress.levels.fleet = n; const m = omenMarks();
+          r.push([m.find(x => x.kind === 'station')?.value, m.some(x => x.kind === 'shell'), omenRust()]); }
+        [progress.levels.fleet, odo, run.phase, run.spots] = was; return r; })()""")
+    check("the foreshadowing: the pump price on a station's board, then NO FUEL, then boarded up and a burnt-out shell, then rusty cars",
+          got == [["2,240", False, 0], ["NO FUEL", False, 0], ["", True, 0], ["", True, 0.06]], got)
+    got = js("""(() => { const a = [stationSprite('2,240'), stationSprite('NO FUEL'), stationSprite(''), wreckSprite(trafficLook(3).rear)];
+        const l = rustLook(trafficLook(5)); a.push(l.rear, l.front, l.beams); return a.every(c => c.width > 0 && c.height > 0); })()""")
+    check("their sprites draw: the stations, the shell, a rusty car from behind, in front and flashing", got, "")
     # 8. desktop: , and . pick a spot, S sends a car (a held key sends one); ‹ SEND › and the tracker clear of the cockpit
     pg = b.new_context(viewport={"width": 1440, "height": 900}).new_page(); js = pg.evaluate
     pg.on("pageerror", lambda e: errors.append(str(e))); pg.on("dialog", lambda d: d.accept())

@@ -57,7 +57,7 @@ talking about upgrades. Keep it up to date with every change to an upgrade, a ta
 - `js/games/`: `levels.js` (adaptive levels for Rev and Speed signs), `rev.js`, `signs.js`, `distance.js` (garage,
   upgrades, runs, save, the act cards), `race.js` (the hidden race, the Black market's upgrades, scoring), `fleet.js` (the Crew:
   paid-off racers and their teamwork), `oil.js` (the crew's roles, the oil spots and refineries, the tracker, crude and
-  fuel), `gang.js` (War Rig: the AR target, totals, parts, guns), `police.js` (police
+  fuel, the Foreman, act 3's foreshadowing), `gang.js` (War Rig: the AR target, totals, parts, guns), `police.js` (police
   heat, the scanner, police cars), `boss.js` (the tank, the ending), `damage.js` (damage, heat, nitro), `aids.js`
   (Distance's driver aids: robot feet and hands working the same pedals and lever as the player).
 - Saves: `localStorage` keys `car-rev-settings` and `car-rev-incremental` (Distance progress). Keep these names so
@@ -117,7 +117,7 @@ uv run --no-project --with playwright playwright install chromium         # once
   open their pages; to buy the first thing on a page, set its tab too (`workshopTab: 1`, `autopilotTab`, `blackTab`,
   `fleetTab`, `warrigTab`).
 - **Debug mode**, for playtesting: tap the menu's REV IT title 5 times (then OK). Distance plays a separate save,
-  copied from the game the first time, with unlimited metres, points, miles and parts (shown as ∞), every grid slot
+  copied from the game the first time, with unlimited metres, points, fuel and scrap (shown as ∞), every grid slot
   for sale and police heat rising ten times quicker, so the later acts are quick to reach; the same again switches it
   off and the real game comes back as it was. In a test: `settings.debug = true; applyDebug()`. Its main menu has
   "start at act I II III IV" in the corner: the debug game set to that act's start, the pages before it bought out as

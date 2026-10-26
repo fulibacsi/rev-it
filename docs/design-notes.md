@@ -502,8 +502,8 @@ ACT III's card says so after that race: "the racers you beat are open to offers"
 The owner's brief (25 Oct): "there is no interaction with the fleet, nothing new to do, no exciting upgrade"; the
 playtesters found the Fleet slow; act 1 is mechanical driving, act 2 lane control, act 4 hunting cars, and act 3
 "nothing but buying the same upgrades 51 times". This is what the brainstorm of 25–26 Oct settled on, to build in
-layers, a PR each. Built 26–27 Oct, with the numbers measured since (marked **as built**); still to build: the
-foreshadowing and act 4's Hunter role.
+layers, a PR each. Built 26–27 Oct, with the numbers measured since (marked **as built**); still to build:
+act 4's Hunter role.
 
 **Measured first** (25 Oct, scratch runs in the page: act 2's car at P1, `act3.py`'s bot):
 - The fleet starts in its own slots, 120 m apart behind you. The nearest fleet car was 8.2–8.5 km behind you all race
@@ -677,6 +677,14 @@ range, buys a bigger tank when it ends a run full, and otherwise the cheapest of
 
 **Foreshadowing,** without a word: the pump price climbs; stations that aren't yours show NO FUEL, then get boarded up;
 a burnt-out shell; the first rusty car in the last races; then your crew rides out as the gang.
+- **As built** (27 Oct, `oil.js` omens; where and when are Claude's calls): from your first crew car to the gang, two
+  fuel stations stand by the road each run (900 m and 3.3 km up, moved off any spot), in the palms' silhouette with
+  lamps under the canopy. Up to the 20th car (40% of the way to 51) their board shows the pump price, the
+  converter's metres a litre, climbing (with the 19 cars or so act 2's metres buy, that is the act's first races);
+  from the 21st NO FUEL in red; from the 36th (70%) boarded up, lamps out, planks across. From the 31st (60%) a
+  burnt-out shell sits on the shoulder between them, smoking (act 4's wreck, a different car each run). From the
+  44th (85%), one ordinary car in about 16 is rusty: act 4's mad paint (rust, a primer panel, holes, a light out),
+  without its bars or spikes, and it drives like any other car.
 
 **Still to settle:** what points buy in act 3 (the Black market is mostly bought by then); every number above; and act
 4's Hunter role, with what it needs now that Fleet flash is gone (its own layer, with `act4.py`).
@@ -693,7 +701,7 @@ a burnt-out shell; the first rusty car in the last races; then your crew rides o
 5. The Foreman (built 27 Oct): it sends as `act3.py`'s bot does (`oil.js` `bestSpot`: a spot a second after it
    shows, four cars a second, the most to pay before you pass it that the free cars can fill), without a beep; SEND
    reads AUTO while it is on, as the trigger does with Auto gun.
-6. The foreshadowing.
+6. The foreshadowing (built 27 Oct).
 7. Act 4's Hunter role.
 
 ### Act 4: the War Rig
