@@ -87,9 +87,11 @@ const FRESH = () => ({ bank: 0, best: 0, runs: 0, levels: {}, off: {}, engine: 0
                        time: 0, driven: 0, races: 0, seen: [], toured: [], dry: 0 }); // seen: upgrades seen unlocked (the tabs' !);
                                                        // toured: tutorials popped up (tutorial.js); dry: races in a row
                                                        // without a Black market buy (race.js raceWall)
-// debug mode (main.js) plays a save of its own, with wallets that never run out, so testing never touches the game
+// debug mode (main.js) plays a save of its own, so testing never touches the game, with wallets that never run out
+// unless its money switch is off (the owner, 27 Oct: to feel the prices): then they fill and empty as in play
 const FUNDS = 1e9;
 let debugSave = false;
+const bottomless = () => debugSave && settings.debugMoney !== false; // main.js loads later
 const saveKey = () => debugSave ? SAVE_KEY + '-debug' : SAVE_KEY;
 const progress = Object.assign(FRESH(), load());
 function load() { // a save from before fuel (26 Oct) has miles: they are litres now, one for one
@@ -99,7 +101,7 @@ function load() { // a save from before fuel (26 Oct) has miles: they are litres
   return s;
 }
 function save() {
-  if (debugSave) progress.bank = progress.points = progress.fuel = progress.scrap = FUNDS; // spent or earned, back to full
+  if (bottomless()) progress.bank = progress.points = progress.fuel = progress.scrap = FUNDS; // spent or earned, back to full
   try { localStorage.setItem(saveKey(), JSON.stringify(progress)); } catch { /* not saved */ }
 }
 const forgetRun = () => Object.assign(run, { gain: null, race: null, revealed: false, won: false, dues: 0, team: 0, scrap: 0, totals: 0,
@@ -119,25 +121,32 @@ function useDebugSave(on) { // switch saves; the first debug save starts as a co
   if (on) save(); // the wallets filled; switched off, the game's own save is left as it is
   forgetRun();
 }
-const money = n => debugSave ? '∞' : fmt(n); // a debug wallet shows as bottomless
+const money = n => bottomless() ? '∞' : fmt(n); // a debug wallet shows as bottomless
+function debugMoney(on) { // the switch: on, the wallets fill; off, they empty (start at an act for its own)
+  settings.debugMoney = on;
+  saveSettings();
+  Object.assign(progress, on ? {} : { bank: 0, points: 0, fuel: 0, scrap: 0 });
+  save();
+}
 
 // debug mode's acts (the owner, 26 Oct: to test an act without playing the ones before it): the debug save set to an
 // act's start. From a fresh game, the story so far, and the pages before the act bought out as the graph allows (the
 // debug wallets pay); everything open by then counts as seen; then the act's own moment, so its card pops up as it
-// does in play. Anything of the act's or later is gone. act: 0 for the first (a new game)
+// does in play. Anything of the act's or later is gone. With the money switch off, the wallets the act starts with in
+// the simulations (tests/balance: act 2's metres left at P1, act 4's reserve). act: 0 for the first (a new game)
 const ACTS = [
   { pages: [] },
   { pages: ['workshop', 'autopilot'], story: { runs: 20, driven: 60000, best: 3000 },
     moment: () => { progress.racing = true; } }, // past #100: the race
   { pages: ['workshop', 'autopilot', 'black'], story: { runs: 40, races: 20, driven: 150000, best: 5000, racing: true, finish: 2 },
-    moment: () => { progress.finish = 1; } }, // the first win
+    wallets: { bank: 44000, points: 10 }, moment: () => { progress.finish = 1; } }, // the first win (P1 pays 10)
   { pages: ['workshop', 'autopilot', 'black', 'fleet'], cap: () => ({ fleet: GANG - 1 }), // gang.js loads later
     story: { runs: 55, races: 35, driven: 250000, best: 5000, racing: true, finish: 1, oil: 2 }, // the oil on (oil.js)
-    moment: () => { progress.levels.fleet = GANG; } }, // the gang
+    wallets: { bank: 3000 }, moment: () => { progress.levels.fleet = GANG; } }, // the gang
 ];
 function debugAct(act) {
   if (!debugSave) return;
-  const { pages, story, cap = () => ({}), moment } = ACTS[act], most = cap();
+  const { pages, story, cap = () => ({}), wallets = {}, moment } = ACTS[act], most = cap();
   const mine = id => pages.includes(UPGRADES[id].opens ?? pageOf(UPGRADES[id]));
   Object.assign(progress, FRESH(), story, { bank: FUNDS, points: FUNDS, fuel: FUNDS, scrap: FUNDS }); // as save() keeps them
   for (let more = true; more;) { // over and over: a buy can open another (Flash recharge waits for Reckless driving)
@@ -148,6 +157,7 @@ function debugAct(act) {
                             seen: Object.keys(UPGRADES).filter(shows) });
   markTours(); // tutorial.js: what is open before the moment
   moment?.();
+  if (!bottomless()) Object.assign(progress, { bank: 0, points: 0, fuel: 0, scrap: 0 }, wallets);
   save();
   forgetRun();
 }
