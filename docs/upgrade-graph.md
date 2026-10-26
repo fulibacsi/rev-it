@@ -215,7 +215,6 @@ flowchart TD
     converter["Fuel converter"]
     payoff["Pay off a racer"]
     tuning["Crew tuning"]
-    dues["Crew dues"]
     racing["Racing"]
     harvesting["Harvesting"]
     brewing["Brewing"]
@@ -229,7 +228,7 @@ flowchart TD
   end
   black(["Black market tab"]) -- P1 --> crewTab
   crewTab --> converter & payoff
-  payoff --> tuning & dues
+  payoff --> tuning
   crewTab -- "the first crude" --> racing & harvesting
   crewTab -- "the first fuel" --> brewing
   harvesting --> crude & sonar
@@ -245,8 +244,7 @@ flowchart TD
 - Fuel converter ← Crew (free; the Mile converter renamed)
 - Pay off a racer ← Crew
 - Crew tuning ← Pay off a racer (Fleet tuning renamed)
-- Crew dues ← Pay off a racer (Fleet dues renamed: every crew member earns metres)
-- Racing ← Crew, the first crude (racers' places: only racers earn places)
+- Racing ← Crew, the first crude (Fleet dues renamed)
 - Harvesting ← Crew, the first crude
 - Brewing ← Crew, the first fuel
 - Crude tank ← Harvesting

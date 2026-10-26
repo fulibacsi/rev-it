@@ -535,11 +535,9 @@ the tank's size; and **fuel**, the Crew page's money in place of miles. The crew
 loop compounds. The goal is unchanged: 51 crew make the gang (act 4).
 
 **The crew** is the Fleet renamed (the owner, 26 Oct: the tab, the page, the cards and the words; the upgrade ids and
-save keys stay): every racer you pay off. Every crew member earns metres, whatever its role: a share of the metres it
-drives (a racer those of its own race, the rest yours), raised by Crew dues. Only racers earn places (the owner,
-26 Oct). Each has a role:
-- **Racer:** in its slot on the grid, racing as the fleet does now. Its place at the finish pays points instead of
-  miles, so what is left on the Black market stays in reach; Racing raises them.
+save keys stay): every racer you pay off. Each has a role:
+- **Racer:** in its slot on the grid, racing as the fleet does now. Team places pay points instead of miles, so what is
+  left on the Black market stays in reach; Racing (Fleet dues renamed) pays a share of the metres racers drive.
 - **Harvester:** rides with you and works oil spots.
 - **Brewer** (the owner's name): rides with you and works refineries, turning crude into fuel.
 - **Hunter,** in act 4: the Hunting pack as a role (the owner's idea), named only once the War Rig page is open.
@@ -548,7 +546,7 @@ The roles are split on a card in the garage, free to change between runs. All ha
 next is a fair tactic (the owner's), since crude keeps.
 
 **How it opens** (the owner, 26 Oct):
-- Cars 1–4 have no role and race. Crew tuning and Crew dues, the generic upgrades, are their only ones.
+- Cars 1–4 have no role and race. Crew tuning is their only upgrade.
 - The run after the 5th car is scripted, one run for both systems:
   - about 5 s in, a fixed oil puddle (0/3) comes up. The run pauses for its tutorial (puddles, roles, three of your
     racers made harvesters, how to send), then you have about 15 s to send three, and it fills the crude tank until
@@ -600,8 +598,7 @@ over as litres, one for one.
 |---|---|---|---|---|
 | Pay off a racer | up to 99 | 1 | 1.035 | as now: one more of the crew |
 | Crew tuning | 5 | 3 | 3 | Fleet tuning renamed: racers 5% quicker a level, and crew cars reach their spot sooner |
-| Crew dues | 5 | 5 | 3 | Fleet dues renamed: every crew member pays 10% a level of the metres it drives |
-| Racing | 5 | 5 | 3 | racers' places pay 20% more points a level |
+| Racing | 5 | 5 | 3 | Fleet dues renamed: racers pay 10% a level of the metres they drive |
 | Harvesting | 5 | 5 | 3 | harvesters pump 20% more a level |
 | Brewing | 5 | 5 | 3 | brewers get more fuel from the crude: 2:1 towards 1:1 |
 | Crude tank | 3 | 10 | 2.5 | a bigger tank |
@@ -612,7 +609,7 @@ over as litres, one for one.
 | Double up | 1 | 60 | | a press of SEND sends two cars |
 | Foreman | 1 | 150 | | after Double up: sends the crew for you (the biggest yield in reach it can fill), so you are hands-free by the end of the act; a switch; your own SEND still works |
 
-The role upgrades, tuning and dues grow steeply (the owner: "make their price grow steeply"). The names stay one or two
+The role upgrades and tuning grow steeply (the owner: "make their price grow steeply"). The names stay one or two
 words, as every card's does (Claude's call: "efficiency" would wrap on a phone, and the card's line says what each
 does). Fleet flash goes: it never fired at P1. What needs what: the upgrade graph.
 
@@ -625,16 +622,13 @@ wait (an estimate from the first guesses, not a simulation). So the room grows w
   extra cars don't just drain them sooner (the owner's): a 0/6 takes 12;
 - Sonar range brings more spots into reach;
 - the draw keeps about 1.3 places in reach for each free car, so there is always a choice and never a crowd;
-- a car with no spot to work still earns its dues (every crew member earns metres; only racers earn places), so none
-  is dead weight.
+- a car not needed at a spot can race, so none is dead weight.
 
 **How we make sure:** `act3.py` reports each race how much of the harvesters' and brewers' time is spent at a spot
 (60–90% at every crew size from 5 to 51), the fuel a car makes in a run, and how many runs a car takes to pay for
 itself (2–4 throughout: the incremental rule the balancing pass follows, prices growing and income with them; the 5th
-car costs about 1.2 litres, the 51st about 5.8). Oil should make at least two-thirds of the fuel once the scripted
-run is behind you: the crew's dues are metres, which the Fuel converter turns into fuel, and its climbing price is the
-brake. The core loop doesn't merge until these are in their bands. As the spots grow, so does the mashing: Double up
-first, then the Foreman (the owner, 26 Oct).
+car costs about 1.2 litres, the 51st about 5.8). The core loop doesn't merge until they are in their bands. As the
+spots grow, so does the mashing: Double up first, then the Foreman (the owner, 26 Oct).
 
 **Foreshadowing,** without a word: the pump price climbs; stations that aren't yours show NO FUEL, then get boarded up;
 a burnt-out shell; the first rusty car in the last races; then your crew rides out as the gang.
