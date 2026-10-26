@@ -533,8 +533,9 @@ instrument, as the lever is act 1's and the trigger act 4's. The economy is Fury
 refinery, the War Rig hauling fuel between them), so the act foreshadows the War Rig without a word.
 
 **Resources:** metres (your driving) and points (your places), as before; **crude**, in a tank bolted to the right
-A-pillar (the owner's: off the crowded cluster; under where the police scanner goes in act 4), kept between runs up to
-the tank's size; and **fuel**, the Crew page's money in place of miles. The crew costs fuel and makes fuel, so the
+A-pillar (the owner's: off the crowded cluster, under where the police scanner goes in act 4; the oil running on through
+act 4, it moves in beside the scanner there, as the tracker sits by the sonar: Claude's call, 27 Oct), kept between runs
+up to the tank's size; and **fuel**, the Crew page's money in place of miles. The crew costs fuel and makes fuel, so the
 loop compounds. The goal is unchanged: 51 crew make the gang (act 4).
 
 **The crew** is the Fleet renamed (the owner, 26 Oct: the tab, the page, the cards and the words; the upgrade ids and
