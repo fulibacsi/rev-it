@@ -29,7 +29,10 @@ with sync_playwright() as p:
     js("progress.damage = 30; applyUpgrades(); buildGate()")
     kb.press("ArrowLeft"); pg.wait_for_timeout(1200); kb.press("ArrowLeft"); pg.wait_for_timeout(1500)
     print("in the oncoming lane:", js("({ lane, carX: +carX.toFixed(2) })"))
-    js("const c = traffic.find(c => c.dir < 0); Object.assign(c, { z: odo + 3 * (speed + c.v) - 5, x: carX, d: 999, warned: false })")
+    # it steers for you till it meets you, as a mad driver does: the car crosses slower the slower it goes (car.js
+    # stepLane), so it can still be on its way over, and once finished out of the way of a car put where it was
+    js("window.oc = traffic.find(c => c.dir < 0); Object.assign(oc, { z: odo + 3 * (speed + oc.v) - 5, x: carX, d: 999, warned: false }); "
+       "(function aim() { if (run.phase === 'run') { oc.x = carX; requestAnimationFrame(aim); } })()")
     pg.wait_for_timeout(250); print("warned:", js("traffic.some(c => c.dir < 0 && c.warned && c.beams > 0)"))
     pg.screenshot(path=f"{OUT}/dmg_oncoming.png")
     pg.wait_for_function("run.phase !== 'run'", timeout=10000); pg.wait_for_timeout(100)
