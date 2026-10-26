@@ -91,12 +91,11 @@
   </g>
   <text x="66" y="85" font-size="8" fill="#778" text-anchor="middle" letter-spacing="2">SONAR</text>
 </svg>
-<svg id="tracker" viewBox="0 0 44 92"> <!-- on the sonar's right: the spots ahead on a log scale (oil.js) -->
-  <rect x="2" y="3" width="40" height="86" rx="10" fill="#15151b" stroke="#2c2c36" stroke-width="3"/>
-  <rect x="6" y="9" width="32" height="68" rx="4" fill="#062414"/>
-  <path d="M9,13 V74" stroke="#1d6b3a" stroke-width="1" stroke-dasharray="1 2"/>
+<svg id="tracker" viewBox="0 0 120 80"> <!-- on the sonar's right: the next spots ahead, the farthest on top (oil.js) -->
+  <rect x="2" y="2" width="116" height="76" rx="10" fill="#15151b" stroke="#2c2c36" stroke-width="3"/>
+  <rect x="6" y="6" width="108" height="60" rx="4" fill="#062414"/>
   <g id="track-spots"></g>
-  <text x="22" y="85" font-size="7" fill="#778" text-anchor="middle" letter-spacing="1">AHEAD</text>
+  <text x="60" y="74" font-size="7" fill="#778" text-anchor="middle" letter-spacing="1">AHEAD</text>
 </svg>
 <div id="crew-ctl"> <!-- under the sonar: the spot before, a car to it, the spot after (oil.js) -->
   <button id="crew-prev" title="the spot before (or ,)">‹</button><button id="crew-send" title="send a car to it (or S)">SEND<small id="crew-free"></small></button><button id="crew-next" title="the spot after (or .)">›</button>

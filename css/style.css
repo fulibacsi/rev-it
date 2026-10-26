@@ -117,11 +117,11 @@ body:not([data-game="distance"]) #kit { display: none; }
 /* act 3's crew (oil.js): the tracker on the sonar's right, ‹ SEND › under them, the tag on the windscreen over the spot
    picked, the crude tank on the right A-pillar (the police scanner's place, which comes only in act 4, when the whole
    crew races and the tank goes) */
-#tracker { display: none; position: fixed; left: calc(5vw + 116px); top: 96px; width: 43px; pointer-events: none; }
+#tracker { display: none; position: fixed; left: calc(5vw + 116px); top: 96px; width: 132px; pointer-events: none; }
 .has-crew #tracker { display: block; }
-#track-spots text { font: 700 8.5px monospace; }
+#track-spots text { font: 700 10px monospace; }
 #track-spots .short { fill: #ec4; } #track-spots .coming { fill: #9df; } #track-spots .pumping { fill: #3f6; }
-#track-spots .sel { fill: none; stroke: #fff; stroke-width: 1; }
+#track-spots .sel { fill: none; stroke: #fff; stroke-width: 1.2; }
 #crew-ctl { display: none; position: fixed; left: calc(5vw + 10px); top: 190px; gap: 5px; }
 .has-crew #crew-ctl { display: flex; }
 #crew-ctl button { height: 36px; min-width: 38px; padding: 0 8px; border-radius: 7px; border: 1px solid #2f6b46; background: #0d1f16e6;
@@ -136,8 +136,8 @@ body:not([data-game="distance"]) #kit { display: none; }
 #tank { display: none; position: fixed; right: 5vw; top: 96px; width: 60px; pointer-events: none; }
 .has-tank #tank { display: block; }
 .garage #tracker, .garage #crew-ctl, .garage #crew-tag, .garage #tank { display: none; }
-.touch #tracker { left: calc(var(--edge-l) + 71px); top: calc(max(8px, env(safe-area-inset-top)) + 42px); width: 31px; }
-.touch #crew-ctl { left: calc(var(--edge-l) - 8px); top: calc(max(8px, env(safe-area-inset-top)) + 112px); gap: 4px; }
+.touch #tracker { left: calc(var(--edge-l) + 71px); top: calc(max(8px, env(safe-area-inset-top)) + 42px); width: 112px; }
+.touch #crew-ctl { left: calc(var(--edge-l) - 8px); top: calc(max(8px, env(safe-area-inset-top)) + 122px); gap: 4px; }
 .touch #crew-ctl button { height: 34px; min-width: 34px; }
 .touch #crew-send { min-width: 56px !important; }
 .touch #tank { right: calc(var(--edge-r) - 24px); top: calc(max(8px, env(safe-area-inset-top)) + 42px); width: 44px; }
