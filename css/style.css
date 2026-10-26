@@ -146,6 +146,10 @@ body:not([data-game="distance"]) #kit { display: none; }
 #continue.done::after { content: ' ✓'; color: #1a7a1a; } /* the tank beaten: a finished game, played on */
 #menu .corner { position: absolute; left: 16px; bottom: 10px; padding: 0; border: 0; background: none; color: #556;
                 font-size: 11px; text-decoration: underline; } /* the credits: a small link, a bottom corner */
+#debug-acts { display: none; position: absolute; right: 16px; bottom: 4px; align-items: center; gap: 6px; color: #c66;
+              font-size: 11px; } /* debug mode: start at an act (main.js), the other bottom corner */
+.debug #debug-acts { display: flex; }
+#menu #debug-acts button { min-width: 40px; padding: 6px 10px; font-size: 12px; color: #fbb; border-color: #c33; }
 #menu footer { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
 #menu footer button { padding: 6px 14px; }
 #menu footer > :first-child { margin-right: auto; } /* back (or the first choice) on the left, the rest on the right */

@@ -113,6 +113,37 @@ function useDebugSave(on) { // switch saves; the first debug save starts as a co
 }
 const money = n => debugSave ? '∞' : fmt(n); // a debug wallet shows as bottomless
 
+// debug mode's acts (the owner, 26 Oct: to test an act without playing the ones before it): the debug save set to an
+// act's start. From a fresh game, the story so far, and the pages before the act bought out as the graph allows (the
+// debug wallets pay); everything open by then counts as seen; then the act's own moment, so its card pops up as it
+// does in play. Anything of the act's or later is gone. act: 0 for the first (a new game)
+const ACTS = [
+  { pages: [] },
+  { pages: ['workshop', 'autopilot'], story: { runs: 20, driven: 60000, best: 3000 },
+    moment: () => { progress.racing = true; } }, // past #100: the race
+  { pages: ['workshop', 'autopilot', 'black'], story: { runs: 40, races: 20, driven: 150000, best: 5000, racing: true, finish: 2 },
+    moment: () => { progress.finish = 1; } }, // the first win
+  { pages: ['workshop', 'autopilot', 'black', 'fleet'], cap: () => ({ fleet: GANG - 1 }), // gang.js loads later
+    story: { runs: 55, races: 35, driven: 250000, best: 5000, racing: true, finish: 1 },
+    moment: () => { progress.levels.fleet = GANG; } }, // the gang
+];
+function debugAct(act) {
+  if (!debugSave) return;
+  const { pages, story, cap = () => ({}), moment } = ACTS[act], most = cap();
+  const mine = id => pages.includes(UPGRADES[id].opens ?? pageOf(UPGRADES[id]));
+  Object.assign(progress, FRESH(), story, { bank: FUNDS, points: FUNDS, miles: FUNDS, scrap: FUNDS }); // as save() keeps them
+  for (let more = true; more;) { // over and over: a buy can open another (Flash recharge waits for Reckless driving)
+    more = false;
+    for (const id of Object.keys(UPGRADES)) if (mine(id) && lvl(id) < (most[id] ?? Infinity) && buy(id)) more = true;
+  }
+  Object.assign(progress, { engine: lvl('engine'), nitro: nitroTank(), toured: moment ? opened().map(t => t.id) : [],
+                            seen: Object.keys(UPGRADES).filter(shows) });
+  markTours(); // tutorial.js: what is open before the moment
+  moment?.();
+  save();
+  forgetRun();
+}
+
 // the garage's pages: the car itself and the robot driver, paid in metres; the illegal and forbidden, paid in race
 // points (race.js fills it); the Fleet, paid in miles (fleet.js); War Rig, paid in scrap (gang.js). Each is a tab you
 // buy (the owner's graph, 23 Oct): the Black market's once the race is revealed, the Fleet's once you have won a race,
