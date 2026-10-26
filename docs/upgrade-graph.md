@@ -200,6 +200,68 @@ Each upgrade and what it needs, one line each: the list to edit.
 - Hunter ← War Rig, Autocruise, Reckless auto-drive
 - Hunting pack ← Hunter, Fleet dues, Fleet tuning, Fleet flash
 
+## The Crew page (decided 26 Oct, to build)
+
+Act 3 is being rebuilt as the crew (design notes: Act 3 redesign). The Fleet becomes the Crew: the tab, the page and
+the cards renamed, the ids kept for the saves. Until its layers land, the graph above is the game as built; each layer
+moves its part into it.
+
+The tab: **Crew** (the Fleet renamed), 1 point, needs the Black market, and P1, as before. The War Rig needs the Crew.
+
+```mermaid
+flowchart TD
+  subgraph C["Crew · 1 point"]
+    crewTab(["Crew tab"])
+    converter["Fuel converter"]
+    payoff["Pay off a racer"]
+    tuning["Crew tuning"]
+    racing["Racing"]
+    harvesting["Harvesting"]
+    brewing["Brewing"]
+    crude["Crude tank"]
+    sonar["Sonar range"]
+    scouting["Scouting"]
+    overfill["Overfill"]
+    wells["Deep wells"]
+    double["Double up"]
+    foreman["Foreman"]
+  end
+  black(["Black market tab"]) -- P1 --> crewTab
+  crewTab --> converter & payoff
+  payoff --> tuning
+  crewTab -- "the first crude" --> racing & harvesting
+  crewTab -- "the first fuel" --> brewing
+  harvesting --> crude & sonar
+  sonar --> scouting
+  harvesting & brewing --> overfill
+  harvesting --> wells
+  overfill --> double
+  double --> foreman
+  scouting -- max --> foreman
+  sonar -- max --> foreman
+```
+
+- Fuel converter ← Crew (free; the Mile converter renamed)
+- Pay off a racer ← Crew
+- Crew tuning ← Pay off a racer (Fleet tuning renamed)
+- Racing ← Crew, the first crude (Fleet dues renamed)
+- Harvesting ← Crew, the first crude
+- Brewing ← Crew, the first fuel
+- Crude tank ← Harvesting
+- Sonar range ← Harvesting
+- Scouting ← Sonar range
+- Overfill ← Harvesting, Brewing
+- Deep wells ← Harvesting
+- Double up ← Overfill
+- Foreman ← Double up, Scouting max, Sonar range max
+
+**The first crude** and **the first fuel** come in the scripted run after the 5th car (the oil puddle, then the
+refinery). They are story conditions, and on a card they hide as a tab's do (rule 3): no role or role upgrade is named
+before the run that brings it.
+
+**Goes:** Fleet flash (it never fired at P1), team places' miles (they pay points), miles (fuel, one for one). **To
+settle with act 4's layer:** the Hunting pack becomes the Hunter role, and what it needs now that Fleet flash is gone.
+
 ## What changed (23 Oct), against the game before
 
 - **The tabs are bought**: the Workshop and the Autopilot were open from the start, the Black market opened with the
