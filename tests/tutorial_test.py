@@ -126,7 +126,7 @@ with sync_playwright() as p:
     while pj("menuOpen") and len(seen) < 10:
         seen.append(pj("screen === 'act' ? $('act-name').textContent : $('tour-name').textContent.split(' · ')[0]"))
         pj("screen === 'act' ? closeCard() : exitTour()"); ph.wait_for_timeout(50)
-    check("a run brings several: the cards, then the tutorials, each in turn", seen == ["RACE", "WAR", "NO LAW OUT HERE", "THE RACE", "THE FLEET",
+    check("a run brings several: the cards, then the tutorials, each in turn", seen == ["RACE", "WAR", "NO LAW OUT HERE", "THE RACE", "THE CREW",
           "THE WAR RIG", "POLICE HEAT"], seen)
     toured = pj("progress.toured")
     check("all of them shown once", sorted(toured) == ["act2", "act4", "driving", "flash", "fleet", "nolaw", "police", "race", "warrig"], toured)

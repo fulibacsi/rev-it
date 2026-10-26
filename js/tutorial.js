@@ -103,20 +103,20 @@ const TUTORIALS = [
     { title: 'THE BOTTLE', at: '#nos-gauge',
       both: 'The gauge in the cluster shows what is left. The garage refills it, for metres.' },
   ] },
-  { id: 'fleet', name: 'The Fleet', for: ['fleet', 'dues', 'fleetPace', 'fleetFlash', 'pack'], open: () => fleetSize() > 0, pages: [
-    { title: 'YOUR FLEET',
+  { id: 'fleet', name: 'The Crew', for: ['fleet', 'dues', 'fleetPace', 'fleetFlash', 'pack'], open: () => fleetSize() > 0, pages: [
+    { title: 'YOUR CREW',
       both: 'The racers you pay off race for you, in your colours: they give way when you come up behind them, and ' +
         'move across to block a rival closing on them. Your place counts the rivals only. At the finish their places ' +
         'pay you miles, more the further up they are.' },
     { title: 'THE SONAR', at: '#sonar',
-      both: 'On the A-pillar: the road 250 m ahead of you and behind, from above. You are the arrow; your fleet cars ' +
+      both: 'On the A-pillar: the road 250 m ahead of you and behind, from above. You are the arrow; your crew ' +
         'are green, the rivals white, the traffic yellow.' },
     { title: 'THE HUNTING PACK', if: () => lvl('pack') > 0,
-      both: 'Each fleet car hunts the nearest car ahead of it, as you do: into its lane and into it.' },
+      both: 'Each of your crew hunts the nearest car ahead of it, as you do: into its lane and into it.' },
   ] },
   { id: 'warrig', name: 'The War Rig', for: ['bullbar', 'armour', 'spikes'], open: () => arOn(), pages: [
     { title: 'THE RETICLE', at: '#ar',
-      both: 'Your fleet is a gang now. On the windscreen, the car ahead going your way is in the reticle, its health ' +
+      both: 'Your crew is a gang now. On the windscreen, the car ahead going your way is in the reticle, its health ' +
         'above it.' },
     { title: 'TOTAL IT',
       both: 'Ram it: each bump is a hit (a nudge under 30 km/h is not; over 200 km/h totals it at once). At no health ' +

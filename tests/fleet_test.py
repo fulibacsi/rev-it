@@ -1,8 +1,8 @@
-"""The Fleet: never shown before your first win; winning a race puts its tab on sale (the garage says so), a tap buys
+"""The Crew (the Fleet until 26 Oct): never shown before your first win; winning a race puts its tab on sale (the garage says so), a tap buys
 it, with miles in the header and the Mile converter: metres for miles, one way, 1,609 m a mile, a slider (dragged with a finger on the
 phone) and "all available". Racers paid off (the slowest first, each dearer, #1 never) race for you in your colours:
 they don't count against your position, give way when you come up behind them and block a rival closing on them.
-The fleet-wide upgrades: dues (a share of the fleet's metres at the finish), tuning (pace) and Fleet flash. The sonar
+The fleet-wide upgrades: Racing (a share of the racers' metres at the finish), Crew tuning (pace) and Crew flash. The sonar
 on the A-pillar shows the road 250 m each way from above, ahead up: you, your fleet green, the rivals white, the traffic
 yellow, the police flashing red and blue, the tank a red square; clear of the menu button, the shifter and the mirror,
 phone and desktop."""
@@ -27,14 +27,14 @@ with sync_playwright() as p:
     tabs = lambda: js("[...document.querySelectorAll('#tabs button')].map(b => b.textContent)")
     # 1. before the first win: no Fleet, no miles, nothing that hints at them
     text = js("$('garage').innerText")
-    check("before a win: no Fleet page", tabs() == ["Workshop", "Autopilot", "Black market"], tabs())
-    check("before a win: no word of the fleet or miles", not re.search(r"fleet|\bmiles?\b|\bmi\b", text, re.I), re.findall(r".{20}(?:fleet|\bmiles?\b|\bmi\b).{20}", text, re.I))
+    check("before a win: no Crew page", tabs() == ["Workshop", "Autopilot", "Black market"], tabs())
+    check("before a win: no word of the crew or miles", not re.search(r"fleet|crew|\bmiles?\b|\bmi\b", text, re.I), re.findall(r".{20}(?:fleet|crew|\bmiles?\b|\bmi\b).{20}", text, re.I))
     # 2. win a race: the Fleet opens, and the act moves on (its card pops up: tutorial_test)
     js("refreshCar()"); pg.tap("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     js("racers().forEach(c => c.z = odo - 9000); run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
-    check("a win puts the Fleet's tab on sale", tabs() == ["Workshop", "Autopilot", "Black market", "Fleet1 pt"], tabs())
+    check("a win puts the Crew's tab on sale", tabs() == ["Workshop", "Autopilot", "Black market", "Crew1 pt"], tabs())
     pg.tap('[data-buy="fleetTab"]'); pg.wait_for_timeout(150)
-    check("a tap buys it: the Fleet page", tabs() == ["Workshop", "Autopilot", "Black market", "Fleet"] and js("garageTab") == "fleet", [tabs(), js("garageTab")])
+    check("a tap buys it: the Crew page", tabs() == ["Workshop", "Autopilot", "Black market", "Crew"] and js("garageTab") == "fleet", [tabs(), js("garageTab")])
     got = js("[$('act-title').textContent, currentCard().text(), currentCard().now?.()]")
     check("ACT III · RECRUIT, its card on the racers open to offers", got[0] == "ACT III · RECRUIT ▸" and "open to offers" in got[1], got)
     check("miles in the header", js("$('bank').textContent").endswith("· 0 mi to spend"), js("$('bank').textContent"))
@@ -99,7 +99,7 @@ with sync_playwright() as p:
         js("""Object.assign(f, { lane: 1, x: MY_LANES[1], z: odo + 60, v: speed, want: speed, cool: 9, flashed: 0 }); window.t = traffic.find(c => !c.racer);
             Object.assign(t, { dir: 1, lane, x: MY_LANES[lane], z: odo + 130, v: 12, want: 12, cool: 9, yielding: false })""")
         pg.wait_for_timeout(600); got = js("({ its: t.lane, yours: lane, flashes: run.flashes })")
-        if owned: check("Fleet flash: the slow car ahead moves out of your lane, your flashes kept", got["its"] != got["yours"] and got["flashes"] == 3, got)
+        if owned: check("Crew flash: the slow car ahead moves out of your lane, your flashes kept", got["its"] != got["yours"] and got["flashes"] == 3, got)
         else: check("without it: the slow car stays in your lane", got["its"] == got["yours"], got)
         js("t.z = odo + 4000; t.dir = -1; t.x = LANES.oncoming[0]")
     # 9. dues: 20% of the metres the fleet drove, into the bank at the finish, and in the report
@@ -107,11 +107,11 @@ with sync_playwright() as p:
     js("run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
     got = js("({ dues: run.dues, gain: run.gain, banked: progress.bank - bank0, report: $('report').textContent })")
     check("dues: 20% of the fleet's metres (3 cars, 1 km and more each)", got["dues"] >= 600 and got["banked"] == got["gain"] + got["dues"], {k: v for k, v in got.items() if k != "report"})
-    check("the report shows them", f"fleet dues +{got['dues']:,} m" in got["report"], got["report"][-90:])
+    check("the report shows them", f"racing +{got['dues']:,} m" in got["report"], got["report"][-90:])
     # 10. tuning: fleet cars 25% quicker at level 5; rivals as before
     js("progress.levels.fleetPace = 5; refreshCar()"); pg.tap("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     got = js("[racers().find(c => c.racer === 99).want / pace(99), racers().find(c => c.racer === 40).want / pace(40)].map(x => +x.toFixed(2))")
-    check("Fleet tuning 5: fleet cars 25% quicker, rivals as before", got == [1.25, 1], got)
+    check("Crew tuning 5: your racers 25% quicker, rivals as before", got == [1.25, 1], got)
     # 11. the sonar: the road 250 m each way from above, every car on it in its colour; clear of the controls; gone in
     # the garage
     def sonar(page, shot):
