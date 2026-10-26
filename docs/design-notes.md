@@ -601,9 +601,9 @@ each free car of the crew, or the run is drawn again, a few times at most, keepi
   300–500 m up the road, then 150–350 m (a cluster, 55% of the time) or 500–900 m (a gap); a refinery 600–900 m up,
   then every 1,000–1,600 m, nudged clear of the oil spots (it used to be dropped when it fell on one, which left most
   runs with none).
-- Oil spots hold their count of cars, the biggest 3 + 5 × crew/51 (0/5 when the oil comes, with the 19 cars or so
-  act 2's metres buy, 0/8 at the gang); a refinery 0.4–0.6 of that. A harvester pumps 0.07 L of crude a second (the
-  first puddle 0.1: a first taste), a brewer brews 0.2 L a second of it, 2:1 into fuel. An oil spot holds 10–20 s of
+- Oil spots hold their count of cars, the biggest 3 + 5 × crew/51 (0/3 when the oil comes at the 5th car, 0/8 at
+  the gang); a refinery 0.4–0.6 of that. A harvester pumps 0.1 L of crude a second (0.07 until the converter's
+  retune, below), a brewer brews 0.3 L a second of it (0.2), 2:1 into fuel. An oil spot holds 10–20 s of
   its full crew's pumping.
 - The check is simpler: each run is drawn five times, and the one whose yield for the model player sits in the
   middle is the one you get. The draw doesn't size the spots to your riders: you do, on the role card. A sensible split
@@ -616,7 +616,9 @@ rates (the owner: so the garage doesn't turn into over-analysis); its levels cov
 **The Fuel converter** (the Mile converter renamed; free with the tab) turns metres into fuel, one way, at the pump
 price: 1,609 m a litre at first (today's mile; the owner: thousands, not hundreds), climbing with the crew's size (a
 first guess: three times as dear by the 51st). It buys the first cars, and the oil takes over. Miles in a save carry
-over as litres, one for one.
+over as litres, one for one. **Retuned** (the owner's playtest, 27 Oct: "4–5 cars are what a player should be able
+to afford"): 7,500 m a litre at first, so act 2's 40–47k m (less a reserve for the nitro) buy 4 or 5 cars; at a
+mile a litre they bought 19, and the oil came with spots already 0/5.
 
 **The Crew page,** paid in fuel. First-guess prices, for `act3.py` to set:
 
@@ -632,8 +634,8 @@ over as litres, one for one.
 | Scouting | 3 | 15 | 2.5 | lists the run's first 2 km, then 4 km, then all of it |
 | Overfill | 4 | 20 | 2.5 | a spot takes 25% more cars than its count a level, up to twice as many; each one past the count adds its share of the rate |
 | Deep wells | 4 | 15 | 2.5 | oil spots hold 25% more a level, up to twice as much |
-| Double up | 1 | 60 | | a press of SEND sends two cars |
-| Foreman | 1 | 150 | | after Double up: sends the crew for you (the biggest yield in reach it can fill), so you are hands-free by the end of the act; a switch; your own SEND still works |
+| Double up | 1 | 25 | | a press of SEND sends two cars (60 until 27 Oct) |
+| Foreman | 1 | 60 | | after Double up (and until 27 Oct Scouting and Sonar range maxed, 150 L: out of the act's reach; the owner wanted it earlier, to help reach 51): sends the crew for you (the biggest yield in reach it can fill), so you are hands-free by the end of the act; a switch; your own SEND still works |
 
 The role upgrades and tuning grow steeply (the owner: "make their price grow steeply"). The names stay one or two
 words, as every card's does (Claude's call: "efficiency" would wrap on a phone, and the card's line says what each
@@ -678,6 +680,20 @@ range, buys a bigger tank when it ends a run full, and otherwise the cheapest of
   question for the owner.
 - **Act 4** (`act4.py` seed 1, after the change: team places pay points, not fuel): the tank beaten in race 13 (11–12
   before), at the first go.
+
+**Retuned** (27 Oct, the owner's playtest: the converter 7,500 m a litre, the oil 0.1 L/s a harvester and 0.3 a brewer,
+Double up 25 L, the Foreman 60 L after it alone; `act3.py` seeds 1 and 2, `act4.py` seed 1 with its bot now running
+the crew, as the oil runs on through act 4):
+- **Act 3:** the converter buys exactly 5 cars with act 2's metres (less a 3,000 m reserve), the oil comes in the next
+  race, and **51 crew after 14 races** on both seeds (the target 10–15). The bot saves two or three races for
+  Harvesting and Sonar range before buying more cars, then 4–8 a race.
+- **At a spot** 40–80% of the riders' time (about 60%); **payback** 0.9–6.6 runs, 1–2 for the first 20 cars; **oil**
+  84–100% of the fuel. The act earns about 194 L of fuel in all (seed 1).
+- **The Foreman's path** (Harvesting, Brewing, Overfill, Double up, the Foreman: 115 L) is within that, for a player
+  who wants it more than cars; the bot, which sends as the Foreman does, never buys it.
+- **Act 4:** the tank beaten in race 13, at the first go, as before. The oil pays 20–40 L a race there, so the crew
+  grows to 79, Racing and Crew tuning reach 3, and the Hunting pack (one level of Crew tuning lets you in, the
+  owner's call of 27 Oct) comes in race 9.
 
 **Foreshadowing,** without a word: the pump price climbs; stations that aren't yours show NO FUEL, then get boarded up;
 a burnt-out shell; the first rusty car in the last races; then your crew rides out as the gang.

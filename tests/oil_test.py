@@ -79,7 +79,7 @@ with sync_playwright() as p:
     check("a harvester back to racing: one racer on the grid", js("[racersOf(), role('harvester'), riders()]") == [1, 2, 4], js("[racersOf(), role('harvester'), riders()]"))
     pg.screenshot(path=f"{OUT}/oil_garage_phone.png")
     got = js("[pumpPrice(), (() => { const l = progress.levels.fleet; progress.levels.fleet = 51; const p = pumpPrice(); progress.levels.fleet = l; return p; })()]")
-    check("the pump price climbs with the crew: 1,609 m a litre with none, three times at the gang", got[1] == 3 * 1609 or abs(got[1] - 4827) <= 1, got)
+    check("the pump price climbs with the crew: 7,500 m a litre with none, three times at the gang", got[1] == 3 * 7500, got)
     # 5. a normal run: spots drawn ahead, the same for the same run
     a = js("(() => { plan = null; return nextSpots().map(s => [s.kind, s.count, Math.round(s.z)]); })()")
     b2 = js("(() => { plan = null; return nextSpots().map(s => [s.kind, s.count, Math.round(s.z)]); })()")
@@ -113,7 +113,7 @@ with sync_playwright() as p:
           r.push([m.find(x => x.kind === 'station')?.value, m.some(x => x.kind === 'shell'), omenRust()]); }
         [progress.levels.fleet, odo, run.phase, run.spots] = was; return r; })()""")
     check("the foreshadowing: the pump price on a station's board, then NO FUEL, then boarded up and a burnt-out shell, then rusty cars",
-          got == [["2,240", False, 0], ["NO FUEL", False, 0], ["", True, 0], ["", True, 0.06]], got)
+          got == [[f"{round(7500 * (1 + 2 * 10 / 51)):,}", False, 0], ["NO FUEL", False, 0], ["", True, 0], ["", True, 0.06]], got)  # the pump price at 10
     got = js("""(() => { const a = [stationSprite('2,240'), stationSprite('NO FUEL'), stationSprite(''), wreckSprite(trafficLook(3).rear)];
         const l = rustLook(trafficLook(5)); a.push(l.rear, l.front, l.beams); return a.every(c => c.width > 0 && c.height > 0); })()""")
     check("their sprites draw: the stations, the shell, a rusty car from behind, in front and flashing", got, "")

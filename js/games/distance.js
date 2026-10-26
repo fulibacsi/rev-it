@@ -325,8 +325,8 @@ function roadMarks() {
 // the Crew's Fuel converter (the Mile converter until 26 Oct): metres for fuel, one way, at the pump price: a mile's
 // metres a litre at first (the owner: thousands, not hundreds), climbing with the crew to three times at the gang (a
 // first guess). It buys the first cars, and the oil takes over
-const MILE = 1609; // m
-const pumpPrice = () => Math.round(MILE * (1 + 2 * Math.min(fleetSize(), GANG) / GANG));
+const PUMP = 7500; // m a litre at first: act 2's 40-47k m buy 4 or 5 cars (the owner, 27 Oct: it was a mile, and bought 19)
+const pumpPrice = () => Math.round(PUMP * (1 + 2 * Math.min(fleetSize(), GANG) / GANG));
 let exchange = 0;  // litres on its slider
 const canExchange = () => Math.floor(progress.bank / pumpPrice());
 function convert(l) {
