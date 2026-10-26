@@ -1,5 +1,5 @@
 """Police heat: totals and shots raise it (more for racers and police, less for the gang's), it stays between races;
-the scanner on the right A-pillar shows it (phone and desktop, clear of the controls). Police come with the heat: from
+the scanner on the right A-pillar shows it (phone and desktop, clear of the controls, the crude tank beside it). Police come with the heat: from
 behind they pass you in your other lane, cut in ahead and brake; while you're in an oncoming lane they come at you
 head-on, flat out, steering for you. They don't move over for a flash."""
 from playwright.sync_api import sync_playwright
@@ -25,6 +25,8 @@ with sync_playwright() as p:
     pg.wait_for_timeout(200)
     got = js("({ on: getComputedStyle($('scanner')).display, lcd: $('scanner-lcd').textContent, lit: [...$('scanner-leds').children].filter(r => r.getAttribute('fill') !== '#2a2a30').length })")
     check("the scanner shows the heat: HEAT 37%, 4 lights", got == {"on": "block", "lcd": "HEAT 37%", "lit": 4}, got)
+    got = js("(() => { const s = $('scanner').getBoundingClientRect(), t = $('tank').getBoundingClientRect(); return [getComputedStyle($('tank')).display, t.right <= s.left, Math.round(s.left - t.right)]; })()")
+    check("the oil running on: the crude tank beside the scanner, not under it", got[:2] == ["block", True], got)
     w0 = js("progress.wanted"); pg.keyboard.down("g"); pg.wait_for_timeout(600); pg.keyboard.up("g")
     shots = round((js("progress.wanted") - w0) / 0.00025)
     check("each shot adds 0.00025", 2 <= shots <= 4, shots)
@@ -67,6 +69,8 @@ with sync_playwright() as p:
     apart = lambda a, c: a[2] <= c[0] or c[2] <= a[0] or a[3] <= c[1] or c[3] <= a[1]
     s = box("scanner"); hits = [k for k in ["pedals", "timer", "hud", "menu-button", "sonar", "cluster"] if not apart(s, box(k))]
     check("phone: the scanner on screen, clear of the pedals, mirror, display and sonar", not hits and s[2] <= 852 - 59 + 14 and s[1] >= 0, {"scanner": [round(v) for v in s], "overlaps": hits})
+    t = box("tank"); hits = [k for k in ["scanner", "pedals", "timer", "hud", "menu-button", "sonar", "cluster"] if not apart(t, box(k))]
+    check("phone: the crude tank beside it, clear of it and the rest", not hits and t[1] >= 0, {"tank": [round(v) for v in t], "overlaps": hits})
     ph.screenshot(path=f"{OUT}/police_phone.png")
     b.close()
 print("ERRORS:", errors or "none", "| FAILS:", fails or "none")

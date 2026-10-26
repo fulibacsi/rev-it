@@ -142,6 +142,9 @@ body:not([data-game="distance"]) #kit { display: none; }
 .touch #crew-ctl button { height: 34px; min-width: 34px; }
 .touch #crew-send { min-width: 56px !important; }
 .touch #tank { right: calc(var(--edge-r) - 24px); top: calc(max(8px, env(safe-area-inset-top)) + 42px); width: 44px; }
+/* in act IV the police scanner takes the pillar (the oil runs on): the tank moves in beside it, as the tracker sits by the sonar */
+.has-heat.has-tank #tank { right: calc(5vw + 124px); }
+.touch.has-heat.has-tank #tank { right: calc(var(--edge-r) + 68px); }
 #stalk, #stalk-hit { display: none; }
 .has-flash #stalk, .has-flash #stalk-hit { display: inline; }
 #stalk-hit { pointer-events: stroke; cursor: pointer; touch-action: none; }
