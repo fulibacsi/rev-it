@@ -13,9 +13,10 @@ Object.assign(UPGRADES, {
            needs: ['fleetTab'],
            info: l => !l ? 'every racer for themselves' : l === 1 ? '#100 races for you'
              : `#${FIELD + 1 - l} to #100 race for you` },
-  // Fleet dues until 26 Oct: the racer's own upgrade now, with the roles (the first crude); the role upgrades and
-  // tuning grow steeply (the owner, 26 Oct). Crew flash went (it never fired at P1: the racers are far behind you)
-  dues: { name: 'Racing', tab: 'fleet', max: 5, base: 5, growth: 3, needs: ['fleetTab'], story: () => progress.oil >= 1,
+  // Fleet dues until 26 Oct: the racer's own upgrade now, with the roles (the first crude; or at the gang, for a save
+  // that got there before the oil: the Hunting pack needs it); the role upgrades and tuning grow steeply (the owner, 26
+  // Oct). Crew flash went (it never fired at P1: the racers are far behind you)
+  dues: { name: 'Racing', tab: 'fleet', max: 5, base: 5, growth: 3, needs: ['fleetTab'], story: () => progress.oil >= 1 || arOn(),
           info: l => l ? `each racer pays you ${10 * l}% of the metres it drives` : 'your racers drive for nothing' },
   fleetPace: { name: 'Crew tuning', tab: 'fleet', max: 5, base: 3, growth: 3, needs: ['fleet'],
                info: l => l ? `your racers ${5 * l}% quicker, and your cars get to their spots sooner` : 'as they came' },

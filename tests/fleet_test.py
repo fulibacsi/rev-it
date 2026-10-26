@@ -137,11 +137,11 @@ with sync_playwright() as p:
     check("the colours: traffic yellow, the fleet green, the rivals white", got["fill"] == {"car": "rgb(238, 204, 68)", "ally": "rgb(51, 255, 102)", "rival": "rgb(238, 238, 238)"}, got["fill"])
     seen = set()  # a police car (an ordinary one made one, for the drawing only): red, then blue, every quarter second
     for _ in range(12):
-        seen.add(js("""(() => { const c = ORDINARY.find(c => !c.wreck && !c.police && !c.tank); c.z = odo + 150; c.police = true;
+        seen.add(js("""(() => { const c = traffic.find(c => !c.racer && !c.runner && !c.wreck && !c.police && !c.tank); c.z = odo + 150; c.police = true;
             sonarAt = 0; renderSonar(); c.police = false; const e = $('sonar-blips').lastElementChild; return e.getAttribute('class') + ' ' + getComputedStyle(e).fill; })()"""))
         pg.wait_for_timeout(110)
     check("a police car flashes red and blue, on top", seen == {"red rgb(255, 51, 51)", "blue rgb(51, 153, 255)"}, seen)
-    got = js("""(() => { const c = ORDINARY.find(c => !c.wreck && !c.police && !c.tank); c.z = odo + 100; c.tank = true;
+    got = js("""(() => { const c = traffic.find(c => !c.racer && !c.runner && !c.wreck && !c.police && !c.tank); c.z = odo + 100; c.tank = true;
         sonarAt = 0; renderSonar(); c.tank = false; const e = $('sonar-blips').lastElementChild; return [e.tagName, e.getAttribute('class'), getComputedStyle(e).fill]; })()""")
     check("the tank: a red square, on top", got == ["rect", "tank", "rgb(255, 34, 34)"], got)
     dk = b.new_page(viewport={"width": 1440, "height": 900}); dk.on("pageerror", lambda e: errors.append(str(e))); dk.goto(URL)

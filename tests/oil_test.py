@@ -97,6 +97,8 @@ with sync_playwright() as p:
     check("team places pay points", "team places" in js("runLine()") and "pts" in js("runLine()") or js("run.team") == 0, js("runLine()"))
     got = js("(() => { progress.levels.fleet = 51; const r = [crewOn(), riders(), raceField().filter(c => c.fleet).length]; progress.levels.fleet = 5; return r; })()")
     check("at the gang: the whole crew races, nobody rides", got == [False, 0, 51], got)
+    got = js("(() => { const was = [progress.oil, progress.levels.fleet]; progress.oil = 0; progress.levels.fleet = 51; const r = whyNot('dues'); [progress.oil, progress.levels.fleet] = was; return r; })()")
+    check("a save that reached the gang before the oil: Racing still on sale (the Hunting pack needs it)", got in ("", "short"), got)
     # 8. desktop: , and . pick a spot, S sends a car (a held key sends one); ‹ SEND › and the tracker clear of the cockpit
     pg = b.new_context(viewport={"width": 1440, "height": 900}).new_page(); js = pg.evaluate
     pg.on("pageerror", lambda e: errors.append(str(e))); pg.on("dialog", lambda d: d.accept())
