@@ -444,6 +444,10 @@ brakes nor lifts; Auto gas's traction control still trims it, so nitro doesn't s
 
 ### Act 3: the fleet
 
+The game as built. It is being rebuilt as the crew (decided 26 Oct): see
+[Act 3 redesign](#act-3-redesign-the-crew-decided-26-oct-to-build) below, which replaces this section layer by layer as
+each lands.
+
 **The Fleet** opens with your first win (P1), and never shows before it: its tab goes on sale then, for a point.
 ACT III's card says so after that race: "the racers you beat are open to offers". It is a garage page paid in
 **miles**.
@@ -479,7 +483,7 @@ ACT III's card says so after that race: "the racers you beat are open to offers"
   (`act3.py`, two seeds each, races to 51 fleet cars): none 14–16, a quarter 9, 0.15 10, a tenth 12; the target is
   10–15. By then the team pays about 15 miles a race, the dues about 35 through the converter. Claude's caveat, taken:
   the fleet starts behind you (the slowest go first) and you never meet it, so your driving can't change what it
-  pays. It adds income, not interaction; that is the next brainstorm.
+  pays. It adds income, not interaction; the brainstorm of 25–26 Oct answered it (Act 3 redesign, below).
 - **The sonar:** the mirror is the timer, so there is no rear view. A sonar bolted to the left A-pillar, under the menu
   button, shows the road from above, 250 m ahead of you and behind, ahead up, you an arrow in the middle: its four
   lanes and the double yellow drawn (the lane lines going by as fast as the road), every car on it as a blip coloured
@@ -491,6 +495,136 @@ ACT III's card says so after that race: "the racers you beat are open to offers"
 - **Simulated** (`act3.py`, from P1 with act 2's car and 44k m, the tab bought first): 51 fleet cars after 12, 12,
   10, 12 races with team places (23 Oct, seeds 1 to 4), a few cars bought every race. (13 Oct, seed 11, 57k m, before
   the retune: 26 races buying dues first, 71 buying the cheapest first.)
+
+### Act 3 redesign: the crew (decided 26 Oct, to build)
+
+The owner's brief (25 Oct): "there is no interaction with the fleet, nothing new to do, no exciting upgrade"; the
+playtesters found the Fleet slow; act 1 is mechanical driving, act 2 lane control, act 4 hunting cars, and act 3
+"nothing but buying the same upgrades 51 times". This is what the brainstorm of 25–26 Oct settled on, to build in
+layers, a PR each. Until a layer lands, the section above is the game as built.
+
+**Measured first** (25 Oct, scratch runs in the page: act 2's car at P1, `act3.py`'s bot):
+- The fleet starts in its own slots, 120 m apart behind you. The nearest fleet car was 8.2–8.5 km behind you all race
+  (3 seeds), Fleet flash fired 0 times and no fleet car ever gave way to you. Only the top 31 racers cross the start
+  line in a race, and none get 3 km up the road.
+- Your own driving paid about 4% of the act's income by its end (`act3.py` seed 1, race 12: your 3.0 km, about 1.9 mi,
+  against 33 mi of dues and 15 of team places).
+- Started up the road ahead of you instead, you pass 19–20 fleet cars a race (with 30 or 51 of them), closing at a
+  median 160 km/h (150–183): there is no sitting behind one, and the aids, which drive the whole race by act 3, pass
+  them anyway.
+- A pit stop (braking from 264–440 km/h to pass a point under 100 km/h) cost about 420 m of a 3,850 m run, P1 kept in
+  6 races of 6. Measuring it found Auto gas holding the gas down under your brake (fixed 25 Oct: see the aids).
+
+So act 3's new thing to do has to be something the aids don't do.
+
+**The rounds that led here,** each turned down: gas stations to brake into ("could be good", but nothing to do with
+the fleet); a convoy with a CB radio and orders (the owner: act 6 material); signing racers on the road by catching
+and flashing them (too hard to do); a fuel gauge for the clock (the owner liked the fuel: it stayed, as the money); a
+horn that calls the fleet into a wedge through the traffic (the fleet should look harmless, so act 4's reveal stays a surprise). The owner's turn (25 Oct): a crew with
+duties, the incremental genre's own trope (A Dark Room, Kittens Game), sent Pikmin-like to oil spots and refineries;
+then (26 Oct) the sonar at the centre of it.
+
+**The fantasy:** act 1 you drive, act 2 you race, act 3 you run the crew while the robot drives, act 4 you make war. By
+act 3 Auto shift has freed the left thumb (on a phone the shifter was all it did), and the sonar is the act's
+instrument, as the lever is act 1's and the trigger act 4's. The economy is Fury Road's own (the Citadel, Gas Town's
+refinery, the War Rig hauling fuel between them), so the act foreshadows the War Rig without a word.
+
+**Resources:** metres (your driving) and points (your places), as before; **crude**, in a tank bolted to the right
+A-pillar (the owner's: off the crowded cluster; under where the police scanner goes in act 4), kept between runs up to
+the tank's size; and **fuel**, the Crew page's money in place of miles. The crew costs fuel and makes fuel, so the
+loop compounds. The goal is unchanged: 51 crew make the gang (act 4).
+
+**The crew** is the Fleet renamed (the owner, 26 Oct: the tab, the page, the cards and the words; the upgrade ids and
+save keys stay): every racer you pay off. Each has a role:
+- **Racer:** in its slot on the grid, racing as the fleet does now. Team places pay points instead of miles, so what is
+  left on the Black market stays in reach; Racing (Fleet dues renamed) pays a share of the metres racers drive.
+- **Harvester:** rides with you and works oil spots.
+- **Brewer** (the owner's name): rides with you and works refineries, turning crude into fuel.
+- **Hunter,** in act 4: the Hunting pack as a role (the owner's idea), named only once the War Rig page is open.
+
+The roles are split on a card in the garage, free to change between runs. All harvesters this run and all brewers the
+next is a fair tactic (the owner's), since crude keeps.
+
+**How it opens** (the owner, 26 Oct):
+- Cars 1–4 have no role and race. Crew tuning is their only upgrade.
+- The run after the 5th car is scripted, one run for both systems:
+  - about 5 s in, a fixed oil puddle (0/3) comes up. The run pauses for its tutorial (puddles, roles, three of your
+    racers made harvesters, how to send), then you have about 15 s to send three, and it fills the crude tank until
+    you pass it;
+  - about 15 s later, with crude in the tank, a refinery (0/2) comes up: your last two racers become brewers, its
+    tutorial, about 15 s to send two, and it brews until you pass it;
+  - the role card opens in the garage after the run.
+- Claude's call: if the puddle goes by uncrewed, the scripted run comes again.
+
+**On the road:**
+- **Spots** stand by the road on the right: oil spots (a nodding pumpjack) and refineries (towers and a flare). Each
+  shows its crew and rate: `OIL 3/5 · 1.2/s`.
+- A spot pays once it is **fully crewed**, until you **drive past it**; then its crew rejoins you, free for the next
+  one. Each holds a reserve and pays until that runs dry too, so parking short of one to farm it only empties it
+  faster (Claude's call). Crewing a spot far ahead pays most, and the cars sent there can't take the nearer ones
+  meanwhile. A faster car shortens each spot's time but passes more of them; lifting off, or your foot on the brake,
+  buys a rich one more seconds.
+- **Sending** is one press of SEND for each car (the owner: "a bit of frantic button mash"), and `<` and `>` choose the
+  spot; on the keyboard `,`, `.` and `S`. The car comes past you on the right shoulder, kicking up dust, and races off
+  to the spot. It counts once it gets there, a second or two later, so sending early pays. Your crew's cars stand
+  parked at a spot as you go by.
+- **The sonar** stays as it is for cars, 250 m each way. A **tracker** on its right side (the owner's: on the far left
+  your hand would hide it) shows the spots ahead on a log scale, near ones spread out and far ones packed close, their
+  icons coming down as they near; its reach is Sonar range. `<` SEND `>` sit along the sonar's bottom edge, where the
+  left thumb reaches up and covers only them. The chosen spot has a **tag on the windscreen** in the head-up display's
+  look and the sonar's green (name, crew, rate, distance): not act 4's red gunsight, which stays new.
+- **Refineries** take 2 litres of crude for a litre of fuel at first, towards 1:1 with Brewing.
+
+**Spots are drawn ahead of each run** (the owner: semi-random, guaranteed, not evenly spread), on dice of their own so
+the traffic stays the same in every game: oil spots in clusters and gaps, a rich one early, a refinery within reach
+once there are brewers. A **check** keeps the income steady for sensible play, without godlike reactions or perfect
+planning: a model player (your average speed over the last runs, 1 s to react once a spot shows, at most 4 presses a
+second, the best spot it can fill) must earn within about 25% of the target for the size of your crew, or the run is
+drawn again, a few times at most, keeping the closest.
+
+**Scouting** (an upgrade) lists what is on the next run before it, "4 oil, 1 refinery", with no positions, sizes or
+rates (the owner: so the garage doesn't turn into over-analysis); its levels cover more of the run.
+
+**The Fuel converter** (the Mile converter renamed; free with the tab) turns metres into fuel, one way, at the pump
+price: 1,609 m a litre at first (today's mile; the owner: thousands, not hundreds), climbing with the crew's size (a
+first guess: three times as dear by the 51st). It buys the first cars, and the oil takes over. Miles in a save carry
+over as litres, one for one.
+
+**The Crew page,** paid in fuel. First-guess prices, for `act3.py` to set:
+
+| Upgrade | Levels | Base | Growth | Notes |
+|---|---|---|---|---|
+| Pay off a racer | up to 99 | 1 | 1.035 | as now: one more of the crew |
+| Crew tuning | 5 | 3 | 3 | Fleet tuning renamed: racers 5% quicker a level, and crew cars reach their spot sooner |
+| Racing | 5 | 5 | 3 | Fleet dues renamed: racers pay 10% a level of the metres they drive |
+| Harvesting | 5 | 5 | 3 | harvesters pump 20% more a level |
+| Brewing | 5 | 5 | 3 | brewers get more fuel from the crude: 2:1 towards 1:1 |
+| Crude tank | 3 | 10 | 2.5 | a bigger tank |
+| Sonar range | 2 | 10 | 3 | the tracker reaches 1 km, then 2 km (500 m before) |
+| Scouting | 3 | 15 | 2.5 | lists the run's first 2 km, then 4 km, then all of it |
+| Foreman | 1 | 150 | | sends the crew for you (the biggest yield in reach it can fill), so you are hands-free by the end of the act; a switch; your own SEND still works |
+
+The role upgrades and tuning grow steeply (the owner: "make their price grow steeply"). The names stay one or two
+words, as every card's does (Claude's call: "efficiency" would wrap on a phone, and the card's line says what each
+does). Fleet flash goes: it never fired at P1. What needs what: the upgrade graph.
+
+**Foreshadowing,** without a word: the pump price climbs; stations that aren't yours show NO FUEL, then get boarded up;
+a burnt-out shell; the first rusty car in the last races; then your crew rides out as the gang.
+
+**Still to settle:** what points buy in act 3 (the Black market is mostly bought by then); every number above; and act
+4's Hunter role, with what it needs now that Fleet flash is gone (its own layer, with `act4.py`).
+
+**Layers,** a PR each, the full suite before each merge, and every merge a working game (main is live):
+1. These notes and the upgrade graph.
+2. The Fleet renamed the Crew, in words only.
+3. The core loop: spots on the road, the tracker, `<` SEND `>`, the windscreen tag, the roles, crude and its tank,
+   refineries and brewers, fuel as the money, the Fuel converter's pump price, the role card, team places in points,
+   the scripted run; `act3.py`'s bot learns to send, retuned to 10–15 races. The biggest layer: it may come as a few
+   PRs merged together, so the live game never has crude with nothing to spend it on.
+4. Sonar range, Scouting, the Crude tank, Racing, Harvesting and Brewing.
+5. The Foreman.
+6. The foreshadowing.
+7. Act 4's Hunter role.
 
 ### Act 4: the War Rig
 
@@ -893,3 +1027,5 @@ these proposals are still open.
   - Manufacturer: the Rev game returns as dyno engine design, and the traffic becomes your cars.
   - Extreme: land speed records, then a road off the planet.
   - Then a new game plus, with a legacy bonus.
+  - A CB radio on the dash giving the crew orders on the road (follow, block, flat out): the owner's "act 6" material
+    (25 Oct), from the act 3 brainstorm.
