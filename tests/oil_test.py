@@ -67,6 +67,14 @@ with sync_playwright() as p:
     js("garageTab = 'fleet'; renderGarage()")
     text = js("$('cards').innerText")
     check("the role card: racers 0, harvesters 3, brewers 2", "Roles" in text and "Racers 0" in text.replace("\n", " ") and "Harvesters 3" in text.replace("\n", " "), text[:200])
+    slide = lambda r, v: js(f"""(() => {{ const s = document.querySelector('input[data-role="{r}"]'); s.value = {v}; s.dispatchEvent(new Event('input', {{ bubbles: true }}));
+        const bar = r => +document.querySelector(`.roles .split .${{r}}`).style.flexGrow;
+        return [role('harvester'), role('brewer'), racersOf(), +s.value, bar('racer'), bar('harvester'), bar('brewer'), !!document.querySelector('input[data-role="{r}"]')]; }})()""")
+    got = slide("harvester", 1)
+    check("the harvesters' slider down to 1: two racers again, the bar and the card follow, the slider still there", got == [1, 2, 2, 1, 2, 1, 2, True], got)
+    got = slide("brewer", 5)
+    check("the brewers' slider up to 5: as far as the racers go, 4, and it stops there", got == [1, 4, 0, 4, 0, 1, 4, True], got)
+    js("progress.roles = { harvester: 3, brewer: 2 }; renderGarage()")
     pg.tap('[data-role="harvester"][data-by="-1"]'); pg.wait_for_timeout(100)
     check("a harvester back to racing: one racer on the grid", js("[racersOf(), role('harvester'), riders()]") == [1, 2, 4], js("[racersOf(), role('harvester'), riders()]"))
     pg.screenshot(path=f"{OUT}/oil_garage_phone.png")

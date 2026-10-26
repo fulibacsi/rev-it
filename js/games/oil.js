@@ -294,16 +294,41 @@ function renderCrew() {
   if ($('crew-send').firstChild.nodeValue !== word) $('crew-send').firstChild.nodeValue = word;
 }
 
-// ---- the garage: who does what (from the oil on), and what Scouting has seen of the next run. A racer moved into a
-// role leaves the grid; one moved out races again
+// ---- the garage: who does what (from the oil on), and what Scouting has seen of the next run. A wide card: the crew's
+// split as a bar in the roles' colours, a slider for each role (the owner, 27 Oct: the counts were hard to take in),
+// and − and + for a car at a time. A racer moved into a role leaves the grid; one moved out races again; the racers
+// are the rest
+const ROLES = [['racer', 'Racers'], ['harvester', 'Harvesters'], ['brewer', 'Brewers']];
+const shownRoles = () => ROLES.filter(([r]) => r !== 'brewer' || progress.oil >= 2);
+const countOf = r => r === 'racer' ? racersOf() : role(r);
 function roleCard() {
   if (progress.oil < 1 || !crewOn()) return '';
-  const row = (r, name) => `<span class="role">${name} <b>${role(r)}</b><button data-role="${r}" data-by="-1"` +
-    `${role(r) ? '' : ' disabled'}>−</button><button data-role="${r}" data-by="1"${racersOf() ? '' : ' disabled'}>+</button></span>`;
-  return `<div class="card roles"><b>Roles</b><small>racers race for metres and places · harvesters pump crude · ` +
-    `brewers brew it into fuel · a car with no spot to work earns nothing${scouted() ? ` · <i>${scouted()}</i>` : ''}</small>` +
-    `<span class="role">Racers <b>${racersOf()}</b></span>${row('harvester', 'Harvesters')}` +
-    `${progress.oil >= 2 ? row('brewer', 'Brewers') : ''}</div>`;
+  const row = ([r, name]) => `<span class="role ${r}">${name} <b>${countOf(r)}</b>` + (r === 'racer' ? '<small>the rest</small>'
+    : `<button data-role="${r}" data-by="-1">−</button><input type="range" data-role="${r}" min="0" max="${fleetSize()}" ` +
+      `value="${role(r)}"><button data-role="${r}" data-by="1">+</button>`) + '</span>';
+  return `<div class="card roles"><b>Roles · ${fleetSize()} cars</b><div class="split">` +
+    shownRoles().map(([r]) => `<i class="${r}" style="flex-grow: ${countOf(r)}"></i>`).join('') + '</div>' +
+    shownRoles().map(row).join('') + '<small>racers race for metres and places · harvesters pump crude · brewers brew it ' +
+    `into fuel · a car with no spot to work earns nothing${scouted() ? ` · <i>${scouted()}</i>` : ''}</small></div>`;
+}
+function syncRoles() { // the card as the crew is now: its bar, counts, sliders and buttons
+  const card = $('cards').querySelector('.roles');
+  if (!card) return;
+  for (const [r] of shownRoles()) {
+    card.querySelector(`.split .${r}`).style.flexGrow = countOf(r);
+    card.querySelector(`.role.${r} b`).textContent = countOf(r);
+    const slider = card.querySelector(`input[data-role="${r}"]`);
+    if (!slider) continue;
+    slider.value = role(r);
+    card.querySelector(`.role.${r} [data-by="-1"]`).disabled = !role(r);
+    card.querySelector(`.role.${r} [data-by="1"]`).disabled = !racersOf();
+  }
+}
+function slideRole(slider) { // a slider as it moves: as far as the racers go, the card only, so the drag carries on
+  makeRole(slider.dataset.role, +slider.value - role(slider.dataset.role));
+  plan = null;
+  save();
+  syncRoles();
 }
 
 // ---- the tutorials: popped up mid-run by the script, and kept under HOW TO DRIVE
