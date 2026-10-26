@@ -546,8 +546,10 @@ save keys stay): every racer you pay off. Each has a role, and only racers earn 
 - **Brewer** (the owner's name): rides with you and works refineries, turning crude into fuel.
 - **Hunter,** in act 4: the Hunting pack as a role (the owner's idea), named only once the War Rig page is open.
 
-The roles are split on a card in the garage, free to change between runs. All harvesters this run and all brewers the
-next is a fair tactic (the owner's), since crude keeps.
+The roles are split on a card in the garage, free to change between runs: since 27 Oct (the owner: the counts were
+hard to take in) a wide card, the crew's split as a bar in the roles' colours (racers green, harvesters amber,
+brewers blue), a slider for each role with − and + beside it, the racers the rest. All harvesters this run and all
+brewers the next is a fair tactic (the owner's), since crude keeps.
 
 **How it opens** (the owner, 26 Oct):
 - Cars 1–4 have no role and race. Crew tuning is their only upgrade.
