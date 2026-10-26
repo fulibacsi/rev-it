@@ -535,7 +535,7 @@ the tank's size; and **fuel**, the Crew page's money in place of miles. The crew
 loop compounds. The goal is unchanged: 51 crew make the gang (act 4).
 
 **The crew** is the Fleet renamed (the owner, 26 Oct: the tab, the page, the cards and the words; the upgrade ids and
-save keys stay): every racer you pay off. Each has a role:
+save keys stay): every racer you pay off. Each has a role, and only racers earn metres and places:
 - **Racer:** in its slot on the grid, racing as the fleet does now. Team places pay points instead of miles, so what is
   left on the Black market stays in reach; Racing (Fleet dues renamed) pays a share of the metres racers drive.
 - **Harvester:** rides with you and works oil spots.
@@ -622,13 +622,17 @@ wait (an estimate from the first guesses, not a simulation). So the room grows w
   extra cars don't just drain them sooner (the owner's): a 0/6 takes 12;
 - Sonar range brings more spots into reach;
 - the draw keeps about 1.3 places in reach for each free car, so there is always a choice and never a crowd;
-- a car not needed at a spot can race, so none is dead weight.
+- a car with no spot to work earns nothing (the owner, 26 Oct: the player should balance the roles). The role card is
+  where a bad split gets fixed, and the room in reach keeps idle cars rare when the split is sensible. A share of the
+  metres an idle car rides is kept in reserve, should idling feel harsh in play.
 
 **How we make sure:** `act3.py` reports each race how much of the harvesters' and brewers' time is spent at a spot
 (60–90% at every crew size from 5 to 51), the fuel a car makes in a run, and how many runs a car takes to pay for
 itself (2–4 throughout: the incremental rule the balancing pass follows, prices growing and income with them; the 5th
-car costs about 1.2 litres, the 51st about 5.8). The core loop doesn't merge until they are in their bands. As the
-spots grow, so does the mashing: Double up first, then the Foreman (the owner, 26 Oct).
+car costs about 1.2 litres, the 51st about 5.8). Oil should make at least two-thirds of the fuel once the scripted
+run is behind you: the racers' metres turn into fuel at the Fuel converter, and its climbing price is the brake. The
+core loop doesn't merge until these are in their bands. As the spots grow, so does the mashing: Double up first, then
+the Foreman (the owner, 26 Oct).
 
 **Foreshadowing,** without a word: the pump price climbs; stations that aren't yours show NO FUEL, then get boarded up;
 a burnt-out shell; the first rusty car in the last races; then your crew rides out as the gang.
