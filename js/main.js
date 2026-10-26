@@ -183,6 +183,8 @@ $('menu').onclick = e => {
   if (b.id === 'stats-switch') { setStats(!settings.stats); renderMenu(); }
   if (b.id === 'feedback-send') submitFeedback();
   if (b.id === 'to-main' || b.id === 'win-main') showScreen('main');
+  if (b.dataset.act && confirm(`Debug: start the debug game at act ${b.textContent}? It is set to that act's start; ` +
+    'your own game is kept as it is.')) { debugAct(+b.dataset.act); play(DISTANCE); } // distance.js
   if (b.id === 'end-run' && confirm('End this run now? It counts as if the time had run out.')) { closeMenu(); game.endRun?.(); }
   if (b.id === 'reset' && confirm('Reset your progress? Every metre, point and upgrade is gone, and the game starts over.')) resetGame();
   if (b.id === 'layout') {
