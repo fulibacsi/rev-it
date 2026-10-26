@@ -25,6 +25,9 @@ Object.assign(UPGRADES, {
            info: l => l ? `oil spots hold ${25 * l}% more` : 'oil spots as they come' },
   doubleUp: { name: 'Double up', tab: 'fleet', max: 1, base: 60, needs: ['overfill'],
               info: () => 'a press of SEND sends two cars' },
+  // the act's automation (the owner, 26 Oct: Double up first, then the Foreman), as Auto gun is act 4's
+  foreman: { name: 'Foreman', tab: 'fleet', max: 1, base: 150, needs: ['doubleUp', ['scouting', 'max'], ['sonarRange', 'max']],
+             info: () => 'sends your crew for you, where you would; your own SEND still works' },
 });
 const fmtL = n => (Math.round(n * 10) / 10).toString();
 const fmtKm = m => m < 1000 ? `${m} m` : `${m / 1000} km`;
@@ -39,6 +42,7 @@ const arrive = () => ARRIVE * (1 - 0.1 * lvl('fleetPace'));
 const cap = s => Math.floor(s.count * (1 + 0.25 * lvl('overfill'))); // cars a spot takes
 const harvest = () => 1 + 0.2 * lvl('harvesting');
 const twice = () => lvl('doubleUp') > 0 && !progress.off.doubleUp; // a switch, as every one-level card is
+const foremanOn = () => lvl('foreman') > 0 && !progress.off.foreman;
 
 // ---- the roles: racers race in their slots; harvesters and brewers ride with you. They are the crew's first paid off
 // (the slowest, #100 down), so the racers on the grid are its quickest. From the gang on (act 4) the whole crew races
@@ -165,6 +169,10 @@ function crewTick(dt) {
     }
   }
   if (!run.pick || run.pick.done || !spotsAhead().includes(run.pick)) run.pick = spotsAhead().find(s => s.crew + s.coming.length < s.count) ?? spotsAhead()[0] ?? null;
+  if (foremanOn() && run.t >= (run.foreman ?? 0)) { // the Foreman: four presses a second, where you would send them
+    const s = bestSpot();
+    if (s) { send(s, true); run.foreman = run.t + 0.25; }
+  }
 }
 function spotDone(s, end) { // passed, dry, or (end) the run over
   s.done = true; s.coming = []; // its crew is yours again (busy counts only what isn't done)
@@ -177,13 +185,12 @@ function spotDone(s, end) { // passed, dry, or (end) the run over
   if (s.kind === 'refinery') { progress.oil = 2; plan = null; } // the first fuel: the oil is on
 }
 // < and >: the spot before or after the one picked, on the tracker; SEND: a car of yours to it (two with Double up),
-// if one of the right role is free and the spot has room
+// if one of the right role is free and the spot has room; the Foreman sends to the spot of its choosing
 function pickSpot(by) {
   const list = spotsAhead(), i = list.indexOf(run.pick);
   if (list.length) run.pick = list[Math.max(0, Math.min(list.length - 1, i + by))];
 }
-function send() {
-  const s = run.pick;
+function send(s = run.pick, quiet = false) { // quiet: the Foreman's, without a beep or a word
   if (run.phase !== 'run' || !s || s.done) return false;
   let sent = 0;
   for (let n = twice() ? 2 : 1; n > 0 && free(s.kind) > 0 && s.crew + s.coming.length < cap(s); n--) {
@@ -191,6 +198,7 @@ function send() {
     runner(s);
     sent++;
   }
+  if (quiet) return sent > 0;
   beep(sent ? 990 : 180, 0.04);
   if (!sent) flash(s.crew + s.coming.length >= cap(s) ? 'FULL' : `NO ${s.kind === 'oil' ? 'HARVESTER' : 'BREWER'} FREE`, '#fb3', false);
   return sent > 0;
@@ -264,6 +272,8 @@ function renderCrew() {
       `${icon}<text x="15" y="${(y + 3).toFixed(1)}">${n}/${s.count}</text></g>`;
   }).join('');
   text('crew-free', `${free('oil')}H ${role('brewer') ? `${free('refinery')}B` : ''}`);
+  const word = foremanOn() ? 'AUTO' : 'SEND'; // the Foreman sends for you, as AUTO on the trigger fires for you (gang.js)
+  if ($('crew-send').firstChild.nodeValue !== word) $('crew-send').firstChild.nodeValue = word;
 }
 
 // ---- the garage: who does what (from the oil on), and what Scouting has seen of the next run. A racer moved into a
@@ -280,7 +290,7 @@ function roleCard() {
 
 // ---- the tutorials: popped up mid-run by the script, and kept under HOW TO DRIVE
 TUTORIALS.splice(TUTORIALS.findIndex(t => t.id === 'fleet') + 1, 0,
-  { id: 'oil', name: 'Oil', for: ['harvesting', 'crudeTank', 'sonarRange', 'scouting', 'wells', 'overfill', 'doubleUp'],
+  { id: 'oil', name: 'Oil', for: ['harvesting', 'crudeTank', 'sonarRange', 'scouting', 'wells', 'overfill', 'doubleUp', 'foreman'],
     open: () => progress.oil > 0 || progress.roles.harvester > 0, pages: [
     { title: 'OIL BY THE ROAD', at: '#tracker',
       both: 'Your crew can work the oil by the road. The tracker beside the sonar shows what is coming: each spot, and ' +

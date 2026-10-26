@@ -71,6 +71,7 @@ flowchart TD
     overfill["Overfill"]
     wells["Deep wells"]
     double["Double up"]
+    foreman["Foreman"]
   end
   subgraph R["War Rig · 1 scrap"]
     warrig(["War Rig tab"])
@@ -124,6 +125,9 @@ flowchart TD
   sonar --> scouting
   harvesting & brewing --> overfill
   overfill --> double
+  double --> foreman
+  scouting -- max --> foreman
+  sonar -- max --> foreman
 
   fleetTab -- "totalled a car" --> warrig
   warrig --> bullbar & armour & spikes & radio & hunter
@@ -206,6 +210,7 @@ Each upgrade and what it needs, one line each: the list to edit.
 - Deep wells ← Harvesting
 - Overfill ← Harvesting, Brewing
 - Double up ← Overfill
+- Foreman ← Double up, Scouting max, Sonar range max
 
 ### War Rig (1 scrap; needs the Crew, and a car totalled)
 
@@ -223,8 +228,7 @@ Each upgrade and what it needs, one line each: the list to edit.
 
 Act 3 rebuilt as the crew (design notes: Act 3 redesign). The Fleet became the Crew on 26 Oct: the tab, the page and
 the cards renamed (Fleet dues is Racing, Fleet tuning Crew tuning), the ids kept for the saves. The crew's oil came
-with the next layer, in the graph above. Still to build: the **Foreman** (← Double up, Scouting max, Sonar range max),
-which sends the crew for you.
+with the next layer, and the Foreman (it sends the crew for you) after it, all in the graph above.
 
 **The first crude** and **the first fuel** come in the scripted run after the 5th car (the oil puddle, then the
 refinery). They are story conditions, and on a card they hide as a tab's do (rule 3): no role or role upgrade is named

@@ -503,7 +503,7 @@ The owner's brief (25 Oct): "there is no interaction with the fleet, nothing new
 playtesters found the Fleet slow; act 1 is mechanical driving, act 2 lane control, act 4 hunting cars, and act 3
 "nothing but buying the same upgrades 51 times". This is what the brainstorm of 25–26 Oct settled on, to build in
 layers, a PR each. Built 26–27 Oct, with the numbers measured since (marked **as built**); still to build: the
-Foreman, the foreshadowing and act 4's Hunter role.
+foreshadowing and act 4's Hunter role.
 
 **Measured first** (25 Oct, scratch runs in the page: act 2's car at P1, `act3.py`'s bot):
 - The fleet starts in its own slots, 120 m apart behind you. The nearest fleet car was 8.2–8.5 km behind you all race
@@ -690,7 +690,9 @@ a burnt-out shell; the first rusty car in the last races; then your crew rides o
    so the live game never has crude with nothing to spend it on.
 4. Sonar range, Scouting, the Crude tank, Racing, Harvesting, Brewing, Overfill, Deep wells and Double up (built 27
    Oct).
-5. The Foreman.
+5. The Foreman (built 27 Oct): it sends as `act3.py`'s bot does (`oil.js` `bestSpot`: a spot a second after it
+   shows, four cars a second, the most to pay before you pass it that the free cars can fill), without a beep; SEND
+   reads AUTO while it is on, as the trigger does with Auto gun.
 6. The foreshadowing.
 7. Act 4's Hunter role.
 

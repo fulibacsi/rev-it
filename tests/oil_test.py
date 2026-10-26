@@ -112,6 +112,11 @@ with sync_playwright() as p:
     check(", and .: the next spot and back", first == min(1, js("spotsAhead().length") - 1) and js("spotsAhead().indexOf(run.pick)") == 0, [first, js("spotsAhead().indexOf(run.pick)")])
     before = js("run.pick.crew + run.pick.coming.length"); pg.keyboard.down("s"); pg.wait_for_timeout(600); pg.keyboard.up("s")
     check("S held: one car, not a stream (a press a car)", js("run.pick.crew + run.pick.coming.length") == before + 1, [before, js("run.pick.crew + run.pick.coming.length")])
+    before = js("busy('oil') + busy('refinery')"); js("progress.crude = 10; progress.levels.foreman = 1"); pg.wait_for_timeout(2500)
+    got = js("[busy('oil') + busy('refinery'), $('crew-send').firstChild.nodeValue]")
+    check("the Foreman: cars sent with no press, AUTO on the button", got[0] > before and got[1] == "AUTO", [before] + got)
+    js("progress.off.foreman = true"); pg.wait_for_timeout(200)
+    check("switched off: SEND again", js("$('crew-send').firstChild.nodeValue") == "SEND", js("$('crew-send').firstChild.nodeValue"))
     boxes = js("""['tracker', 'crew-ctl', 'sonar', 'tank', 'shifter', 'cluster', 'wheel', 'pedals', 'ignition', 'menu-button', 'timer'].map(id => {
         const r = $(id).getBoundingClientRect(); return [id, r.left, r.top, r.right, r.bottom, getComputedStyle($(id)).display]; })""")
     shown = {b_[0]: b_[1:5] for b_ in boxes if b_[5] != "none"}
