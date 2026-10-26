@@ -1,7 +1,8 @@
 """The car stereo: nothing before it is bought in the Workshop; then its recorded tapes play (measured off the music's
 own analyser: sound, and never clipping), the lights in the cluster jump with the beat, a tap on them (or M) plays the
 next tape and after the last one it goes off, greyed but still there to be tapped back on; the garage's ON/OFF is the
-same switch; a tape that ends hands over to the next, round to the first; the menu pauses it. Each tape is downloaded
+same switch; a tape that ends hands over to the next, round to the first; the menu pauses it (a tutorial popping up
+only hushes the car). Each tape is downloaded
 ahead: the save's in the main menu, the next while one plays, and no other. On a desktop the head unit sits in the
 dash, left of the cluster, a long name scrolling; on the phone (iPhone insets) only the lights, clear of the rest.
 Served over HTTP, as GitHub Pages serves it: a page opened from a file can't download the tapes, only stream them."""
@@ -85,6 +86,12 @@ with sync_playwright() as p:
           js("[stereo.el.paused, stereo.el.currentTime, ctx.state]"))
     pg.click("#resume"); pg.wait_for_timeout(800)
     check("back: playing on", js("[stereo.el.paused, stereo.el.currentTime > " + str(t0) + "]") == [False, True], js("[stereo.el.paused, stereo.el.currentTime]"))
+    # a tutorial popping up: the car hushed, the stereo playing on (the owner, 27 Oct); closed, the car is heard again
+    js("openTour('driving', true)"); pg.wait_for_timeout(300); t0 = js("stereo.el.currentTime"); pg.wait_for_timeout(800)
+    got = js(f"[menuOpen && screen, stereo.el.paused, stereo.el.currentTime > {t0}, ctx.state, carBus.gain.value]")
+    check("a tutorial popping up: the stereo plays on, the car hushed", got == ["tour", False, True, "running", 0], got)
+    js("closeMenu()"); pg.wait_for_timeout(200)
+    check("closed: the car heard again", js("carBus.gain.value") == js("carVolume"), js("[carBus.gain.value, carVolume]"))
     # 7. another game: no stereo
     js("play(FREE)"); pg.wait_for_timeout(300)
     check("Free drive: no stereo, no music", js("[stereo.on, stereo.el.paused, getComputedStyle($('stereo')).display]") == [False, True, "none"],

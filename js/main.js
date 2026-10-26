@@ -120,15 +120,20 @@ function renderMenu() {
   // a control, and its words, only once the car has it, as in the cockpit (the owner, 22 Oct: nothing locked is named)
   for (const e of $('menu').querySelectorAll('[data-has]')) e.hidden = !lvl(e.dataset.has);
   renderTutorials();
+  text('debug-money', settings.debugMoney === false ? 'money as in play' : 'money ∞'); // debug mode's switch (distance.js)
   if (DISTANCE.stereo() && DISTANCE.tape() !== null) loadTape(DISTANCE.tape()); // ready when you drive (stereo.js)
   const rows = DISTANCE.stats().map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
   $('stats-list').innerHTML = $('win-stats').innerHTML = rows;
   for (const b of $('menu').querySelectorAll('.build')) b.textContent = BUILD;
 }
+// paused: the engine falls silent too. A tutorial or an act's card popping up over the game only hushes the car: the
+// stereo plays on (the owner, 27 Oct: reading in sudden silence felt odd)
+const POPUPS = ['tour', 'act'];
+const hush = on => { if (carBus) carBus.gain.value = on ? 0 : carVolume; };
 function openMenu(name) {
   menuOpen = true;
   document.body.classList.add('menu');
-  ctx?.suspend(); // paused: the engine falls silent too
+  if (POPUPS.includes(name)) hush(true); else ctx?.suspend();
   game.pause?.();
   screenFrom = [];
   showScreen(name ?? (playing ? 'pause' : 'main'), true);
@@ -136,6 +141,7 @@ function openMenu(name) {
 function closeMenu() {
   menuOpen = false;
   document.body.classList.remove('menu');
+  hush(false);
   ctx?.resume();
 }
 function toggleMenu() { if (!menuOpen) openMenu(); else if (playing) closeMenu(); }
@@ -186,6 +192,7 @@ $('menu').onclick = e => {
   if (b.id === 'to-main' || b.id === 'win-main') showScreen('main');
   if (b.dataset.act && confirm(`Debug: start the debug game at act ${b.textContent}? It is set to that act's start; ` +
     'your own game is kept as it is.')) { debugAct(+b.dataset.act); play(DISTANCE); } // distance.js
+  if (b.id === 'debug-money') { debugMoney(settings.debugMoney === false); renderMenu(); } // distance.js
   if (b.id === 'end-run' && confirm('End this run now? It counts as if the time had run out.')) { closeMenu(); game.endRun?.(); }
   if (b.id === 'reset' && confirm('Reset your progress? Every metre, point and upgrade is gone, and the game starts over.')) resetGame();
   if (b.id === 'layout') {
