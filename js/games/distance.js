@@ -654,7 +654,7 @@ const DISTANCE = {
   field: () => raceField(), // race.js loads after this file
   key(k, repeat) { // Enter in the garage: DRIVE; act 3's crew (oil.js): , and . pick a spot, S sends a car (not on a key's
     if (k === 'Enter' && run.phase === 'garage') { drive(); return true; } // repeat: a press a car)
-    if (!run.spots?.length || run.phase !== 'run') return false;
+    if (!tracking() || run.phase !== 'run') return false;
     if (k === ',' || k === '.') { pickSpot(k === ',' ? -1 : 1); return true; }
     if (k === 's' || k === 'S') { if (!repeat) send(); return true; }
   },

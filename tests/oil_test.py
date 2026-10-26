@@ -1,5 +1,6 @@
 """Act 3's crew (docs/design-notes.md, Act 3 redesign): the run after the 5th car is scripted. About 5 s in, an oil
-puddle (0/3) and three racers made harvesters, its tutorial over the paused run; SEND, a press a car, puts them on it
+puddle (0/3) and three racers made harvesters, its tutorial over the paused run (the tracker, SEND and the tag not
+before it, nor S); SEND, a press a car, puts them on it
 (a car of yours comes past on the right shoulder), a fourth finds none free; once all three are there it pumps crude
 into the tank on the right pillar until you pass it, and they come back. Then a refinery (0/2), the last two racers
 made brewers, its tutorial; it brews the crude into fuel until you pass it: the oil is on. In the garage the role card
@@ -27,17 +28,21 @@ with sync_playwright() as p:
     check("before the oil: no role card, no word of oil", "Roles" not in js("$('cards').innerText") and "oil" not in js("$('garage').innerText").lower(), "")
     js("garageTab = 'fleet'; renderGarage()")
     check("the Fuel converter: litres at the pump price, the wallet in litres", "Fuel converter" in js("$('cards').innerText") and js("$('bank').textContent").endswith("20 L to spend"), js("$('bank').textContent"))
-    # 1. the scripted run: the puddle on the tracker from the start
+    # 1. the scripted run: the puddle up the road, on the tracker only with its tutorial (the owner, 27 Oct: from the
+    # start it spoilt the surprise)
     pg.tap("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     js("traffic.forEach(c => { if (!c.racer) c.z = odo + 5000; })")
     got = js("run.spots.map(s => [s.kind, s.count, Math.round(s.z)])")
     check("the 5th car's run: an oil puddle, 0/3, 1.4 km up the road", got == [["oil", 3, 1400]], got)
-    check("the tracker and ‹ SEND › show, with the puddle on it", js("document.body.classList.contains('has-crew') && $('track-spots').children.length === 1"), js("$('track-spots').innerHTML")[:120])
-    got = js("[...$('track-spots').querySelectorAll('text')].map(t => t.textContent)")
-    check("its row: the crew it needs, what it pays, how far", len(got) == 3 and got[0] == "0/3" and got[1].endswith("/s") and got[2].endswith(("m", "k")), got)
+    pg.wait_for_timeout(1000); pg.keyboard.press("s"); pg.wait_for_timeout(100)
+    got = js("[document.body.classList.contains('has-crew'), document.body.classList.contains('tag-on'), getComputedStyle($('tracker')).display, $('flash').textContent]")
+    check("before its tutorial: no tracker, no ‹ SEND ›, no tag on the windscreen, and S does nothing", got[:3] == [False, False, "none"] and "FREE" not in got[3], got)
     pg.wait_for_function("menuOpen && screen === 'tour'", timeout=10000)
     got = js("[tour.id, progress.roles.harvester, racersOf(), +run.t.toFixed(1)]")
     check("about 5 s in: the run paused for the oil tutorial, three racers made harvesters", got[:3] == ["oil", 3, 2] and 5 <= got[3] < 6, got)
+    check("the tracker and ‹ SEND › show with it, the puddle on it", js("document.body.classList.contains('has-crew') && $('track-spots').children.length === 1"), js("$('track-spots').innerHTML")[:120])
+    got = js("[...$('track-spots').querySelectorAll('text')].map(t => t.textContent)")
+    check("its row: the crew it needs, what it pays, how far", len(got) == 3 and got[0] == "0/3" and got[1].endswith("/s") and got[2].endswith(("m", "k")), got)
     left = js("run.left"); pg.wait_for_timeout(400)
     check("paused: the clock waits", js("run.left") == left, [left, js("run.left")])
     pg.screenshot(path=f"{OUT}/oil_tutorial_phone.png")
@@ -56,6 +61,8 @@ with sync_playwright() as p:
     js("odo = run.spots[0].z + 10"); pg.wait_for_function("menuOpen && screen === 'tour'", timeout=5000)
     got = js("[run.spots[0].done, free('oil'), progress.oil, tour.id, progress.roles.brewer, racersOf(), run.spots[1].kind, Math.round(run.spots[1].z - odo)]")
     check("past it: its crew back, the oil met; a refinery 1.1 km on, the last two racers brewers, its tutorial", got[:7] == [True, 3, 1, "refinery", 2, 0, "refinery"] and 1050 < got[7] <= 1100, got)
+    got = js("[...$('track-spots').querySelectorAll('text')].map(t => t.textContent)")
+    check("the tracker its tutorial lights has the refinery on it", len(got) == 3 and got[0] == "0/2", got)
     while js("menuOpen"): pg.tap("#tour-next"); pg.wait_for_timeout(100)
     js("run.pick = run.spots[1]"); pg.tap("#crew-send"); pg.tap("#crew-send"); pg.wait_for_timeout(1900)
     c0 = js("progress.crude"); pg.wait_for_timeout(600)

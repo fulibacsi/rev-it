@@ -132,6 +132,7 @@ function crewRun() { // startRun: this run's spots
 function firstRefinery() { // the script's second half: the refinery, your last two racers made brewers, its tutorial
   run.spots.push(newSpot(FIRST_REFINERY, odo + 1100));
   makeRole('brewer', 2 - progress.roles.brewer);
+  crewAt = 0; // drawn this frame, with the refinery on it, for the tutorial that lights it
   if (!progress.toured.includes('refinery')) openTour('refinery', true);
 }
 function crewEnd() { // finishRun: the spots still at work count as passed
@@ -145,6 +146,9 @@ const busy = kind => kind === 'raid' ? raiding().length // gang.js: raiders on t
   : run.spots.reduce((n, s) => n + (s.kind === kind && !s.done ? s.crew + s.coming.length : 0), 0);
 const free = kind => role(ROLE_OF[kind]) - busy(kind);
 const spotsAhead = () => run.spots.filter(s => !s.done && s.z > odo && (s.scripted || s.z - odo <= reach()));
+// the tracker and its controls: while the run has spots, the script's from their tutorials on, not before (the owner,
+// 27 Oct: on the tracker from the start, the puddle spoilt the surprise and the tutorial)
+const tracking = () => !!run.spots?.length && (run.told || !scripted());
 const trackAhead = () => { const r = raidAhead(); return (r ? [...spotsAhead(), r] : spotsAhead()).sort((a, b) => a.z - b.z); }; // the tracker's
 function crewTick(dt) {
   for (let i = traffic.length; i--;) if (traffic[i].gone) traffic.splice(i, 1); // runners there, or out of sight
@@ -155,6 +159,7 @@ function crewTick(dt) {
     if (progress.oil > 0) firstRefinery();
     else {
       makeRole('harvester', 3 - progress.roles.harvester); // once: a puddle missed comes again with the same three
+      crewAt = 0; // the tracker shows from now (tracking), drawn this frame for the tutorial that lights it
       if (!progress.toured.includes('oil')) openTour('oil', true);
     }
   }
@@ -290,7 +295,7 @@ function raidRow(r, y) { // the car in the reticle (gang.js): a diamond, the rai
 const payRate = s => s.kind === 'oil' ? s.rate * s.count * harvest() : s.rate * s.count / brewRatio(); // L/s, full
 let crewAt = 0;
 function renderCrew() {
-  const road = run.phase !== 'garage', on = road && !!run.spots?.length, now = performance.now();
+  const road = run.phase !== 'garage', on = road && tracking(), now = performance.now();
   document.body.classList.toggle('has-crew', on);
   document.body.classList.toggle('has-tank', road && crewOn() && (progress.oil > 0 || role('harvester') > 0)); // from the puddle on
   const s = on && run.phase === 'run' ? run.pick : null, seen = s?.seen;
