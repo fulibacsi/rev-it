@@ -113,7 +113,7 @@ with sync_playwright() as p:
           r.push([m.find(x => x.kind === 'station')?.value, m.some(x => x.kind === 'shell'), omenRust()]); }
         [progress.levels.fleet, odo, run.phase, run.spots] = was; return r; })()""")
     check("the foreshadowing: the pump price on a station's board, then NO FUEL, then boarded up and a burnt-out shell, then rusty cars",
-          got == [["2,240", False, 0], ["NO FUEL", False, 0], ["", True, 0], ["", True, 0.06]], got)
+          got == [[f"{round(7500 * (1 + 2 * 10 / 51)):,}", False, 0], ["NO FUEL", False, 0], ["", True, 0], ["", True, 0.06]], got)  # the pump price at 10
     got = js("""(() => { const a = [stationSprite('2,240'), stationSprite('NO FUEL'), stationSprite(''), wreckSprite(trafficLook(3).rear)];
         const l = rustLook(trafficLook(5)); a.push(l.rear, l.front, l.beams); return a.every(c => c.width > 0 && c.height > 0); })()""")
     check("their sprites draw: the stations, the shell, a rusty car from behind, in front and flashing", got, "")
