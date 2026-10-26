@@ -255,12 +255,18 @@ function omenMarks() {
   return out;
 }
 
-// ---- what you see: the tracker on the sonar's right (the owner's: on the far left your hand would hide it), the
-// spots ahead on a log scale, near ones spread out, far ones packed close; a tag on the windscreen on the spot picked,
-// in the head-up display's look and the sonar's green (not act 4's red gunsight, which stays new); the crude tank on
-// the right A-pillar. Redrawn with the sonar, 15 times a second
-const TRACK = [74, 13]; // the strip's near and far ends, in the tracker's frame
-const trackY = d => TRACK[0] + (TRACK[1] - TRACK[0]) * Math.min(1, Math.log1p(Math.max(0, d) / 50) / Math.log1p(reach() / 50));
+// ---- what you see: the tracker on the sonar's right (the owner's: on the far left your hand would hide it): the next
+// four spots ahead, one a row, the farthest on top as on the sonar, each with its crew, what it pays and how far it
+// is (the owner, 27 Oct: the log-scale strip it was could not be read at speed); a tag on the windscreen on the spot
+// picked, in the head-up display's look and the sonar's green (not act 4's red gunsight, which stays new); the crude
+// tank on the right A-pillar. Redrawn with the sonar, 15 times a second
+const ROWS = 4, ROW = 15; // rows on the tracker, and their height in its frame (the nearest at the bottom, y 63)
+const fmtAhead = d => d < 1000 ? `${Math.round(d / 10) * 10}m` : `${(d / 1000).toFixed(1)}k`;
+function trackRows() { // the four round the spot picked: one nearer, if there is one, and the rest further on
+  const list = spotsAhead(), i = Math.max(0, list.indexOf(run.pick));
+  const from = Math.max(0, Math.min(i - 1, list.length - ROWS));
+  return list.slice(from, from + ROWS);
+}
 const kindName = s => s.kind === 'oil' ? 'OIL' : 'REFINERY';
 const payRate = s => s.kind === 'oil' ? s.rate * s.count * harvest() : s.rate * s.count / brewRatio(); // L/s, full
 let crewAt = 0;
@@ -281,12 +287,13 @@ function renderCrew() {
   $('tank-fill').setAttribute('y', (72 - 56 * Math.min(1, progress.crude / tankSize())).toFixed(1));
   text('tank-lcd', `${fmtL(progress.crude)}/${tankSize()}`);
   if (!on) return;
-  $('track-spots').innerHTML = spotsAhead().map(s => {
-    const y = trackY(s.z - odo), n = s.crew + s.coming.length;
-    const icon = s.kind === 'oil' ? `<circle cx="9" cy="${y.toFixed(1)}" r="3.4"/>` : `<rect x="5.6" y="${(y - 3.4).toFixed(1)}" width="6.8" height="6.8"/>`;
+  $('track-spots').innerHTML = trackRows().map((s, i) => {
+    const y = 59 - i * ROW, n = s.crew + s.coming.length; // the row's middle: the nearest lowest
+    const icon = s.kind === 'oil' ? `<circle cx="14" cy="${y}" r="4"/>` : `<rect x="10" y="${y - 4}" width="8" height="8"/>`;
     return `<g class="${s.crew >= s.count ? 'pumping' : n >= s.count ? 'coming' : 'short'}${s === run.pick ? ' pick' : ''}">` +
-      (s === run.pick ? `<rect class="sel" x="2" y="${(y - 6).toFixed(1)}" width="38" height="12" rx="2"/>` : '') +
-      `${icon}<text x="15" y="${(y + 3).toFixed(1)}">${n}/${s.count}</text></g>`;
+      (s === run.pick ? `<rect class="sel" x="7" y="${y - 7}" width="106" height="14" rx="2"/>` : '') +
+      `${icon}<text x="22" y="${y + 3.5}">${n}/${s.count}</text><text x="78" y="${y + 3.5}" text-anchor="end">` +
+      `${fmtL(payRate(s))}/s</text><text x="110" y="${y + 3.5}" text-anchor="end">${fmtAhead(s.z - odo)}</text></g>`;
   }).join('');
   text('crew-free', `${free('oil')}H ${role('brewer') ? `${free('refinery')}B` : ''}`);
   const word = foremanOn() ? 'AUTO' : 'SEND'; // the Foreman sends for you, as AUTO on the trigger fires for you (gang.js)

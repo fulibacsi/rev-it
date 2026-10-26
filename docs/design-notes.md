@@ -578,7 +578,10 @@ next is a fair tactic (the owner's), since crude keeps.
   parked at a spot as you go by. Double up makes a press send two.
 - **The sonar** stays as it is for cars, 250 m each way. A **tracker** on its right side (the owner's: on the far left
   your hand would hide it) shows the spots ahead on a log scale, near ones spread out and far ones packed close, their
-  icons coming down as they near; its reach is Sonar range. `<` SEND `>` sit along the sonar's bottom edge, where the
+  icons coming down as they near; its reach is Sonar range. Since 27 Oct (the owner's playtest: too hard to see
+  what's ahead at that speed) it is three times as wide and a list: the next four spots, one a row, the farthest on
+  top as on the sonar, each with its crew (3/5), what it pays when full (1.2/s) and how far it is (320m, 1.4k),
+  coloured by state (short amber, crewed blue, pumping green), the one picked outlined; the rows follow the pick. `<` SEND `>` sit along the sonar's bottom edge, where the
   left thumb reaches up and covers only them. The chosen spot has a **tag on the windscreen** in the head-up display's
   look and the sonar's green (name, crew, rate, distance): not act 4's red gunsight, which stays new.
 - **Refineries** take 2 litres of crude for a litre of fuel at first, towards 1:1 with Brewing.
