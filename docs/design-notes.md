@@ -563,11 +563,12 @@ next is a fair tactic (the owner's), since crude keeps.
   one. Each holds a reserve and pays until that runs dry too, so parking short of one to farm it only empties it
   faster (Claude's call). Crewing a spot far ahead pays most, and the cars sent there can't take the nearer ones
   meanwhile. A faster car shortens each spot's time but passes more of them; lifting off, or your foot on the brake,
-  buys a rich one more seconds.
+  buys a rich one more seconds. With Overfill a spot takes more cars than its count, up to twice as many, each one
+  past the count adding its share of the rate.
 - **Sending** is one press of SEND for each car (the owner: "a bit of frantic button mash"), and `<` and `>` choose the
   spot; on the keyboard `,`, `.` and `S`. The car comes past you on the right shoulder, kicking up dust, and races off
   to the spot. It counts once it gets there, a second or two later, so sending early pays. Your crew's cars stand
-  parked at a spot as you go by.
+  parked at a spot as you go by. Double up makes a press send two.
 - **The sonar** stays as it is for cars, 250 m each way. A **tracker** on its right side (the owner's: on the far left
   your hand would hide it) shows the spots ahead on a log scale, near ones spread out and far ones packed close, their
   icons coming down as they near; its reach is Sonar range. `<` SEND `>` sit along the sonar's bottom edge, where the
@@ -577,10 +578,11 @@ next is a fair tactic (the owner's), since crude keeps.
 
 **Spots are drawn ahead of each run** (the owner: semi-random, guaranteed, not evenly spread), on dice of their own so
 the traffic stays the same in every game: oil spots in clusters and gaps, a rich one early, a refinery within reach
-once there are brewers. A **check** keeps the income steady for sensible play, without godlike reactions or perfect
-planning: a model player (your average speed over the last runs, 1 s to react once a spot shows, at most 4 presses a
-second, the best spot it can fill) must earn within about 25% of the target for the size of your crew, or the run is
-drawn again, a few times at most, keeping the closest.
+once there are brewers. The spots grow moderately with your crew (a first guess: from 0/3 to about 0/8 by the 51st).
+A **check** keeps the income steady for sensible play, without godlike reactions or perfect planning: a model player
+(your average speed over the last runs, 1 s to react once a spot shows, at most 4 presses a second, the best spot it
+can fill) must earn within about 25% of the target for the size of your crew, and find about 1.3 places in reach for
+each free car of the crew, or the run is drawn again, a few times at most, keeping the closest.
 
 **Scouting** (an upgrade) lists what is on the next run before it, "4 oil, 1 refinery", with no positions, sizes or
 rates (the owner: so the garage doesn't turn into over-analysis); its levels cover more of the run.
@@ -602,11 +604,31 @@ over as litres, one for one.
 | Crude tank | 3 | 10 | 2.5 | a bigger tank |
 | Sonar range | 2 | 10 | 3 | the tracker reaches 1 km, then 2 km (500 m before) |
 | Scouting | 3 | 15 | 2.5 | lists the run's first 2 km, then 4 km, then all of it |
-| Foreman | 1 | 150 | | sends the crew for you (the biggest yield in reach it can fill), so you are hands-free by the end of the act; a switch; your own SEND still works |
+| Overfill | 4 | 20 | 2.5 | a spot takes 25% more cars than its count a level, up to twice as many; each one past the count adds its share of the rate |
+| Deep wells | 4 | 15 | 2.5 | oil spots hold 25% more a level, up to twice as much |
+| Double up | 1 | 60 | | a press of SEND sends two cars |
+| Foreman | 1 | 150 | | after Double up: sends the crew for you (the biggest yield in reach it can fill), so you are hands-free by the end of the act; a switch; your own SEND still works |
 
 The role upgrades and tuning grow steeply (the owner: "make their price grow steeply"). The names stay one or two
 words, as every card's does (Claude's call: "efficiency" would wrap on a phone, and the card's line says what each
 does). Fleet flash goes: it never fired at P1. What needs what: the upgrade graph.
+
+**Room for the whole crew** (the owner, 26 Oct: would 51 cars be overkill?). A car works only while it is at a spot,
+so the most that can work at once is the room in the spots in reach. With a spot about every 700 m, 2–6 places each
+and 2 km of reach, about 3 spots are in reach at once: 10–15 cars, and from about the 15th each new car would mostly
+wait (an estimate from the first guesses, not a simulation). So the room grows with the crew:
+- the spots grow moderately with it (above);
+- Overfill lets a spot take up to twice its count, and Deep wells make oil spots hold up to twice as much, so the
+  extra cars don't just drain them sooner (the owner's): a 0/6 takes 12;
+- Sonar range brings more spots into reach;
+- the draw keeps about 1.3 places in reach for each free car, so there is always a choice and never a crowd;
+- a car not needed at a spot can race, so none is dead weight.
+
+**How we make sure:** `act3.py` reports each race how much of the harvesters' and brewers' time is spent at a spot
+(60–90% at every crew size from 5 to 51), the fuel a car makes in a run, and how many runs a car takes to pay for
+itself (2–4 throughout: the incremental rule the balancing pass follows, prices growing and income with them; the 5th
+car costs about 1.2 litres, the 51st about 5.8). The core loop doesn't merge until they are in their bands. As the
+spots grow, so does the mashing: Double up first, then the Foreman (the owner, 26 Oct).
 
 **Foreshadowing,** without a word: the pump price climbs; stations that aren't yours show NO FUEL, then get boarded up;
 a burnt-out shell; the first rusty car in the last races; then your crew rides out as the gang.
@@ -621,7 +643,7 @@ a burnt-out shell; the first rusty car in the last races; then your crew rides o
    refineries and brewers, fuel as the money, the Fuel converter's pump price, the role card, team places in points,
    the scripted run; `act3.py`'s bot learns to send, retuned to 10–15 races. The biggest layer: it may come as a few
    PRs merged together, so the live game never has crude with nothing to spend it on.
-4. Sonar range, Scouting, the Crude tank, Racing, Harvesting and Brewing.
+4. Sonar range, Scouting, the Crude tank, Racing, Harvesting, Brewing, Overfill, Deep wells and Double up.
 5. The Foreman.
 6. The foreshadowing.
 7. Act 4's Hunter role.

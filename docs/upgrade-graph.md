@@ -221,6 +221,9 @@ flowchart TD
     crude["Crude tank"]
     sonar["Sonar range"]
     scouting["Scouting"]
+    overfill["Overfill"]
+    wells["Deep wells"]
+    double["Double up"]
     foreman["Foreman"]
   end
   black(["Black market tab"]) -- P1 --> crewTab
@@ -230,6 +233,10 @@ flowchart TD
   crewTab -- "the first fuel" --> brewing
   harvesting --> crude & sonar
   sonar --> scouting
+  harvesting & brewing --> overfill
+  harvesting --> wells
+  overfill --> double
+  double --> foreman
   scouting -- max --> foreman
   sonar -- max --> foreman
 ```
@@ -243,7 +250,10 @@ flowchart TD
 - Crude tank ← Harvesting
 - Sonar range ← Harvesting
 - Scouting ← Sonar range
-- Foreman ← Scouting max, Sonar range max
+- Overfill ← Harvesting, Brewing
+- Deep wells ← Harvesting
+- Double up ← Overfill
+- Foreman ← Double up, Scouting max, Sonar range max
 
 **The first crude** and **the first fuel** come in the scripted run after the 5th car (the oil puddle, then the
 refinery). They are story conditions, and on a card they hide as a tab's do (rule 3): no role or role upgrade is named
