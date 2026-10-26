@@ -520,9 +520,9 @@ So act 3's new thing to do has to be something the aids don't do.
 **The rounds that led here,** each turned down: gas stations to brake into ("could be good", but nothing to do with
 the fleet); a convoy with a CB radio and orders (the owner: act 6 material); signing racers on the road by catching
 and flashing them (too hard to do); a fuel gauge for the clock (the owner liked the fuel: it stayed, as the money); a
-horn that calls the fleet into a wedge through the traffic (the fleet should look harmless, so act 4's reveal stays a surprise). The owner's turn (25 Oct): a crew with
-duties, the incremental genre's own trope (A Dark Room, Kittens Game), sent Pikmin-like to oil spots and refineries;
-then (26 Oct) the sonar at the centre of it.
+horn that calls the fleet into a wedge through the traffic (the fleet should look harmless, so act 4's reveal stays a
+surprise). The owner's turn (25 Oct): a crew with duties, the incremental genre's own trope (A Dark Room, Kittens
+Game), sent Pikmin-like to oil spots and refineries; then (26 Oct) the sonar at the centre of it.
 
 **The fantasy:** act 1 you drive, act 2 you race, act 3 you run the crew while the robot drives, act 4 you make war. By
 act 3 Auto shift has freed the left thumb (on a phone the shifter was all it did), and the sonar is the act's
