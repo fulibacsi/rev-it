@@ -888,7 +888,15 @@ fix: the reticle kept last race's car, out of sight on the horizon, and the guns
   second within 80 m. Measured (a police car, 200 health): rams at 3.0, 4.5, 6.0, 7.4, 8.9 and 10.4 s, the first at
   60 m/s, the rest at 16. `act4.py` with it (seeds 1 and 2, the more refineries in): the tank in race 14 on both
   (14 and 13 before), the totals up about a quarter (63 and 80 in the act, from 50 and 65), as many as 15-20 a race
-  in the last ones; the tank waits on the heat and the guns. When its car is totalled ("THE GANG TOTALLED A CAR", the scrap yours, the gang's heat), when you pass the car,
+  in the last ones; the tank waits on the heat and the guns.
+  **Several on one car take turns** (the owner, 27 Oct: two sent with one press of Double up drove as one and hit as
+  one, and three sent a moment apart hit within a quarter of a second; "the first car hits the target, slows down, and
+  then the second car hits the target, passing through the first car", as Mario does after a hit). The one that has
+  waited longest charges; the rest wait in line behind the car, the next 10 m back and the others 6 m apart, easing
+  into their places (braking at 25 m/s² at most); one knocked back by its ram goes to the back of the line, and the
+  next charges through it. Raiders never touch one another. Three on a car: rams 0.57-0.65 s apart, one at a time, in
+  the order sent (`raiders_test.py`). `act4.py` with it: the tank in races 13 and 11 (14 and 14 before; seed 2 after
+  three wrecked races that raised the heat quickly), totals 65 and 50 in the act. When its car is totalled ("THE GANG TOTALLED A CAR", the scrap yours, the gang's heat), when you pass the car,
   or when the raider is 900 m up the road, it rides with you again. The Foreman sends raiders too: the raid first while
   a raider is free and the car is within the guns' reach (200 m). `raiders_test.py` checks it. Claude's calls: the
   caps, the speeds, the shoulder. `act4.py`'s bot makes up to 6 of the crew raiders once it has the card (3 on the car,
