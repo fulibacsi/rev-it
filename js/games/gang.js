@@ -139,9 +139,12 @@ function total(c, gang, how) { // the scrap is yours, whoever did it; the heat t
 
 // ---- raiders (the owner, 27 Oct: the Hunting pack as a role, riding with you as harvesters and brewers do): the car in
 // the reticle is on the tracker as a target (oil.js), and SEND sends a raider at it, up the shoulder and into it: a ram
-// every 1.5 s (the bull bar counts, and the tank takes a fifth, as yours do) and its guns, if any, once a second, until
-// it is totalled or you pass it; then it rides with you again. Up to RAID raiders a car, the tank RAID_TANK
+// every 1.5 s or so (the bull bar counts, and the tank takes a fifth, as yours do) and its guns, if any, once a second,
+// until it is totalled or you pass it; then it rides with you again. Up to RAID raiders a car, the tank RAID_TANK
 const RAID = 3, RAID_TANK = 6;
+// a ram knocks it back: KNOCK s falling back BACK m/s, then it charges again and hits at about 17 m/s, a ram every
+// 1.5 s (Claude's numbers: the pace it had before, 27 Oct)
+const KNOCK = 0.8, BACK = 5;
 const raiding = () => traffic.filter(c => c.raider && !c.gone);
 function raidAhead() { // the reticle's car as a tracker row, while you have raiders (the same row while it is the target)
   const t = target;
@@ -156,22 +159,24 @@ function sendRaider(r) { // up the right shoulder, as a car sent to a spot goes 
   traffic.push({ raider: r.car, fleet: true, dir: 1, x: SHOULDER - 0.6, z: odo - 20, v: speed + 15, look: racerSprite(n, true, true),
                  d: NaN, hit: -Infinity, seen: null, rammed: 0, gun: 0 });
 }
-function raiderDrive(c, dt) { // road.js updateTraffic: after its car, then into it
+// road.js updateTraffic: after its car, flat out, and into it without braking for it (the owner, 27 Oct: they lined
+// up, then braked before the ram); knocked back by each ram. It holds back only while it is still moving into the
+// car's lane, so it doesn't drive past it
+function raiderDrive(c, dt) {
   const o = c.raider;
   if (o.wreck || !traffic.includes(o) || o.z < odo - 40 || c.z - odo > 900) { c.gone = true; return; } // back with you
   c.rammed = Math.max(0, c.rammed - dt);
   c.gun = Math.max(0, c.gun - dt);
-  const gap = o.z - c.z - CAR_LEN;
-  c.v = gap > 30 ? Math.min(c.v + 30 * dt, Math.max(speed, o.v) + 60) : o.v + clamp(gap, 0, 15);
+  const gap = o.z - c.z - CAR_LEN, lined = Math.abs(o.x - c.x) < 0.6;
+  c.v = c.rammed ? o.v - BACK : !lined && gap < 8 ? o.v : Math.min(c.v + 30 * dt, Math.max(speed, o.v) + 60);
   c.z += c.v * dt;
-  c.x += clamp(o.x - c.x, -3 * dt, 3 * dt); // off the shoulder, into its lane
-  if (gap < 0.5 && Math.abs(o.x - c.x) < 1.2) { c.z = o.z - CAR_LEN - 0.5; raidRam(c, o); }
+  c.x += clamp(o.x - c.x, -4 * dt, 4 * dt); // off the shoulder, into its lane
+  if (o.z - c.z - CAR_LEN < 0.5 && Math.abs(o.x - c.x) < 1.2) { c.z = Math.min(c.z, o.z - CAR_LEN - 0.5); raidRam(c, o); }
   if (lvl('guns') && !c.gun && gap < 80) { c.gun = 1; tracers.push([c, o, performance.now()]); hurtCar(o, GUN * lvl('guns'), true); }
 }
-function raidRam(c, o) { // a hit, as yours are, and it falls back a little
+function raidRam(c, o) { // a hit, as yours are, and it is knocked back (raiderDrive)
   if (c.rammed) return;
-  c.rammed = 1.5;
-  c.v = Math.min(c.v, o.v) - 4;
+  c.rammed = KNOCK;
   hurtCar(o, HIT * (1 + 2 / 3 * lvl('bullbar')) * (o.tank ? 0.2 : 1), true);
 }
 
