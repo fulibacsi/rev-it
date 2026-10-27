@@ -1,7 +1,7 @@
 """Raiders (the owner, 27 Oct; the Hunting pack until then): the War Rig page's Raiders card, once Hunter, Racing and a
 level of Crew tuning are bought, makes raiding a role of the crew's: a Raiders row on the role card, none before. On
 the road the car in the reticle is on the tracker, a red row; picked, SEND sends a raider up the shoulder and into it
-without braking for it, a ram every 1.5 s or so, till it is totalled (its scrap yours), and the raider is free again; three at most a car, and FULL
+without braking for it, a ram every 1.5 s or so, till it is totalled; several on one car take turns (its scrap yours), and the raider is free again; three at most a car, and FULL
 after. The tank takes a fifth of a raider's ram, as of yours; the Foreman sends raiders first."""
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -62,10 +62,19 @@ with sync_playwright() as p:
     # 3. three at most on a car
     js(f"({PLACE})(150)"); pg.wait_for_function("raidAhead() && raidAhead().car === tg", timeout=5000)
     js("run.pick = raidAhead()")
+    # each ram: which of them (in the order sent), when, and how far behind the car the others waiting are
+    js("""window.rams = []; window.raidRam0 ??= raidRam; raidRam = (c, o) => { if (!c.rammed) { const on = raiding().filter(r => r.raider === o);
+        rams.push([on.indexOf(c), run.t, Math.min(...on.filter(r => r !== c && !r.rammed).map(r => o.z - r.z - CAR_LEN))]); } raidRam0(c, o); }; 0""")
     for _ in range(4): pg.click("#crew-send"); pg.wait_for_timeout(60)
     got = js("[raidersOn(raidAhead()), free('raid'), $('flash').textContent]")
     check("SEND ×4: three on it, the fourth FULL", got == [3, 1, "FULL"], got)
     pg.screenshot(path=f"{OUT}/raiders_three.png")
+    # 3b. they take turns (the owner, 27 Oct: the first hits it and drops back, the next comes through it and hits)
+    pg.wait_for_function("tg.wreck", timeout=15000)
+    got = js("rams.map(([i, t, gap]) => [i, +t.toFixed(2), +gap.toFixed(1)])")
+    apart = [round(b[1] - a[1], 2) for a, b in zip(got, got[1:])]
+    check("three rams, one at a time, in the order sent, at least 0.5 s apart, the others 6 m or more behind it as each lands",
+          [r[0] for r in got] == [0, 1, 2] and min(apart) >= 0.5 and all(r[2] >= 6 for r in got[:2]), [got, apart])
     # 4. the tank: a fifth of a raider's ram
     got = js("(() => { const t = { tank: true, v: 20, hp: 1000 }; raidRam({ rammed: 0, v: 30 }, t); return +(1000 - t.hp).toFixed(1); })()")
     check("the tank: a fifth of a ram (6.8 of 34)", got == 6.8, got)
