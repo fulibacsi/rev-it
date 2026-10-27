@@ -885,7 +885,10 @@ fix: the reticle kept last race's car, out of sight on the horizon, and the guns
   again and hits at about 17 m/s: a ram every 1.5 s or so. It holds back only while it is still moving into the car's
   lane. (As first built it eased off over the last 30 m and crept into the car, the last 15 m taking over 3 s: the
   owner, 27 Oct, "Raiders line up to the target and then hit the brake before ramming".) With guns it fires once a
-  second within 80 m. When its car is totalled ("THE GANG TOTALLED A CAR", the scrap yours, the gang's heat), when you pass the car,
+  second within 80 m. Measured (a police car, 200 health): rams at 3.0, 4.5, 6.0, 7.4, 8.9 and 10.4 s, the first at
+  60 m/s, the rest at 16. `act4.py` with it (seeds 1 and 2, the more refineries in): the tank in race 14 on both
+  (14 and 13 before), the totals up about a quarter (63 and 80 in the act, from 50 and 65), as many as 15-20 a race
+  in the last ones; the tank waits on the heat and the guns. When its car is totalled ("THE GANG TOTALLED A CAR", the scrap yours, the gang's heat), when you pass the car,
   or when the raider is 900 m up the road, it rides with you again. The Foreman sends raiders too: the raid first while
   a raider is free and the car is within the guns' reach (200 m). `raiders_test.py` checks it. Claude's calls: the
   caps, the speeds, the shoulder. `act4.py`'s bot makes up to 6 of the crew raiders once it has the card (3 on the car,
