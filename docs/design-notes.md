@@ -880,9 +880,12 @@ fix: the reticle kept last race's car, out of sight on the horizon, and the guns
   the car in the reticle is a row on the tracker, a red diamond pinned under the spots, with its raiders out of the
   most it takes (3, the tank 6), its health and how far it is; `<` `>` pick it, and SEND sends a raider up the right
   shoulder, as a harvester goes to a spot (FULL, or NO RAIDER FREE). A raider closes on its car (up to 60 m/s quicker
-  than the faster of you and it), moves into its lane and rams it: a hit as yours are (34, the bull bar counting; the
-  tank takes a fifth), every 1.5 s at most, falling back 4 m/s after each; with guns it fires once a second within
-  80 m. When its car is totalled ("THE GANG TOTALLED A CAR", the scrap yours, the gang's heat), when you pass the car,
+  than the faster of you and it), moves into its lane and rams it without braking for it: a hit as yours are (34, the
+  bull bar counting; the tank takes a fifth). Each ram knocks it back (0.8 s falling back at 5 m/s), then it charges
+  again and hits at about 17 m/s: a ram every 1.5 s or so. It holds back only while it is still moving into the car's
+  lane. (As first built it eased off over the last 30 m and crept into the car, the last 15 m taking over 3 s: the
+  owner, 27 Oct, "Raiders line up to the target and then hit the brake before ramming".) With guns it fires once a
+  second within 80 m. When its car is totalled ("THE GANG TOTALLED A CAR", the scrap yours, the gang's heat), when you pass the car,
   or when the raider is 900 m up the road, it rides with you again. The Foreman sends raiders too: the raid first while
   a raider is free and the car is within the guns' reach (200 m). `raiders_test.py` checks it. Claude's calls: the
   caps, the speeds, the shoulder. `act4.py`'s bot makes up to 6 of the crew raiders once it has the card (3 on the car,

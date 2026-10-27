@@ -1,7 +1,7 @@
 """Raiders (the owner, 27 Oct; the Hunting pack until then): the War Rig page's Raiders card, once Hunter, Racing and a
 level of Crew tuning are bought, makes raiding a role of the crew's: a Raiders row on the role card, none before. On
-the road the car in the reticle is on the tracker, a red row; picked, SEND sends a raider up the shoulder and into it,
-a ram every 1.5 s, till it is totalled (its scrap yours), and the raider is free again; three at most a car, and FULL
+the road the car in the reticle is on the tracker, a red row; picked, SEND sends a raider up the shoulder and into it
+without braking for it, a ram every 1.5 s or so, till it is totalled (its scrap yours), and the raider is free again; three at most a car, and FULL
 after. The tank takes a fifth of a raider's ram, as of yours; the Foreman sends raiders first."""
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -47,11 +47,15 @@ with sync_playwright() as p:
     check("the reticle's car on the tracker: a red row", js("!!document.querySelector('#track-spots .raid')"), js("$('track-spots').innerHTML")[:200])
     check("the Foreman's choice, raiders free: the raid", js("bestSpot() === raidAhead()"), "")
     js("run.pick = raidAhead()"); pg.click("#crew-send"); pg.wait_for_timeout(100)
+    # how fast it closes on its car, until the first ram (the owner, 27 Oct: they lined up, then braked before it)
+    js("window.trace = []; (function f() { const c = raiding()[0]; if (tg.hp !== null) return; if (c) trace.push([tg.z - c.z - CAR_LEN, c.v - tg.v]); requestAnimationFrame(f); })()")
     got = js("[raiding().length, free('raid'), raiding()[0] && raiding()[0].raider === tg, raiding()[0] && raiding()[0].x > LANES.mine]")
     check("SEND: a raider on its way, from the shoulder; three free", got == [1, 3, True, True], got)
     pg.screenshot(path=f"{OUT}/raiders_sent.png")
     pg.wait_for_function("tg.hp !== null", timeout=10000)
     check("into it: a ram, 34 off its 100", js("Math.round(tg.hp)") == 66, js("tg.hp"))
+    got = js("(() => { const near = trace.filter(([g]) => g < 15); return [near.length, Math.min(...near.map(t => t[1])).toFixed(1)]; })()")
+    check("no braking for it: the last 15 m at 10 m/s or more on its car", got[0] > 0 and float(got[1]) >= 10, got)
     pg.wait_for_function("tg.wreck", timeout=15000); pg.wait_for_timeout(100)
     got = js("[progress.scrap - s0, $('flash').textContent, raiding().length, free('raid')]")
     check("totalled: its scrap yours, the raider back with you", got == [22, "THE GANG TOTALLED A CAR +22 SCRAP", 0, 4], got)
