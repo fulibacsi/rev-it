@@ -143,8 +143,12 @@ function total(c, gang, how) { // the scrap is yours, whoever did it; the heat t
 // until it is totalled or you pass it; then it rides with you again. Up to RAID raiders a car, the tank RAID_TANK
 const RAID = 3, RAID_TANK = 6;
 // a ram knocks it back: KNOCK s falling back BACK m/s, then it charges again and hits at about 17 m/s, a ram every
-// 1.5 s (Claude's numbers: the pace it had before, 27 Oct)
-const KNOCK = 0.8, BACK = 5;
+// 1.5 s (Claude's numbers: the pace it had before, 27 Oct). Several on one car take turns (the owner, 27 Oct, after
+// two sent at once with Double up drove as one and hit as one: "the first car hits the target, slows down, and then
+// the second car hits the target, passing through the first car", as Mario does when hit): the one that has waited
+// longest charges, the rest wait in line behind the car, the next HOLD m back and the others LINE m apart; one knocked
+// back goes to the back of the line. Raiders never touch one another
+const KNOCK = 0.8, BACK = 5, HOLD = 10, LINE = 6;
 const raiding = () => traffic.filter(c => c.raider && !c.gone);
 function raidAhead() { // the reticle's car as a tracker row, while you have raiders (the same row while it is the target)
   const t = target;
@@ -157,26 +161,33 @@ const raidCap = r => r.car.tank ? RAID_TANK : RAID;
 function sendRaider(r) { // up the right shoulder, as a car sent to a spot goes (oil.js runner)
   const n = FIELD - (run.sent++ % Math.max(1, riders()));
   traffic.push({ raider: r.car, fleet: true, dir: 1, x: SHOULDER - 0.6, z: odo - 20, v: speed + 15, look: racerSprite(n, true, true),
-                 d: NaN, hit: -Infinity, seen: null, rammed: 0, gun: 0 });
+                 d: NaN, hit: -Infinity, seen: null, rammed: 0, gun: 0, turn: run.t }); // turn: in line since
 }
-// road.js updateTraffic: after its car, flat out, and into it without braking for it (the owner, 27 Oct: they lined
-// up, then braked before the ram); knocked back by each ram. It holds back only while it is still moving into the
-// car's lane, so it doesn't drive past it
+// road.js updateTraffic: after its car, flat out, and on its turn into it without braking for it (the owner, 27 Oct:
+// they lined up, then braked before the ram); knocked back by each ram. On its turn it holds back only while it is
+// still moving into the car's lane, so it doesn't drive past it; waiting its turn, it eases into its place in line
 function raiderDrive(c, dt) {
   const o = c.raider;
   if (o.wreck || !traffic.includes(o) || o.z < odo - 40 || c.z - odo > 900) { c.gone = true; return; } // back with you
   c.rammed = Math.max(0, c.rammed - dt);
   c.gun = Math.max(0, c.gun - dt);
-  const gap = o.z - c.z - CAR_LEN, lined = Math.abs(o.x - c.x) < 0.6;
-  c.v = c.rammed ? o.v - BACK : !lined && gap < 8 ? o.v : Math.min(c.v + 30 * dt, Math.max(speed, o.v) + 60);
+  const gap = o.z - c.z - CAR_LEN, lined = Math.abs(o.x - c.x) < 0.6, top = Math.max(speed, o.v) + 60;
+  const k = raiding().filter(r => r.raider === o && !r.rammed).sort((a, b) => a.turn - b.turn).indexOf(c); // -1: knocked back
+  if (c.rammed) c.v = o.v - BACK;
+  else if (k === 0) c.v = !lined && gap < 8 ? o.v : Math.min(c.v + 30 * dt, top); // its turn
+  else { // its place in line: closing on it, then braking into it (25 m/s² at most)
+    const off = gap - HOLD - LINE * (k - 1), want = o.v + Math.sign(off) * Math.sqrt(50 * Math.abs(off));
+    c.v += clamp(Math.min(want, top) - c.v, -30 * dt, 30 * dt);
+  }
   c.z += c.v * dt;
   c.x += clamp(o.x - c.x, -4 * dt, 4 * dt); // off the shoulder, into its lane
   if (o.z - c.z - CAR_LEN < 0.5 && Math.abs(o.x - c.x) < 1.2) { c.z = Math.min(c.z, o.z - CAR_LEN - 0.5); raidRam(c, o); }
   if (lvl('guns') && !c.gun && gap < 80) { c.gun = 1; tracers.push([c, o, performance.now()]); hurtCar(o, GUN * lvl('guns'), true); }
 }
-function raidRam(c, o) { // a hit, as yours are, and it is knocked back (raiderDrive)
+function raidRam(c, o) { // a hit, as yours are, and it is knocked back (raiderDrive) to the back of the line
   if (c.rammed) return;
   c.rammed = KNOCK;
+  c.turn = run.t;
   hurtCar(o, HIT * (1 + 2 / 3 * lvl('bullbar')) * (o.tank ? 0.2 : 1), true);
 }
 
