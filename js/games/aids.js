@@ -176,20 +176,38 @@ function autoFlash() {
 let tunedRevs = true; // the aids rev into the tune now (see updateAids)
 // an oncoming car in your lane, under 4.5 s away, that a flash would make swerve: a game of chicken to play
 const facing = () => traffic.find(c => sameLane(c.x, carX) && swerves(c) && (c.z - odo) / Math.max(1, speed + c.v) < 4.5);
-const meets = x => { // s until the first oncoming car in lane x meets you
+// s until the first oncoming car in lane x meets you that a flash won't move out of the way, for you there `lead` s
+// from now. Out of the way: one swerving out of the lane already that is clear of you before it gets there (3.5 m/s
+// sideways, road.js), or, with chicken and a flash left, one that will swerve when a flash reaches it (swerves: not the
+// police or a mad driver, and room beside it) and is more than 2 s off when you get there: the 2 s it allows itself to
+// get home if the flash fails, which covers the stalk's 0.8 s between flashes and the half second the swerve takes.
+// Until 28 Oct chicken and a flash were enough by themselves: it pulled out in front of cars half a second away
+const SWERVE = 3.5, SPARE = 2;
+function meets(x, lead = 0) {
+  const brave = chicken && run.flashes > 0;
   let t = Infinity;
-  for (const c of traffic)
-    if (c.dir < 0 && sameLane(c.x, x) && c.z > odo - 5) t = Math.min(t, (c.z - odo) / Math.max(1, speed + c.v));
+  for (const c of traffic) {
+    if (c.dir > 0 || !sameLane(c.x, x) || c.z <= odo - 5) continue;
+    const s = (c.z - odo) / Math.max(1, speed + c.v), there = s - lead;
+    const away = c.swerve != null ? !sameLane(c.swerve, x) && (CAR_W - Math.abs(c.x - x)) / SWERVE < there
+      : brave && there > SPARE && !c.police && !mad(c) && (c.z - odo > 250 || swerves(c));
+    if (!away) t = Math.min(t, s);
+  }
   return t;
-};
+}
+const MOVE = 1.7; // s to move over into the oncoming lane and settle there, before it flashes (stepLane, no Steering)
 function recklessLanes() {
   if (lane > 1 && cruiseBrake) { brakePedal = 0; cruiseBrake = false; } // autocruise doesn't drive over there
-  if (wheel.held || Math.abs(carX - ROAD_LANES[lane]) > 0.3) return; // your hand on the wheel, or already moving over
+  if (wheel.held) return; // your hand on the wheel
+  if (Math.abs(carX - ROAD_LANES[lane]) > 0.3) { // already moving over: into an oncoming lane, it turns back for a
+    if (lane > 1 && meets(ROAD_LANES[lane]) < 2) changeLane(1); // head-on under 2 s away (a bump while it cut in
+    return;                                                     // threw it back out, slowly: car.js bump)
+  }
   const reach = a => a && a.closing > 0 ? a.gap / a.closing : Infinity, brave = chicken && run.flashes > 0;
   const tank = run.tank && !run.tank.wreck; // boss.js: it can't be passed, so no going round it into the traffic
   if (lane <= 1) {
     const boxed = reach(carAhead(MY_LANES[lane], takeRam)) < 3 && reach(carAhead(MY_LANES[1 - lane], takeRam)) < 3;
-    if (lane === 1 && boxed && !tank && !hunted(target) && speed > 15 && (meets(ROAD_LANES[2]) > 6 || brave)) changeLane(-1);
+    if (lane === 1 && boxed && !tank && !hunted(target) && speed > 15 && meets(ROAD_LANES[2], MOVE) > 6) changeLane(-1);
     return;
   }
   if (lane === 3) return changeLane(1); // the far oncoming lane: back towards your side

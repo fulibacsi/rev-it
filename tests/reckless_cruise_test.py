@@ -1,6 +1,7 @@
-"""Reckless auto-drive: autocruise without manners. Boxed in it passes in the oncoming lane and comes home, plays
-chicken with what comes (with Game of chicken), goes home from what it can't flash away, revs into the ECU tune while
-the engine is cool, and pushes the nitro pedal for a racer close ahead, but not under your foot."""
+"""Reckless auto-drive: autocruise without manners. Boxed in it passes in the oncoming lane and comes home, pulls out in
+front of a car coming only with Game of chicken and time to flash it away, plays chicken with what comes, goes home
+from what it can't flash away (turning back while still moving over), revs into the ECU tune while the engine is cool,
+and pushes the nitro pedal for a racer close ahead, but not under your foot."""
 from playwright.sync_api import sync_playwright
 from common import URL, launch
 CAR = ("power: 10, rev: 4, gears: 3, tyres: 4, time: 6, clutch: 1, gas: 1, shift: 1, engine: 2, steering: 3, steer: 1, "
@@ -45,6 +46,22 @@ with sync_playwright() as p:
     over = any(r[1] == 2 for r in trace); home = trace[-1][1] <= 1
     check("boxed in: passes in the oncoming lane and comes home, no crash", over and home and js("crashes") == 0,
           f"lanes {[r[1] for r in trace[::4]]}, crashes {js('crashes')}")
+    #    boxed in the same way, a car coming in the near oncoming lane: with Game of chicken it pulls out for one far enough
+    #    off to flash away once over there (300 m, about 5 s), not for one a second away (60 m: until 28 Oct it pulled out
+    #    in front of those, a playtester's "into the oncoming car on purpose"); without, for neither (nothing for 6 s)
+    for chicken, ahead, want in [(1, 300, True), (1, 60, False), (0, 300, False)]:
+        start(CAR + (", chicken: 1" if chicken else "")); pg.wait_for_function("gear >= 3 && speed > 30", timeout=20000)
+        js(f"lane = fromLane = 1; carX = MY_LANES[1]; slide = 0; ({place})([[1, MY_LANES[0], 30, 40], [1, MY_LANES[1], 35, 40], [-1, LANES.oncoming[0], {ahead}, 90]])")
+        lanes = [r[1] for r in js(f"({watch})(0.5)")]
+        check(f"boxed in, a car {ahead} m off coming, {'with' if chicken else 'without'} chicken: {'pulls out' if want else 'stays on your side'}",
+              (2 in lanes) == want, f"lanes {lanes}")
+    # thrown back out by a bump as it cut in (car.js bump: slowly, at the speed the bump left), a car coming under a second
+    # away: it turns back home while still moving over (until 28 Oct it could only once over there: a head-on)
+    start(CAR, 40)
+    js(f"lane = 2; fromLane = 1; carX = 0.6; slide = 0; ({place})([[-1, LANES.oncoming[0], 35, 90]])")
+    trace = js(f"({watch})(2)")
+    check("moving out into a car under a second away: turns back home, no head-on", trace[0][1] <= 1 and js("crashes") == 0 and js("run.phase") == "run",
+          f"lanes {[r[1] for r in trace]}, crashes {js('crashes')}, phase {js('run.phase')}")
     # 3, 4. over there, your side blocked by a car alongside (kept there): an oncoming car 200 m off. With Game of chicken
     #    it is flashed into its other lane and the car stays over there; without, the car stays out until a head-on
     #    is under 2 s away, then cuts in beside the other car: a bump, but no head-on
