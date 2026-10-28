@@ -732,7 +732,14 @@ a burnt-out shell; the first rusty car in the last races; then your crew rides o
    Oct).
 5. The Foreman (built 27 Oct): it sends as `act3.py`'s bot does (`oil.js` `bestSpot`: a spot a second after it
    shows, four cars a second, the most to pay before you pass it that the free cars can fill), without a beep; SEND
-   reads AUTO while it is on, as the trigger does with Auto gun.
+   reads AUTO while it is on, as the trigger does with Auto gun. Fixed 28 Oct: it sent only in the page's first run.
+   Its next press (`run.foreman`) ran on from the run before while the run's clock (`run.t`) started again at 0, so
+   each run it waited until the time of the last run's last send, and once that was near the end of a 50 s run it
+   never sent again; `crewRun` now resets it with the rest of the run's crew. The simulations missed it: their bots
+   send for themselves and never buy it. Measured with copies of `act4.py`, the bot's hands off SEND and the Foreman
+   bought: at the tank (6 races, the same seeds), 49.6 L of fuel in race 1 and none in races 2–6 with the old clock,
+   42–58 L every race reset, as the bot; from the gang (seed 1, 6 races), 3, 33, 4, 0, 0, 0 L with the old clock, 3,
+   41, 26, 33, 36, 25 L fixed and the bot's 3, 41, 26, 32, 38, 26 L. `oil_test` checks it sends in a second run.
 6. The foreshadowing (built 27 Oct).
 7. Act 4's Raiders (built 27 Oct).
 
