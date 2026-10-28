@@ -187,7 +187,7 @@ function meets(x, lead = 0) {
   const brave = chicken && run.flashes > 0;
   let t = Infinity;
   for (const c of traffic) {
-    if (c.dir > 0 || !sameLane(c.x, x) || c.z <= odo - 5) continue;
+    if (!(c.dir < 0 && sameLane(c.x, x) && c.z > odo - 5)) continue;
     const s = (c.z - odo) / Math.max(1, speed + c.v), there = s - lead;
     const away = c.swerve != null ? !sameLane(c.swerve, x) && (CAR_W - Math.abs(c.x - x)) / SWERVE < there
       : brave && there > SPARE && !c.police && !mad(c) && (c.z - odo > 250 || swerves(c));

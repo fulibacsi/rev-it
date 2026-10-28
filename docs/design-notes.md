@@ -345,6 +345,20 @@ driving is act 1's game, and the robot takes over as the fantasy moves on.
       can be flashed away (Game of chicken and a flash left);
     - it goes home when something it can't flash away comes within 3.5 s, or when your side opens again. It cuts in
       beside a car only to escape a head-on under 2 s away: a bump beats a DNF;
+    - what "can be flashed away" means (28 Oct, after a playtester: since the crew "it pulls it into the oncoming car
+      on purpose"). Until then Game of chicken and a flash left were enough by themselves, and it pulled out in front
+      of cars half a second away: it flashes only once over there, 1.7 s later, and the swerve takes another half
+      second. Now it is a car that will swerve (not the police or a mad driver, with room beside it) and is more than
+      2 s off once you are over there, or one swerving out already that is clear in time; going home counts the same
+      cars. And moving over into an oncoming lane it turns back for a head-on under 2 s away: a bump as it cut in
+      throws it back out, slowly (`car.js` `bump`), and it drove into the car it was escaping. Measured on scratch
+      runs of act 2's car (20 races each, from slots 71, 41 and 1, with no crew and with 45): head-ons 4, 5, 7, 1, 1
+      before, none after; the oncoming lane taken 0.45–0.7 times a race before, 0.05–0.3 after. The crew only changed
+      who was ahead: from slot 71 with 45 crew, 9 of the 14 moves out came while a crew racer gave way. The
+      simulations: `act2.py` P1 after 17, 20, 18, 14 races on seeds 1–4 (17, 16, 17, 15 before, through 1, 7, 0, 6
+      head-ons that the simulation, which doesn't end a run for one, drove on through), `act3.py` 51 crew after 12
+      and 12 (the same), `act4.py` the tank in races 12 and 13 (12 and 12), `cruise.py` 2,895 m a run and 22 crashes
+      (2,884 m and 26). `reckless_cruise_test.py` checks both;
     - while the tank is on the road it keeps to your side and goes home as soon as it can: the tank can't be passed
       (the owner, 14 Oct, after the simulations lost tank fights to head-ons);
     - it pushes the nitro pedal when a racer is within 500 m ahead, the tyres grip, it is in 2nd or higher and
