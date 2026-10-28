@@ -125,7 +125,7 @@ const FIRST_PUDDLE = { kind: 'oil', z: 1400, count: 3, rate: 0.1, reserve: 60, s
 const FIRST_REFINERY = { kind: 'refinery', count: 2, rate: 0.15, scripted: true }; // z: 1.1 km on from where you are
 const newSpot = (s, z = s.z) => ({ ...s, z, crew: 0, coming: [], done: false, got: 0, seen: null });
 function crewRun() { // startRun: this run's spots
-  Object.assign(run, { spots: [], pick: null, raid: null, t: 0, told: false, crude: 0, fuel: 0, worked: 0, sent: 0 });
+  Object.assign(run, { spots: [], pick: null, raid: null, t: 0, foreman: 0, told: false, crude: 0, fuel: 0, worked: 0, sent: 0 });
   if (scripted()) run.spots = progress.oil === 0 ? [newSpot(FIRST_PUDDLE)] : [];
   else run.spots = nextSpots();
   plan = null;
@@ -182,7 +182,7 @@ function crewTick(dt) {
   }
   if (!run.pick || run.pick.done || !trackAhead().includes(run.pick)) // a raid picked stays on raids as the target changes
     run.pick = (run.pick?.kind === 'raid' ? raidAhead() : null) ?? spotsAhead().find(s => s.crew + s.coming.length < s.count) ?? trackAhead()[0] ?? null;
-  if (foremanOn() && run.t >= (run.foreman ?? 0)) { // the Foreman: four presses a second, where you would send them
+  if (foremanOn() && run.t >= run.foreman) { // the Foreman: four presses a second, where you would send them
     const s = bestSpot();
     if (s) { send(s, true); run.foreman = run.t + 0.25; }
   }

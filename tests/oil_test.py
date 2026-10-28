@@ -158,5 +158,12 @@ with sync_playwright() as p:
     check("desktop: the tracker and ‹ SEND › show, on the screen, clear of the cockpit", "tracker" in shown and "crew-ctl" in shown and not hits
           and all(0 <= v for v in shown["crew-ctl"]), {"tracker": shown.get("tracker"), "crew-ctl": shown.get("crew-ctl"), "overlaps": hits})
     pg.screenshot(path=f"{OUT}/oil_desktop.png")
+    # the Foreman in the next run too (it once sent only in the page's first run: its clock ran on from the run before)
+    js("progress.off.foreman = false; finishRun()"); pg.wait_for_function("run.phase === 'garage'", timeout=10000); pg.wait_for_timeout(300)
+    if js("menuOpen"): js("closeMenu()")
+    pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
+    js("traffic.forEach(c => { if (!c.racer) c.z = odo + 5000; })"); pg.wait_for_timeout(2500)
+    got = js("[busy('oil') + busy('refinery'), +run.t.toFixed(1)]")
+    check("the next run: the Foreman sends again, in its first seconds", got[0] > 0, got)
     b.close()
 print("ERRORS:", errors or "none", "| FAILS:", fails or "none")
