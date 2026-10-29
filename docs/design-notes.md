@@ -761,7 +761,11 @@ it, and the cars you go on paying off, up to 99, bring more). The windscreen gai
 gunsight): a reticle round the nearest car ahead going your way, its health bar above it, and "TOTAL IT" until the first
 job is done (a racer's number after). It stays on that car while it is within the guns' reach (200 m) until you pass it
 or total it, then moves to the next; further up the road it takes the nearest car ahead. Each race starts afresh (14 Oct
-fix: the reticle kept last race's car, out of sight on the horizon, and the guns would fire at nothing else).
+fix: the reticle kept last race's car, out of sight on the horizon, and the guns would fire at nothing else). Passed
+means its front is behind you (29 Oct fix: it was its back, and in a ram one long frame, up to 50 ms, carried you past
+the rammed car's back before the bump settled, so the reticle moved on to the next car at full health; `gang_test`'s
+ram check failed twice in two full runs on a slow machine, and now checks the rule between frames). `act4.py`, seeds 1
+to 4: the tank in races 13, 13, 13, 13 (14, 11–12, 15, 13 before).
 - **Damage:** a ram is a hit, 34 off the car's health: 100 for traffic, 150 for a racer, 200 for the police, so 3, 5
   and 6 hits; with a full bull bar (3 times a hit) 1, 2 and 2 (the owner's numbers, 14 Oct). From behind, a bump
   closing at under 30 km/h is only a nudge, and one at over 200 km/h totals the car at once: "OHKO!" (the owner's

@@ -56,8 +56,14 @@ with sync_playwright() as p:
     pg.screenshot(path=f"{OUT}/gang_reticle.png")
     # 4. ram it: a hit, a third of a car's health, shown on the bar
     pg.wait_for_function("cs[0].hp !== null", timeout=15000); pg.wait_for_timeout(100)
-    got = js("({ hp: Math.round(cs[0].hp), bar: +getComputedStyle($('ar')).getPropertyValue('--hp'), kmh: Math.round(impact.kmh) })")
-    check("a ram is a hit: 34 off the car's 100, and the bar shows it", got["hp"] == 66 and abs(got["bar"] - 0.66) < 0.02 and 30 <= got["kmh"] <= 200, got)
+    got = js("({ hp: Math.round(cs[0].hp), bar: +getComputedStyle($('ar')).getPropertyValue('--hp'), kmh: Math.round(impact.kmh), on: target === cs[0] })")
+    check("a ram is a hit: 34 off the car's 100, the reticle still on it, and the bar shows it",
+          got["hp"] == 66 and got["on"] and abs(got["bar"] - 0.66) < 0.02 and 30 <= got["kmh"] <= 200, got)
+    # mid-ram, one long frame can carry you past its back before the bump settles: the reticle moved on to the next car,
+    # at full health. Passed is its front behind you: your eye 1 m past its back, then 1 m past its front, between frames
+    got = js("""(() => { const was = odo, at = d => { odo = cs[0].z + d; updateGang(0); const on = target === cs[0];
+        odo = was; target = cs[0]; return on; }; return [at(1), at(CAR_LEN + 1)]; })()""")
+    check("the reticle stays on a car you are into, and moves on once you are past it", got == [True, False], got)
     aside = lambda expr: js(f"""(() => {{ const p = {{ scrap: progress.scrap, totals: progress.totals, wanted: progress.wanted }},
         r = {{ scrap: run.scrap, totals: run.totals, firstTotal: run.firstTotal, left: run.left }}, out = {expr}; Object.assign(progress, p); Object.assign(run, r);
         return out; }})()""")  # made-up cars: the game's counts (and the clock a first total cuts) stay as they were
