@@ -82,7 +82,9 @@ function updateGang(dt) { // every frame of a run
   gangMoment();
   if (!arOn()) { target = null; return; }
   if (run.tank && !run.tank.wreck) target = run.tank; // boss.js: the tank, while it lasts
-  else if (!target || target.wreck || target.dir < 0 || target.z < odo || target.z - odo > RANGE || !traffic.includes(target))
+  // passed once its front is behind you, not its back: in a ram at speed one long frame (up to 50 ms) carries you past
+  // its back before the bump settles, and the reticle moved on to the next car, at full health (28 Oct)
+  else if (!target || target.wreck || target.dir < 0 || target.z + CAR_LEN < odo || target.z - odo > RANGE || !traffic.includes(target))
     target = nextTarget();
   fireGuns(dt);
 }
