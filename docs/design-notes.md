@@ -520,12 +520,12 @@ layers, a PR each. Built 26–27 Oct, with the numbers measured since (marked **
 
 So act 3's new thing to do has to be something the aids don't do.
 
-**The rounds that led here,** each turned down: gas stations to brake into ("could be good", but nothing to do with
-the fleet); a convoy with a CB radio and orders (the owner: act 6 material); signing racers on the road by catching
-and flashing them (too hard to do); a fuel gauge for the clock (the owner liked the fuel: it stayed, as the money); a
-horn that calls the fleet into a wedge through the traffic (the fleet should look harmless, so act 4's reveal stays a
-surprise). The owner's turn (25 Oct): a crew with duties, the incremental genre's own trope (A Dark Room, Kittens
-Game), sent Pikmin-like to oil spots and refineries; then (26 Oct) the sonar at the centre of it.
+**The rounds that led here,** each turned down: gas stations to brake into ("could be good", but nothing to do with the
+fleet); a convoy with a CB radio and orders (the owner: far-off "act 6 stuff"; dropped 28 Oct, see Act 5); signing
+racers on the road by catching and flashing them (too hard to do); a fuel gauge for the clock (the owner liked the fuel:
+it stayed, as the money); a horn that calls the fleet into a wedge through the traffic (the fleet should look harmless,
+so act 4's reveal stays a surprise). The owner's turn (25 Oct): a crew with duties, the incremental genre's own trope (A
+Dark Room, Kittens Game), sent Pikmin-like to oil spots and refineries; then (26 Oct) the sonar at the centre of it.
 
 **The fantasy:** act 1 you drive, act 2 you race, act 3 you run the crew while the robot drives, act 4 you make war. By
 act 3 Auto shift has freed the left thumb (on a phone the shifter was all it did), and the sonar is the act's
@@ -942,7 +942,8 @@ DNF that halved the heat. Till then the act's card says "the army has a tank rea
   like losing) and the run stops there, the tank burning, held for 4 s (the owner, 14 Oct: that's the end state);
   then the ending's screen. The garage: "The tank is scrap: the road is yours", 300
   scrap, the heat back to 0. You can still play on, the next tank half as tough again (1,500, then 2,000 ...), until
-  the menus are talked about.
+  the menus are talked about. To change with act 5 (the owner, 28 Oct): beating the tank opens it, and the ending
+  moves to its end (see [Act 5](#act-5-the-fortress-decided-2829-oct-to-build)).
 - **Lost** (wrecked, a head-on, or the bell with the tank still going): a DNF ("the tank held the road"), and the heat
   drops to half, so you have to push for it again.
 - Claude's calls: the tank stayed (the owner's pick; it fits the army being called in when the police can't cope), its
@@ -951,6 +952,162 @@ DNF that halved the heat. Till then the act's card says "the army has a tank rea
   with the first total (the job is the way in), the illegal parts (armour and spiked hubs), how the gang uses its
   gear, and the guns' numbers (they aim themselves at the reticle: on a phone your thumbs are busy). All first
   guesses for the balancing pass.
+
+### Act 5: the Fortress (decided 28–29 Oct, to build)
+
+The owner's brief (28 Oct): the act after the War Rig, with an instrument of its own; act 4 foreshadows it without a
+word, and nothing of it is named before it opens. The moving fortress, recorded in the brainstorm (below) as "Act 6"
+until 28 Oct, was this act, mislabeled. Settled in rounds, as act 3 was; built in layers, a PR each. In US spelling (the
+owner, 28 Oct: the game and these notes follow in a change of their own).
+
+**Measured first** (28 Oct: copies of `act4.py` run on past the tank, seeds 1 and 2, and screenshots of the page):
+- Act 4 today: the tank beaten in races 14 and 11, with 82 and 74 of the 99 racers in the crew by then and P1 most
+  races. The race has done its work.
+- Playing on after it: each race 14–22 totals, 550–860 scrap, about 330 points, 25–52 L of fuel and about 4 km. The War
+  Rig page is bought out 3–5 races after the tank, and then the wallets only grow (seed 1, race 20: 1,966 scrap and
+  4,929 points unspent, with at most 800 points' worth of cards left on the Black market). Each tougher tank: the heat
+  back at 100% in 4–5 races, the tank beaten at the first go in 570–940 m of driving (about 10 s).
+- By the tank the car plays itself: with the Foreman, Hunter, Auto gun and Reckless auto-drive, a run with nothing
+  pressed matched the bot's best (6 races, the same seeds: 93 totals against 94, 21.6 km against 22.1, 293 L of fuel
+  against 292; the Foreman's clock reset each race, the fix since made in [the crew's
+  layers](#act-3-redesign-the-crew-decided-26-oct-built-2627-oct)). So, as for act 3, the act's new thing to do has
+  to be something no aid does.
+- The phone (844×390): the top corners and the middle are full (the sonar, tracker and SEND; the crude tank and the
+  scanner; the head-up display and the trigger). But by act 4's end the aids work the shifter (about 181×199 px) and
+  the three pedals (about 239×137 px), the two biggest touch areas.
+- The renderer: the eye raised to 4, 10 and 25 m draws cleanly (no errors; screenshots checked), so a tall vehicle is
+  a number. On the phone the road shows from about 7 times the eye height ahead (the dash's top is at 60% of the
+  screen): 8 m from the car's 1.15 m, 29 m from 4 m, 72 m from 10 m. A lane 50 m ahead is about 39 px wide, and 24 px
+  at 80 m: seen, but too small to tap.
+- Frame cost (headless, so for comparison only): drawing 0.9 ms and traffic 0.5 ms a frame at 292 km/h with 86 cars
+  in the list. A fortress's 20–40 sprites cost about what the traffic does.
+
+**The rounds that led here,** each turned down for act 5:
+- The convoy, the CB radio's orders to the crew (follow, block, flat out): the owner doesn't like the route at all
+  (28 Oct). It came up in the act 3 brainstorm, where it didn't fit, and was parked as far-off "act 6 stuff". Dropped.
+- A Cannonball run with OutRun's forks (the lane you are in under a gantry picks the next region; a road atlas on the
+  dash): a thin instrument, one choice a run, and mostly the same road in new colors.
+- Off the planet (the tank's gas turbine in a jet car, the land speed record, rockets, a ramp): the boldest and the
+  most hands-on (a throttle with afterburner detents, guarded switches), but the biggest change of tone, with the
+  crew, the police and the war left idle.
+- Manufacturer (the Rev game back as dyno engine design, the traffic your cars): nothing to do on the road, and a
+  factory isn't in the car.
+- A new game plus with a legacy bonus: what comes after the ending, not an act (still open, below).
+- Within the fortress:
+  - Repairs on the road (Claude's first proposal, which the owner liked: a damage-control board, engineers sent to
+    burning parts, fire spreading). A grid that is repaired fills and stays full, and the loot stops mattering
+    halfway through the act; parts that break off make room for it (the owner's turn, 29 Oct).
+  - A damaged block falling rather than its piece: single-cell holes that only a single block fits (with no rotation),
+    and a 36 px cell can't show a three-block piece's three health bars.
+  - Tapping parts on the road view: 24–39 px at 50–80 m.
+  - A cannon lost for good with nothing else to fire: no loot, so no growth, stuck.
+  - Four-block pieces (the owner: three). Tetris isn't patented, its look and feel is protected by copyright (Tetris
+    Holding v. Xio, 2012), but three blocks fit a grid one to four lanes wide and keep away from that look.
+
+**The fantasy:** act 1 you drive, act 2 you race, act 3 you run the crew, act 4 you make war, act 5 you build a
+fortress on wheels from what the army and the rival gang leave behind, until it fills the road. Mortal Engines'
+predator cities with Dredge's hull grid, and Fury Road's War Rig shedding parts all chase long.
+
+**The doorway** (the owner): the tank's ending goes, and beating the tank opens act 5. TANK DOWN, then ACT V's card
+and the Fortress tab; the WARLORD screen moves to act 5's end. A save past the tank (`tanks` above 0) gets ACT V's card
+at its next garage.
+
+**The Rebuild** (the owner): the Fortress page's first upgrade uses the tank's parts to rebuild your car into a war
+rig, and the cockpit changes with it:
+- the gear shifter goes, and the clutch with it (Claude's); the fortress's board takes the shifter's place (below);
+- the gas pedal becomes the cannon's trigger (the owner's, with a question mark). The robot drives the speed from then
+  on, and nitro goes with the gas pedal;
+- the wheel changes; how is open. Claude's two: a truck's big wheel with a spinner knob, its lane changes slower as
+  the fortress widens; or a wheel that locks at four lanes, when there is no lane left to change to;
+- where you sit is an experiment (the owner): a cab at the front, the fortress behind you and seen only on the board,
+  like Fury Road's War Rig pulling its tanker; or a bridge at the stern, looking out over the deck you built (the eye
+  raised: above);
+- the tank's cannon is yours to place, a 1×1 part (the owner). Act IV's guns stay on the rig and fire at the
+  reticle's notable enemy, slower, and tanks drop cannons as loot, so a lost cannon never leaves you stuck (the
+  owner's pick of three, 29 Oct; the others: a cannon that never breaks off, or one rebought in the garage).
+
+**On the road:**
+- The reticle takes only the notable enemies (the owner): the army's tanks and helicopters, and the rival gang's war
+  rigs. Your cannon and guns are for them.
+- The Foreman sends the raiders at everything else (the owner): ordinary cars and the rival gang, for scrap.
+- The rival gang (the owner): the race ends, and the racers you haven't paid off turn on you. Led by #1, which has
+  never sold (Claude's: "#1 won't sell" since act 3). Its cars carry the cannon's ammo, yours when your raiders total
+  them (the owner's question; Claude's: yes).
+- Loot (the owner): the notable enemies drop it on the road, and you steer over it to pick it up, until an automation
+  does it. Picked up, it goes into the inventory; with the inventory full it is lost.
+- Mines (the owner): the rival gang lays them, so steering becomes a choice between the loot and the mine. A late
+  upgrade takes their damage away. Claude's name: a mine roller, pushed ahead of the rig as tanks push them. It comes
+  as the fortress widens and there is nowhere left to steer round a mine.
+- The Grinder (the owner): an upgrade on the front that eats whatever it reaches and turns it into materials. Once
+  the fortress fills all four lanes it eats the oncoming traffic too.
+
+**The grid** (the owner) is the fortress's plan, ahead up as on the sonar. Its width is lanes, four at most: widening
+it takes another lane. It starts at 1×1, a single car's size, and grows longer and wider.
+- Loot comes in shapes of one to three blocks, each rotation its own drop: one block; two stacked; two side by side;
+  three in a line, along and across; and the bent three in its four turns (at three blocks L and J are the same
+  shape). Nine drops in all.
+- It can't be rotated: it fits as it comes, or waits. The inventory beside the grid holds what waits: one slot,
+  upgraded to three.
+- Placed, a piece stays put, and it can be removed (thrown off). The drop must be deliberate and still quick (the
+  owner). Claude's, to try on the phone: the drag of 1010! and Block Blast, the piece floating a cell above the thumb
+  and a ghost snapping to the cells under it, green or red; lifting places it only once the ghost has rested on green
+  for a beat (about 0.2 s, turning solid), and anything else sends it back to its slot. Press and hold a placed part
+  (a ring filling, about 0.5 s) to throw it off. To try against it: tap the slot, then one of the places lit up.
+- Each piece works, by what it came from (the owner), and its size is its strength (Claude's): a three-block gun
+  outguns a one-block gun, and needs the room. What each source drops: open.
+- On the phone the shifter's place holds a grid four wide and five deep at about 36 px a cell, with the inventory
+  beside it: 20 cells at most, unless the board takes more of the dash.
+
+**Damage: parts fall off** (the owner, 29 Oct):
+- Parts are the rig's shield. A hit lands on the part covering its cell, by where it comes from (Claude's): a tank's
+  shells on the front row, a helicopter's strafing down its lane, a ram on the side, a mine on the front of its lane.
+  A hit on an empty cell reaches the rig: today's damage, up to wrecked and a DNF.
+- Health is the piece's, growing with its size. At 0 the whole piece falls off, gone for good, leaving a hole its own
+  shape; it blinks before it goes.
+- Repairs are the garage's only, and the rig's only (the owner): parts keep their wear from run to run, so the churn
+  is steady, and a worn part shows cracked. The repair card gets an auto-repair switch from act IV on (the owner, 29
+  Oct). In act 4 the rig takes 21–100% damage a race before the guns and 5–35% after, 200–4,000 m of repairs every
+  race (`act4.py`); the switch repairs as far as the meters go at each run's end, before the nitro refill. It is a
+  change of its own, act 5 or not.
+- The grid's size, the inventory's slots and the parts' toughness are kept; the parts come and go. The grid settles
+  where the loot coming in meets the parts falling off, and each expansion opens a gap to fill.
+
+**Every resource builds the fortress** (the owner). Claude's first guesses, open: scrap for the grid's width and
+length; fuel for the crew (raiders); meters for repairs; points (about 4,900 piled up by the tank) for the inventory
+or the Rebuild; ammo for the cannon; loot for the grid. The page's cards are paid in different currencies, as the tabs
+already are.
+
+**The act's own automation,** so it ends hands-free as each act does (Claude's, open): the loot picked up for you
+(four lanes wide, the fortress covers every lane anyway), the cannon fired for you (as Auto gun), and whether placing
+is ever automated.
+
+**Foreshadowing in act 4,** without a word (Claude's, open): from 50% heat a moving city's silhouette crawls along
+the far hills, its windows lit, nearer as the heat climbs; and the rival racers rusty and spiked in the last races.
+
+**The ending** (the owner): a final fight against the rival fortress and its leader. Then the owner's animation: the
+camera rises and falls back, and the fortress, four lanes wide, crosses the wasteland into the sun with the crew
+following. Then the WARLORD screen. The act takes 10–15 races (the owner), so the game about 70–95 races, 1.5–2
+hours.
+
+**Still open:** the wheel; what each source drops and does; the bridge or the cab (to try); the placing gesture (to
+try); where the points go; the foreshadowing; the final fight's form; whether placing is automated; what comes after
+the ending (playing on, or a new game plus).
+
+**How we make sure:** `act5.py`, from the tank to the final fight: the races (10–15), how full the grid stays race by
+race, the loot lost to a full inventory, and the parts lost a race.
+
+**Layers,** a PR each, the full suite before each merge, and every merge a working game:
+1. These notes and the upgrade graph.
+2. Changes of their own first: the auto-repair switch; US spelling across the game and the notes (the save keys and
+   upgrade ids unchanged).
+3. The doorway and the Rebuild: the tab, ACT V's card, the new cockpit (the board's place, the cannon's pedal, both
+   seats to try), the 1×1 grid with the cannon, act IV's guns kept; `act5.py` begins.
+4. The reticle on the notable enemies only, the raiders on the rest; the rival gang and its ammo.
+5. Loot on the road, the inventory, placing and removing; the grid longer and wider.
+6. Damage by where it comes from, parts falling off, hits on empty cells reaching the rig.
+7. Four lanes: the Grinder, mines and the mine roller.
+8. The act's automation.
+9. The foreshadowing, the final fight and the ending.
 
 ### Balance targets and results
 
@@ -1158,7 +1315,7 @@ All dates are 2026.
 
 Waiting for the owner. Don't build these on a guess: ask.
 
-- None right now.
+- Act 5's open points: see [Act 5](#act-5-the-fortress-decided-2829-oct-to-build), "Still open".
 
 ## Known issues (won't fix)
 
@@ -1177,14 +1334,10 @@ these proposals are still open.
   - tyres as a per-race consumable;
   - cockpit cosmetics;
   - an escalating metres-to-points exchange.
-- **Acts after the War Rig:**
-  - Cannonball run across the country (its police heat went into phase 3).
-  - Manufacturer: the Rev game returns as dyno engine design, and the traffic becomes your cars.
-  - Extreme: land speed records, then a road off the planet.
-  - Then a new game plus, with a legacy bonus.
-  - A CB radio on the dash giving the crew orders on the road (follow, block, flat out): the owner's "act 6" material
-    (25 Oct), from the act 3 brainstorm (act 6 itself is the moving fortress since 27 Oct, below).
-  - **Act 6, the owner's plan for the future (27 Oct; a note only, nothing to build yet):** inventory tetris with the
-    parts collected from notable enemies (tanks, helicopters, any war rig), fitted together to build a real moving
-    fortress. It grows into a moving city that takes over all four lanes; the ending is a final "animation" of the
-    whole moving city going through the wasteland, with the crew following.
+- **Acts after the War Rig:** act 5 is decided, the Fortress: the moving fortress, the owner's plan of 27 Oct,
+  recorded here as "Act 6" until the owner corrected it (28 Oct; see
+  [Act 5](#act-5-the-fortress-decided-2829-oct-to-build)). Weighed for act 5 and turned down there, with the reasons in
+  its rounds: a Cannonball run across the country (its police heat went into phase 3), Manufacturer (the Rev game as
+  dyno engine design, the traffic your cars), land speed records and a road off the planet, and the CB radio's orders
+  to the crew (dropped: the owner doesn't like the route). Still open: a new game plus with a legacy bonus, after the
+  ending.

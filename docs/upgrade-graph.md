@@ -15,6 +15,7 @@ five levels of it. A label on a tab's arrow is a condition besides the price.
 | Black market | 1 point | Workshop | P100 |
 | Crew (the Fleet until 26 Oct) | 1 point | Black market | P1 |
 | War Rig | 1 scrap | Crew | totalled a car |
+| Fortress (act 5, planned) | to set | War Rig | the tank beaten |
 
 ## The graph
 
@@ -235,6 +236,47 @@ before the run that brings it.
 **Gone:** Fleet flash (it never fired at P1), team places' miles (they pay points), miles (fuel, one for one). **Act
 4's layer** (27 Oct): the Hunting pack became Raiders, a role on the role card once bought, its card where the pack's
 was.
+
+## The Fortress page (act 5, planned 29 Oct)
+
+Act 5 as decided (design notes: Act 5), not built yet: what is settled and Claude's first guesses, in their own
+graph until they are built. The owner's: the page, the Rebuild first, the grid growing longer and wider (a lane a
+step, four at most), the inventory (one slot to three), the Grinder, and a late upgrade against mines. Claude's,
+open: the names Lengthen, Widen, Inventory and Mine roller, what needs what beyond the Rebuild, the automation, and
+every price. The page's cards are paid in different currencies (scrap, fuel, meters, points), each card's its own, as
+the tabs already are.
+
+```mermaid
+flowchart TD
+  subgraph X["Fortress · planned"]
+    fortressTab(["Fortress tab"])
+    rebuild["Rebuild"]
+    lengthen["Lengthen"]
+    widen["Widen"]
+    inventory["Inventory"]
+    grinder["Grinder"]
+    roller["Mine roller"]
+    autocannon["Auto cannon"]
+  end
+  warrig(["War Rig tab"]) -- "the tank beaten" --> fortressTab
+  fortressTab --> rebuild
+  rebuild --> lengthen & widen & inventory & grinder & autocannon
+  widen -- "2+" --> roller
+  autogun["Auto gun"] --> autocannon
+```
+
+- Fortress tab ← War Rig tab, the tank beaten (a story condition: out of sight until then)
+- Rebuild ← Fortress tab (the tank's parts: the car rebuilt into a war rig, the cockpit with it, the 1×1 grid and the
+  tank's cannon to place)
+- Lengthen ← Rebuild (a row a level)
+- Widen ← Rebuild (a lane a level, to four)
+- Inventory ← Rebuild (one slot to three)
+- Grinder ← Rebuild (eats what it reaches; at four lanes, the oncoming traffic too)
+- Mine roller ← Widen 2+ (mines do no damage; by three lanes there is little room left to steer round one)
+- Auto cannon ← Rebuild, Auto gun (fires the cannon for you, as Auto gun does the guns)
+
+The loot isn't on the page: the notable enemies drop it on the road. The automation of the loot (picking it up;
+placing it) is open.
 
 ## What changed (23 Oct), against the game before
 
