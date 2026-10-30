@@ -4,8 +4,9 @@ first; it is Hunter's too, and tagged on the windshield when picked. The racers 
 come from behind, cut into your lane and brake, in the gang's welded-up look; each one totaled gives the cannon two
 shells. The cannon needs shells: the count on its pedal, none left and it fires nothing. A rival rig comes up from
 behind, holds the road ahead in the reticle, then rams you from the side; totaled, its scrap; none in a race the tank
-is in; its tutorial pops up as the first one shows. Over a notable one the reticle's tag: what it is, its health, the
-shells it would take, how far. Before the rig, act 4's reticle as it was. Phone and desktop."""
+is in; its tutorial pops up as the first one shows. The police's pursuit SUV: sent at the heat's odds, one at a time,
+armored, and it comes again until totaled; its tutorial as it first shows. Over a notable one the reticle's tag: what it
+is, its health, the shells it would take, how far. Before the rig, act 4's reticle as it was. Phone and desktop."""
 import json, re
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -19,7 +20,7 @@ def check(name, ok, got=""):
     if not ok: fails.append(name)
 # the road cleared but for the car (or cars) a check puts there: everything else far off, the clocks held
 CLEAR = "traffic.forEach((c, i) => { if (!c.racer && !c.fleet) Object.assign(c, { dir: -1, x: LANES.oncoming[i % 2], z: odo + 1500 + 40 * i, " \
-        "rig: false, hp: null, wreck: false }); else if (c.racer && !c.fleet) Object.assign(c, { z: odo - 3000, stage: null }); }); " \
+        "rig: false, police: false, suv: false, hp: null, wreck: false }); else if (c.racer && !c.fleet) Object.assign(c, { z: odo - 3000, stage: null }); }); " \
         "target = quarry = null; rigClock = gangClock = 1e9"  # oncoming, a way off: nothing on your side of the road for a while
 PUT = """(kind, ahead, inLane) => { const c = kind === 'racer' ? rivals().find(c => !c.wreck)
           : traffic.find(c => !c.racer && !c.fleet && !c.wreck && !c.police && !c.tank && !c.rig);
@@ -107,7 +108,44 @@ with sync_playwright() as p:
                  "run.boss = false; rigClock = 0; updateRigs(0.01); rigClock = 1e9; return [n, traffic.filter(c => c.rig && !c.wreck).length]; })()")
         check(f"{layout}: no rig in a race the tank is in; one comes otherwise", got == [0, 1], got)
 
-        # 6. before the Rebuild, act 4's reticle as it was: the nearest car, the raiders' too
+        # 6. the police's pursuit SUV: on the war rig, a police car sent is one, the hotter the likelier, one at a time
+        js(CLEAR)
+        send = """() => { lane = fromLane = 0; carX = MY_LANES[0]; copClock = 0; // on your side of the road: from behind
+            for (const c of racers()) c.z = odo - 3000; // your crew's racers too: room to come past you
+            Object.assign(traffic.find(c => !c.racer && !c.fleet && !c.police), { z: odo + 800 });
+            const had = new Set(traffic.filter(c => c.police)); updatePolice(0.01); copClock = 1e9;
+            return traffic.find(c => c.police && !had.has(c)); }"""
+        got = js(f"""(() => {{ progress.wanted = 1; const a = ({send})(), first = [a.suv, notable(a), health(a), a.w], b = ({send})(), second = b.suv;
+            progress.levels.rebuild = 0; traffic.forEach(c => {{ if (c.police) Object.assign(c, {{ police: false, suv: false, z: odo + 1500 }}); }});
+            const c = ({send})(), before = c.suv; progress.levels.rebuild = 1; Object.assign(a, {{ police: true, suv: true, w: SUV.w, h: SUV.h }});
+            return [...first, second, before]; }})()""")  # the third may be the first car again: it is made an SUV again after
+        check(f"{layout}: at 100% heat an SUV is sent (notable, 600 health, 2.1 m wide); the next one a police car; none before the Rebuild",
+              got == [True, True, 600, 2.1, False, False], got)
+        got = js("""(() => { const c = traffic.find(c => c.suv && !c.wreck), out = [];
+            const p = traffic.find(o => !o.racer && !o.fleet && !o.police && o !== c);
+            Object.assign(p, { police: true, dir: 1, stage: 'brake', t: 0.001, z: odo + 30 }); policeDrive(p, 0.01); out.push(p.stage);
+            Object.assign(c, { dir: 1, stage: 'brake', t: 0.001, z: odo + 30, lane }); policeDrive(c, 0.01); out.push(c.stage);
+            c.z = odo - 31; policeDrive(c, 0.01); out.push(c.lane === 1 - lane, c.stage); return out; })()""")
+        check(f"{layout}: braked, a police car leaves; the SUV drops back in your other lane, and 30 m behind comes past again",
+              got == ["leave", "back", True, "pass"], got)
+        got = js("""(() => { progress.toured = progress.toured.filter(id => id !== 'pursuit');
+            traffic.forEach(c => { if (c.police && !c.suv) Object.assign(c, { police: false, dir: -1, z: odo + 1500 }); });
+            const c = traffic.find(c => c.suv && !c.wreck); Object.assign(c, { stage: 'leave', want: speed, v: speed, z: odo + 60, x: MY_LANES[1 - lane], lane: 1 - lane });
+            target = null; updateGang(0); return [target === c, notableTag(c)]; })()""")
+        check(f"{layout}: in the reticle, its tag: SUV, 100%, 3 shots", got[0] and got[1].startswith("SUV · 100% · 3 SHOTS · "), got)
+        pg.wait_for_timeout(400)
+        got = js("[menuOpen && screen, tour.id, $('ar-label').textContent.slice(0, 4)]")
+        check(f"{layout}: the first SUV in sight: its tutorial pops up", got == ["tour", "pursuit", "SUV "], got)
+        pg.screenshot(path=f"{OUT}/rivals_{layout}_suv_tour.png")
+        while js("menuOpen"): js("turnTour(1)"); pg.wait_for_timeout(50)
+        pg.wait_for_timeout(300)
+        pg.screenshot(path=f"{OUT}/rivals_{layout}_suv.png")
+        got = js("""(() => { const c = traffic.find(c => c.suv && !c.wreck), hp = c.hp ?? health(c); ram({ car: c, kmh: 100, side: false });
+            const scratch = hp - c.hp, s0 = run.scrap; hurtCar(c, 5000); return [Math.round(scratch), c.wreck, run.scrap - s0]; })()""")
+        check(f"{layout}: a ram takes a fifth of a hit (20); totaled, 110 scrap", got == [20, True, 110], got)
+        js("progress.wanted = 0")
+
+        # 7. before the Rebuild, act 4's reticle as it was: the nearest car, the raiders' too
         js(CLEAR)
         got = js(f"(() => {{ progress.levels.rebuild = 0; const c = ({PUT})('car', 60, true); updateGang(0); "
                  f"const r = [target === c, quarry, crewTarget() === c]; progress.levels.rebuild = 1; return r; }})()")

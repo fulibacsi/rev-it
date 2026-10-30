@@ -1286,6 +1286,24 @@ race, the loot lost to a full inventory, and the parts lost a race.
      reticle's red, over the health bar: what it is, its health, the shells it would take (left out with no cannon on
      the board) and how far: RIG · 83% · 5 SHOTS · 57 m. Act 4's reticle keeps its label (#7, TANK).
    - `rivals_test` checks it on both layouts.
+
+   The police's SUVs, the second PR (built 30 Oct; `police.js`), Claude's design on the owner's "police's buffed up SUV
+   pursuers":
+   - On the war rig a police car sent is an SUV at the heat's odds (at 100%, always), one at a time; drawn as the tank
+     and the rig are (boxy and tall, the police's black and white, a steel push bar in front and a spiked one behind,
+     the spare wheel on the tailgate, the light bar flashing red and blue; 2.1 m wide), a square on the sonar in the
+     police's colors. Notable: in the reticle (SUV · 100% · 3 SHOTS · 60 m), the cannon's and the guns', rams a fifth
+     of a hit as on the tank. It drives as a police car does (past you, into your lane, a hard stop) but doesn't leave:
+     braked, it drops back past you in your other lane and, 30 m behind, comes again, until it is totaled. Head-on in
+     the oncoming lanes as the police are. 600 health (three shells), 110 scrap, a police car's heat. Its tutorial,
+     Police SUVs, pops up as the first one shows in the reticle; the rig's page names them with the tanks. First
+     guesses. The dice for it only on the war rig, so act 4's simulations roll as they did.
+   - `act5.py` (seeds 1 and 2, 10 races): 0-4 SUVs a race, more as the heat climbs, most of them totaled (the rest come
+     in the tank's race, where the cannon is on the tank); the shells now run down, 8-15 fired a race against 8-14
+     brought in, 2-5 left by race 10 (they piled up to 28 before), so the gang's shells matter; a tank every 4th race
+     (heat full in 3, the SUVs' heat with it); damage and scrap as before (42-78% a race before repairs, 1,100-1,550
+     scrap).
+   - `rivals_test` checks it on both layouts.
 6. Loot on the road, the inventory, placing and removing; the grid longer and wider (from two lanes wide the wheel
    changes, and the robot brakes for no one and rams: the owner, 30 Oct); the drop tables; the rig slower as it grows
    and heavier as it fills; engines, and their sounds on top of yours (the owner, 30 Oct).

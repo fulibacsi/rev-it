@@ -54,7 +54,8 @@ const GUN = 6, RANGE = 200; // damage a shot a level; m your guns reach (a raide
 const MADNESS = 0.25, MAD_TOP = 0.9;
 const madShare = l => Math.min(MAD_TOP, MADNESS * l);
 const GANG = FIELD / 2 + 1; // fleet cars that make a gang
-const health = c => c.tank ? tankHealth() : c.rig ? RIG.hp : c.police ? 200 : c.racer ? 150 : 100; // full health (the tank: boss.js; a rig: fortress.js)
+const health = c => c.tank ? tankHealth() : c.rig ? RIG.hp : c.suv ? SUV.hp : c.police ? 200 : c.racer ? 150 : 100; // full
+                                                         // health (the tank: boss.js; a rig: fortress.js; an SUV: police.js)
 // scrap from a totaled car: 2.2 times the first guesses (with the heat), so act 4 takes about 15 races (act4.py)
 const SCRAP = { car: 22, racer: 55 };
 const arOn = () => progress.racing && (progress.gang || progress.totals > 0); // the AR layer: from the gang's moment
@@ -131,8 +132,9 @@ function hurtCar(c, hp, gang) {
 }
 function total(c, gang, how) { // the scrap is yours, whoever did it; the heat too (police.js); how: the HUD's word for it
   if (c.tank) return tankDown(c); // boss.js
-  // a mad driver's stolen fuel (Fuel madness), double; a rival rig's (fortress.js); a rival gang car's shells
-  const scrap = c.rig ? RIG.scrap : (c.racer ? SCRAP.racer : SCRAP.car) * (mad(c) ? 2 : 1), shells = gangShells(c);
+  // a mad driver's stolen fuel (Fuel madness), double; a rival rig's (fortress.js), a police SUV's (police.js); a rival
+  // gang car's shells
+  const scrap = c.rig ? RIG.scrap : c.suv ? SUV.scrap : (c.racer ? SCRAP.racer : SCRAP.car) * (mad(c) ? 2 : 1), shells = gangShells(c);
   raiseHeat(gang ? WANTED.gang : c.police ? WANTED.police : c.racer || c.rig ? WANTED.racer : WANTED.car);
   Object.assign(c, { wreck: true, hp: 0 });
   if (c === target) target = nextTarget(); // the reticle moves on at once: for a frame Hunter had nothing to hunt, and
@@ -144,7 +146,7 @@ function total(c, gang, how) { // the scrap is yours, whoever did it; the heat t
   run.shells += shells;
   run.totals++;
   if (progress.totals === 1) { run.firstTotal = true; run.left = Math.min(run.left, 3); } // the first job done: 3 s more
-  const who = c.racer ? `#${c.racer}` : c.police ? 'A POLICE CAR' : c.rig ? 'A RIG' : 'A CAR'; // raiders ram anything
+  const who = c.racer ? `#${c.racer}` : c.suv ? 'A POLICE SUV' : c.police ? 'A POLICE CAR' : c.rig ? 'A RIG' : 'A CAR'; // raiders ram anything
   flash(`${gang ? `THE GANG TOTALED ${who}` : how ?? 'TOTALED'} +${scrap} SCRAP${shells ? ` +${shells} SHELLS` : ''}`, '#ff6a4a', true);
 }
 

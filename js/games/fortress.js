@@ -139,14 +139,15 @@ function rigKey(k, repeat) {
   if (k === ' ') { if (!repeat) fireCannon(); return true; }
   return ['Shift', 'b', 'B', 'ArrowUp', 'ArrowDown', 'n', 'N'].includes(k);
 }
-// ---- the road (the owner, 30 Oct): the reticle takes only the notable enemies, the army's tanks and the rival gang's
-// war rigs (police SUVs and helicopters to come); the rest are the raiders' (gang.js crewTarget), and Hunter's
-const notable = c => !!(c.tank || c.rig);
+// ---- the road (the owner, 30 Oct): the reticle takes only the notable enemies, the army's tanks, the rival gang's war
+// rigs and the police's pursuit SUVs (police.js; helicopters to come); the rest are the raiders' (gang.js crewTarget),
+// and Hunter's
+const notable = c => !!(c.tank || c.rig || c.suv);
 // the reticle's tag (gang.js renderGang), as the crew's over a spot (oil.js; the owner, 30 Oct: "I really like how the
 // resources have their metadata over them"): what it is, its health, the shells it would take, how far
 function notableTag(t) {
   const shots = Math.ceil(Math.max(0, t.hp ?? health(t)) / CANNON.damage);
-  return [t.tank ? 'TANK' : 'RIG', `${Math.round(100 * hpLeft(t))}%`, cannonOn() && `${shots} SHOT${shots === 1 ? '' : 'S'}`,
+  return [t.tank ? 'TANK' : t.rig ? 'RIG' : 'SUV', `${Math.round(100 * hpLeft(t))}%`, cannonOn() && `${shots} SHOT${shots === 1 ? '' : 'S'}`,
           `${Math.round(t.z - odo)} m`].filter(Boolean).join(' · ');
 }
 
@@ -244,7 +245,9 @@ function renderRig() {
   $('cannon-pedal').parentNode.classList.toggle('empty', progress.shells < 1);
   $('cannon-pedal').parentNode.style.setProperty('--reload', (1 - reloading / CANNON.reload).toFixed(2));
   text('shell-count', String(progress.shells));
-  if (target?.rig && target.seen && run.phase === 'run' && !progress.toured.includes('rivals')) openTour('rivals', true); // the first rig
+  const first = id => target?.seen && run.phase === 'run' && !progress.toured.includes(id); // the first one in sight
+  if (target?.rig && first('rivals')) openTour('rivals', true);
+  else if (target?.suv && first('pursuit')) openTour('pursuit', true);
 }
 
 TUTORIALS.push( // the war rig's, once rebuilt (the owner's: the controls change with it)
@@ -271,8 +274,8 @@ TUTORIALS.push( // the war rig's, once rebuilt (the owner's: the controls change
   // on the road, the first time a rival rig is in the reticle (renderRig); listed once seen
   { id: 'rivals', name: 'The rival gang', open: () => rigged() && progress.toured.includes('rivals'), pages: [
     { title: 'A RIVAL RIG', at: '#ar',
-      both: "The rival gang's war rig. Only rigs and tanks are in the reticle now: the cannon and the guns are for " +
-        'them. It holds the road ahead of you, then drops back and rams you from the side.' },
+      both: "The rival gang's war rig. Only rigs, tanks and police SUVs are in the reticle now: the cannon and guns " +
+        'are for them. It holds the road ahead, then rams you from the side.' },
     { title: 'ITS TAG', at: '#ar',
       both: 'Over the reticle: what it is, its health, the shells it would take, how far.' },
     { title: 'THE RIVAL GANG',
@@ -280,5 +283,11 @@ TUTORIALS.push( // the war rig's, once rebuilt (the owner's: the controls change
         'raiders go after them, and the rest of the traffic: Hunter too.' },
     { title: 'SHELLS', at: '.cannon-box',
       both: `Every gang car totaled is out of the race, behind you, and brings ${SHELLS.gang} shells for the cannon.` },
+  ] },
+  // on the road, the first time a police SUV is in the reticle (renderRig); listed once seen
+  { id: 'pursuit', name: 'Police SUVs', open: () => rigged() && progress.toured.includes('pursuit'), pages: [
+    { title: 'A POLICE SUV', at: '#ar',
+      both: "The police's pursuit SUV, armored: in the reticle, and rams barely scratch it. It cuts in and brakes, drops " +
+        'back and comes again, until you bring it down.' },
   ] },
 );

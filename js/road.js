@@ -160,6 +160,44 @@ function policeSprite(side, lit) { // black and white (white down to the glass, 
   return c;
 }
 const POLICE = [0, 1].map(lit => ({ rear: policeSprite('rear', lit), front: policeSprite('front', lit), beams: policeSprite('beams', lit) }));
+// the police's pursuit SUV (Distance's act 5, police.js), drawn as the tank and the rig are: tall and boxy, the police's
+// black and white, a steel push bar in front and a spiked one behind, the spare wheel on the tailgate, its light bar lit
+// red (0) or blue (1); beams: in front, its headlights flashing you
+function suvSprite(side, lit) {
+  return sprite(220, 200, (g, w, h) => {
+    const front = side !== 'rear', box = (c, x, y, bw, bh, r = 0) => { g.fillStyle = c; g.beginPath(); g.roundRect(w * x, h * y, w * bw, h * bh, r); g.fill(); };
+    const steel = (x, y, bw, bh) => { box('#3c3c42', x, y, bw, bh); box('#9a9aa4', x, y, bw, 0.012); };
+    for (const x of [0.05, 0.75]) box('#121214', x, 0.78, 0.2, 0.22, 6); // the tires, big
+    box('#1c1c22', 0.03, 0.44, 0.94, 0.42, 10); // the body: black below,
+    box('#e9e9ee', 0.07, 0.1, 0.86, 0.38, 12); // white above
+    box('#26303c', front ? 0.11 : 0.14, 0.15, front ? 0.78 : 0.72, front ? 0.24 : 0.2, 6); // the glass
+    box('#3a4656', front ? 0.16 : 0.18, 0.17, 0.2, 0.02);
+    box('#222', 0.2, 0.02, 0.6, 0.08, 3); // the light bar
+    g.shadowColor = g.fillStyle = lit ? '#48f' : '#f33'; g.shadowBlur = 14;
+    box(lit ? '#48f' : '#f33', lit ? 0.5 : 0.2, 0.02, 0.3, 0.08, 3);
+    g.shadowBlur = 0;
+    if (!front) {
+      for (const x of [0.05, 0.87]) box('#c0201a', x, 0.48, 0.08, 0.17, 2); // the tail lights
+      g.fillStyle = '#121214'; g.beginPath(); g.arc(w / 2, h * 0.6, w * 0.11, 0, 2 * Math.PI); g.fill(); // the spare wheel
+      g.fillStyle = '#55555c'; g.beginPath(); g.arc(w / 2, h * 0.6, w * 0.05, 0, 2 * Math.PI); g.fill();
+      g.fillStyle = '#f4f4f4'; g.font = `bold ${h * 0.08}px sans-serif`; g.textAlign = 'center'; g.fillText('POLICE', w / 2, h * 0.8);
+      steel(0.02, 0.84, 0.96, 0.05); // the bumper, spiked
+      g.fillStyle = '#e2e2ea';
+      for (let i = 0; i < 6; i++) { const x = w * (0.12 + i * 0.152); g.beginPath(); g.moveTo(x - 4, h * 0.84); g.lineTo(x, h * 0.78); g.lineTo(x + 4, h * 0.84); g.fill(); }
+      return;
+    }
+    box('#111', 0.3, 0.52, 0.4, 0.16, 3); // the grille
+    for (const x of [0.07, 0.77]) box('#f4f0d8', x, 0.5, 0.16, 0.08, 3); // the headlights
+    steel(0.24, 0.48, 0.52, 0.04); steel(0.2, 0.72, 0.6, 0.06); // the push bar
+    for (const x of [0.28, 0.48, 0.68]) steel(x, 0.48, 0.04, 0.28);
+    if (side !== 'beams') return;
+    for (const x of [0.15, 0.85]) { // flashing you
+      const glow = g.createRadialGradient(w * x, h * 0.54, 2, w * x, h * 0.54, w * 0.35);
+      glow.addColorStop(0, '#ffffff'); glow.addColorStop(1, '#fff6c800'); g.fillStyle = glow; g.fillRect(0, 0, w, h);
+    }
+  });
+}
+const SUV_LOOKS = [0, 1].map(lit => ({ rear: suvSprite('rear', lit), front: suvSprite('front', lit), beams: suvSprite('beams', lit) }));
 // Fuel madness (Distance's War Rig): a mad driver's own car, gone to seed and armed: the paint mostly rust (one of
 // three shades), a primer panel, rust holes, one tail light out, bars welded over the rear window, a pipe bar across
 // the back with spikes along it and on the roof, in the pack's way of shading (a lit side, a dark side)
@@ -398,7 +436,8 @@ function spawnCar(car, d) {
     swerve: null, // an oncoming car flashed out of your way (a game of chicken): the lane it is moving to
     wreck: false, hp: null, // totaled (Distance's War Rig), and its health when hurt (null: unhurt)
     police: false, stage: null, passing: false, // a police car (Distance's War Rig, police.js), how far into its move
-    tank: false, rig: false, w: undefined, h: undefined, // the final boss (boss.js), a rival war rig (fortress.js), its size, m
+    tank: false, rig: false, suv: false, w: undefined, h: undefined, // the final boss (boss.js), a rival war rig
+                                                                     // (fortress.js), a police SUV (police.js); its size, m
   });
 }
 const sameLane = (a, x) => Math.abs(a - x) < CAR_W; // two lateral positions close enough to touch
