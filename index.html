@@ -207,9 +207,12 @@
       <rect x="4" y="4" width="72" height="58" rx="12" fill="#a3262b" stroke="#777" stroke-width="2"/>
       <text x="40" y="38" font-family="system-ui, sans-serif" font-size="22" font-weight="bold" fill="#fcc" text-anchor="middle">NOS</text>
       <g fill="#bbb" stroke="#555" stroke-width="1.5"><circle cx="14" cy="52" r="4"/><circle cx="44" cy="52" r="4"/></g></svg></div>
-  <!-- the war rig's only pedal: the cannon's, a shell a press; the bar beside it fills as it reloads (fortress.js) -->
+  <!-- the war rig's only pedal: the cannon's, a shell a press, the shells left on it; the bar beside it fills as it
+    reloads (fortress.js) -->
   <div class="pedal-box cannon-box"><i class="depth reload"></i><svg id="cannon-pedal" class="pedal" viewBox="0 0 80 140"
-    aria-label="cannon firing pedal"><title>fire the cannon: a press, a shell (or Space)</title><use href="#fire-pedal-art"/></svg>FIRE</div>
+    aria-label="cannon firing pedal"><title>fire the cannon: a press, a shell (or Space)</title><use href="#fire-pedal-art"/>
+    <text id="shell-count" x="40" y="29" font-family="ui-monospace, monospace" font-size="17" font-weight="bold" fill="#ffcf3f"
+      text-anchor="middle">0</text></svg>FIRE</div>
 </div>
 <svg width="0" height="0" style="position: absolute">
   <symbol id="pedal-art" viewBox="0 0 80 140">
@@ -224,8 +227,8 @@
   </symbol>
   <symbol id="fire-pedal-art" viewBox="0 0 80 140"> <!-- the cannon's: dark red steel, the reticle on it -->
     <rect x="4" y="4" width="72" height="118" rx="12" fill="#5a1a1c" stroke="#888" stroke-width="2"/>
-    <g stroke="#3a0e10" stroke-width="4" stroke-linecap="round"><line x1="18" y1="22" x2="62" y2="22"/><line x1="18"
-      y1="106" x2="62" y2="106"/></g>
+    <rect x="20" y="12" width="40" height="22" rx="3" fill="#1c0607" stroke="#3a0e10" stroke-width="2"/> <!-- the count's window -->
+    <g stroke="#3a0e10" stroke-width="4" stroke-linecap="round"><line x1="18" y1="106" x2="62" y2="106"/></g>
     <g fill="none" stroke="#ffcf3f" stroke-width="3"><circle cx="40" cy="64" r="18"/><path d="M40 38v14M40 76v14M14 64h14M52 64h14"/></g>
     <rect x="26" y="124" width="28" height="12" rx="3" fill="#555"/>
   </symbol>

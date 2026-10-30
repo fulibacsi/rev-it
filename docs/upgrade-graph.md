@@ -226,7 +226,9 @@ Each upgrade and what it needs, one line each: the list to edit.
 ### Fortress (1 scrap; needs the War Rig, and the tank beaten; act 5, built from 30 Oct)
 
 - Rebuild ← Fortress (1,500 points: the car rebuilt as a war rig, no shifter or pedals, the aids it drives with
-  bolted on; the tank's cannon in the hold, the 1×1 board, the firing pedal)
+  bolted on; the tank's cannon in the hold and its 10 shells, the 1×1 board, the firing pedal). From then on the
+  reticle takes only the rival rigs and the tank, the rival gang comes at you, and Hunter hunts the raiders' car (not
+  a card: the road changes with the Rebuild)
 - Its page keeps a work sign, under construction, while the rest is built. The other cards are planned (below).
 
 ## The Crew page (26 Oct)
@@ -273,7 +275,7 @@ flowchart TD
 
 - Fortress tab ← War Rig tab, the tank beaten (a story condition: out of sight until then)
 - Rebuild ← Fortress tab (the tank's parts: the car rebuilt into a war rig, the cockpit with it, the 1×1 grid and the
-  tank's cannon to place)
+  tank's cannon to place, with 10 shells)
 - Lengthen ← Rebuild (a row a level)
 - Widen ← Rebuild (a lane a level, to four)
 - Inventory ← Rebuild (one slot to three)

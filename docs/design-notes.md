@@ -1053,12 +1053,16 @@ rig, and the cockpit changes with it:
   owner's pick of three, 29 Oct; the others: a cannon that never breaks off, or one rebought in the garage).
 
 **On the road:**
-- The reticle takes only the notable enemies (the owner): the army's tanks and helicopters, and the rival gang's war
-  rigs. Your cannon and guns are for them.
+- The reticle takes only the notable enemies (the owner, 30 Oct): the rival gang's war rigs, the army's tanks, the
+  police's buffed-up SUV pursuers and helicopters, and any other new threat ("I'm open to any"). Their sprites found
+  (free to use) or drawn in the game's own style. Your cannon and guns are for them.
 - The Foreman sends the raiders at everything else (the owner): ordinary cars and the rival gang, for scrap.
-- The rival gang (the owner): the race ends, and the racers you haven't paid off turn on you. Led by #1, which has
-  never sold (Claude's: "#1 won't sell" since act 3). Its cars carry the cannon's ammo, yours when your raiders total
-  them (the owner's question; Claude's: yes).
+- The rival gang (the owner): the racers you haven't paid off turn on you. Led by #1, which has never sold (Claude's:
+  "#1 won't sell" since act 3). They ram as the police do (the owner's pick, 30 Oct): from behind they come past, cut
+  in and brake; its rigs ram from the side. The race goes on (the owner, 30 Oct, not Claude's "the race ends"): "Places
+  can be earned by destroying rival gang cars."
+- The cannon needs shells (the owner's pick, 30 Oct): ten from the tank to start, two from every rival gang car
+  totaled, the count on the firing pedal.
 - Loot (the owner): the notable enemies drop it on the road, and you steer over it to pick it up, until an automation
   does it. Picked up, it goes into the inventory; with the inventory full it is lost.
 - Mines (the owner): the rival gang lays them, so steering becomes a choice between the loot and the mine. A late
@@ -1115,9 +1119,10 @@ camera rises and falls back, and the fortress, four lanes wide, crosses the wast
 following. Then the WARLORD screen. The act takes 10–15 races (the owner), so the game about 70–95 races, 1.5–2
 hours.
 
-**Still open:** the wheel at two lanes and more; what each source drops and does; the
-bridge or the cab (to try); the placing gesture (on a phone); where the rest of the points go; the foreshadowing; the
-final fight's form; whether placing is automated; what comes after the ending (playing on, or a new game plus).
+**Still open:** how places are counted (layer 5, below: Claude's reading built, the other waiting on the owner); the
+wheel at two lanes and more; what each source drops and does; the bridge or the cab (to try); the placing gesture (on
+a phone); where the rest of the points go; the foreshadowing; the final fight's form; whether placing is automated;
+what comes after the ending (playing on, or a new game plus).
 
 **How we make sure:** `act5.py`, from the tank to the final fight: the races (10–15), how full the grid stays race by
 race, the loot lost to a full inventory, and the parts lost a race.
@@ -1165,7 +1170,45 @@ race, the loot lost to a full inventory, and the parts lost a race.
      in 2 races (was 4-5), each tank beaten in its race with 4-5 shells, and scrap piles up: 5,400-5,550 by race 10,
      with nothing yet to buy. The numbers wait for the next layer, the reticle on the notable enemies only.
    - `fortress_test` checks it on both layouts.
-5. The reticle on the notable enemies only, the raiders on the rest; the rival gang and its ammo.
+5. The reticle on the notable enemies only, the raiders on the rest; the rival gang and its ammo. In three PRs:
+   the rival gang, its shells and its rigs first (built 30 Oct); then the police's SUVs; then the helicopters, with the
+   damage layer (a helicopter's job is strafing a lane of the fortress).
+   - The reticle (rigged) takes only the notable: the tank and the rival rigs. The rest are the raiders' car, the
+     quarry, picked as the reticle picks (the nearest ahead in reach, kept until passed or totaled), a rival gang car
+     before anything else (Claude's: they are what pays shells and places). The tracker's raid row, SEND and the
+     Foreman go after it; it is tagged on the windshield when picked (RAID, raiders, health, how far), the crew tag's
+     look; and Hunter hunts it, the reticle's being the cannon's (Claude's: Hunter and the raiders worked one car in
+     act 4, and still do). Before the Rebuild, act 4's reticle as it was.
+   - The rival gang: the racers not paid off, in the gang's own look (their white gone to rust, the bars and spikes of
+     Fuel madness's cars, the number kept). They are quicker than the rig, but the traffic held them back so that none
+     came near it in a race (`act5.py`); so every 8 s the gang sends the nearest one still behind you from 260 m back
+     (beyond the sonar, so it shows coming) up your other lane, 108 km/h quicker. Past you, 25 m ahead, it cuts into
+     your lane and brakes hard for 2 s, then races on; a rival coming past you on its own does the same, 8 s apart.
+     In the oncoming lanes you are out of their way. Claude's numbers.
+   - Places, Claude's reading (to confirm with the owner): your place is counted as before, the rivals ahead of you on
+     the road, and a totaled one is out of the race. The gang is quicker than the rig, so a rival that gets past and
+     away has a place on you, and one destroyed doesn't: places are won by destroying them. The other reading, a
+     place for each one destroyed whatever the road (P19 at the start with 18 rivals, P1 with all of them
+     destroyed), would change what a race is: not built.
+   - Shells: 10 with the Rebuild, 2 for each rival gang car totaled (by anyone), on the firing pedal in an amber count
+     window, the pedal dimmed at none; a press with none fires nothing (NO SHELLS). In the save (`progress.shells`);
+     a save rebuilt before this starts with none, and the gang fills it.
+   - The rival rigs (Claude's design: a tanker welded up for war, drawn in the game's style, the gang's white gone to
+     rust and its red stripe; 2.8 m wide, 3.4 m tall), one at a time, the first 10 s into a race, the next 12 s after
+     one is gone, none in a race the tank is in. It takes over a car out of sight up the road, as the police do, and
+     comes up from behind in your other lane (RIVAL RIG!); holds the road 45 m ahead for 3 s, in the reticle (RIG);
+     drops back beside you and swings into your side (RAMMED: 6% damage, less a quarter for each Armor plating level, a
+     shove and a tenth of your speed), and pulls ahead again; until totaled. 1,500 health (six shells, or four and the
+     guns), a ram a fifth of a hit as on the tank, 150 scrap, a racer's heat; an orange square on the sonar. Its
+     tutorial, The rival gang (the rig, the gang, the shells), pops up on the road as the first rig shows in the
+     reticle. First guesses.
+   - `act5.py` (seeds 1 and 2, 10 races; the bot fires whenever there is a shell and the reticle's car is in reach):
+     P1 or P2 (a gang car getting away now and then); 3-7 gang cars totaled a race, 1-6 brake checks; the cannon fires
+     8-11 shells a race and the gang brings 6-14, so they pile up slowly (11 to 28 left); 2 rigs a race, both totaled,
+     their rams rare once Guns are at level 3 (2 in the first race, none after: the arsenal kills a rig in its first
+     hold); a tank every 4-5 races (heat full in 3), beaten with 4-6 shells; 48-83% damage a race before repairs
+     (16-46% in layer 4: the brake checks); 1,000-1,350 scrap a race, 7,700-8,100 by race 10 with nothing yet to buy.
+   - `rivals_test` checks it on both layouts.
 6. Loot on the road, the inventory, placing and removing; the grid longer and wider (from two lanes wide the wheel
    changes, and the robot brakes for no one and rams: the owner, 30 Oct).
 7. Damage by where it comes from, parts falling off, hits on empty cells reaching the rig.

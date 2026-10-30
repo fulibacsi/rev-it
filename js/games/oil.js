@@ -292,8 +292,9 @@ function trackRows() { // the four round the spot picked: one nearer, if there i
   return [...list.slice(from, from + n), ...(r ? [r] : [])].sort((a, b) => a.z - b.z);
 }
 const kindName = s => s.kind === 'oil' ? 'OIL' : 'REFINERY';
+const hpLeft = c => Math.max(0, c.hp ?? health(c)) / health(c); // gang.js
 function raidRow(r, y) { // the car in the reticle (gang.js): a diamond, the raiders on it, its health, how far
-  const hp = Math.max(0, r.car.hp ?? health(r.car)) / health(r.car);
+  const hp = hpLeft(r.car);
   return `<g class="raid${r === run.pick ? ' pick' : ''}">` +
     (r === run.pick ? `<rect class="sel" x="7" y="${y - 7}" width="106" height="14" rx="2"/>` : '') +
     `<path d="M14,${y - 5} l5,5 l-5,5 l-5,-5 z"/><text x="22" y="${y + 3.5}">${raidersOn(r)}/${raidCap(r)}</text>` +
@@ -311,7 +312,8 @@ function renderCrew() {
   if (seen) {
     const k = 1 / canvas.px, x = (seen[0] + seen[2] / 2) * k, y = seen[1] * k;
     Object.assign($('crew-tag').style, { left: `${x}px`, top: `${y}px` });
-    text('crew-tag', `${kindName(s)} ${s.crew + s.coming.length}/${s.count} · ${fmtL(payRate(s))}/s · ${Math.round(s.z - odo)} m`);
+    text('crew-tag', `${s.kind === 'raid' ? `RAID ${raidersOn(s)}/${raidCap(s)} · ${Math.round(100 * hpLeft(s.car))}%` // the war
+      : `${kindName(s)} ${s.crew + s.coming.length}/${s.count} · ${fmtL(payRate(s))}/s`} · ${Math.round(s.z - odo)} m`); // rig's raid
   }
   if (!road || now - crewAt < 66) return;
   crewAt = now;

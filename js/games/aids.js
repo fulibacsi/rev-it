@@ -75,11 +75,12 @@ function nextCar(x, past = () => false) {
   for (const c of traffic) if (c.dir > 0 && !c.wreck && sameLane(c.x, x) && c.z > odo && !past(c, x) && (!near || c.z < near.z)) near = c;
   return near;
 }
-// Hunter (the War Rig page, the owner's idea, 18 Oct): autocruise hunts the car in the reticle (gang.js target): into
-// its lane and into it, from as far as the reticle takes it (300 m). Within 150 m only, autocruise first steered round
-// it, then Hunter swung back into its lane (the owner, 18 Oct: it "changes lanes to avoid traffic"). Not the tank (the
-// guns are for that), not a car coming the other way, and not past 60% damage, so it doesn't wreck you
-const hunted = c => !!c && c === target && aid('hunter') && !c.tank && !c.wreck && c.dir > 0 && c.z > odo && progress.damage <= 60;
+// Hunter (the War Rig page, the owner's idea, 18 Oct): autocruise hunts the car in the reticle (gang.js crewTarget;
+// on the war rig the raiders' car, the reticle's being the cannon's): into its lane and into it, from as far as the
+// reticle takes it (300 m). Within 150 m only, autocruise first steered round it, then Hunter swung back into its lane
+// (the owner, 18 Oct: it "changes lanes to avoid traffic"). Not the tank (the guns are for that), not a car coming the
+// other way, and not past 60% damage, so it doesn't wreck you
+const hunted = c => !!c && c === crewTarget() && aid('hunter') && !c.tank && !c.wreck && c.dir > 0 && c.z > odo && progress.damage <= 60;
 // a car to ram, not to avoid: lane assist doesn't swerve round it, autocruise doesn't brake for it or take it for a
 // blocked lane. The one Hunter hunts; and, with a bull bar, a mad driver that has just cut in (Fuel madness, road.js)
 const takeRam = c => hunted(c) || c.cut > 0 && lvl('bullbar') > 0;
@@ -124,10 +125,10 @@ function autocruise() {
   // of the way), nor is one already moving out of the lane for a flash; a racer in front, which won't move over, is
   // overtaken in the other lane
   const leaving = (c, x) => takeRam(c) || (c.yielding ? !sameLane(MY_LANES[c.lane], x)
-    : c !== target && aid('autoflash') && run.flashes > 0 && yields(c, 1 - c.lane));
+    : c !== crewTarget() && aid('autoflash') && run.flashes > 0 && yields(c, 1 - c.lane));
   const further = x => reach(carAhead(x, leaving));
   const escape = roomBeside && further(MY_LANES[1 - lane]) > further(MY_LANES[lane]) + 0.5;
-  if (settled() && !hunted(target) && // Hunter has the lanes while it hunts (it would keep right off the prey's lane)
+  if (settled() && !hunted(crewTarget()) && // Hunter has the lanes while it hunts (it would keep right off the prey's lane)
       (escape && reach(mine) < 8 || lane === 1 && roomBeside && reach(mine) > 6 && reach(theirs) > 8)) moveOver();
   // your foot on the gas, or on NOS (not Reckless auto-drive's): no braking, no lift
   if (pushing() || nitroHeld) { if (cruiseBrake) { brakePedal = 0; cruiseBrake = false; } return; }
@@ -149,8 +150,9 @@ function autocruise() {
 }
 
 function hunt() { // into the hunted car's lane, on your side of the road; your hand on the wheel overrides it
-  if (wheel.held || lane > 1 || !settled() || !hunted(target)) return;
-  const to = MY_LANES.findIndex(x => sameLane(x, target.x));
+  const c = crewTarget();
+  if (wheel.held || lane > 1 || !settled() || !hunted(c)) return;
+  const to = MY_LANES.findIndex(x => sameLane(x, c.x));
   if (to >= 0 && to !== lane) changeLane(lane < to ? -1 : 1);
 }
 
@@ -164,7 +166,7 @@ function autoFlash() {
   if (!run.flashes) return;
   if (lane > 1) { if (chicken && facing()) flashLights(); return; } // over there only a game of chicken moves them
   const c = nextCar(carX);
-  if (c && c !== target && c.v < speed - 2 && ((c.z - odo) / (speed - c.v) < 4 || c === cruiseBrake) && yields(c, 1 - lane)) flashLights();
+  if (c && c !== crewTarget() && c.v < speed - 2 && ((c.z - odo) / (speed - c.v) < 4 || c === cruiseBrake) && yields(c, 1 - lane)) flashLights();
 }
 
 // reckless auto-drive (Black market): autocruise without manners. Boxed in on your side it takes the near oncoming lane
@@ -189,7 +191,7 @@ function recklessLanes() {
   const tank = run.tank && !run.tank.wreck; // boss.js: it can't be passed, so no going round it into the traffic
   if (lane <= 1) {
     const boxed = reach(carAhead(MY_LANES[lane], takeRam)) < 3 && reach(carAhead(MY_LANES[1 - lane], takeRam)) < 3;
-    if (lane === 1 && boxed && !tank && !hunted(target) && speed > 15 && (meets(ROAD_LANES[2]) > 6 || brave)) changeLane(-1);
+    if (lane === 1 && boxed && !tank && !hunted(crewTarget()) && speed > 15 && (meets(ROAD_LANES[2]) > 6 || brave)) changeLane(-1);
     return;
   }
   if (lane === 3) return changeLane(1); // the far oncoming lane: back toward your side

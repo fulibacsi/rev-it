@@ -5,15 +5,16 @@
 // board: its plan from above, ahead up as on the sonar, a lane wide and a car long at first, and the hold beside it
 // with the parts you carry. A part goes on with a drag (it fits as it comes: no turning it), and comes off, for good,
 // with a press and hold. The tank's cannon is the first part: mounted, its pedal fires a shell a press at the car in
-// the reticle.
+// the reticle. On the road the reticle takes only the notable enemies, the army's tanks and the rival gang's war rigs;
+// the raiders get the rest, the rival gang's racers among them, and those carry the cannon's shells.
 
 Object.assign(UPGRADES, {
   // the tank's parts (the owner, 29 Oct), paid in points: piled up by then (act4.py: 1,800-2,900 at the tank) with
   // nothing else to buy, and every resource builds the fortress (the owner). The price a first guess, for act5.py
   rebuild: { name: 'Rebuild', tab: 'fortress', max: 1, base: 1500, wallet: 'points', needs: ['fortressTab'],
-             bought: () => progress.fortress.hold.push({ kind: 'cannon', cells: ONE }), // distance.js buy
+             bought: () => { progress.fortress.hold.push({ kind: 'cannon', cells: ONE }); progress.shells += SHELLS.tank; }, // distance.js buy
              info: () => "the tank's parts make your car a war rig: no shifter, no pedals, it drives itself. The tank's " +
-               'cannon for its board, and a firing pedal' },
+               `cannon for its board, ${SHELLS.tank} shells and a firing pedal` },
 });
 const rigged = () => lvl('rebuild') > 0;
 // with no shifter and no pedals the rig drives itself (the owner, 30 Oct): the aids that work them, bolted on, their
@@ -109,12 +110,17 @@ function throwOff(i) {
 
 // ---- the tank's cannon (the owner, 29-30 Oct): mounted, a shell a press of the firing pedal (or Space) at the car in
 // the reticle, in reach and in sight, then it reloads; holding the pedal fires no more. Heavy: a car, a racer, a police
-// car in one; the next tank (1,500) in six. Act IV's guns stay on the rig. First guesses, for act5.py
+// car in one; the next tank (1,500) in six. Act IV's guns stay on the rig. First guesses, for act5.py. It needs shells
+// (the owner, 30 Oct): the tank's with the Rebuild, then two from every rival gang car totaled; the count is on its pedal
 const CANNON = { damage: 250, reload: 2, reach: 300, heat: 10 }; // reach m, reload s, heat: a gun shot's times ten
+const SHELLS = { tank: 10, gang: 2 };
+const gangShells = c => rigged() && c.racer && !c.fleet ? SHELLS.gang : 0; // a car totaled (gang.js total): its shells
 const cannonOn = () => rigged() && progress.fortress.parts.some(p => p.kind === 'cannon');
 let reloading = 0, firedAt = -Infinity;
 function fireCannon() {
   if (!cannonOn() || run.phase !== 'run' || reloading > 0) return false;
+  if (progress.shells < 1) { beep(140, 0.05); flash('NO SHELLS', '#fb3', false); return false; }
+  progress.shells--;
   reloading = CANNON.reload;
   firedAt = performance.now();
   const hit = target?.seen && target.z - odo < CANNON.reach ? target : null; // gang.js
@@ -133,6 +139,83 @@ function rigKey(k, repeat) {
   if (k === ' ') { if (!repeat) fireCannon(); return true; }
   return ['Shift', 'b', 'B', 'ArrowUp', 'ArrowDown', 'n', 'N'].includes(k);
 }
+// ---- the road (the owner, 30 Oct): the reticle takes only the notable enemies, the army's tanks and the rival gang's
+// war rigs (police SUVs and helicopters to come); the rest are the raiders' (gang.js crewTarget), and Hunter's
+const notable = c => !!(c.tank || c.rig);
+
+// the rival gang (the owner, 30 Oct): once the war rig is built, the racers you never paid off turn on you. Every
+// GANG_CAR.every s it sends the nearest one still behind you, from beyond the sonar (so you see it come) up your other
+// lane, and it drives at you as the police do from behind (police.js): past you, into your lane CHECK m ahead of you and
+// a hard stop, then it races on, and does it again a while later; so does a rival coming past you on its own. One that
+// gets away has a place on you; one totaled is out of the race, behind you (race.js position): places are won by
+// destroying them now. In the oncoming lanes you are out of their way
+const GANG_CAR = { every: 8, from: 260, closing: 30 }; // s, m behind you, m/s quicker than you
+const CHECK = { near: 25, far: 60, cut: 3, stop: 2, again: 8 }; // m ahead; s to get across, braking, between goes
+let gangClock = 0;
+function updateGangCars(dt) { // distance.js updateRun
+  if (!rigged() || (gangClock -= dt) > 0 || lane > 1) return;
+  const c = rivals().filter(c => !c.wreck && !c.stage && c.z < odo - GANG_CAR.from).sort((a, b) => b.z - a.z)[0];
+  if (!c) return;
+  gangClock = GANG_CAR.every;
+  Object.assign(c, { stage: 'chase', z: odo - GANG_CAR.from, lane: 1 - lane, x: MY_LANES[1 - lane], v: speed + GANG_CAR.closing });
+}
+function gangDrive(c, dt) { // road.js updateTraffic: true while it is at you; else it races as any racer does
+  if (!rigged() || c.fleet || c.wreck) return false;
+  const now = runTime() - run.left, ahead = c.z - odo, on = run.phase === 'run' && lane <= 1;
+  if (!c.stage && on && ahead > CHECK.near && ahead < CHECK.far && c.v > speed - 1 && now >= (c.again ?? 0)) c.stage = 'chase';
+  if (!c.stage) return false;
+  if (c.stage === 'chase') { // up your other lane and past you
+    c.v = speed + GANG_CAR.closing;
+    if (ahead > CHECK.near) Object.assign(c, on ? { stage: 'cut', lane, t: CHECK.cut } : { stage: null, again: now + CHECK.again });
+  } else if (c.stage === 'cut') { // across into your lane
+    c.v = speed + 2;
+    if (Math.abs(c.x - MY_LANES[c.lane]) < 0.3 || (c.t -= dt) <= 0) Object.assign(c, { stage: 'brake', t: CHECK.stop });
+  } else if ((c.t -= dt) > 0) c.v = Math.max(0, c.v - 9 * dt); // stamping on the brakes
+  else { Object.assign(c, { stage: null, again: now + CHECK.again }); return false; }
+  c.x += clamp(MY_LANES[c.lane] - c.x, -3 * dt, 3 * dt);
+  c.z += c.v * dt;
+  return !!c.stage;
+}
+
+// the rival gang's war rigs (Claude's, 30 Oct), the notable enemy of a race without the tank: a tanker welded up for
+// war (road.js RIG_SPRITE). One at a time, the first a while into the race: it takes over a car out of sight up the
+// road, as the police do, and comes up from behind you in your other lane; it holds the road ahead of you for a few
+// seconds, in the reticle; then drops back beside you and swings into your side, and pulls ahead again; until it is
+// totaled. Rams barely scratch it, as the tank. First guesses, for act5.py: six shells, or four and the guns
+const RIG = { hp: 1500, first: 10, every: 12, ahead: 45, hold: 3, hit: 6, scrap: 150, w: 2.8, h: 3.4 }; // s, m, s, % a ram
+let rigClock = 0;
+const rigRun = () => { rigClock = RIG.first; gangClock = GANG_CAR.every; }; // distance.js startRun: the rigs, the gang
+function updateRigs(dt) { // distance.js updateRun
+  if (!rigged() || run.boss || traffic.some(c => c.rig && !c.wreck) || (rigClock -= dt) > 0) return;
+  const c = traffic.find(c => !c.racer && !c.police && !c.tank && !c.rig && !c.fleet && c !== target && c !== quarry && c.z - odo > 600);
+  const side = 1 - lane;
+  if (!c || lane > 1 || !laneClear(MY_LANES[side], 10)) return;
+  rigClock = RIG.every;
+  Object.assign(c, { rig: true, dir: 1, lane: side, x: MY_LANES[side], z: odo - 60, v: speed + 15, stage: 'pass', look: { rear: RIG_SPRITE },
+                     w: RIG.w, h: RIG.h, hp: null, wreck: false, swerve: null, warned: false, beams: 0, d: NaN, hit: -Infinity });
+  flash('RIVAL RIG!', '#f55', false);
+  horn();
+}
+function rigDrive(c, dt) { // road.js updateTraffic
+  const gap = c.z - odo, by = lane <= 1 && run.phase === 'run'; // you on your side of the road, in the race
+  if (c.stage === 'pass') { c.v = speed + 15; if (by) c.lane = 1 - lane; if (gap > RIG.ahead) Object.assign(c, { stage: 'hold', t: RIG.hold }); }
+  else if (c.stage === 'hold') { c.v = Math.max(0, speed + (RIG.ahead - gap) * 0.6); if ((c.t -= dt) <= 0 && by) c.stage = 'drop'; }
+  else if (c.stage === 'drop') { c.v = Math.max(0, speed - 15); if (by) c.lane = 1 - lane; if (gap < 1) c.stage = by ? 'ram' : 'pass'; }
+  else { c.v = speed; c.x += clamp(carX - c.x, -4 * dt, 4 * dt); if (!by) c.stage = 'pass'; else if (Math.abs(c.x - carX) < (RIG.w + CAR_W) / 2) rigRam(c); }
+  if (c.stage !== 'ram') c.x += clamp(MY_LANES[c.lane] - c.x, -2 * dt, 2 * dt);
+  c.z += c.v * dt;
+}
+function rigRam(c) { // its side into yours: damage (Armor plating takes some), a shove and a jolt; then it pulls ahead
+  c.stage = 'pass';
+  slide += 4 * Math.sign(carX - c.x); // car.js: knocked across, and steered back
+  speed *= 0.9;
+  shake = Math.max(shake, 0.5);
+  crashSound();
+  flash('RAMMED', '#f55', false);
+  addDamage(RIG.hit * (1 - 0.25 * lvl('armour'))); // damage.js
+  if (wrecked()) finishRun('wrecked');
+}
+
 let pedalDown = false;
 $('cannon-pedal').onpointerdown = e => { e.preventDefault(); pedalDown = true; fireCannon(); };
 for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) $('cannon-pedal').addEventListener(ev, () => { pedalDown = false; });
@@ -151,7 +234,10 @@ function renderRig() {
   }
   $('cannon-pedal').classList.toggle('pressed', pedalDown || now - firedAt < 150);
   $('cannon-pedal').parentNode.classList.toggle('mounted', cannonOn());
+  $('cannon-pedal').parentNode.classList.toggle('empty', progress.shells < 1);
   $('cannon-pedal').parentNode.style.setProperty('--reload', (1 - reloading / CANNON.reload).toFixed(2));
+  text('shell-count', String(progress.shells));
+  if (target?.rig && target.seen && run.phase === 'run' && !progress.toured.includes('rivals')) openTour('rivals', true); // the first rig
 }
 
 TUTORIALS.push( // the war rig's, once rebuilt (the owner's: the controls change with it)
@@ -170,8 +256,20 @@ TUTORIALS.push( // the war rig's, once rebuilt (the owner's: the controls change
     { title: 'THROW IT OFF', at: '#board',
       both: 'Press and hold a part on the board until its ring closes: it is thrown off, gone for good.' },
     { title: 'THE CANNON', at: '.cannon-box',
-      touch: 'Mounted, the cannon fires at the car in the reticle: a press of the firing pedal, a shell. Then it reloads.',
+      touch: 'Mounted, the cannon fires at the car in the reticle: a press of the firing pedal, a shell. Then it reloads. ' +
+        `The shells left are on the pedal: ${SHELLS.tank} came with the tank.`,
       desk: 'Mounted, the cannon fires at the car in the reticle: Space (or a click on the firing pedal), a shell. Then ' +
-        'it reloads.' },
+        `it reloads. The shells left are on the pedal: ${SHELLS.tank} came with the tank.` },
+  ] },
+  // on the road, the first time a rival rig is in the reticle (renderRig); listed once seen
+  { id: 'rivals', name: 'The rival gang', open: () => rigged() && progress.toured.includes('rivals'), pages: [
+    { title: 'A RIVAL RIG', at: '#ar',
+      both: "The rival gang's war rig. Only rigs and tanks are in the reticle now: the cannon and the guns are for " +
+        'them. It holds the road ahead of you, then drops back and rams you from the side.' },
+    { title: 'THE RIVAL GANG',
+      both: 'The racers you never paid off are a gang now. They come past you, cut in and stamp on the brakes. Your ' +
+        'raiders go after them, and the rest of the traffic: Hunter too.' },
+    { title: 'SHELLS', at: '.cannon-box',
+      both: `Every gang car totaled is out of the race, behind you, and brings ${SHELLS.gang} shells for the cannon.` },
   ] },
 );

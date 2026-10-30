@@ -114,6 +114,7 @@ body:not([data-game="distance"]) #kit { display: none; }
 #sonar-blips .red { fill: #f33; }
 #sonar-blips .blue { fill: #39f; }
 #sonar-blips .tank { fill: #f22; }
+#sonar-blips .rig { fill: #e8743a; } /* a rival war rig (fortress.js), in its rust */
 /* act 3's crew (oil.js): the tracker on the sonar's right, ‹ SEND › under them, the tag on the windshield over the spot
    picked, the crude tank on the right A-pillar (the police scanner's place, which comes only in act 4, when the whole
    crew races and the tank goes) */
@@ -445,7 +446,8 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
 .cannon-box .pedal { width: 9vh; }
 .touch .cannon-box .pedal { width: 14vw; }
 #cannon-pedal.pressed { transform: perspective(300px) rotateX(30deg); }
-.cannon-box:not(.mounted) #cannon-pedal { filter: grayscale(0.8) brightness(0.6); } /* no cannon on the board */
+.cannon-box:not(.mounted) #cannon-pedal, .cannon-box.empty #cannon-pedal { filter: grayscale(0.8) brightness(0.6); } /* no
+   cannon on the board, or no shells */
 .depth.reload::after { height: calc(var(--reload, 1) * 100%); } /* fills as it reloads */
 .touch #board { left: var(--edge-l); top: auto; bottom: var(--edge-b); width: calc(var(--shifter-h) * 3.2 / 3.5);
                 height: calc(var(--shifter-h) - 14px); } /* clear of ‹ SEND › above it (the gate was drawn inside its box) */

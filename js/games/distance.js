@@ -88,7 +88,7 @@ const SAVE_KEY = 'car-rev-incremental';
 const FRESH = () => ({ bank: 0, best: 0, runs: 0, levels: {}, off: {}, engine: 0, racing: false, points: 0, finish: 101,
                        damage: 0, broken: [], nitro: 0, fuel: 0, crude: 0, oil: 0, roles: { harvester: 0, brewer: 0, raider: 0 }, pace: 70,
                        gang: false, scrap: 0, totals: 0, wanted: 0, tanks: 0, autoRepair: false, tape: 0,
-                       fortress: { w: 1, h: 1, parts: [], hold: [] },
+                       fortress: { w: 1, h: 1, parts: [], hold: [] }, shells: 0,
                        time: 0, driven: 0, races: 0, seen: [], toured: [], dry: 0 }); // seen: upgrades seen unlocked (the tabs' !);
                                                        // toured: tutorials popped up (tutorial.js); dry: races in a row
                                                        // without a Black market buy (race.js raceWall)
@@ -109,7 +109,7 @@ function save() {
   if (bottomless()) progress.bank = progress.points = progress.fuel = progress.scrap = FUNDS; // spent or earned, back to full
   try { localStorage.setItem(saveKey(), JSON.stringify(progress)); } catch { /* not saved */ }
 }
-const forgetRun = () => Object.assign(run, { gain: null, race: null, revealed: false, won: false, dues: 0, team: 0, scrap: 0, totals: 0, repaired: 0,
+const forgetRun = () => Object.assign(run, { gain: null, race: null, revealed: false, won: false, dues: 0, team: 0, scrap: 0, totals: 0, shells: 0, repaired: 0,
                                              firstTotal: false, boss: false, tank: null, beatTank: false, newBest: false, best: 0 });
 // RESET PROGRESS: a new game, by a player who has driven before, so its first run has no Driving tutorial (the owner,
 // 23 Oct)
@@ -258,13 +258,14 @@ const run = { phase: 'garage', count: 0, left: 0, best: progress.best, gain: nul
 
 function startRun() { // back to the start line, engine running, in neutral, held on the brake
   Object.assign(run, { phase: 'starting', count: COUNTDOWN, left: runTime(), best: progress.best, gain: 0, newBest: false,
-                       slot: progress.racing ? startSlot() : null, race: null, revealed: false, won: false, scrap: 0, totals: 0,
+                       slot: progress.racing ? startSlot() : null, race: null, revealed: false, won: false, scrap: 0, totals: 0, shells: 0,
                        firstTotal: false, boss: bossRace(), tank: null, beatTank: false, limp: wrecked(),
                        flashes: lvl('flash'), recharge: 0 });
   resetScene();
   brakePedal = 1;
   coolDown();
   copClock = copEvery(); // police.js: the first police car after a while
+  rigRun(); // fortress.js: the rival gang and its rigs too
   run.refill = run.limp ? 0 : refillNitro(); // limping: keep the meters for the repair
   crewRun(); // oil.js: this run's spots
   if (run.boss) sendTank(); // boss.js: up the road, waiting
@@ -305,7 +306,7 @@ function updateRun(dt) {
   else if (run.phase === 'finish' && (run.count -= dt) <= 0) run.phase = 'garage';
   run.still = run.phase === 'run' && speed < 1 ? (run.still ?? 0) + dt : 0; // s standing still in the run (stuck?)
   if (run.phase === 'run' && raceTick()) run.revealed = true;
-  if (run.phase === 'run') { rechargeFlash(dt); updateGang(dt); updatePolice(dt); updateBoss(); crewTick(dt); rigTick(dt); }
+  if (run.phase === 'run') { rechargeFlash(dt); updateGang(dt); updatePolice(dt); updateGangCars(dt); updateRigs(dt); updateBoss(); crewTick(dt); rigTick(dt); }
   if (run.phase === 'run' && damageOn()) damageTick(dt);
   if (run.phase === 'run' && run.limp && odo >= LIMP) finishRun('limped'); // as far as a wreck gets
 }
@@ -428,7 +429,7 @@ function runLine() {
     run.team && `team places +${fmt(run.team)} pts`, run.dues && `racing +${fmt(run.dues)} m`,
     run.crude >= 0.05 && `crude +${fmtL(run.crude)} L`, run.fuel >= 0.05 && `fuel +${fmtL(run.fuel)} L`,
     run.refill && `nitro refill −${fmt(run.refill)} m`, run.repaired && `repairs −${fmt(run.repaired)} m`,
-    run.totals && `totaled ${run.totals}, +${fmt(run.scrap)} scrap`, run.beatTank && `the tank scrapped, +${TANK.scrap} scrap`,
+    run.totals && `totaled ${run.totals}, +${fmt(run.scrap)} scrap`, run.shells && `+${run.shells} shells`, run.beatTank && `the tank scrapped, +${TANK.scrap} scrap`,
     arOn() && `police heat ${heatPct()}`, hint() && `<i>stuck? ${hint()}</i>`]
     .filter(Boolean).join(' · ');
 }
@@ -446,6 +447,7 @@ function runRows() {
     if (run.refill) rows.push(['Nitro refill', `−${fmt(run.refill)} m`]);
     if (run.repaired) rows.push(['Repairs', `−${fmt(run.repaired)} m`]);
     if (run.totals) rows.push(['Totaled', `${run.totals}, +${fmt(run.scrap)} scrap`]);
+    if (run.shells) rows.push(['Shells', `+${run.shells}`]);
     if (run.beatTank) rows.push(['The tank', `scrapped, +${TANK.scrap} scrap`]);
   }
   if (progress.runs) rows.push(['Best run', `${fmt(progress.best)} m`]);

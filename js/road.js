@@ -175,18 +175,24 @@ function rustLook(look) { // the first rusty cars on the road (act 3's foreshado
     beams: () => madSprite(spec, 'front', true, true) }, { rustOf: look });
 }
 function madSprite(spec, side, beams, plain) { // from behind, or in front (bars over the windshield, a spiked bull bar); plain: no bars or spikes
-  const v = CAR_ART[spec.model][side], pad = 4, [gx0, gy0, gx1, gy1] = v.glass, [bx0, , bx1, by1] = v.body, bw = bx1 - bx0, low = by1 - gy1;
+  const v = CAR_ART[spec.model][side], pad = 4, [, , , gy1] = v.glass, [bx0, , bx1] = v.body, bw = bx1 - bx0;
   const primer = (x, y) => y > gy1 && x - bx0 > bw * (spec.k % 2 ? 0.64 : 0.14) && x - bx0 < bw * (spec.k % 2 ? 0.84 : 0.34) && '#7c7a70';
   const parts = side === 'rear' ? [v.car, v.bumpers[spec.bumper], v.spoilers[spec.spoiler]] : [v.car, v.bumpers[spec.front]];
   const c = pixelSprite(v, parts, mix(spec.paint, RUST[spec.k % 3], 0.75), { pad, mask: primer });
-  const at = (...b) => dab(c, pad, ...b);
+  weld((...b) => dab(c, pad, ...b), v, plain);
+  return beams ? glare(c, v, pad) : c;
+}
+// a car gone to seed (at: a dab on its sprite, below the pad; v: the art's view), and unless plain, armed: Fuel
+// madness's cars, and the rival gang's racers (racerArt)
+function weld(at, v, plain) {
+  const [gx0, gy0, gx1, gy1] = v.glass, [bx0, , bx1, by1] = v.body, bw = bx1 - bx0, low = by1 - gy1;
   for (const [x, y, w] of [[0.16, 0.7, 3], [0.62, 0.3, 2], [0.86, 0.75, 2], [0.4, 0.55, 2]]) { // rust holes, their edges orange
     at('#b0602e', bx0 + x * bw - 1, gy1 + y * low - 1, w + 2, 3); at('#3a1a0c', bx0 + x * bw, gy1 + y * low, w, 1);
   }
   const dead = (v.lamps ?? v.lights)[1]; // the right tail light's outer half, or the right headlight, out
   if (dead && v.lamps) at('#2a0c0c', (dead[0] + dead[2]) / 2, dead[1], (dead[2] - dead[0]) / 2, dead[3] - dead[1]);
   else if (dead) at('#24242a', dead[0], dead[1], dead[2] - dead[0], dead[3] - dead[1]);
-  if (plain) return beams ? glare(c, v, pad) : c;
+  if (plain) return;
   for (const f of [0.25, 0.5, 0.75]) { at('#1e1e22', gx0 + f * (gx1 - gx0), gy0, 2, gy1 - gy0); at('#6a6a72', gx0 + f * (gx1 - gx0), gy0, 1, gy1 - gy0); } // bars
   at('#1e1e22', gx0 + 2, (gy0 + gy1) / 2, gx1 - gx0 - 4, 2); at('#6a6a72', gx0 + 2, (gy0 + gy1) / 2, gx1 - gx0 - 4, 1);
   const spike = (x, y) => { at('#e2e2ea', x, y - 4, 1, 4); at('#8c8c96', x + 1, y - 3, 1, 3); at('#55555c', x - 1, y - 1, 1, 1); }; // steel, lit on its left
@@ -196,7 +202,6 @@ function madSprite(spec, side, beams, plain) { // from behind, or in front (bars
   at('#3c3c42', bx0, py, bw, 4); at('#a4a4ae', bx0, py, bw, 1); at('#1e1e22', bx0, py + 3, bw, 1);
   for (let i = 1; i < 8; i++) at('#c8c8d0', bx0 + i * bw / 8, py + 2);
   for (let i = 0; i < 6; i++) spike(bx0 + (i + 0.5) * bw / 6 - 1, py); // spikes along it
-  return beams ? glare(c, v, pad) : c;
 }
 function glare(c, v, pad) { // flashing you with the one headlight it has left
   const [bx0, , bx1, by1] = v.body, bw = bx1 - bx0;
@@ -213,6 +218,35 @@ const TANK_SPRITE = sprite(300, 230, (g, w, h) => { // the final boss (Distance)
   g.fillStyle = '#111'; g.beginPath(); g.arc(w / 2, h * 0.04, w * 0.035, 0, 2 * Math.PI); g.fill();
   g.fillStyle = '#ddd'; g.font = `bold ${h * 0.16}px sans-serif`; g.textAlign = 'center'; g.fillText('★', w / 2, h * 0.7);
   g.fillStyle = '#a22'; g.fillRect(w * 0.12, h * 0.5, w * 0.08, h * 0.05); g.fillRect(w * 0.8, h * 0.5, w * 0.08, h * 0.05);
+});
+// the rival gang's war rig (Distance's act 5, fortress.js), from behind: a tanker welded up for war, in the gang's
+// white gone to rust and its red stripe; exhaust stacks either side, spikes along the top, a ladder, the tail lights in
+// the bumper, a spiked ram bar, dual wheels and mud flaps
+const RIG_SPRITE = sprite(280, 340, (g, w, h) => {
+  const steel = (x, y, rw, rh) => { g.fillStyle = '#3c3c42'; g.fillRect(x, y, rw, rh); g.fillStyle = '#9a9aa4'; g.fillRect(x, y, rw, 3); };
+  g.fillStyle = '#141416'; // the wheels, two a side
+  for (const x of [0.03, 0.15, 0.73, 0.85]) { g.beginPath(); g.roundRect(w * x, h * 0.8, w * 0.12, h * 0.2, 6); g.fill(); }
+  for (const x of [0.06, 0.18, 0.76, 0.88]) { g.fillStyle = '#55555c'; g.fillRect(w * x, h * 0.86, w * 0.06, h * 0.06); }
+  for (const x of [0.03, 0.73]) { g.fillStyle = '#1e1e22'; g.fillRect(w * x, h * 0.84, w * 0.24, h * 0.12); } // mud flaps
+  for (const x of [0.04, 0.88]) { steel(w * x, 0, w * 0.06, h * 0.32); g.fillStyle = '#c8c8d0'; g.fillRect(w * x - 2, 0, w * 0.06 + 4, 6); } // stacks
+  const tank = g.createRadialGradient(w * 0.42, h * 0.38, 10, w / 2, h * 0.45, w * 0.55); // the tanker's end: dirty white, rust round it
+  tank.addColorStop(0, '#d8cdb8'); tank.addColorStop(0.55, '#a88a68'); tank.addColorStop(1, '#6b3a22');
+  g.fillStyle = tank; g.beginPath(); g.roundRect(w * 0.1, h * 0.12, w * 0.8, h * 0.62, w * 0.2); g.fill();
+  g.fillStyle = '#8e2a1e'; g.fillRect(w * 0.1, h * 0.4, w * 0.8, h * 0.07); // the gang's stripe
+  for (const [x, y, r] of [[0.24, 0.24, 9], [0.7, 0.62, 12], [0.3, 0.6, 7], [0.78, 0.28, 6]]) { // rust patches
+    g.fillStyle = '#7a3a1c'; g.beginPath(); g.arc(w * x, h * y, r, 0, 2 * Math.PI); g.fill();
+    g.fillStyle = '#3a1a0c'; g.beginPath(); g.arc(w * x + 1, h * y + 1, r * 0.4, 0, 2 * Math.PI); g.fill();
+  }
+  g.strokeStyle = '#2b2b30'; g.lineWidth = 4; // the ladder
+  for (const x of [0.62, 0.7]) { g.beginPath(); g.moveTo(w * x, h * 0.1); g.lineTo(w * x, h * 0.76); g.stroke(); }
+  for (let y = 0.16; y < 0.74; y += 0.07) { g.beginPath(); g.moveTo(w * 0.62, h * y); g.lineTo(w * 0.7, h * y); g.stroke(); }
+  g.fillStyle = '#e2e2ea'; // spikes along the top
+  for (let i = 0; i < 9; i++) { const x = w * (0.18 + i * 0.08); g.beginPath(); g.moveTo(x - 5, h * 0.13); g.lineTo(x, h * 0.05); g.lineTo(x + 5, h * 0.13); g.fill(); }
+  steel(w * 0.02, h * 0.74, w * 0.96, h * 0.07); // the bumper, its tail lights
+  g.fillStyle = '#c0201a'; for (const x of [0.06, 0.84]) g.fillRect(w * x, h * 0.755, w * 0.1, h * 0.035);
+  g.fillStyle = '#e2e2ea'; // the ram bar's spikes, pointing back at you
+  for (let i = 0; i < 7; i++) { const x = w * (0.22 + i * 0.093); g.beginPath(); g.moveTo(x - 6, h * 0.81); g.lineTo(x, h * 0.9); g.lineTo(x + 6, h * 0.81); g.fill(); }
+  steel(w * 0.2, h * 0.8, w * 0.6, h * 0.03);
 });
 // act 3's spots by the road (oil.js), in the palms' sunset silhouette with lamps lit: an oil puddle on the sand, a
 // pumpjack nodding (two frames, the beam up and down), a refinery with its flare flickering (two frames)
@@ -283,15 +317,19 @@ function stationSprite(board) {
 const RACERS = new Map(); // racers' rear views by number: kitted, racing stripes, and the number once the race is revealed
 const FONT = ['111101101101111', '010110010010111', '111001111100111', '111001111001111', '101101111001001', '111100111001111',
   '111100111101111', '111001001001001', '111101111101111', '111101111001111']; // 0-9, 3 wide and 5 high, row by row
-function racerSprite(n, numbered, team) { // team: one of your fleet, black with gold stripes; made when first drawn
-  const model = MODELS[n % MODELS.length], key = numbered ? (team ? -n : n) : model;
-  return { get rear() { if (!RACERS.has(key)) RACERS.set(key, racerArt(model, numbered ? n : 0, numbered, team)); return RACERS.get(key); } };
+// team: one of your fleet, black with gold stripes; gang: the rival gang's (Distance's act 5), its white gone to rust,
+// welded up for war as Fuel madness's cars are. Made when first drawn
+function racerSprite(n, numbered, team, gang) {
+  const model = MODELS[n % MODELS.length], key = numbered ? (team ? -n : gang ? `g${n}` : n) : model;
+  return { get rear() { if (!RACERS.has(key)) RACERS.set(key, racerArt(model, numbered ? n : 0, numbered, team, gang)); return RACERS.get(key); } };
 }
-function racerArt(model, n, numbered, team) { // each number its own bumper and wing (racers are always kitted)
+function racerArt(model, n, numbered, team, gang) { // each number its own bumper and wing (racers are always kitted)
   const v = CAR_ART[model].rear, mid = v.w / 2, sw = Math.max(2, Math.round(v.w * 0.06)), gap = Math.max(1, Math.round(v.w * 0.025));
   const kit = [v.car, v.bumpers[(n + v.bumpers.length - 1) % v.bumpers.length], v.spoilers[Math.floor(n / MODELS.length) % v.spoilers.length]];
-  const stripe = (x, y) => Math.abs(x + 0.5 - mid) > gap && Math.abs(x + 0.5 - mid) <= gap + sw && (team ? '#e8c440' : '#c62828');
-  const c = pixelSprite(v, kit, team ? '#1a1a20' : '#f4f4f4', { mask: stripe }), at = (...b) => dab(c, 0, ...b);
+  const stripe = (x, y) => Math.abs(x + 0.5 - mid) > gap && Math.abs(x + 0.5 - mid) <= gap + sw && (team ? '#e8c440' : gang ? '#8e2a1e' : '#c62828');
+  const pad = gang ? 4 : 0, paint = team ? '#1a1a20' : gang ? mix('#f4f4f4', RUST[n % 3], 0.5) : '#f4f4f4';
+  const c = pixelSprite(v, kit, paint, { mask: stripe, pad }), at = (...b) => dab(c, pad, ...b);
+  if (gang) weld(at, v);
   if (numbered) { // the number on a roundel on the trunk
     const digits = [...String(n)].map(Number), tw = digits.length * 4 - 1, r = Math.ceil(tw / 2) + 3;
     const cy = Math.round(v.glass[3] + (v.body[3] - v.glass[3]) * 0.4), cx = Math.round(mid);
@@ -360,7 +398,7 @@ function spawnCar(car, d) {
     swerve: null, // an oncoming car flashed out of your way (a game of chicken): the lane it is moving to
     wreck: false, hp: null, // totaled (Distance's War Rig), and its health when hurt (null: unhurt)
     police: false, stage: null, passing: false, // a police car (Distance's War Rig, police.js), how far into its move
-    tank: false, w: undefined, h: undefined, // the final boss (boss.js), and its size, m
+    tank: false, rig: false, w: undefined, h: undefined, // the final boss (boss.js), a rival war rig (fortress.js), its size, m
   });
 }
 const sameLane = (a, x) => Math.abs(a - x) < CAR_W; // two lateral positions close enough to touch
@@ -400,10 +438,10 @@ const PASS = 10 / 3.6, MIRROR = 4, SIGNAL = 1;
 // Fuel madness (the game's madness(), Distance's War Rig: the share of drivers gone mad, 0 to 1): which ordinary cars
 // are mad, going your way or coming at you (the owner, 18 Oct: the oncoming traffic had none). Picked by serial in golden-ratio steps: an even spread, and no draw on the traffic's seeded
 // dice, so the road is the same as before for everyone else
-const mad = c => !c.racer && !c.fleet && !c.police && !c.tank &&
+const mad = c => !c.racer && !c.fleet && !c.police && !c.tank && !c.rig &&
   c.serial * 0.6180339887 % 1 < (game.madness?.() ?? 0);
 // the first rusty cars (the game's rust(): the share of ordinary cars gone to rust, 0 to 1; Distance's act 3, oil.js)
-const rusty = c => !c.racer && !c.fleet && !c.police && !c.tank && c.serial * 0.3819660113 % 1 < (game.rust?.() ?? 0);
+const rusty = c => !c.racer && !c.fleet && !c.police && !c.tank && !c.rig && c.serial * 0.3819660113 % 1 < (game.rust?.() ?? 0);
 function driveCar(c, dt) { // follow at a safe distance, or pull out and pass
   const lead = leader(c), gap = lead ? lead.z - c.z - CAR_LEN : Infinity, safe = 8 + 1.2 * c.v;
   let aim = c.want;
@@ -442,7 +480,7 @@ function driveCar(c, dt) { // follow at a safe distance, or pull out and pass
 // the side a car going your way indicates (-1 left, 1 right, 0 not): while it waits to pull out, and as it moves over;
 // a mad driver never does
 function indicator(c) {
-  if (c.dir < 0 || c.wreck || c.tank || mad(c)) return 0;
+  if (c.dir < 0 || c.wreck || c.tank || c.rig || mad(c)) return 0;
   const d = MY_LANES[c.signal ? 1 - c.lane : c.lane] - c.x;
   return Math.abs(d) > 0.3 ? Math.sign(d) : 0;
 }
@@ -450,7 +488,7 @@ function indicator(c) {
 // flashed: an ordinary car ahead of you in your lane (within 250 m) moves over to your other lane if there is room.
 // Racers don't care.
 // yields: whether car c would move over into lane `to` for a flash now (racers never do)
-const yields = (c, to) => !c.racer && !c.police && !c.tank && !c.yielding && c.dir > 0 && c.z > odo && c.z - odo <= 250 && roomAt(c, MY_LANES[to], 12, 25);
+const yields = (c, to) => !c.racer && !c.police && !c.tank && !c.rig && !c.yielding && c.dir > 0 && c.z > odo && c.z - odo <= 250 && roomAt(c, MY_LANES[to], 12, 25);
 // Playing chicken (Distance's upgrade), an oncoming car in your lane within 250 m swerves into its other lane, if
 // nobody is there within 25 m of it
 let chicken = false;
@@ -490,9 +528,10 @@ function updateTraffic(dt, clock) {
     if (c.wreck) skid(c, dt);
     else if (c.police) policeDrive(c, dt); // police.js
     else if (c.tank) tankDrive(c, dt); // boss.js
+    else if (c.rig) rigDrive(c, dt); // a rival war rig (fortress.js)
     else if (c.runner) runnerDrive(c, dt); // a car of your crew on its way to a spot (oil.js)
     else if (c.raider) raiderDrive(c, dt); // a raider of your crew after its car (gang.js)
-    else if (c.dir > 0) driveCar(c, dt);
+    else if (c.dir > 0) { if (!(c.racer && gangDrive(c, dt))) driveCar(c, dt); } // the rival gang's moves (fortress.js)
     else { // oncoming: a mad driver steers for you while you are on its side, until 1.2 s out (as the police do)
       if (mad(c) && lane > 1 && (c.z - odo) / Math.max(1, speed + c.v) > 1.2) c.x += clamp(carX - c.x, -3 * dt, 3 * dt);
       c.z -= c.v * dt;
@@ -501,9 +540,9 @@ function updateTraffic(dt, clock) {
     const d = c.z - odo;
     if (c.d > 0 && d <= 0) whoosh(Math.abs(speed - c.dir * c.v) * 3.6, c.x < carX ? -0.7 : 0.7); // went past the driver
     c.d = d;
-    if (c.racer || c.passing || c.tank || c.runner || c.raider) { /* racers stay where they are, however far: their places
-      are the race; a police car comes up from behind; the tank holds the road; a car of your crew goes on to its spot,
-      or after its car */ }
+    if (c.racer || c.passing || c.tank || c.rig && !c.wreck || c.runner || c.raider) { /* racers stay where they are,
+      however far: their places are the race; a police car comes up from behind; the tank holds the road, and a rig
+      comes and goes round you; a car of your crew goes on to its spot, or after its car */ }
     else if (d < -40 || c.dir > 0 && d < -8 && c.v < speed - 1) spawnAhead(c); // left behind: back to the horizon
     else if (d > ROAD.draw * ROAD.segment + 100) { // pulled away: comes up from behind instead, in a lane you're not in
       spawnCar(c, -30);
