@@ -81,12 +81,14 @@ const SAVE_KEY = 'car-rev-incremental';
 // Oct), crude: liters in the tank, oil: how far the oil is on (0, 1 the first crude, 2 the first fuel), roles: the
 // crew's harvesters and brewers, pace: your m/s of late (oil.js); gang: the gang's moment has come, scrap: the
 // War Rig's, from totals: cars totaled (gang.js); wanted: police heat, 0 to 1 (police.js); tanks: tanks beaten (boss.js);
-// autoRepair: the repair card's AUTO switch (damage.js);
+// autoRepair: the repair card's AUTO switch (damage.js); fortress: act 5's fortress, its size, the parts on it and in
+// its hold (fortress.js);
 // tape: the one in the stereo (stereo.js); time: seconds played, driven: meters in all, races: runs raced (the
 // menu's STATS)
 const FRESH = () => ({ bank: 0, best: 0, runs: 0, levels: {}, off: {}, engine: 0, racing: false, points: 0, finish: 101,
                        damage: 0, broken: [], nitro: 0, fuel: 0, crude: 0, oil: 0, roles: { harvester: 0, brewer: 0, raider: 0 }, pace: 70,
                        gang: false, scrap: 0, totals: 0, wanted: 0, tanks: 0, autoRepair: false, tape: 0,
+                       fortress: { w: 1, h: 1, parts: [], hold: [] },
                        time: 0, driven: 0, races: 0, seen: [], toured: [], dry: 0 }); // seen: upgrades seen unlocked (the tabs' !);
                                                        // toured: tutorials popped up (tutorial.js); dry: races in a row
                                                        // without a Black market buy (race.js raceWall)
@@ -234,6 +236,7 @@ function buy(id) {
   if (whyNot(id)) return false;
   progress[wallet(UPGRADES[id])] -= cost(id);
   progress.levels[id] = lvl(id) + 1;
+  UPGRADES[id].bought?.(); // what comes with it (the Rebuild: the tank's cannon, fortress.js)
   if (pageOf(UPGRADES[id]) === 'black') progress.dry = 0; // not stuck in the race (race.js)
   if (id === 'engine') progress.engine = lvl(id); // drive the new engine straight away
   save();
@@ -242,7 +245,9 @@ function buy(id) {
 
 // a driver aid works while bought, switched on and a run is under way, and only with the aids it builds on working
 function aid(id) {
-  if (!lvl(id) || progress.off[id] || (run.phase !== 'countdown' && run.phase !== 'run')) return false;
+  if (run.phase !== 'countdown' && run.phase !== 'run') return false;
+  if (rigDrives(id)) return true; // fortress.js: the war rig drives itself, these bolted on
+  if (!lvl(id) || progress.off[id]) return false;
   return (UPGRADES[id].on ?? []).every(aid);
 }
 
@@ -300,7 +305,7 @@ function updateRun(dt) {
   else if (run.phase === 'finish' && (run.count -= dt) <= 0) run.phase = 'garage';
   run.still = run.phase === 'run' && speed < 1 ? (run.still ?? 0) + dt : 0; // s standing still in the run (stuck?)
   if (run.phase === 'run' && raceTick()) run.revealed = true;
-  if (run.phase === 'run') { rechargeFlash(dt); updateGang(dt); updatePolice(dt); updateBoss(); crewTick(dt); }
+  if (run.phase === 'run') { rechargeFlash(dt); updateGang(dt); updatePolice(dt); updateBoss(); crewTick(dt); rigTick(dt); }
   if (run.phase === 'run' && damageOn()) damageTick(dt);
   if (run.phase === 'run' && run.limp && odo >= LIMP) finishRun('limped'); // as far as a wreck gets
 }
@@ -505,6 +510,9 @@ function renderGarage(bought) {
     `tougher.</small></div>` : '';
   $('cards').innerHTML = first + repairCard + building + (garageTab === 'fleet' && pageOpen('fleet') ? exchangeCard() + roleCard() : '') +
     Object.entries(UPGRADES).filter(onTab).map(([id, u]) => {
+    // the aids the war rig drives with, bolted on (fortress.js): their cards stay, under a metal plate (the owner, 30 Oct)
+    if (rigDrives(id)) return `<div class="card plated"><b>${u.name}</b><i class="plate">BOLTED ON<small>the war rig ` +
+      'drives itself</small></i></div>';
     if (isLocked(id)) return `<div class="card locked"><b>${u.name}</b><small>${whyNot(id)}</small></div>`;
     const l = lvl(id), why = whyNot(id), max = maxOf(u), steps = typeof u.max === 'function' ? 0 : max;
     const pips = steps > 1 ? `<i>${'■'.repeat(l)}${'□'.repeat(steps - l)}</i>` : '';
@@ -657,9 +665,9 @@ const DISTANCE = {
     if (progress.tanks) s.push(['Tanks beaten', fmt(progress.tanks)]);
     return s;
   },
-  stop() { run.phase = 'garage'; document.body.classList.remove('garage', 'low', 'has-flash', 'timing', 'has-fleet', 'ar-on', 'has-guns', 'has-heat', 'has-crew', 'has-tank', 'tag-on'); clearDamageView(); }, // earns nothing
+  stop() { run.phase = 'garage'; document.body.classList.remove('garage', 'low', 'has-flash', 'timing', 'has-fleet', 'ar-on', 'has-guns', 'has-heat', 'has-crew', 'has-tank', 'tag-on', 'rig'); clearDamageView(); }, // earns nothing
   update: updateRun,
-  render() { renderRun(); renderDamage(); renderSonar(); renderCrew(); renderGang(); renderPolice(); },
+  render() { renderRun(); renderDamage(); renderSonar(); renderCrew(); renderGang(); renderPolice(); renderRig(); },
   crash: i => onCollision(i),
   marks: roadMarks,
   useFlash() { // a charge from this run's flashes
@@ -683,6 +691,7 @@ const DISTANCE = {
   field: () => raceField(), // race.js loads after this file
   key(k, repeat) { // Enter in the garage: DRIVE; act 3's crew (oil.js): , and . pick a spot, S sends a car (not on a key's
     if (k === 'Enter' && run.phase === 'garage') { drive(); return true; } // repeat: a press a car)
+    if (rigKey(k, repeat)) return true; // fortress.js: the war rig's: Space the cannon, no pedals or gears
     if (!tracking() || run.phase !== 'run') return false;
     if (k === ',' || k === '.') { pickSpot(k === ',' ? -1 : 1); return true; }
     if (k === 's' || k === 'S') { if (!repeat) send(); return true; }

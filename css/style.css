@@ -410,3 +410,53 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
 @media (orientation: portrait) { .touch #rotate { display: flex; } } /* the cockpit needs the phone sideways */
 #ios-tip { display: none; }
 .ios #ios-tip { display: inline; }
+
+/* act 5's war rig (fortress.js): the shifter and the pedals go; in the shifter's place the fortress's board, a steel
+   plate with its plan (ahead up) and the hold beside it; in the pedals' place the cannon's firing pedal */
+#board, .cannon-box { display: none; }
+.rig #shifter, .rig #pedals .pedal-box:not(.cannon-box) { display: none; }
+.rig .cannon-box { display: flex; }
+.rig #board { display: flex; }
+#board { position: fixed; left: max(1.5vw, calc(17vw - 19vh * 3.2 / 3.5)); top: 76vh; width: calc(19vh * 3.2 / 3.5);
+         height: 21vh; box-sizing: border-box; padding: 6px; flex-wrap: wrap; align-content: flex-start;
+         justify-content: center; gap: 8px; border: 2px solid #55555f; border-radius: 8px; touch-action: none;
+         user-select: none; -webkit-user-select: none; background: linear-gradient(#3a3a42, #26262d);
+         box-shadow: inset 0 1px 0 #66666f, 0 2px 6px #0008; }
+#board > b { flex-basis: 100%; height: 16px; line-height: 16px; text-align: center; font-size: 10px; letter-spacing: 3px;
+             color: #aab; }
+#fort-grid { position: relative; border: 1px solid #55555f; background-color: #141418; background-size: var(--cell) var(--cell);
+             background-image: linear-gradient(#2a2a33 1px, transparent 1px), linear-gradient(90deg, #2a2a33 1px, transparent 1px); }
+#fort-hold { display: flex; flex-direction: column; gap: 4px; }
+#fort-hold .slot { position: relative; width: var(--cell); height: var(--cell); border: 1px dashed #667; border-radius: 4px;
+                   background: #1c1c22; }
+#fort-hold .slot.lifted .part { opacity: 0.3; } /* on its way to the board */
+.part { position: absolute; left: calc(var(--cell) * var(--x, 0)); top: calc(var(--cell) * var(--y, 0)); cursor: grab;
+        width: calc(var(--cell) * var(--w)); height: calc(var(--cell) * var(--h)); touch-action: none; }
+.part svg { display: block; width: 100%; height: 100%; pointer-events: none; }
+#fort-grid .part::after { content: ''; position: absolute; inset: 12%; border-radius: 50%; pointer-events: none; /* held: the ring */
+                          background: conic-gradient(#ff5a3c calc(var(--held, 0) * 360deg), transparent 0); opacity: 0.7; }
+#fort-ghost { position: absolute; display: none; border-radius: 3px; pointer-events: none; }
+#fort-ghost.fit { display: block; background: #33ff6633; outline: 2px solid #5f5; }
+#fort-ghost.no { display: block; background: #ff333333; outline: 2px solid #f55; }
+#fort-drag { position: fixed; z-index: 30; pointer-events: none; opacity: 0.55; }
+#fort-drag[hidden] { display: none; }
+#fort-drag .part { position: relative; left: 0; top: 0; }
+#fort-drag.armed { opacity: 1; filter: drop-shadow(0 0 6px #5f5); } /* rested on green: let go and it goes on */
+.cannon-box .pedal { width: 9vh; }
+.touch .cannon-box .pedal { width: 14vw; }
+#cannon-pedal.pressed { transform: perspective(300px) rotateX(30deg); }
+.cannon-box:not(.mounted) #cannon-pedal { filter: grayscale(0.8) brightness(0.6); } /* no cannon on the board */
+.depth.reload::after { height: calc(var(--reload, 1) * 100%); } /* fills as it reloads */
+.touch #board { left: var(--edge-l); top: auto; bottom: var(--edge-b); width: calc(var(--shifter-h) * 3.2 / 3.5);
+                height: calc(var(--shifter-h) - 14px); } /* clear of ‹ SEND › above it (the gate was drawn inside its box) */
+/* the aids the war rig drives with: their cards under a bolted metal plate (the owner, 30 Oct) */
+.card.plated { min-height: 84px; } /* its name above the plate, the rest under it */
+.card .plate { position: absolute; inset: 24px 4px 4px; display: flex; flex-direction: column; align-items: center;
+               justify-content: center; gap: 2px; font-style: normal; font-weight: 700; font-size: 12px; letter-spacing: 2px;
+               color: #d8d8de; border: 1px solid #77777f; border-radius: 4px; box-shadow: 0 2px 4px #0009;
+               background: radial-gradient(circle at 7px 7px, #9a9aa2 2px, transparent 2.5px),
+                 radial-gradient(circle at calc(100% - 7px) 7px, #9a9aa2 2px, transparent 2.5px),
+                 radial-gradient(circle at 7px calc(100% - 7px), #9a9aa2 2px, transparent 2.5px),
+                 radial-gradient(circle at calc(100% - 7px) calc(100% - 7px), #9a9aa2 2px, transparent 2.5px),
+                 linear-gradient(160deg, #5c5c64, #3a3a42); }
+.card .plate small { min-height: 0; font-weight: 400; font-size: 10px; letter-spacing: 0.5px; color: #b8b8c0; }

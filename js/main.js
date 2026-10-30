@@ -117,7 +117,9 @@ function renderMenu() {
   for (const b of $('menu').querySelectorAll('[data-share]')) b.hidden = reporting();
   for (const b of $('menu').querySelectorAll('[data-show="feedback"], .reporting')) b.hidden = !reporting();
   // a control, and its words, only once the car has it, as in the cockpit (the owner, 22 Oct: nothing locked is named)
-  for (const e of $('menu').querySelectorAll('[data-has]')) e.hidden = !lvl(e.dataset.has);
+  // data-not: gone once the car has that (the war rig's Rebuild takes the pedals and the shifter: fortress.js)
+  for (const e of $('menu').querySelectorAll('[data-has], [data-not]'))
+    e.hidden = !!e.dataset.has && !lvl(e.dataset.has) || !!e.dataset.not && lvl(e.dataset.not) > 0;
   renderTutorials();
   text('debug-money', settings.debugMoney === false ? 'money as in play' : 'money ∞'); // debug mode's switch (distance.js)
   if (DISTANCE.stereo() && DISTANCE.tape() !== null) loadTape(DISTANCE.tape()); // ready when you drive (stereo.js)

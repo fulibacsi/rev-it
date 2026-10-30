@@ -225,7 +225,9 @@ Each upgrade and what it needs, one line each: the list to edit.
 
 ### Fortress (1 scrap; needs the War Rig, and the tank beaten; act 5, built from 30 Oct)
 
-- The tab only so far: its page is a work sign, under construction. Its cards are planned (below).
+- Rebuild ← Fortress (1,500 points: the car rebuilt as a war rig, no shifter or pedals, the aids it drives with
+  bolted on; the tank's cannon in the hold, the 1×1 board, the firing pedal)
+- Its page keeps a work sign, under construction, while the rest is built. The other cards are planned (below).
 
 ## The Crew page (26 Oct)
 
@@ -243,8 +245,8 @@ was.
 
 ## The Fortress page (act 5, planned 29 Oct)
 
-Act 5 as decided (design notes: Act 5), being built: its tab since 30 Oct (in the chain above, 1 scrap); its cards
-still planned, what is settled and Claude's first guesses, in their own graph until they are built. The owner's: the page, the Rebuild first, the grid growing longer and wider (a lane a
+Act 5 as decided (design notes: Act 5), being built: its tab and the Rebuild since 30 Oct (in the chain above); its
+other cards still planned, what is settled and Claude's first guesses, in their own graph until they are built. The owner's: the page, the Rebuild first, the grid growing longer and wider (a lane a
 step, four at most), the inventory (one slot to three), the Grinder, and a late upgrade against mines. Claude's,
 open: the names Lengthen, Widen, Inventory and Mine roller, what needs what beyond the Rebuild, the automation, and
 every price. The page's cards are paid in different currencies (scrap, fuel, meters, points), each card's its own, as
@@ -252,7 +254,7 @@ the tabs already are.
 
 ```mermaid
 flowchart TD
-  subgraph X["Fortress · planned"]
+  subgraph X["Fortress · the tab and the Rebuild built, the rest planned"]
     fortressTab(["Fortress tab"])
     rebuild["Rebuild"]
     lengthen["Lengthen"]

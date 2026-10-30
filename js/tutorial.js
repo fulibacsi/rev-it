@@ -10,7 +10,7 @@
 // the page is up), touch and desk (what to do, each way), both (said either way), if (only then)
 const TUTORIALS = [
   // always open: it pops up in a new game's first run, after the first act's card, unless seen (distance.js start)
-  { id: 'driving', name: 'Driving', open: () => true, pages: [
+  { id: 'driving', name: 'Driving', open: () => !rigged(), pages: [ // the war rig (fortress.js) has no shifter or pedals
     { title: 'START THE ENGINE', at: '#key',
       touch: 'Turn the key to START and hold it there until the engine catches.',
       desk: 'Press Enter. Or with the mouse: drag the key to START and hold it until the engine catches.' },
