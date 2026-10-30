@@ -3,7 +3,8 @@ car) drops a part by its drop table: a crate on the road, a gold diamond on the 
 over, it goes into the hold, a full hold leaves it; the tank's goes straight into the hold. Its tutorial pops up at the
 first. The parts by blocks: a cannon adds to every shell, a gun to the guns, armor cuts the damage, spikes add to a ram,
 an engine pulls; every block weighs, and the board's length drags. Lengthen grows the board a row, Inventory the hold a
-slot. Nothing drops before the Rebuild. Phone and desktop."""
+slot. Nothing drops before the Rebuild. An engine on the board is heard over yours, a voice for each kind, geared to your
+revs; the heavy engines' sound file loads only once one is mounted; Free drive has none. Phone and desktop."""
 import json
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -45,6 +46,8 @@ with sync_playwright() as p:
         check(f"{layout}: Lengthen a row for 400 scrap, Inventory a slot for 600 points", got == [1, 1, True, True, 2, 2, 4600, 4400], got)
         pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=20000)
         js(CLEAR); pg.wait_for_timeout(200)
+
+        check(f"{layout}: the heavy engines' sounds not loaded yet", js("!rigSoundsIn() && !document.querySelector('script[src*=\"rig-sounds\"]')"))
 
         # 2. a rig totaled drops a part: a crate on the road, as wide as the board at most; the tutorial pops up
         got = js(f"""(() => {{ const c = ({RIG})(); hurtCar(c, 5000); const l = run.loot[0];
@@ -101,6 +104,23 @@ with sync_playwright() as p:
             progress.levels.rebuild = 0; run.loot = []; dropLoot({ ...c, rig: true }); const act4 = run.loot.length; progress.levels.rebuild = 1;
             return [...tank, act4]; })()""")
         check(f"{layout}: the tank's part straight into the hold; before the Rebuild, no drop", got == [1, True, 0, 0], got)
+
+        # 6. engines heard: a voice for each kind, geared to your revs, its file loaded once a heavy one is mounted
+        js("progress.fortress.parts.push({ kind: 'engine', from: 'rig', cells: [[0, 0], [0, 1]], x: 0, y: 1 }); applyUpgrades()")
+        pg.wait_for_function("voices.some(v => v.name === 'truck' && v.players.length === 6)", timeout=10000)
+        pg.wait_for_timeout(400)
+        got = js("""(() => { const v = voices.find(v => v.name === 'truck'), lo = v.players[0].rpm, hi = v.players.at(-1).rpm;
+            const f = (rpm - engine.idle) / (engine.redline - engine.idle), r = Math.max(0.8 * lo, lo + (hi - lo) * f);
+            return [rigSoundsIn(), +v.level.toFixed(2), v.players.every(p => Math.abs(p.src.playbackRate.value * p.rpm / r - 1) < 0.15)]; })()""")
+        check(f"{layout}: a rig's two-block engine: the truck diesel heard (its file loaded), level 0.6, its loops geared to your revs",
+              got == [True, 0.6, True], got)
+        js("progress.fortress.parts.push({ kind: 'engine', from: 'suv', cells: [[0, 0]], x: 0, y: 0 })"); pg.wait_for_timeout(300)
+        got = js("voices.map(v => v.name).sort()")
+        check(f"{layout}: an SUV's engine too: its V8 a second voice", got == ["truck", "v8"], got)
+        js("progress.fortress.parts = progress.fortress.parts.filter(p => p.from !== 'rig')"); pg.wait_for_timeout(300)
+        check(f"{layout}: thrown off, its voice goes", js("voices.map(v => v.name)") == ["v8"], js("voices.map(v => v.name)"))
+        js("play(ARCADE.find(g => g.id === 'free'))"); pg.wait_for_timeout(300)
+        check(f"{layout}: Free drive: no voices", js("voices.length") == 0, js("voices.length"))
         ctx.close()
     b.close()
 print("ERRORS:", errors or "none", "| FAILS:", fails or "none")
