@@ -574,6 +574,16 @@ brewers the next is a fair tactic (the owner's), since crude keeps.
   that ends before the refinery brings it about 5 s into the next. The tracker, ‹ SEND › (and S) and the windshield's
   tag show from the puddle's tutorial, not before (the owner, 27 Oct: from the start of the run they spoilt the
   surprise and the tutorial); the puddle itself stands by the road from the start, a speck 1.4 km off.
+- **The script ends the run** (the owner, 30 Oct: after sending the cars to both spots, a good 20 s more to drive).
+  Measured on a real drive: the refinery's tutorial came 32 s in, with 18 s left, and its two brewers, at a refinery's
+  0.15 L a second each, needed 24 s for the 7.3 L the puddle pumps: the bell came first, 2.8 L still in the tank. Now
+  the script's refinery brews 1.2 a second each, the tank in about 3 s, a first taste as the puddle is; once the
+  crude is all brewed, or the refinery passed, the run ends 3 s later, as the first total does. On the same drive the
+  crude is gone 37 s in and the run over at 40 s (was 50); its fuel 23.7 L against 22.3 L and the 2.8 L of crude, the
+  same worth. Only in the run the script began in: a refinery carried into the next run leaves that race as it is.
+  `act3.py`: 51 crew after 13 and 12 races (seeds 1 and 2; 12 and 12 before: the scripted run banks 1,578 m instead
+  of 2,823 on seed 1, and the bot's buys shift from there). `oil_test` checks it. A hotfix on itch.io too (the
+  owner's pick): the 30 Oct release with this change on top, as main had act 5's doorway by then.
 
 **On the road:**
 - **Spots** stand by the road on the right: oil spots (a nodding pumpjack) and refineries (towers and a flare). Each

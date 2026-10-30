@@ -122,10 +122,13 @@ function scouted() {
 const SCRIPT = 5; // cars before the oil
 const scripted = () => crewOn() && progress.oil < 2 && fleetSize() >= SCRIPT; // a save past the 5th from before the oil too
 const FIRST_PUDDLE = { kind: 'oil', z: 1400, count: 3, rate: 0.1, reserve: 60, scripted: true }; // richer than most: a first taste
-const FIRST_REFINERY = { kind: 'refinery', count: 2, rate: 0.15, scripted: true }; // z: 1.1 km on from where you are
+// z: 1.1 km on from where you are. It brews the tank in about 3 s, a first taste as the puddle is: at a refinery's 0.15
+// the 7.3 L the puddle pumps took 24 s, and the run's last 18 s, after its tutorial, went on driving (the owner, 30 Oct)
+const FIRST_REFINERY = { kind: 'refinery', count: 2, rate: 1.2, scripted: true };
 const newSpot = (s, z = s.z) => ({ ...s, z, crew: 0, coming: [], done: false, got: 0, seen: null });
 function crewRun() { // startRun: this run's spots
-  Object.assign(run, { spots: [], pick: null, raid: null, t: 0, foreman: 0, told: false, crude: 0, fuel: 0, worked: 0, sent: 0 });
+  Object.assign(run, { spots: [], pick: null, raid: null, t: 0, foreman: 0, told: false, crude: 0, fuel: 0, worked: 0, sent: 0,
+                       firstOil: scripted() && progress.oil === 0 }); // the whole script this run: the puddle, then the refinery
   if (scripted()) run.spots = progress.oil === 0 ? [newSpot(FIRST_PUDDLE)] : [];
   else run.spots = nextSpots();
   plan = null;
@@ -178,6 +181,7 @@ function crewTick(dt) {
     } else {
       const used = Math.min(s.rate * s.crew * dt, progress.crude), fuel = used / brewRatio();
       progress.crude -= used; s.got += fuel; progress.fuel += fuel; run.fuel += fuel;
+      if (s.scripted && s.got > 0 && progress.crude < 0.005) spotDone(s); // the script's refinery: the crude all brewed
     }
   }
   if (!run.pick || run.pick.done || !trackAhead().includes(run.pick)) // a raid picked stays on raids as the target changes
@@ -196,6 +200,9 @@ function spotDone(s, end) { // passed, dry, or (end) the run over
     if (!end) { run.told = true; firstRefinery(); }
   }
   if (s.kind === 'refinery') { progress.oil = 2; plan = null; } // the first fuel: the oil is on
+  // the script over in the run it began: 3 s more, as the first total leaves (the owner, 30 Oct: no 20 s of driving after
+  // the tutorial). Not a refinery carried into the next run: that run is a race like any other
+  if (s.kind === 'refinery' && !end && run.firstOil) run.left = Math.min(run.left, 3);
 }
 // < and >: the spot before or after the one picked, on the tracker; SEND: a car of yours to it (two with Double up),
 // if one of the right role is free and the spot has room; the Foreman sends to the spot of its choosing
