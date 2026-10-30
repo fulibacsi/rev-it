@@ -298,7 +298,9 @@ function levelFlash(step) { flash(step > 0 ? '▲ LEVEL UP' : '▼ LEVEL DOWN', 
 // ---- main loop ----
 const canvas = $('world'), g2d = canvas.getContext('2d');
 function resize() { const s = Math.min(devicePixelRatio, 1.5); canvas.width = innerWidth * s; canvas.height = innerHeight * s; canvas.px = s; }
-addEventListener('resize', resize);
+// a tutorial's page follows the control it lights (tutorial.js). Here, not in tutorial.js: a resize while the page still
+// loads (a phone turned) came between the two scripts, before menuOpen existed, and threw
+addEventListener('resize', () => { resize(); if (menuOpen && screen === 'tour') renderTour(); });
 resize();
 
 let last = performance.now(), steer = 0, shake = 0;

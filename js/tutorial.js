@@ -218,7 +218,6 @@ function spot(el) {
   body.style.setProperty('--tour-w', `${Math.min(540, side === 'right' ? innerWidth - r.right - 30 : side === 'left' ? r.left - 30 : 540)}px`);
   if (lit) Object.assign(s.style, { left: `${r.left - 8}px`, top: `${r.top - 8}px`, width: `${r.width + 16}px`, height: `${r.height + 16}px` });
 }
-addEventListener('resize', () => { if (menuOpen && screen === 'tour') renderTour(); });
 
 // the keys while a tutorial is open (controls.js asks first): the pages, and Esc back to the list
 function tourKey(k) {
