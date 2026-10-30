@@ -122,7 +122,7 @@ uv run --no-project --with playwright playwright install chromium         # once
   copied from the game the first time, with unlimited meters, points, fuel and scrap (shown as ∞), every grid slot
   for sale and police heat rising ten times quicker, so the later acts are quick to reach; the same again switches it
   off and the real game comes back as it was. In a test: `settings.debug = true; applyDebug()`. Its main menu has
-  "start at act I II III IV" in the corner: the debug game set to that act's start, the pages before it bought out as
+  "start at act I II III IV V" in the corner: the debug game set to that act's start, the pages before it bought out as
   the upgrade graph allows, everything later gone, the act's card popping up (`debugAct` in `distance.js`; its `ACTS`
   say what each act's start is, so a change to an act's story or pages goes there too). Beside it, "money ∞" switches
   the bottomless wallets off ("money as in play", `settings.debugMoney`): they empty, then fill and empty as in play,

@@ -15,7 +15,7 @@ five levels of it. A label on a tab's arrow is a condition besides the price.
 | Black market | 1 point | Workshop | P100 |
 | Crew (the Fleet until 26 Oct) | 1 point | Black market | P1 |
 | War Rig | 1 scrap | Crew | totaled a car |
-| Fortress (act 5, planned) | to set | War Rig | the tank beaten |
+| Fortress (act 5, being built) | 1 scrap | War Rig | the tank beaten |
 
 ## The graph
 
@@ -223,6 +223,10 @@ Each upgrade and what it needs, one line each: the list to edit.
 - Hunter ← War Rig, Autocruise, Reckless auto-drive
 - Raiders ← Hunter, Racing, Crew tuning (the Hunting pack until 27 Oct: a role of the crew's now)
 
+### Fortress (1 scrap; needs the War Rig, and the tank beaten; act 5, built from 30 Oct)
+
+- The tab only so far: its page is a work sign, under construction. Its cards are planned (below).
+
 ## The Crew page (26 Oct)
 
 Act 3 rebuilt as the crew (design notes: Act 3 redesign). The Fleet became the Crew on 26 Oct: the tab, the page and
@@ -239,8 +243,8 @@ was.
 
 ## The Fortress page (act 5, planned 29 Oct)
 
-Act 5 as decided (design notes: Act 5), not built yet: what is settled and Claude's first guesses, in their own
-graph until they are built. The owner's: the page, the Rebuild first, the grid growing longer and wider (a lane a
+Act 5 as decided (design notes: Act 5), being built: its tab since 30 Oct (in the chain above, 1 scrap); its cards
+still planned, what is settled and Claude's first guesses, in their own graph until they are built. The owner's: the page, the Rebuild first, the grid growing longer and wider (a lane a
 step, four at most), the inventory (one slot to three), the Grinder, and a late upgrade against mines. Claude's,
 open: the names Lengthen, Widen, Inventory and Mine roller, what needs what beyond the Rebuild, the automation, and
 every price. The page's cards are paid in different currencies (scrap, fuel, meters, points), each card's its own, as

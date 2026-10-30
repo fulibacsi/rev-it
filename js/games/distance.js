@@ -47,6 +47,8 @@ const UPGRADES = {
   blackTab: { name: 'Black market', opens: 'black', max: 1, base: 1, wallet: 'points', needs: ['workshopTab'], story: () => progress.racing },
   fleetTab: { name: 'Crew', opens: 'fleet', max: 1, base: 1, wallet: 'points', needs: ['blackTab'], story: () => fleetOpen() },
   warrigTab: { name: 'War Rig', opens: 'warrig', max: 1, base: 1, wallet: 'scrap', needs: ['fleetTab'], story: () => gangOpen() },
+  // act 5 (the owner, 28-29 Oct): the tank beaten opens it, out of sight till then (boss.js)
+  fortressTab: { name: 'Fortress', opens: 'fortress', max: 1, base: 1, wallet: 'scrap', needs: ['warrigTab'], story: () => progress.tanks > 0 },
 };
 const TO_AUTOPILOT = 2000; // m driven in all before the Autopilot tab is for sale (the owner's graph)
 const COUNTDOWN = 3, FINISH = 2; // seconds of countdown before a run, and of braking after it
@@ -145,6 +147,11 @@ const ACTS = [
     story: { runs: 55, races: 35, driven: 250000, best: 5000, racing: true, finish: 1, oil: 2 }, // the oil on (oil.js)
     wallets: { bank: 3000, scrap: 22 }, // and the first total's scrap (gang.js SCRAP.car: it loads later)
     moment: () => { progress.levels.fleet = GANG; Object.assign(progress, { gang: true, totals: 1 }); } }, // the first total
+  { pages: ['workshop', 'autopilot', 'black', 'fleet', 'warrig'], cap: () => ({ fleet: 80 }), // act4.py at the tank: 74-82
+    story: { runs: 70, races: 50, driven: 400000, best: 5000, racing: true, finish: 1, oil: 2, gang: true, totals: 60,
+             roles: { harvester: 17, brewer: 9, raider: 6 } }, // act4.py's split by then
+    wallets: { bank: 8000, points: 2800, fuel: 7, scrap: 300 }, // act4.py at the tank (seed 1), the tank's 300 scrap
+    moment: () => { progress.tanks = 1; progress.toured.push('tanksent'); } }, // the tank beaten: its own card seen in its race
 ];
 function debugAct(act) {
   if (!debugSave) return;
@@ -165,12 +172,13 @@ function debugAct(act) {
 }
 
 // the garage's pages: the car itself and the robot driver, paid in meters; the illegal and forbidden, paid in race
-// points (race.js fills it); the Crew, paid in fuel (fleet.js, oil.js); War Rig, paid in scrap (gang.js). Each is a tab you
-// buy (the owner's graph, 23 Oct): the Black market's once the race is revealed, the Crew's once you have won a race,
-// the War Rig's once you have totaled a car. Each page's currency: the key in progress, and its unit
+// points (race.js fills it); the Crew, paid in fuel (fleet.js, oil.js); War Rig, paid in scrap (gang.js); the Fortress,
+// act 5's, its cards each in its own currency (the owner: every resource builds it). Each is a tab you buy (the owner's
+// graph, 23 Oct): the Black market's once the race is revealed, the Crew's once you have won a race, the War Rig's once
+// you have totaled a car, the Fortress's once the tank is beaten. Each page's currency: the key in progress, and its unit
 const PAGES = [['workshop', 'Workshop'], ['autopilot', 'Autopilot'], ['black', 'Black market'], ['fleet', 'Crew'],
-               ['warrig', 'War Rig']];
-const WALLETS = { workshop: 'bank', autopilot: 'bank', black: 'points', fleet: 'fuel', warrig: 'scrap' };
+               ['warrig', 'War Rig'], ['fortress', 'Fortress']];
+const WALLETS = { workshop: 'bank', autopilot: 'bank', black: 'points', fleet: 'fuel', warrig: 'scrap', fortress: 'scrap' };
 const UNITS = { bank: 'm', points: 'pts', fuel: 'L', scrap: 'scrap' };
 const TAB = Object.fromEntries(Object.entries(UPGRADES).filter(([, u]) => u.opens).map(([id, u]) => [u.opens, id])); // page: its tab
 const fleetOpen = () => progress.finish === 1;
@@ -385,7 +393,15 @@ TUTORIALS.unshift(
       (lvl('pack') ? ', and send your raiders at it.' : '.'),
     now: () => bossRace() ? '' : `The tank is scrap and the road is yours (${progress.tanks} beaten). Push the heat ` +
       `to 100% again, now ${heatPct()}, and the next one is tougher.` },
+  // the tank beaten opens act 5 (the owner, 29 Oct: its ending goes; WARLORD comes at act 5's end). Built a piece at a
+  // time on the playtest build, so it says so (the owner: for the playtesters on it)
+  { id: 'act5', act: 'V', name: 'BUILD', open: () => progress.tanks > 0,
+    text: () => 'The tank is scrap, and its parts are yours. A war rig is not enough out here any more: build a fortress ' +
+      'on wheels from what the army leaves behind. The Fortress tab is for sale, paid in scrap. ' + UNDER_CONSTRUCTION,
+    now: () => bossRace() ? 'The army has sent another tank: it waits up the road.'
+      : `Police heat ${heatPct()}: at 100% the army sends another tank, tougher.` },
 );
+const UNDER_CONSTRUCTION = 'Under construction: act V is being built a piece at a time, more with each update.';
 const heatPct = () => `${Math.round(progress.wanted * 100)}%`;
 const CARDS = TUTORIALS.filter(t => t.text);
 const currentCard = () => CARDS.findLast(c => c.open());
@@ -483,7 +499,11 @@ function renderGarage(bought) {
     ` · ${fmt(Math.min(repairCost(), Math.floor(progress.bank / REPAIR) * REPAIR))} m</button>` : '';
   const repairCard = garageTab === 'workshop' && (d > 0 || auto) ? `<div class="card repair"><b>Repair</b><small>${state}</small>${fix}${auto}</div>` : '';
   const first = pageOpen(garageTab) ? '' : `<p class="buy-tab">Buy the ${PAGES.find(([id]) => id === garageTab)[1]}: tap its tab.</p>`;
-  $('cards').innerHTML = first + repairCard + (garageTab === 'fleet' && pageOpen('fleet') ? exchangeCard() + roleCard() : '') +
+  // the Fortress page, act 5's, while it is being built: a sign saying so (the owner, 29 Oct: for the playtesters)
+  const building = garageTab === 'fortress' && pageOpen('fortress') ? `<div class="card building"><b>UNDER CONSTRUCTION</b>` +
+    `<small>Act V is being built a piece at a time, more with each update. Until then the tanks keep coming, each one ` +
+    `tougher.</small></div>` : '';
+  $('cards').innerHTML = first + repairCard + building + (garageTab === 'fleet' && pageOpen('fleet') ? exchangeCard() + roleCard() : '') +
     Object.entries(UPGRADES).filter(onTab).map(([id, u]) => {
     if (isLocked(id)) return `<div class="card locked"><b>${u.name}</b><small>${whyNot(id)}</small></div>`;
     const l = lvl(id), why = whyNot(id), max = maxOf(u), steps = typeof u.max === 'function' ? 0 : max;
@@ -550,8 +570,10 @@ function renderRun() {
     if (run.phase === 'run') { flash('GO!', '#5f5', true); beep(1320, 0.5); }
     if (run.phase === 'finish') { flash(run.beatTank ? 'TANK DOWN!' : 'TIME!', '#ec4', true); beep(880, 0.8); }
     if (run.phase === 'garage') renderGarage();
-    if (run.phase === 'garage' && run.beatTank) openMenu('win'); // the tank burning, then the ending (main.js)
-    // a system new this run: its tutorial (tutorial.js); a new game: its first act's card, over the road
+    // act V's card once the tank is beaten, after its race or in a save from before act 5 (the tank's own card, popped up
+    // as you drove off, ended that run's pop-ups); else a system new this run: its tutorial (tutorial.js); a new game: its
+    // first act's card, over the road
+    if (run.phase === 'garage' && progress.tanks && !progress.toured.includes('act5')) { progress.toured.push('act5'); save(); openCard('act5'); }
     else if (run.phase === 'garage' || run.phase === 'starting' && !progress.runs) popTour();
     document.body.classList.toggle('garage', run.phase === 'garage');
     shownPhase = run.phase;
