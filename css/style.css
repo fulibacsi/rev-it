@@ -118,6 +118,7 @@ body:not([data-game="distance"]) #kit { display: none; }
 #sonar-blips .blue { fill: #39f; }
 #sonar-blips .tank { fill: #f22; }
 #sonar-blips .rig { fill: #e8743a; } /* a rival war rig (fortress.js), in its rust */
+#sonar-blips .loot { fill: #ffd23a; } /* a crate of loot on the road (fortress.js) */
 /* act 3's crew (oil.js): the tracker on the sonar's right, ‹ SEND › under them, the tag on the windshield over the spot
    picked, the crude tank on the right A-pillar (the police scanner's place, which comes only in act 4, when the whole
    crew races and the tank goes) */
@@ -435,7 +436,13 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
                    background: #1c1c22; }
 #fort-hold .slot.lifted .part { opacity: 0.3; } /* on its way to the board */
 .part { position: absolute; left: calc(var(--cell) * var(--x, 0)); top: calc(var(--cell) * var(--y, 0)); cursor: grab;
-        width: calc(var(--cell) * var(--w)); height: calc(var(--cell) * var(--h)); touch-action: none; }
+        width: calc(var(--cell) * var(--w)); height: calc(var(--cell) * var(--h)); touch-action: none; pointer-events: none;
+        --tone: #555; }
+.part > i { position: absolute; left: calc(var(--cell) * var(--cx)); top: calc(var(--cell) * var(--cy)); width: var(--cell);
+            height: var(--cell); box-sizing: border-box; border: 1px solid #0006; border-radius: 3px; background: var(--tone);
+            pointer-events: auto; } /* a block: a bent three's empty corner takes no touch */
+.part.cannon { --tone: #4b5320; } .part.gun { --tone: #4a4f5a; } .part.armor { --tone: #8a8c94; }
+.part.spikes { --tone: #3c3c42; } .part.engine { --tone: #8a2a1e; }
 .part svg { display: block; width: 100%; height: 100%; pointer-events: none; }
 #fort-grid .part::after { content: ''; position: absolute; inset: 12%; border-radius: 50%; pointer-events: none; /* held: the ring */
                           background: conic-gradient(#ff5a3c calc(var(--held, 0) * 360deg), transparent 0); opacity: 0.7; }

@@ -60,12 +60,14 @@ const runTime = (l = lvl('time')) => 20 + 5 * l;
 const rechargeTime = (l = lvl('flashRecharge')) => 12 - 2 * l; // s for a used flash to come back
 const topGear = () => 3 + lvl('gears') + lvl('gear7');
 
-function applyUpgrades() { // the garage's work on the engines and the car, and the damage the car has taken
-  for (const e of ENGINES) {
-    e.drive = e.stock.drive * (1 + 0.12 * lvl('power') + 0.08 * lvl('ecuPower')) * (wrecked() ? 0.3 : 1); // ECU tune on top
+function applyUpgrades() { // the garage's work on the engines and the car, and the damage the car has taken; the war
+  for (const e of ENGINES) { // rig's weight, drag and engines (fortress.js)
+    e.drive = e.stock.drive * (1 + 0.12 * lvl('power') + 0.08 * lvl('ecuPower') + rigPower()) * (wrecked() ? 0.3 : 1); // ECU tune on top
     e.redline = Math.max(e.idle + 1500, limiter(e) + 300 * lvl('ecuRev') - revLoss()); // damage: still drivable
+    e.mass = e.stock.mass + rigWeight();
   }
   CAR.grip = tyreGrip();
+  CAR.drag = STOCK_DRAG * rigDrag();
   openLanes = lvl('reckless') ? ROAD_LANES.length : MY_LANES.length;
   chicken = lvl('chicken') > 0; // a flash moves oncoming cars too
   steering = 1 + 0.4 * lvl('steering');
@@ -88,7 +90,7 @@ const SAVE_KEY = 'car-rev-incremental';
 const FRESH = () => ({ bank: 0, best: 0, runs: 0, levels: {}, off: {}, engine: 0, racing: false, points: 0, finish: 101,
                        damage: 0, broken: [], nitro: 0, fuel: 0, crude: 0, oil: 0, roles: { harvester: 0, brewer: 0, raider: 0 }, pace: 70,
                        gang: false, scrap: 0, totals: 0, wanted: 0, tanks: 0, autoRepair: false, tape: 0,
-                       fortress: { w: 1, h: 1, parts: [], hold: [] }, shells: 0,
+                       fortress: { parts: [], hold: [] }, shells: 0,
                        time: 0, driven: 0, races: 0, seen: [], toured: [], dry: 0 }); // seen: upgrades seen unlocked (the tabs' !);
                                                        // toured: tutorials popped up (tutorial.js); dry: races in a row
                                                        // without a Black market buy (race.js raceWall)
@@ -260,7 +262,7 @@ function startRun() { // back to the start line, engine running, in neutral, hel
   Object.assign(run, { phase: 'starting', count: COUNTDOWN, left: runTime(), best: progress.best, gain: 0, newBest: false,
                        slot: progress.racing ? startSlot() : null, race: null, revealed: false, won: false, scrap: 0, totals: 0, shells: 0,
                        firstTotal: false, boss: bossRace(), tank: null, beatTank: false, limp: wrecked(),
-                       flashes: lvl('flash'), recharge: 0 });
+                       flashes: lvl('flash'), recharge: 0, loot: [] });
   resetScene();
   brakePedal = 1;
   coolDown();
@@ -306,7 +308,7 @@ function updateRun(dt) {
   else if (run.phase === 'finish' && (run.count -= dt) <= 0) run.phase = 'garage';
   run.still = run.phase === 'run' && speed < 1 ? (run.still ?? 0) + dt : 0; // s standing still in the run (stuck?)
   if (run.phase === 'run' && raceTick()) run.revealed = true;
-  if (run.phase === 'run') { rechargeFlash(dt); updateGang(dt); updatePolice(dt); updateGangCars(dt); updateRigs(dt); updateBoss(); crewTick(dt); rigTick(dt); }
+  if (run.phase === 'run') { rechargeFlash(dt); updateGang(dt); updatePolice(dt); updateGangCars(dt); updateRigs(dt); updateBoss(); crewTick(dt); rigTick(dt); lootTick(dt); }
   if (run.phase === 'run' && damageOn()) damageTick(dt);
   if (run.phase === 'run' && run.limp && odo >= LIMP) finishRun('limped'); // as far as a wreck gets
 }
@@ -334,8 +336,8 @@ function roadMarks() {
   const marks = [];
   for (let m = Math.max(100, Math.ceil(odo / 100) * 100); m < odo + 1500; m += 100) marks.push({ z: m, kind: 'board', value: m });
   if (run.best) marks.push({ z: run.best, kind: 'best', value: run.best });
-  marks.push(...crewMarks(), ...omenMarks()); // oil.js: act 3's spots, your crew's cars at them, and its foreshadowing
-  return marks;
+  marks.push(...crewMarks(), ...omenMarks(), ...lootMarks()); // oil.js: act 3's spots, your crew's cars at them, and its
+  return marks;                                                // foreshadowing; fortress.js: the loot on the road
 }
 
 // the Crew's Fuel converter (the Mile converter until 26 Oct): meters for fuel, one way, at the pump price: a mile's

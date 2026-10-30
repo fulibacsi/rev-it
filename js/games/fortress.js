@@ -15,6 +15,14 @@ Object.assign(UPGRADES, {
              bought: () => { progress.fortress.hold.push({ kind: 'cannon', cells: ONE }); progress.shells += SHELLS.tank; }, // distance.js buy
              info: () => "the tank's parts make your car a war rig: no shifter, no pedals, it drives itself. The tank's " +
                `cannon for its board, ${SHELLS.tank} shells and a firing pedal` },
+  // the board longer, a row a level (the owner: the grid grows longer and wider; wider comes with the rig taking more
+  // lanes), and the hold's slots (the owner: one, upgraded to three). Prices Claude's first guesses, for act5.py: about
+  // 1,000-1,300 scrap and 400 points come in a race
+  lengthen: { name: 'Lengthen', tab: 'fortress', max: 4, base: 400, growth: 2, needs: ['rebuild'],
+              info: l => `the fortress ${1 + l} car${l ? 's' : ''} long: room for ${1 + l} row${l ? 's' : ''} of parts, and ` +
+                'every row weighs and drags' },
+  inventory: { name: 'Inventory', tab: 'fortress', max: 2, base: 600, growth: 2, wallet: 'points', needs: ['rebuild'],
+               info: l => `${1 + l} slot${l ? 's' : ''} in the hold for the parts you pick up` },
 });
 const rigged = () => lvl('rebuild') > 0;
 // with no shifter and no pedals the rig drives itself (the owner, 30 Oct): the aids that work them, bolted on, their
@@ -22,31 +30,45 @@ const rigged = () => lvl('rebuild') > 0;
 const RIG_AIDS = ['clutch', 'gas', 'shift', 'steer', 'cruise'];
 const rigDrives = id => rigged() && RIG_AIDS.includes(id);
 const ONE = [[0, 0]]; // a part's cells, across (lanes) and along (ahead up): a single block
-const holdSize = () => 1; // the hold's slots (the owner: one, upgraded to three)
+const holdSize = () => 1 + lvl('inventory'); // the hold's slots (the owner: one, upgraded to three)
+const boardW = () => 1, boardH = () => 1 + lvl('lengthen'); // lanes, car lengths
 
-// ---- the board: the fortress's plan, progress.fortress ({ w lanes, h car lengths, parts placed, hold }) ----
-const ICONS = { // a part from above, ahead up: the tank's turret and its gun
-  cannon: '<svg viewBox="0 0 10 10"><rect x="1" y="1" width="8" height="8" rx="1.5" fill="#4b5320"/><circle cx="5" cy="5.6" ' +
-    'r="2.6" fill="#3d4419"/><rect x="4.4" y="0.4" width="1.2" height="4.4" fill="#22260d"/></svg>',
+// ---- the board: the fortress's plan, progress.fortress ({ parts placed, hold }) ----
+const ICONS = { // a part from above, ahead up, on its first block: the tank's turret and its gun; twin guns; a riveted
+  cannon: '<svg viewBox="0 0 10 10"><rect x="1" y="1" width="8" height="8" rx="1.5" fill="#4b5320"/><circle cx="5" cy="5.6" ' + // plate;
+    'r="2.6" fill="#3d4419"/><rect x="4.4" y="0.4" width="1.2" height="4.4" fill="#22260d"/></svg>', // a spiked bar; an engine
+  gun: '<svg viewBox="0 0 10 10"><rect x="2.4" y="4" width="5.2" height="4.4" rx="1" fill="#30343c"/><rect x="3.4" y="0.6" ' + // block
+    'width="1" height="4.2" fill="#14161a"/><rect x="5.6" y="0.6" width="1" height="4.2" fill="#14161a"/></svg>',
+  armor: '<svg viewBox="0 0 10 10"><rect x="1" y="1" width="8" height="8" rx="0.6" fill="#8a8c94" stroke="#55575e" stroke-width=".5"/>' +
+    '<g fill="#55575e"><circle cx="2.4" cy="2.4" r=".6"/><circle cx="7.6" cy="2.4" r=".6"/><circle cx="2.4" cy="7.6" r=".6"/>' +
+    '<circle cx="7.6" cy="7.6" r=".6"/></g></svg>',
+  spikes: '<svg viewBox="0 0 10 10"><rect x="1" y="5.4" width="8" height="2.4" rx=".4" fill="#3c3c42"/><path d="M1.8 5.4 2.7 1.2 ' +
+    '3.6 5.4ZM4.1 5.4 5 1.2 5.9 5.4ZM6.4 5.4 7.3 1.2 8.2 5.4Z" fill="#e2e2ea"/></svg>',
+  engine: '<svg viewBox="0 0 10 10"><rect x="2" y="1.4" width="6" height="7.2" rx="1" fill="#2e2e34"/><g fill="#8a8c94">' +
+    '<circle cx="3.8" cy="3" r=".9"/><circle cx="6.2" cy="3" r=".9"/><circle cx="3.8" cy="5" r=".9"/><circle cx="6.2" cy="5" r=".9"/>' +
+    '<circle cx="3.8" cy="7" r=".9"/><circle cx="6.2" cy="7" r=".9"/></g></svg>',
 };
 const extent = (cells, i) => 1 + Math.max(...cells.map(c => c[i]));
-const partHtml = (p, more = '') => `<div class="part ${p.kind}" ${more} style="--w: ${extent(p.cells, 0)}; --h: ` +
-  `${extent(p.cells, 1)};${p.x !== undefined ? ` --x: ${p.x}; --y: ${p.y}` : ''}">${ICONS[p.kind]}</div>`;
+// a part as its blocks (a bent three leaves a corner empty), its icon on the first; cell: px a block, in the hold where
+// a three-block part must fit one slot
+const partHtml = (p, more = '', cell) => `<div class="part ${p.kind}" ${more} style="--w: ${extent(p.cells, 0)}; --h: ` +
+  `${extent(p.cells, 1)};${p.x !== undefined ? ` --x: ${p.x}; --y: ${p.y};` : ''}${cell ? ` --cell: ${cell}px` : ''}">` +
+  p.cells.map(([x, y], i) => `<i style="--cx: ${x}; --cy: ${y}">${i ? '' : ICONS[p.kind]}</i>`).join('') + '</div>';
 const taken = (f, x, y) => f.parts.some(p => p.cells.some(([cx, cy]) => p.x + cx === x && p.y + cy === y));
-const fitsAt = (f, cells, x, y) => cells.every(([cx, cy]) => x + cx >= 0 && y + cy >= 0 && x + cx < f.w && y + cy < f.h &&
+const fitsAt = (f, cells, x, y) => cells.every(([cx, cy]) => x + cx >= 0 && y + cy >= 0 && x + cx < boardW() && y + cy < boardH() &&
   !taken(f, x + cx, y + cy));
 let shownBoard = ''; // what the board shows: redrawn only when that changes
 function renderBoard() {
-  const f = progress.fortress, n = holdSize(), key = JSON.stringify(f) + n + innerWidth + 'x' + innerHeight;
+  const f = progress.fortress, n = holdSize(), w = boardW(), h = boardH(), key = JSON.stringify(f) + [n, w, h, innerWidth, innerHeight];
   if (key === shownBoard) return;
   shownBoard = key;
   const b = $('board').getBoundingClientRect(), gap = 8, label = 16; // the cells as big as the plate allows, the
-  const cell = Math.floor(Math.min(72, (b.width - 3 * gap) / (f.w + 1), (b.height - label - 2 * gap) / Math.max(f.h, n))); // hold beside
+  const cell = Math.floor(Math.min(72, (b.width - 3 * gap) / (w + 1), (b.height - label - 2 * gap) / Math.max(h, n))); // hold beside
   $('board').style.setProperty('--cell', `${cell}px`);
-  Object.assign($('fort-grid').style, { width: `${cell * f.w}px`, height: `${cell * f.h}px` });
+  Object.assign($('fort-grid').style, { width: `${cell * w}px`, height: `${cell * h}px` });
   $('fort-grid').innerHTML = f.parts.map((p, i) => partHtml(p, `data-part="${i}"`)).join('') + '<i id="fort-ghost"></i>';
   $('fort-hold').innerHTML = Array.from({ length: n }, (_, i) => `<div class="slot" data-slot="${i}">` +
-    `${f.hold[i] ? partHtml(f.hold[i]) : ''}</div>`).join('');
+    `${f.hold[i] ? partHtml(f.hold[i], '', cell / Math.max(extent(f.hold[i].cells, 0), extent(f.hold[i].cells, 1))) : ''}</div>`).join('');
   for (const el of $('fort-hold').querySelectorAll('.part')) drag(el, (e, first) => dragPart(e, first, +el.parentNode.dataset.slot), dropPart);
   for (const el of $('fort-grid').querySelectorAll('.part')) drag(el, (e, first) => holdPart(e, first, +el.dataset.part), letGo);
 }
@@ -85,6 +107,7 @@ function dropPart() {
   if (armed()) {
     f.parts.push({ ...dragging.part, x: dragging.at[0], y: dragging.at[1] });
     f.hold.splice(dragging.slot, 1);
+    applyUpgrades(); // distance.js: an engine pulls from now on
     save();
     beep(660, 0.08);
   }
@@ -102,6 +125,7 @@ function letGo() {
 }
 function throwOff(i) {
   progress.fortress.parts.splice(i, 1);
+  applyUpgrades(); // distance.js: lighter, and what it did goes with it
   save();
   crashSound();
   throwing = null;
@@ -128,7 +152,7 @@ function fireCannon() {
   beep(45, 0.3);
   shake = Math.max(shake, 0.35); // main.js: the rig jolts
   raiseHeat(WANTED.shot * CANNON.heat); // police.js
-  if (hit) hurtCar(hit, CANNON.damage);
+  if (hit) hurtCar(hit, CANNON.damage * blocks('cannon')); // every cannon block on the board, one shell
   return true;
 }
 function rigTick(dt) { reloading = Math.max(0, reloading - dt); } // distance.js updateRun
@@ -220,9 +244,75 @@ function rigRam(c) { // its side into yours: damage (Armor plating takes some), 
   shake = Math.max(shake, 0.5);
   crashSound();
   flash('RAMMED', '#f55', false);
-  addDamage(RIG.hit * (1 - 0.25 * lvl('armour'))); // damage.js
+  addDamage(RIG.hit * (1 - armorCut())); // damage.js
   if (wrecked()) finishRun('wrecked');
 }
+
+// ---- the loot (layer 6; the owner, 29-30 Oct): the notable enemies and, rarely, the rival gang's cars drop parts as they
+// are totaled, each enemy by its drop table; a crate skids along the road from where it fell, and you steer over it to
+// pick it up into the hold (with the hold full it stays on the road); then the board's drag puts it on. Each part does
+// what it came from does, its size its strength (the owner: "each one functional, depending on the source"), and every
+// block weighs. Claude's first draft of the tables and every number, to explore (design notes: Drop tables)
+const PARTS = { // a block's kg, and the sizes (blocks) it comes in
+  cannon: { name: 'CANNON', kg: 900, sizes: [1, 2] }, gun: { name: 'GUN', kg: 250, sizes: [1, 2] },
+  armor: { name: 'ARMOR', kg: 500, sizes: [1, 2, 3] }, spikes: { name: 'SPIKES', kg: 300, sizes: [1, 2, 3] },
+  engine: { name: 'ENGINE', kg: 700, sizes: [1, 2] },
+};
+// the nine shapes (the owner: one to three blocks, each turn its own drop, never turned): one; two stacked, two side by
+// side; three in a line along and across, and the bent three in its four turns
+const SHAPES = { 1: [ONE], 2: [[[0, 0], [0, 1]], [[0, 0], [1, 0]]], 3: [[[0, 0], [0, 1], [0, 2]], [[0, 0], [1, 0], [2, 0]],
+  [[0, 0], [0, 1], [1, 1]], [[0, 0], [1, 0], [0, 1]], [[0, 0], [1, 0], [1, 1]], [[1, 0], [0, 1], [1, 1]]] };
+const DROPS = { // an enemy's chance of a part, and which (the owner's examples: a rival car rarely; a tank always, its
+  gang: [0.05, { armor: 0.4, spikes: 0.4, engine: 0.2 }], // turret mostly)
+  rig: [1, { armor: 0.4, spikes: 0.3, engine: 0.3 }],
+  suv: [0.5, { armor: 0.5, engine: 0.3, gun: 0.2 }],
+  tank: [1, { cannon: 0.7, armor: 0.2, engine: 0.1 }],
+};
+const ENGINE_POWER = { gang: 0.06, suv: 0.1, rig: 0.15, tank: 0.25 }; // more pull a block, by the engine it came from
+const LOOT = { slow: 8, reach: 3 }; // m/s² a crate skids to a stop at; m either way it is picked up within
+const pick = table => { let r = rand(); const ks = Object.keys(table); return ks.find(k => (r -= table[k]) < 0) ?? ks.at(-1); };
+const sourceOf = c => c.tank ? 'tank' : c.rig ? 'rig' : c.suv ? 'suv' : c.racer && !c.fleet ? 'gang' : null;
+function makePart(kind, from) { // a size it comes in, then a shape of it no wider than the board (one wider never fits)
+  const sizes = PARTS[kind].sizes, shapes = SHAPES[sizes[Math.floor(rand() * sizes.length)]].filter(c => extent(c, 0) <= boardW());
+  return { kind, from, cells: shapes[Math.floor(rand() * shapes.length)] };
+}
+function dropLoot(c) { // gang.js total, boss.js tankDown: its drop, if any; on the road, or the tank's into the hold
+  const from = rigged() && sourceOf(c);
+  if (!from || rand() >= DROPS[from][0]) return;
+  const part = makePart(pick(DROPS[from][1]), from);
+  if (from === 'tank') stow(part); // the run is over: the tank's parts are yours
+  else run.loot.push({ part, z: c.z, x: c.x, v: c.v });
+  if (!progress.toured.includes('loot')) openTour('loot', true);
+}
+function stow(part) { // into the hold, if it has room
+  const f = progress.fortress, name = `${PARTS[part.kind].name} ${part.cells.length}`;
+  if (f.hold.length >= holdSize()) { flash(`HOLD FULL: ${name} LEFT`, '#fb3', false); return false; }
+  f.hold.push(part);
+  applyUpgrades(); // distance.js: its weight
+  save();
+  flash(`+${name} INTO THE HOLD`, '#ffd23a', false);
+  beep(880, 0.06);
+  return true;
+}
+function lootTick(dt) { // distance.js updateRun: the crates skid to a stop; steered over, one is picked up (tried once: a
+  for (const l of run.loot) { // full hold leaves it); passed, gone
+    l.v = Math.max(0, l.v - LOOT.slow * dt);
+    l.z += l.v * dt;
+    if (!l.tried && Math.abs(l.z - odo) < LOOT.reach && sameLane(l.x, carX)) { l.tried = true; l.got = stow(l.part); }
+  }
+  run.loot = run.loot.filter(l => !l.got && l.z > odo - 20);
+}
+const lootMarks = () => (run.loot ?? []).map(l => ({ z: l.z, kind: 'loot', value: l })); // distance.js roadMarks
+
+// what the parts on the board add up to (distance.js applyUpgrades, gang.js, damage.js): blocks of a kind, the weight
+// the deck and every part in it and in the hold carry, the drag of its length, an engine's pull
+const blocks = kind => rigged() ? progress.fortress.parts.reduce((n, p) => n + (p.kind === kind ? p.cells.length : 0), 0) : 0;
+const DECK = 250; // kg a cell of deck
+const rigWeight = () => !rigged() ? 0 : boardW() * boardH() * DECK +
+  [...progress.fortress.parts, ...progress.fortress.hold].reduce((kg, p) => kg + PARTS[p.kind].kg * p.cells.length, 0);
+const rigDrag = () => rigged() ? 1 + 0.1 * (boardH() - 1) : 1; // its length a little; its width (to come) much more
+const rigPower = () => rigged() ? progress.fortress.parts.reduce((k, p) => k + (p.kind === 'engine' ? ENGINE_POWER[p.from] * p.cells.length : 0), 0) : 0;
+const armorCut = () => Math.min(0.9, 0.25 * lvl('armour') + 0.05 * blocks('armor')); // Armor plating, and armor plates
 
 let pedalDown = false;
 $('cannon-pedal').onpointerdown = e => { e.preventDefault(); pedalDown = true; fireCannon(); };
@@ -283,6 +373,15 @@ TUTORIALS.push( // the war rig's, once rebuilt (the owner's: the controls change
         'raiders go after them, and the rest of the traffic: Hunter too.' },
     { title: 'SHELLS', at: '.cannon-box',
       both: `Every gang car totaled is out of the race, behind you, and brings ${SHELLS.gang} shells for the cannon.` },
+  ] },
+  // on the road, the first loot dropped (dropLoot); listed once seen
+  { id: 'loot', name: 'Loot', open: () => rigged() && progress.toured.includes('loot'), pages: [
+    { title: 'LOOT',
+      both: 'The big ones drop parts as they go down, the rival gang rarely: a crate skids along the road. Steer over it ' +
+        'to pick it up into the hold; with the hold full it stays on the road.' },
+    { title: 'PARTS', at: '#board',
+      both: 'Drag it from the hold onto the board. A cannon adds to every shell, a gun to the guns, armor takes the ' +
+        'hits, spikes hurt in a ram, an engine pulls. The bigger, the stronger, and every block weighs.' },
   ] },
   // on the road, the first time a police SUV is in the reticle (renderRig); listed once seen
   { id: 'pursuit', name: 'Police SUVs', open: () => rigged() && progress.toured.includes('pursuit'), pages: [

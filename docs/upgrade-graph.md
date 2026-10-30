@@ -227,8 +227,11 @@ Each upgrade and what it needs, one line each: the list to edit.
 
 - Rebuild ← Fortress (1,500 points: the car rebuilt as a war rig, no shifter or pedals, the aids it drives with
   bolted on; the tank's cannon in the hold and its 10 shells, the 1×1 board, the firing pedal). From then on the
-  reticle takes only the rival rigs and the tank, the rival gang comes at you, and Hunter hunts the raiders' car (not
-  a card: the road changes with the Rebuild)
+  reticle takes only the rival rigs, the police's SUVs and the tank, the rival gang comes at you, Hunter hunts the
+  raiders' car, and the notable enemies drop loot (not a card: the road changes with the Rebuild)
+- Lengthen ← Rebuild (4 levels, 400 scrap doubling: the board a row longer a level, to five; every row weighs and
+  drags)
+- Inventory ← Rebuild (2 levels, 600 points doubling: the hold a slot more a level, to three)
 - Its page keeps a work sign, under construction, while the rest is built. The other cards are planned (below).
 
 ## The Crew page (26 Oct)
@@ -256,7 +259,7 @@ the tabs already are.
 
 ```mermaid
 flowchart TD
-  subgraph X["Fortress · the tab and the Rebuild built, the rest planned"]
+  subgraph X["Fortress · the tab, the Rebuild, Lengthen and Inventory built, the rest planned"]
     fortressTab(["Fortress tab"])
     rebuild["Rebuild"]
     lengthen["Lengthen"]
@@ -276,9 +279,9 @@ flowchart TD
 - Fortress tab ← War Rig tab, the tank beaten (a story condition: out of sight until then)
 - Rebuild ← Fortress tab (the tank's parts: the car rebuilt into a war rig, the cockpit with it, the 1×1 grid and the
   tank's cannon to place, with 10 shells)
-- Lengthen ← Rebuild (a row a level)
+- Lengthen ← Rebuild (a row a level; built 30 Oct)
 - Widen ← Rebuild (a lane a level, to four)
-- Inventory ← Rebuild (one slot to three)
+- Inventory ← Rebuild (one slot to three; built 30 Oct)
 - Grinder ← Rebuild (eats what it reaches; at four lanes, the oncoming traffic too)
 - Mine roller ← Widen 2+ (mines do no damage; by three lanes there is little room left to steer round one)
 - Auto cannon ← Rebuild, Auto gun (fires the cannon for you, as Auto gun does the guns)

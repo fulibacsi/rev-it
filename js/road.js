@@ -613,6 +613,21 @@ const lookOf = c => !c.look.spec ? c.look : mad(c) ? madLook(c.look) : rusty(c) 
 const weave = c => mad(c) && !c.wreck ? 0.3 * Math.sin(performance.now() / 250 + c.serial) : 0; // m, about every 1.6 s
 // the game's marks by kind, each sprite made only for its own kind (all three were, for every mark: the best banner,
 // a 640 px canvas, was redrawn for each distance board ahead, every frame, and a speed sign kept for each distance)
+// a crate of loot on the road (Distance's act 5, fortress.js): steel, in hazard stripes, its panel the part's color
+const CRATE_TONES = { cannon: '#4b5320', gun: '#4a4f5a', armor: '#8a8c94', spikes: '#c8c8d0', engine: '#8a2a1e' }, CRATES = new Map();
+function crateSprite(kind) {
+  if (!CRATES.has(kind)) CRATES.set(kind, sprite(140, 110, (g, w, h) => {
+    g.fillStyle = '#2b2b30'; g.beginPath(); g.roundRect(0, h * 0.1, w, h * 0.9, 8); g.fill(); // the crate
+    g.save(); g.beginPath(); g.rect(w * 0.04, h * 0.16, w * 0.92, h * 0.16); g.clip(); // a band of hazard stripes
+    g.fillStyle = '#f2c12e'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#1b1b1f'; for (let x = -h; x < w; x += 22) { g.beginPath(); g.moveTo(x, h * 0.32); g.lineTo(x + 11, h * 0.32); g.lineTo(x + 29, h * 0.16); g.lineTo(x + 18, h * 0.16); g.fill(); }
+    g.restore();
+    g.fillStyle = CRATE_TONES[kind]; g.beginPath(); g.roundRect(w * 0.18, h * 0.42, w * 0.64, h * 0.42, 6); g.fill(); // the panel
+    g.strokeStyle = '#9a9aa4'; g.lineWidth = 3; g.strokeRect(w * 0.04, h * 0.14, w * 0.92, h * 0.82);
+    g.fillStyle = '#ffd23a'; g.beginPath(); g.arc(w / 2, h * 0.08, h * 0.08, 0, 2 * Math.PI); g.fill(); // a beacon on top
+  }));
+  return CRATES.get(kind);
+}
 const MARKS = {
   best: v => ({ x: 0, w: 2 * (ROAD.half + ROAD.rumble), h: 5.6, img: bannerSprite(v) }),
   board: v => ({ x: ROAD.half + 2, w: 1.6, h: 3, img: boardSprite(v) }),
@@ -625,6 +640,8 @@ const MARKS = {
   // its foreshadowing (oil.js omenMarks): a fuel station, and a burnt-out shell on the shoulder
   station: v => ({ x: ROAD.half + 13, w: 13, h: 7.2, img: stationSprite(v) }),
   shell: v => { const img = wreckSprite(trafficLook(v).rear); return { x: SHOULDER + 0.8, w: CAR_M, h: CAR_M * img.height / img.width, img }; },
+  // act 5's loot (fortress.js lootMarks), in its lane
+  loot: v => ({ x: v.x, w: 1.6, h: 1.25, img: crateSprite(v.part.kind) }), // big enough to spot on a phone
 };
 function drawRoad(g, w, h, dt) {
   const depth = 1 / Math.tan(ROAD.fov / 2 * Math.PI / 180), horizon = h * ROAD.horizon, k0 = w / 2;

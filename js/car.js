@@ -24,10 +24,10 @@ let steering = 1; // how quickly the car moves over (Distance's steering upgrade
 let bullBar = 0, spikes = false; // Distance's War Rig: a bump costs you less speed; a side-swipe costs you none
 
 // the car as it left the factory (only the Distance garage tunes it)
-const STOCK_GRIP = CAR.grip;
+const STOCK_GRIP = CAR.grip, STOCK_DRAG = CAR.drag;
 function stockCar() {
   for (const e of ENGINES) Object.assign(e, e.stock);
-  CAR.grip = STOCK_GRIP; openLanes = 2; brokenGears = []; steering = 1; bullBar = 0; spikes = false;
+  CAR.grip = STOCK_GRIP; CAR.drag = STOCK_DRAG; openLanes = 2; brokenGears = []; steering = 1; bullBar = 0; spikes = false;
 }
 function resetCar() { // standing in the right lane, in neutral, feet off the pedals
   speed = odo = 0; gear = 0; locked = spinning = false;
