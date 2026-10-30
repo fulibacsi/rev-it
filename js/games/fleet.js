@@ -38,7 +38,8 @@ const teamPoints = () => Math.round(racers().filter(c => c.fleet && !c.wreck)
 // (4.4 px a meter: the lanes 15 px apart), squeezed along (34 px for 250 m); you in the middle, every car colored by
 // what it is (the owner, 20 Oct). Redrawn 15 times a second: plenty for a blip, and a phone stays cool
 const SONAR = 250; // m each way
-const BLIPS = ['car', 'rival', 'ally', 'red', 'blue', 'tank']; // their order on the screen: the police and the tank on top
+const BLIPS = ['car', 'rival', 'ally', 'red', 'blue', 'rig', 'tank']; // their order on the screen: the police, a rival rig
+                                                                      // (fortress.js) and the tank on top
 let sonarAt = 0; // when it was last drawn
 function renderSonar() {
   const on = run.phase !== 'garage' && fleetSize() > 0, now = performance.now();
@@ -46,10 +47,10 @@ function renderSonar() {
   if (!on || now - sonarAt < 66) return;
   sonarAt = now;
   const X = x => (66 + 4.4 * x).toFixed(1), Y = z => (43 - 34 * (z - odo) / SONAR).toFixed(1);
-  const kind = c => c.tank ? 'tank' : c.police ? (now % 500 < 250 ? 'red' : 'blue') : c.fleet ? 'ally' : c.racer ? 'rival' : 'car';
+  const kind = c => c.tank ? 'tank' : c.rig ? 'rig' : c.police ? (now % 500 < 250 ? 'red' : 'blue') : c.fleet ? 'ally' : c.racer ? 'rival' : 'car';
   $('sonar-blips').innerHTML = traffic.filter(c => !c.wreck && Math.abs(c.z - odo) < SONAR).map(c => [kind(c), c])
-    .sort((a, b) => BLIPS.indexOf(a[0]) - BLIPS.indexOf(b[0])).map(([k, c]) => k === 'tank'
-      ? `<rect class="tank" x="-3.5" y="-3.5" width="7" height="7" transform="translate(${X(c.x)},${Y(c.z)})"/>`
+    .sort((a, b) => BLIPS.indexOf(a[0]) - BLIPS.indexOf(b[0])).map(([k, c]) => k === 'tank' || k === 'rig'
+      ? `<rect class="${k}" x="-3.5" y="-3.5" width="7" height="7" transform="translate(${X(c.x)},${Y(c.z)})"/>`
       : `<circle class="${k}" cx="${X(c.x)}" cy="${Y(c.z)}" r="2.4"/>`).join('');
   $('sonar-you').setAttribute('transform', `translate(${X(carX)},43)`);
   $('sonar-dash').style.strokeDashoffset = -(odo * 34 / SONAR) % 6; // the lane lines go by as fast as the road does

@@ -18,7 +18,7 @@ const bossRace = () => arOn() && progress.wanted >= 1 && lvl('guns') > 0 && !wre
 // the tank takes over a car up the road as the boss race starts (startRun), waiting for you there (tankDrive keeps
 // it until you come); or as soon as there is one, should the road have none
 function sendTank() {
-  const c = traffic.find(c => !c.racer && !c.police && !c.fleet && c !== target);
+  const c = traffic.find(c => !c.racer && !c.police && !c.fleet && !c.rig && c !== target);
   if (!c) return;
   Object.assign(c, { tank: true, dir: 1, lane: 0, x: MY_LANES[0], z: odo + 250, v: 0, want: 0, look: { rear: TANK_SPRITE },
                      w: 3, h: 2.3, hp: null, wreck: false, swerve: null, d: NaN, hit: -Infinity, shell: TANK.reload });

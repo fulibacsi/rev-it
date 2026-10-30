@@ -20,7 +20,7 @@ function updatePolice(dt) {
   if (!arOn() || !progress.wanted) return;
   copClock -= dt;
   if (copClock > 0 || traffic.filter(c => c.police && !c.wreck).length >= 2) return;
-  const c = traffic.find(c => !c.racer && !c.police && !c.tank && c !== target && c.z - odo > 600), other = 1 - lane;
+  const c = traffic.find(c => !c.racer && !c.police && !c.tank && !c.rig && c !== target && c !== quarry && c.z - odo > 600), other = 1 - lane;
   if (!c || lane <= 1 && !laneClear(MY_LANES[other], 10)) return;
   copClock = copEvery();
   const reset = { police: true, hp: null, wreck: false, swerve: null, warned: false, beams: 0, d: NaN, hit: -Infinity };

@@ -34,8 +34,8 @@ Object.assign(UPGRADES, {
   // the owner's idea (18 Oct): autocruise hunts the car in the reticle (aids.js hunt), as act4.py's bot did by hand; a
   // switch. Price: a first guess, see act4.py
   hunter: { name: 'Hunter', tab: 'warrig', max: 1, base: 100, needs: ['warrigTab', 'cruise', 'recklessCruise'], on: ['cruise'],
-            info: () => 'adds to Autocruise (and Reckless auto-drive): it hunts the car in the reticle, into its lane ' +
-              'and into it. Not the tank, and it backs off past 60% damage' },
+            info: () => 'adds to Autocruise (and Reckless auto-drive): it hunts ' + (rigged() ? "your raiders' car, on the " +
+              'tracker' : 'the car in the reticle') + ', into its lane and into it. Not the tank, and it backs off past 60% damage' },
   // the owner's idea (18 Oct): the stereo plays the War Rig's own music instead of synthwave (stereo.js: three tapes, the
   // owner's, made with Suno);
   // a switch, so synthwave is a tap away. No use for speed. Price: a first guess, see act4.py
@@ -54,7 +54,7 @@ const GUN = 6, RANGE = 200; // damage a shot a level; m your guns reach (a raide
 const MADNESS = 0.25, MAD_TOP = 0.9;
 const madShare = l => Math.min(MAD_TOP, MADNESS * l);
 const GANG = FIELD / 2 + 1; // fleet cars that make a gang
-const health = c => c.tank ? tankHealth() : c.police ? 200 : c.racer ? 150 : 100; // full health (the tank: boss.js)
+const health = c => c.tank ? tankHealth() : c.rig ? RIG.hp : c.police ? 200 : c.racer ? 150 : 100; // full health (the tank: boss.js; a rig: fortress.js)
 // scrap from a totaled car: 2.2 times the first guesses (with the heat), so act 4 takes about 15 races (act4.py)
 const SCRAP = { car: 22, racer: 55 };
 const arOn = () => progress.racing && (progress.gang || progress.totals > 0); // the AR layer: from the gang's moment
@@ -71,23 +71,29 @@ function gangMoment() {
 
 // the target: the nearest car ahead going your way (not one of yours, not a wreck), kept while it is in your guns'
 // reach until you pass it or total it; further up the road, the nearest again. Gone when it is off the road (a run
-// starts with new cars: last run's rival stayed the target, out of sight, and the guns could fire at nothing else)
-let target = null;
-function nextTarget() {
+// starts with new cars: last run's rival stayed the target, out of sight, and the guns could fire at nothing else).
+// On the war rig (fortress.js) the reticle takes only the notable enemies, and the raiders' car, the quarry, is
+// picked the same way from the rest, a rival gang car before anything else
+let target = null, quarry = null;
+function nextTarget(fits = c => !rigged() || notable(c)) {
   let t = null;
-  for (const c of traffic) if (c.dir > 0 && !c.fleet && !c.wreck && c.z > odo && c.z - odo < 300 && (!t || c.z < t.z)) t = c;
+  for (const c of traffic) if (c.dir > 0 && !c.fleet && !c.wreck && c.z > odo && c.z - odo < 300 && fits(c) && (!t || c.z < t.z)) t = c;
   return t;
 }
+const nextQuarry = () => rigged() ? nextTarget(c => c.racer) ?? nextTarget(c => !notable(c)) : null; // the rival gang first
+// passed once its front is behind you, not its back: in a ram at speed one long frame (up to 50 ms) carries you past
+// its back before the bump settles, and the reticle moved on to the next car, at full health (28 Oct)
+const lost = t => !t || t.wreck || t.dir < 0 || t.z + CAR_LEN < odo || t.z - odo > RANGE || !traffic.includes(t);
 function updateGang(dt) { // every frame of a run
   gangMoment();
-  if (!arOn()) { target = null; return; }
+  if (!arOn()) { target = quarry = null; return; }
   if (run.tank && !run.tank.wreck) target = run.tank; // boss.js: the tank, while it lasts
-  // passed once its front is behind you, not its back: in a ram at speed one long frame (up to 50 ms) carries you past
-  // its back before the bump settles, and the reticle moved on to the next car, at full health (28 Oct)
-  else if (!target || target.wreck || target.dir < 0 || target.z + CAR_LEN < odo || target.z - odo > RANGE || !traffic.includes(target))
-    target = nextTarget();
+  else if (lost(target)) target = nextTarget();
+  if (lost(quarry) || rigged() && !quarry.racer && nextTarget(c => c.racer)) quarry = nextQuarry();
   fireGuns(dt);
 }
+// the car your crew goes after: the raiders' and Hunter's (aids.js). The reticle's, until the war rig
+const crewTarget = () => rigged() ? quarry : target;
 
 // guns: held, the trigger fires 4 shots a second from the hood at the car in the reticle, if it is in reach and in
 // sight. Auto gun holds it for you, only while there is something to hit. The tracers are drawn over the road
@@ -109,15 +115,15 @@ function fireGuns(dt) {
 // you hit car c (impact from car.js): a hit, HIT off its health. The owner's numbers (14 Oct): traffic goes down in 3,
 // racers in 5, police in 6; with a full bull bar (3 times a hit) in 1, 2 and 2. Spiked hubs add a hit to a side-swipe.
 // From behind, a bump closing at under NUDGE km/h does nothing, and one at over OHKO km/h totals it outright ("OHKO!");
-// a side-swipe always counts. The tank takes a fifth of a hit and is never knocked out. A head-on is your DNF, not a
-// total
+// a side-swipe always counts. The tank takes a fifth of a hit and is never knocked out, and so does a rival rig
+// (fortress.js). A head-on is your DNF, not a total
 const HIT = 34, NUDGE = 30, OHKO = 200;
 function ram(i) {
   const c = i.car;
   if (!c || c.wreck || c.fleet || i.headOn || !i.side && i.kmh < NUDGE) return;
-  if (i.kmh > OHKO && !c.tank) return total(c, false, 'OHKO!');
+  if (i.kmh > OHKO && !notable(c)) return total(c, false, 'OHKO!');
   if (c.cut > 0) return total(c, false, 'HAD IT COMING!'); // Fuel madness: it cut in on you, it's totaled (road.js c.cut)
-  hurtCar(c, HIT * (1 + 2 / 3 * lvl('bullbar') + (i.side && spikes ? 1 : 0)) * (c.tank ? 0.2 : 1));
+  hurtCar(c, HIT * (1 + 2 / 3 * lvl('bullbar') + (i.side && spikes ? 1 : 0)) * (notable(c) ? 0.2 : 1));
 }
 function hurtCar(c, hp, gang) {
   c.hp = (c.hp ?? health(c)) - hp;
@@ -125,18 +131,21 @@ function hurtCar(c, hp, gang) {
 }
 function total(c, gang, how) { // the scrap is yours, whoever did it; the heat too (police.js); how: the HUD's word for it
   if (c.tank) return tankDown(c); // boss.js
-  const scrap = (c.racer ? SCRAP.racer : SCRAP.car) * (mad(c) ? 2 : 1); // a mad driver's stolen fuel (Fuel madness)
-  raiseHeat(gang ? WANTED.gang : c.police ? WANTED.police : c.racer ? WANTED.racer : WANTED.car);
+  // a mad driver's stolen fuel (Fuel madness), double; a rival rig's (fortress.js); a rival gang car's shells
+  const scrap = c.rig ? RIG.scrap : (c.racer ? SCRAP.racer : SCRAP.car) * (mad(c) ? 2 : 1), shells = gangShells(c);
+  raiseHeat(gang ? WANTED.gang : c.police ? WANTED.police : c.racer || c.rig ? WANTED.racer : WANTED.car);
   Object.assign(c, { wreck: true, hp: 0 });
   if (c === target) target = nextTarget(); // the reticle moves on at once: for a frame Hunter had nothing to hunt, and
-                                           // autocruise steered away from the car it would hunt next
+  if (c === quarry) quarry = nextQuarry(); // autocruise steered away from the car it would hunt next
   progress.totals++;
   progress.scrap += scrap;
   run.scrap += scrap;
+  progress.shells += shells;
+  run.shells += shells;
   run.totals++;
   if (progress.totals === 1) { run.firstTotal = true; run.left = Math.min(run.left, 3); } // the first job done: 3 s more
-  const who = c.racer ? `#${c.racer}` : c.police ? 'A POLICE CAR' : 'A CAR'; // raiders ram anything
-  flash(`${gang ? `THE GANG TOTALED ${who}` : how ?? 'TOTALED'} +${scrap} SCRAP`, '#ff6a4a', true);
+  const who = c.racer ? `#${c.racer}` : c.police ? 'A POLICE CAR' : c.rig ? 'A RIG' : 'A CAR'; // raiders ram anything
+  flash(`${gang ? `THE GANG TOTALED ${who}` : how ?? 'TOTALED'} +${scrap} SCRAP${shells ? ` +${shells} SHELLS` : ''}`, '#ff6a4a', true);
 }
 
 // ---- raiders (the owner, 27 Oct: the Hunting pack as a role, riding with you as harvesters and brewers do): the car in
@@ -152,10 +161,11 @@ const RAID = 3, RAID_TANK = 6;
 // back goes to the back of the line. Raiders never touch one another
 const KNOCK = 0.8, BACK = 5, HOLD = 10, LINE = 6;
 const raiding = () => traffic.filter(c => c.raider && !c.gone);
-function raidAhead() { // the reticle's car as a tracker row, while you have raiders (the same row while it is the target)
-  const t = target;
+function raidAhead() { // the crew's car as a tracker row, while you have raiders (the same row while it is their target)
+  const t = crewTarget();
   if (!role('raider') || !arOn() || !t || t.wreck || t.dir < 0 || t.z < odo + 5) return null;
-  if (run.raid?.car !== t) run.raid = { kind: 'raid', car: t, shown: run.t, get z() { return this.car.z; }, get done() { return this.car.wreck; } };
+  if (run.raid?.car !== t) run.raid = { kind: 'raid', car: t, shown: run.t, get z() { return this.car.z; }, get done() { return this.car.wreck; },
+                                        get seen() { return rigged() ? this.car.seen : null; } }; // tagged once the reticle isn't on it
   return run.raid;
 }
 const raidersOn = r => raiding().filter(c => c.raider === r.car).length;
@@ -190,7 +200,7 @@ function raidRam(c, o) { // a hit, as yours are, and it is knocked back (raiderD
   if (c.rammed) return;
   c.rammed = KNOCK;
   c.turn = run.t;
-  hurtCar(o, HIT * (1 + 2 / 3 * lvl('bullbar')) * (o.tank ? 0.2 : 1), true);
+  hurtCar(o, HIT * (1 + 2 / 3 * lvl('bullbar')) * (notable(o) ? 0.2 : 1), true);
 }
 
 // the AR layer: the reticle round the target where it is on the screen (road.js keeps c.seen), its health above it;
@@ -208,7 +218,7 @@ function renderGang() {
   const k = 1 / canvas.px, w = Math.max(26, s[2] * k), h = Math.max(20, s[3] * k); // canvas px to page px (main.js resize)
   Object.assign($('ar').style, { left: `${(s[0] + s[2] / 2) * k - w / 2}px`, top: `${(s[1] + s[3] / 2) * k - h / 2}px`,
                                  width: `${w}px`, height: `${h}px` });
-  text('ar-label', t.tank ? 'TANK' : !gangOpen() ? 'TOTAL IT' : t.racer ? `#${t.racer}` : '');
+  text('ar-label', t.tank ? 'TANK' : t.rig ? 'RIG' : !gangOpen() ? 'TOTAL IT' : t.racer ? `#${t.racer}` : '');
 }
 
 // your car's war kit, seen from the seat (index.html #kit): each part shows from its level up, the Auto gun's red lamps

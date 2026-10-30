@@ -68,7 +68,7 @@ function raceWall() {
 function racer(n, z) {
   const fleet = inFleet(n); // fleet.js
   return { z, dir: 1, lane: n % 2, x: MY_LANES[n % 2], v: 0, want: pace(n) * (fleet ? fleetPace() : 1), racer: n, fleet,
-           look: racerSprite(n, progress.racing, fleet), d: NaN, hit: -Infinity };
+           look: racerSprite(n, progress.racing, fleet, !fleet && rigged()), d: NaN, hit: -Infinity }; // the rival gang's look (fortress.js)
 }
 // before the reveal #100 is one quick car up the road. Its head start shrinks as the car gets built, so it can only be
 // caught once the car is nearly done (around run 20 for a perfect player, just before the bell): [share of the car
