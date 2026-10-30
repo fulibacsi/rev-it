@@ -56,7 +56,7 @@ async function start() {
   starterGain.gain.value = 0;
   starterGain.connect(carBus);
 
-  const roar = ctx.createBufferSource(); // wind and tyre roar: looping noise, louder and brighter with speed
+  const roar = ctx.createBufferSource(); // wind and tire roar: looping noise, louder and brighter with speed
   roar.buffer = noise;
   roar.loop = true;
   wind = { filter: ctx.createBiquadFilter(), gain: ctx.createGain() };
@@ -64,7 +64,7 @@ async function start() {
   wind.gain.gain.value = 0;
   roar.connect(wind.filter).connect(wind.gain).connect(carBus);
   roar.start();
-  const scrub = ctx.createBufferSource(); // tyre squeal: noise in a narrow band, faded in while the tyres spin
+  const scrub = ctx.createBufferSource(); // tire squeal: noise in a narrow band, faded in while the tires spin
   scrub.buffer = noise;
   scrub.loop = true;
   squeal = { filter: ctx.createBiquadFilter(), gain: ctx.createGain() };

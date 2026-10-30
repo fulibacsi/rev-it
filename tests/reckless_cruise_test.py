@@ -32,7 +32,7 @@ with sync_playwright() as p:
     js("Object.assign(progress, { levels: { reckless: 1, steer: 1 } })")
     check("needs Autocruise, and 7th gear, out of sight: ???", why() == "needs Autocruise · ???", why())
     js("Object.assign(progress, { levels: { steer: 1, gas: 1, shift: 1, clutch: 1, cruise: 1, reckless: 1, gears: 3 } })")
-    check("needs 7th gear (18 Oct), in sight with the Gearbox maxed", why() == "needs ✓ Autocruise · 7th gear", why())
+    check("needs 7th gear (18 Oct), in sight with the Transmission maxed", why() == "needs ✓ Autocruise · 7th gear", why())
     js("progress.levels.gear7 = 1")
     check("with 7th gear, on sale", js("whyNot('recklessCruise')") in ("", "short"), js("whyNot('recklessCruise')"))
     # the car below has no 7th gear: one bought before the gate keeps working (the checks that follow)

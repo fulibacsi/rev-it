@@ -1,4 +1,4 @@
-// The app shell: menu, instrument cluster, head-up display and the main loop. The games plug in here (rev.js,
+// The app shell: menu, instrument cluster, heads-up display and the main loop. The games plug in here (rev.js,
 // signs.js, distance.js, and Free drive below); controls.js handles the input.
 // A game: { id, name, blurb, hud: 'levels' | 'run' | undefined, gears(): gears in the gate, parked?, and optionally
 //   start(), stop(), update(dt), render(), marks() for the roadside, readout() for the big HUD number,
@@ -100,7 +100,7 @@ function showScreen(name, back = false) {
 }
 function renderMenu() {
   $('continue').textContent = started() ? 'CONTINUE' : 'NEW GAME';
-  $('continue').classList.toggle('done', progress.tanks > 0); // the tank beaten: a green tick
+  $('continue').classList.toggle('done', progress.tanks > 0); // the tank beaten: a green check mark
   $('to-stats').hidden = !started();
   $('end-run').hidden = !(game === DISTANCE && run.phase === 'run');
   $('act-button').hidden = !(game === DISTANCE && playing); // the act's card again: what to do (distance.js)
@@ -194,7 +194,7 @@ $('menu').onclick = e => {
     'your own game is kept as it is.')) { debugAct(+b.dataset.act); play(DISTANCE); } // distance.js
   if (b.id === 'debug-money') { debugMoney(settings.debugMoney === false); renderMenu(); } // distance.js
   if (b.id === 'end-run' && confirm('End this run now? It counts as if the time had run out.')) { closeMenu(); game.endRun?.(); }
-  if (b.id === 'reset' && confirm('Reset your progress? Every metre, point and upgrade is gone, and the game starts over.')) resetGame();
+  if (b.id === 'reset' && confirm('Reset your progress? Every meter, point and upgrade is gone, and the game starts over.')) resetGame();
   if (b.id === 'layout') {
     settings.layout = LAYOUTS[(LAYOUTS.indexOf(settings.layout) + 1) % LAYOUTS.length];
     saveSettings(); applyLayout(); renderMenu();
@@ -233,7 +233,7 @@ const iosBrowser = (/iP(hone|od|ad)/.test(navigator.userAgent) || navigator.plat
   !navigator.standalone && self === top;
 document.body.classList.toggle('ios', iosBrowser);
 
-// ---- instrument cluster: analogue dials drawn as SVG ----
+// ---- instrument cluster: analog dials drawn as SVG ----
 const DIAL = { cy: 105, r: 86, sweep: 135 }; // needles sweep ±135° from straight up
 let SPEEDO_MAX = 360;
 let tachMax = 8000;
@@ -282,7 +282,7 @@ function flash(text, color, rise) { // short message floating up (good news) or 
 }
 
 
-// ---- head-up display helpers for the games ----
+// ---- heads-up display helpers for the games ----
 function renderLevels(lv, on, text) { // level pips: levels below solid, the current one is its gauge
   document.body.classList.toggle('hit', on);
   $('lvl').textContent = `LEVEL ${lv.level + 1}`;
@@ -360,7 +360,7 @@ function tick(now) {
   updateStereo();
   renderStereo();
 }
-// debug mode: tap the menu's title 5 times. Distance then plays a save of its own with unlimited metres and points
+// debug mode: tap the menu's title 5 times. Distance then plays a save of its own with unlimited meters and points
 let titleTaps = [];
 function applyDebug() { useDebugSave(!!settings.debug); document.body.classList.toggle('debug', !!settings.debug); }
 document.querySelector('#menu h1').onclick = () => {
@@ -369,7 +369,7 @@ document.querySelector('#menu h1').onclick = () => {
   if (titleTaps.length < 5) return;
   titleTaps = [];
   if (!confirm(settings.debug ? 'Leave debug mode? Your own Distance game comes back as you left it.'
-    : 'Debug mode: Distance plays a separate save with unlimited metres and points. Your own game is kept as it is.')) return;
+    : 'Debug mode: Distance plays a separate save with unlimited meters and points. Your own game is kept as it is.')) return;
   settings.debug = !settings.debug;
   saveSettings();
   applyDebug();

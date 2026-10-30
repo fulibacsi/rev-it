@@ -42,7 +42,7 @@ function tankDrive(c, dt) {
   if (c.shell > 0 || gap < 0 || gap > TANK.reach || run.phase !== 'run') return;
   c.shell = TANK.reload;
   tracers.push([c, 'you', performance.now()]);
-  addDamage(TANK.hit * (1 - 0.25 * lvl('armour'))); // damage.js; armour plating (gang.js)
+  addDamage(TANK.hit * (1 - 0.25 * lvl('armour'))); // damage.js; armor plating (gang.js)
   flash('HIT', '#f55', false);
   crashSound();
   shake = 0.5;
@@ -58,7 +58,7 @@ function tankDown(c) {
   progress.wanted = 0;
   run.beatTank = true;
   finishRun();
-  run.count = 4; // twice a finish: TANK DOWN on the head-up display, the tank burning (distance.js renderRun)
+  run.count = 4; // twice a finish: TANK DOWN on the heads-up display, the tank burning (distance.js renderRun)
 }
 
 // at the bell, or a crash: a boss race lost is a DNF, and the heat drops to half

@@ -10,7 +10,7 @@ repository when incompetech is out of reach, and must match the original's SHA-2
 owner's, made with Suno on its free plan (18 Oct): Suno owns them and they may be used only non-commercially, so there
 is nowhere to fetch them from. Point this at the folder that has them, under the file names TAPES gives.
 
-Each tape is levelled to LUFS (ffmpeg's loudnorm, measured first, then one gain: the music keeps its dynamics), its
+Each tape is leveled to LUFS (ffmpeg's loudnorm, measured first, then one gain: the music keeps its dynamics), its
 bass under CUT Hz rolled off (the engine has the low end), and encoded at 96 kbps and 44.1 kHz: MP3 plays on every
 iPhone, Opus only from iOS 18.4. Needs ffmpeg.
 """
@@ -59,7 +59,7 @@ def fetch(title, sha, mirror, into):
 
 
 def build(src, out):
-    """Levelled, the bass rolled off, as a 96 kbps MP3."""
+    """Leveled, the bass rolled off, as a 96 kbps MP3."""
     shape = f"highpass=f={CUT},loudnorm=I={LUFS}:TP={PEAK}:LRA=20"
     run = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-i", str(src), "-af", shape + ":print_format=json",
                           "-f", "null", "-"], capture_output=True, text=True, check=True).stderr

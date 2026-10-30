@@ -1,4 +1,4 @@
-"""The light stalk must not take touches meant for the steering wheel's rim: sample the visible rim's centre line."""
+"""The light stalk must not take touches meant for the steering wheel's rim: sample the visible rim's center line."""
 import math
 from playwright.sync_api import sync_playwright
 from common import URL, launch

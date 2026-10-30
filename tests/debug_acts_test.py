@@ -53,11 +53,11 @@ with sync_playwright() as p:
     check("act III: nothing of the Crew bought", got == [0, 0, 0], got)
     check("act III: its card pops up", card() == ["act", "ACT III", "RECRUIT"], card())
 
-    # act IV: the first car totalled; the Crew bought out to 51 cars; nothing of the War Rig
+    # act IV: the first car totaled; the Crew bought out to 51 cars; nothing of the War Rig
     to_act(3)
     got = levels("fleetTab", "fleet", "dues", "fleetPace", "harvesting", "brewing", "sonarRange", "scouting", "overfill", "doubleUp", "warrigTab", "bullbar")
     check("act IV: the Crew bought out, the oil's too, 51 cars: the gang; nothing of the War Rig", got == [1, 51, 5, 5, 5, 5, 2, 3, 4, 1, 0, 0], got)
-    check("act IV: the AR layer on, the first car totalled, the oil running on", js("[arOn(), progress.totals, progress.wanted, crewOn()]") == [True, 1, 0, True], js("[arOn(), progress.totals, progress.wanted, crewOn()]"))
+    check("act IV: the AR layer on, the first car totaled, the oil running on", js("[arOn(), progress.totals, progress.wanted, crewOn()]") == [True, 1, 0, True], js("[arOn(), progress.totals, progress.wanted, crewOn()]"))
     check("act IV: its card pops up", card() == ["act", "ACT IV", "WAR"], card())
 
     # back to act II: everything later sold
@@ -72,7 +72,7 @@ with sync_playwright() as p:
     check("act I: its card pops up", card() == ["act", "", "DRIVE"], card())
 
     # the money switch (the owner, 27 Oct: to feel the prices): off, the wallets empty and fill as in play; an act starts
-    # with what the simulations leave it (act 2's metres at P1); on again, bottomless
+    # with what the simulations leave it (act 2's meters at P1); on again, bottomless
     js("openMenu(); showScreen('main')"); pg.wait_for_timeout(200)
     check("the money switch: in the act row, money ∞", js("$('debug-money').textContent") == "money ∞" and box("#debug-money")[2] <= 844, [js("$('debug-money').textContent"), box("#debug-money")])
     pg.tap("#debug-money"); pg.wait_for_timeout(200)
@@ -83,7 +83,7 @@ with sync_playwright() as p:
     check("act III without the money: act 2's 44,000 m, the win's 10 points, no fuel, the Black market still bought out", got == [44000, 0, 10, 1, 5], got)
     js("buy('fleetTab'); convert(5); buy('fleet')")
     got = js("[progress.bank, Math.round(progress.fuel * 1000) / 1000, lvl('fleet')]")
-    check("spending: the metres and fuel go down", got[0] < 44000 and got[2] == 1, got)
+    check("spending: the meters and fuel go down", got[0] < 44000 and got[2] == 1, got)
     to_act(0); js("openMenu(); showScreen('main')"); pg.wait_for_timeout(200); pg.tap("#debug-money"); pg.wait_for_timeout(200)
     check("on again: bottomless", js("[$('debug-money').textContent, progress.bank, money(5)]") == ["money ∞", 1e9, "∞"], js("[$('debug-money').textContent, progress.bank, money(5)]"))
     check("the real save is untouched", real() == REAL, real())

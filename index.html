@@ -38,14 +38,14 @@
       <path d="M118,30 H548 V62 Q330,74 112,80 Z"/><path d="M1482,30 H1052 V62 Q1270,74 1488,80 Z"/></g>
     <g data-kit="armour 3" stroke="#22222a" stroke-width="8" stroke-linecap="round"> <!-- slats over the plates -->
       <path d="M90,318 L162,332 M84,356 L160,368 M1510,318 L1438,332 M1516,356 L1440,368"/></g>
-    <g data-kit="bullbar 1" fill="none" stroke-linecap="round"> <!-- the bull bar's hoop over the bonnet's front edge -->
+    <g data-kit="bullbar 1" fill="none" stroke-linecap="round"> <!-- the bull bar's hoop over the hood's front edge -->
       <path d="M430,610 V560 Q430,540 452,540 H1148 Q1170,540 1170,560 V610" stroke="#1d1d24" stroke-width="16"/>
       <path d="M436,558 Q436,546 452,546 H1148 Q1164,546 1164,558" stroke="#6a6a76" stroke-width="3"/></g>
     <g data-kit="bullbar 2" stroke="#1d1d24" stroke-width="11" stroke-linecap="round"><path d="M560,546 V610 M680,546 V610 M920,546 V610 M1040,546 V610"/></g>
     <g data-kit="bullbar 3" fill="#9a9aa4"> <!-- spikes along the hoop -->
       <path d="M470,532 l10,-26 l10,26 M540,532 l10,-26 l10,26 M610,532 l10,-26 l10,26 M680,532 l10,-26 l10,26 M750,532 l10,-26 l10,26
         M820,532 l10,-26 l10,26 M890,532 l10,-26 l10,26 M960,532 l10,-26 l10,26 M1030,532 l10,-26 l10,26 M1100,532 l10,-26 l10,26"/></g>
-    <g data-kit="guns 1"> <!-- twin guns on the bonnet, aimed down the road: the tracers leave their muzzles (MUZZLES) -->
+    <g data-kit="guns 1"> <!-- twin guns on the hood, aimed down the road: the tracers leave their muzzles (MUZZLES) -->
       <path d="M470,606 L596,514 M1130,606 L1004,514" stroke="#101016" stroke-width="18" stroke-linecap="round"/>
       <path d="M478,592 L592,508 M1122,592 L1008,508" stroke="#55555f" stroke-width="3"/>
       <rect x="430" y="566" width="80" height="40" rx="8" fill="#1b1b22" stroke="#3e3e4a" stroke-width="3"/>
@@ -71,7 +71,7 @@
 </svg>
 <!-- the car stereo's head unit, in the dash on a desktop (stereo.js) -->
 <div id="stereo"><b id="stereo-lcd"></b><span id="stereo-eq"><i><u></u><u></u><u></u><u></u><u></u></i><i><u></u><u></u><u></u><u></u><u></u></i><i><u></u><u></u><u></u><u></u><u></u></i><i><u></u><u></u><u></u><u></u><u></u></i><i><u></u><u></u><u></u><u></u><u></u></i><i><u></u><u></u><u></u><u></u><u></u></i><i><u></u><u></u><u></u><u></u><u></u></i><i><u></u><u></u><u></u><u></u><u></u></i></span><button id="stereo-next" title="next tape (or M)">TAPE ▸</button></div>
-<!-- the gang's AR layer on the windscreen: a reticle and a health bar on the target car (gang.js) -->
+<!-- the gang's AR layer on the windshield: a reticle and a health bar on the target car (gang.js) -->
 <div id="ar"><i></i><i></i><i></i><i></i><b id="ar-bar"><i></i></b><span id="ar-label"></span></div>
 <svg id="sonar" viewBox="0 0 124 92"> <!-- bolted to the A-pillar: the road 250 m each way from above, you in the middle (fleet.js) -->
   <defs><clipPath id="sonar-screen"><rect x="18" y="9" width="96" height="68" rx="6"/></clipPath></defs>
@@ -100,7 +100,7 @@
 <div id="crew-ctl"> <!-- under the sonar: the spot before, a car to it, the spot after (oil.js) -->
   <button id="crew-prev" title="the spot before (or ,)">‹</button><button id="crew-send" title="send a car to it (or S)">SEND<small id="crew-free"></small></button><button id="crew-next" title="the spot after (or .)">›</button>
 </div>
-<div id="crew-tag"></div> <!-- on the windscreen, over the spot picked: what it is (oil.js) -->
+<div id="crew-tag"></div> <!-- on the windshield, over the spot picked: what it is (oil.js) -->
 <svg id="tank" viewBox="0 0 60 92"> <!-- bolted to the right A-pillar: the crude tank (oil.js) -->
   <path d="M44,22 H60 M44,62 H60" stroke="#24242c" stroke-width="7"/>
   <rect x="4" y="3" width="42" height="86" rx="12" fill="#15151b" stroke="#2c2c36" stroke-width="3"/>
@@ -311,7 +311,7 @@
       repainted and kitted out for the road.</p>
     <p><b>Music</b>: "Neon Laser Horizon", "Chill Wave", "Newer Wave" by Kevin MacLeod
       (<a href="https://incompetech.com" target="_blank" rel="noopener">incompetech.com</a>,
-      <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>), levelled
+      <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>), leveled
       and re-encoded; the rest fulibacsi's, made with <a href="https://suno.com" target="_blank" rel="noopener">Suno</a>.</p>
     <p><b>Techniques</b>: the road after Jake Gordon's "How to build a racing game", the car after Marco Monster's "Car
       Physics for Games". Every detail: <a href="https://github.com/fulibacsi/rev-it/blob/main/CREDITS.md" target="_blank" rel="noopener">CREDITS.md</a>.</p>
@@ -333,7 +333,7 @@
     <footer><button id="win-main">MAIN MENU</button><button data-share>SHARE</button><button data-show="feedback">FEEDBACK</button><button id="win-garage" class="big">BACK TO THE GARAGE</button></footer>
     <p class="shared"></p>
   </section>
-  <section data-screen="hello"> <!-- the first visit: a game in progress, and gameplay data only with the box ticked (reporting.js) -->
+  <section data-screen="hello"> <!-- the first visit: a game in progress, and gameplay data only with the box checked (reporting.js) -->
     <h2>A GAME IN PROGRESS</h2>
     <p>Rev It is still being made, and what you think shapes it: tell us with FEEDBACK, under STATS once you have played.</p>
     <label class="tick"><input type="checkbox" id="stats-ok"> I accept to send anonymous gameplay data</label>

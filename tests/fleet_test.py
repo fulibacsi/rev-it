@@ -1,8 +1,8 @@
 """The Crew (the Fleet until 26 Oct): never shown before your first win; winning a race puts its tab on sale (the
-garage says so), a tap buys it, with fuel in the header and the Fuel converter: metres for fuel, one way, at the pump
-price (7,500 m a litre with no crew), a slider (dragged with a finger on the phone) and "all available". Racers paid off
-(the slowest first, each dearer, #1 never) race for you in your colours: they don't count against your position, give
-way when you come up behind them and block a rival closing on them. Racing pays a share of the racers' metres at the
+garage says so), a tap buys it, with fuel in the header and the Fuel converter: meters for fuel, one way, at the pump
+price (7,500 m a liter with no crew), a slider (dragged with a finger on the phone) and "all available". Racers paid off
+(the slowest first, each dearer, #1 never) race for you in your colors: they don't count against your position, give
+way when you come up behind them and block a rival closing on them. Racing pays a share of the racers' meters at the
 finish, Crew tuning makes them quicker. The sonar on the A-pillar shows the road 250 m each way from above, ahead up:
 you, your crew green, the rivals white, the traffic yellow, the police flashing red and blue, the tank a red square;
 clear of the menu button, the shifter and the mirror, phone and desktop. The oil: oil_test."""
@@ -51,26 +51,26 @@ with sync_playwright() as p:
     pg.screenshot(path=f"{OUT}/fleet_exchange_phone.png")
     n = got[0]; pg.tap("[data-exchange]"); pg.wait_for_timeout(100)
     got = js("({ bank: progress.bank, fuel: progress.fuel })")
-    check("exchanged: the metres gone, the fuel in", got == {"bank": 50000 - n * 7500, "fuel": n}, got)
+    check("exchanged: the meters gone, the fuel in", got == {"bank": 50000 - n * 7500, "fuel": n}, got)
     pg.tap("[data-exchange-all]"); pg.wait_for_timeout(100)
     got = js("({ bank: progress.bank, fuel: progress.fuel, all: document.querySelector('[data-exchange-all]').disabled })")
-    check("all available: every whole litre, the rest stays", got == {"bank": 50000 - 6 * 7500, "fuel": 6, "all": True}, got)
+    check("all available: every whole liter, the rest stays", got == {"bank": 50000 - 6 * 7500, "fuel": 6, "all": True}, got)
     check("the header shows them", js("$('bank').textContent").endswith("· 6 L to spend"), js("$('bank').textContent"))
     # 4. paying racers off: the slowest first, each a little dearer; #1 won't sell
     js("progress.fuel = 100"); pg.wait_for_timeout(50); js("renderGarage()")
     for _ in range(3): pg.tap('[data-buy="fleet"]'); pg.wait_for_timeout(80)
-    check("three racers paid off, a litre each", js("[lvl('fleet'), progress.fuel]") == [3, 97], js("[lvl('fleet'), progress.fuel]"))
+    check("three racers paid off, a liter each", js("[lvl('fleet'), progress.fuel]") == [3, 97], js("[lvl('fleet'), progress.fuel]"))
     check("the card names them", "#98 to #100 race for you" in js("$('cards').innerText"), js("$('cards').innerText")[-160:])
     pg.screenshot(path=f"{OUT}/fleet_page.png")
     prices = js("(() => { const l0 = lvl('fleet'), p = Array.from({ length: 99 }, (_, l) => { progress.levels.fleet = l; return cost('fleet'); }); progress.levels.fleet = l0; return p; })()")
     print(f"   prices: the 1st {prices[0]} L, the 51st {prices[50]}, the 99th {prices[98]}; the first 51 together {sum(prices[:51])} L")
     check("each costs at least as much as the last, and more over time", all(a <= b for a, b in zip(prices, prices[1:])) and prices[50] > prices[0], prices[::10])
     check("#1 won't sell", js("(() => { progress.levels.fleet = 99; const w = whyNot('fleet'); progress.levels.fleet = 3; return w; })()") == "#1 won't sell")
-    # 5. a race with three fleet cars: #98 to #100 in your colours; they don't count against your position
+    # 5. a race with three fleet cars: #98 to #100 in your colors; they don't count against your position
     start = lambda levels: (js(f"progress.levels = {{ {levels}, fleet: 3 }}; refreshCar()"), pg.tap("#drive"), pg.wait_for_function("run.phase === 'run'", timeout=15000))
     start(HANDS)
     check("fleet cars: #98 to #100", js("racers().filter(c => c.fleet).map(c => c.racer).sort((a, b) => a - b)") == [98, 99, 100], js("racers().filter(c => c.fleet).map(c => c.racer)"))
-    check("in your colours", js("racers().find(c => c.racer === 99).look.rear === racerSprite(99, true, true).rear && racerSprite(99, true, true).rear !== racerSprite(99, true).rear"))
+    check("in your colors", js("racers().find(c => c.racer === 99).look.rear === racerSprite(99, true, true).rear && racerSprite(99, true, true).rear !== racerSprite(99, true).rear"))
     js("rivals().forEach(c => c.z = odo - 9000); racers().filter(c => c.fleet).forEach((c, i) => Object.assign(c, { z: odo + 18 + 14 * i, lane: i % 2, x: MY_LANES[i % 2] }))")
     pg.wait_for_timeout(150); pg.screenshot(path=f"{OUT}/fleet_cars.png")
     check("ahead of every rival, behind your fleet: P1", js("position()") == 1, js("position()"))
@@ -93,17 +93,17 @@ with sync_playwright() as p:
     print("   [s, fleet car's lane, rival's lane, rival m ahead of it, fleet car m ahead of you]:", trace)
     check("the fleet car moves across in front of the rival", any(t[1] == 1 for t in trace[:3]), trace[:3])
     check("and holds it up for 5 s (it would have passed in 3)", all(t[3] < 0 for t in trace), [t[3] for t in trace])
-    # 8. Racing: 20% of the metres the fleet drove, into the bank at the finish, and in the report
+    # 8. Racing: 20% of the meters the fleet drove, into the bank at the finish, and in the report
     js("progress.levels.dues = 2; racers().filter(c => c.fleet).forEach(c => c.grid = c.z - 1000); window.bank0 = progress.bank")
     js("run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
     got = js("({ dues: run.dues, gain: run.gain, banked: progress.bank - bank0, report: $('report').textContent })")
-    check("dues: 20% of the fleet's metres (3 cars, 1 km and more each)", got["dues"] >= 600 and got["banked"] == got["gain"] + got["dues"], {k: v for k, v in got.items() if k != "report"})
+    check("dues: 20% of the fleet's meters (3 cars, 1 km and more each)", got["dues"] >= 600 and got["banked"] == got["gain"] + got["dues"], {k: v for k, v in got.items() if k != "report"})
     check("the report shows them", f"racing +{got['dues']:,} m" in got["report"], got["report"][-90:])
     # 9. tuning: fleet cars 25% quicker at level 5; rivals as before
     js("progress.levels.fleetPace = 5; refreshCar()"); pg.tap("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     got = js("[racers().find(c => c.racer === 99).want / pace(99), racers().find(c => c.racer === 40).want / pace(40)].map(x => +x.toFixed(2))")
     check("Crew tuning 5: your racers 25% quicker, rivals as before", got == [1.25, 1], got)
-    # 10. the sonar: the road 250 m each way from above, every car on it in its colour; clear of the controls; gone in
+    # 10. the sonar: the road 250 m each way from above, every car on it in its color; clear of the controls; gone in
     # the garage
     def sonar(page, shot):
         page.evaluate("""(() => { const fl = racers().filter(c => c.fleet); rivals().forEach(c => c.z = odo - 120);
@@ -120,7 +120,7 @@ with sync_playwright() as p:
     check("phone: the sonar shows the 3 fleet cars within 250 m (not the one 420 m back)", shown == "block" and n == 3, [shown, n])
     check("phone: clear of the menu button, the shifter, the mirror and the display", not hits and s[0] >= 0, {"sonar": [round(v) for v in s], "overlaps": hits})
     # drawn at once (it redraws 15 times a second), what it shows against the road: each kind of car counted, the fleet
-    # cars' blips where they are (ahead up, across to scale), you, and the colours
+    # cars' blips where they are (ahead up, across to scale), you, and the colors
     got = js("""(() => { sonarAt = 0; renderSonar(); const b = $('sonar-blips'), near = traffic.filter(c => !c.wreck && Math.abs(c.z - odo) < 250);
         const at = e => [+e.getAttribute('cx'), +e.getAttribute('cy')];
         return { ally: b.querySelectorAll('.ally').length, rival: b.querySelectorAll('.rival').length, car: b.querySelectorAll('.car').length,
@@ -134,7 +134,7 @@ with sync_playwright() as p:
           and sorted(cy < 43 for (_, dz), (_, cy) in zip(got["allies"], got["blips"])) == sorted(dz > 0 for _, dz in got["allies"]) == [False, False, True],
           {"allies": got["allies"], "blips": got["blips"]})
     check("you: the arrow in the middle, in your lane", got["you"][1] == f"translate({66 + 4.4 * got['you'][0]:.1f},43)", got["you"])
-    check("the colours: traffic yellow, the fleet green, the rivals white", got["fill"] == {"car": "rgb(238, 204, 68)", "ally": "rgb(51, 255, 102)", "rival": "rgb(238, 238, 238)"}, got["fill"])
+    check("the colors: traffic yellow, the fleet green, the rivals white", got["fill"] == {"car": "rgb(238, 204, 68)", "ally": "rgb(51, 255, 102)", "rival": "rgb(238, 238, 238)"}, got["fill"])
     seen = set()  # a police car (an ordinary one made one, for the drawing only): red, then blue, every quarter second
     for _ in range(12):
         seen.add(js("""(() => { const c = traffic.find(c => !c.racer && !c.runner && !c.wreck && !c.police && !c.tank); c.z = odo + 150; c.police = true;

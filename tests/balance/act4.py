@@ -5,7 +5,7 @@ past 60% damage, and once it has Hunter, the aid that does the same, it leaves t
 It runs the crew as act3.py's bot does (the oil runs on through act 4: the owner, 27 Oct): sends with oil.js's
 bestSpot (raiders at the car in the reticle first, once it has the Raiders card), and splits the roles before each race
 by the room on the road, up to 6 raiders, the rest racing. After each race:
-metres pay the repairs and the rest becomes fuel at the pump price; fuel buys Racing and tuning first, then more cars;
+meters pay the repairs and the rest becomes fuel at the pump price; fuel buys Racing and tuning first, then more cars;
 scrap buys the War Rig upgrades, the cheapest first (Auto gun too: it fires no more than the bot already does, but a
 phone player would buy it). Usage: act4.py [races] [seed] [overrides], the overrides
 some JavaScript run first to try other numbers, such as "SCRAP.car = 20; UPGRADES.guns.base = 80"."""
@@ -19,7 +19,7 @@ from common import URL, launch
 START = dict(power=10, rev=4, gears=3, tyres=4, time=6, clutch=1, gas=1, shift=1, steer=1, cruise=1, engine=2, flash=5, grid=100,
              rolling=6, reckless=1, chicken=1, ecuRev=4, recklessCruise=1, cooling=3, ecuPower=4, nitro=5,
              fleetTab=1, fleet=51, harvesting=1, brewing=1, sonarRange=1, crudeTank=1, fleetPace=1)
-RESERVE = 3000   # metres kept back for the nitro refill and repairs
+RESERVE = 3000   # meters kept back for the nitro refill and repairs
 FLEET = ["dues", "fleetPace", "fleet"]
 WARRIG = ["warrigTab", "bullbar", "armour", "spikes", "guns", "autogun", "baddrivers", "hunter", "pack"]  # the tab first
 RACES = int(sys.argv[1]) if len(sys.argv) > 1 else 60
@@ -56,7 +56,7 @@ with sync_playwright() as p:
                   return {{ p: run.race && run.race.p, dnf: run.race && run.race.dnf, totals: run.totals, scrap: run.scrap, heat: Math.round(progress.wanted * 100),
                   dmg: Math.round(progress.damage), tank: run.tank ? Math.round(Math.max(0, run.tank.hp ?? tankHealth())) : null, beat: run.beatTank,
                   hit: run.race && run.race.dnf === 'head-on' ? (impact.car.police ? 'police' : 'traffic') : '', fuel: run.fuel }}; }})()""")
-        js("while (repair() && progress.damage > 0);")  # metres pay the repairs
+        js("while (repair() && progress.damage > 0);")  # meters pay the repairs
         js(f"convert(Math.max(0, Math.floor((progress.bank - {RESERVE}) / pumpPrice())))")
         # the roles as act3.py's bot splits them: as many riders as the road has room for, the rest racing (the gang)
         js("""(() => { const m = Math.max(30, progress.pace) * runTime(), spots = nextSpots().filter(s => s.z < m), big = biggest(), n = fleetSize();

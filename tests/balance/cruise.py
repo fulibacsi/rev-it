@@ -1,5 +1,5 @@
 """Autocruise at speed, simulated: the car act2.py reaches P1 with, on autocruise (or Reckless auto-drive), through
-traffic over many traffic seeds. Prints the metres a run (mean and spread), the share of the run spent on the brake,
+traffic over many traffic seeds. Prints the meters a run (mean and spread), the share of the run spent on the brake,
 and the crashes. Usage: cruise.py [runs] [plain|reckless]"""
 import json, sys
 from playwright.sync_api import sync_playwright

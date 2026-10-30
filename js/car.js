@@ -1,23 +1,23 @@
-// Drivetrain: gearbox, clutch, brake and road speed (longitudinal car physics as in Marco Monster's
+// Drivetrain: transmission, clutch, brake and road speed (longitudinal car physics as in Marco Monster's
 // "Car Physics for Games": engine torque through the gear ratios against drag, rolling resistance and brakes).
 const CAR = {
-  wheel: 0.32,                                  // tyre radius, m
-  gears: [0, 3.5, 2.1, 1.45, 1.1, 0.9, 0.75, 0.62], // gearbox ratios; index 0 is neutral; 7th: Distance's overdrive
+  wheel: 0.32,                                  // tire radius, m
+  gears: [0, 3.5, 2.1, 1.45, 1.1, 0.9, 0.75, 0.62], // transmission ratios; index 0 is neutral; 7th: Distance's overdrive
   drag: 0.42,                                   // air drag, N per (m/s)²  (½ · air density · Cd · frontal area)
   roll: 200,                                    // rolling resistance, N
-  grip: 0.9,                                    // tyre friction: drive force tops out at grip · weight (wheelspin)
-  slide: 0.7,                                   // a spinning tyre only grips this share of that until it hooks up again
+  grip: 0.9,                                    // tire friction: drive force tops out at grip · weight (wheelspin)
+  slide: 0.7,                                   // a spinning tire only grips this share of that until it hooks up again
   bite: [0.25, 0.75],                           // clutch pedal travel: fully engaged above / free below this range
   stall: 0.5,                                   // stalls when dragged below this share of idle rpm
 };
 const RAD = 2 * Math.PI / 60; // rpm -> rad/s
 
 // clutchPedal / brakePedal: 0..1 how far each pedal is pressed; clutch: engagement 0..1 (1 = pedal up);
-// speed: m/s; odo: metres driven; locked: clutch and tyres not slipping; spinning: the tyres are (wheelspin)
+// speed: m/s; odo: meters driven; locked: clutch and tires not slipping; spinning: the tires are (wheelspin)
 let gear = 0, clutch = 1, clutchPedal = 0, brakePedal = 0, speed = 0, odo = 0, locked = false, stalled = false;
 let spinning = false;
 // lane: 0 the right lane, 1 the passing lane, 2 and 3 the oncoming lanes (ROAD_LANES in road.js), open up to
-// openLanes; carX: the car's centre, m from the centre line, gliding over to its lane at slide m/s; crashed: ran
+// openLanes; carX: the car's center, m from the center line, gliding over to its lane at slide m/s; crashed: ran
 // into a car this step, impact: how ({ kmh, headOn, car }); brokenGears: gears that won't go in (Distance's damage)
 let lane = 0, fromLane = 0, carX = 0, slide = 0, crashed = false, impact = null, openLanes = 2, brokenGears = [];
 let steering = 1; // how quickly the car moves over (Distance's steering upgrade)
@@ -70,7 +70,7 @@ const revsIn = g => speed * CAR.gears[g] * engine.final / CAR.wheel / RAD; // ..
 // torque the clutch holds before slipping: a margin over the engine's strongest pull
 function clutchCapacity(e) { return 1.3 * e.inertia * e.drive * RAD * (e.turbo ? 1.2 : 1) * (nitro ? NITRO : 1); }
 
-// the gear lever moving into gear g (0 = neutral). Out of gear is always possible; into a gear with the engine
+// the gear shifter moving into gear g (0 = neutral). Out of gear is always possible; into a gear with the engine
 // running needs the clutch down, otherwise the gears grind and it won't go in.
 function engage(g) {
   if (brokenGears.includes(g)) return false; // the gate has no slot for it any more
@@ -79,15 +79,15 @@ function engage(g) {
   return true;
 }
 
-// m/s² the brakes can do: as much as the tyres grip, as with ABS (the Tyres upgrade's 0.8 to 1.2 g), whatever the car
+// m/s² the brakes can do: as much as the tires grip, as with ABS (the Tires upgrade's 0.8 to 1.2 g), whatever the car
 // weighs. A fixed 11,000 N had the heavier engines stopping worse (0.68 g in the V8) as the speeds went up
 const brakeDecel = () => CAR.grip * 9.81;
-// N holding the car back: air, tyres, brakes and gravity along the slope (negative downhill)
+// N holding the car back: air, tires, brakes and gravity along the slope (negative downhill)
 function resistance() { return CAR.drag * speed * speed + CAR.roll + brakePedal * brakeDecel() * engine.mass + engine.mass * 9.81 * roadSlope(odo); }
-// torque at the crank that would just break the tyres loose in this gear while engine and wheels turn together
+// torque at the crank that would just break the tires loose in this gear while engine and wheels turn together
 function gripTorque() {
   const e = engine, G = ratio(), Jc = e.mass * (CAR.wheel / G) ** 2, tyres = CAR.grip * e.mass * 9.81 * CAR.wheel / G;
-  return (tyres * (e.inertia + Jc) - e.inertia * resistance() * CAR.wheel / G) / Jc; // solves passed = tyres below
+  return (tyres * (e.inertia + Jc) - e.inertia * resistance() * CAR.wheel / G) / Jc; // solves passed = tires below
 }
 
 // one physics step; alpha: the engine's free-rev acceleration (rpm/s) from updateEngine()
@@ -97,7 +97,7 @@ function stepCar(dt, alpha) {
   const [bite0, bite1] = CAR.bite; // the clutch bites in the middle of the pedal's travel
   clutch = Math.min(1, Math.max(0, (bite1 - clutchPedal) / (bite1 - bite0)));
   const resist = resistance();
-  // torque the clutch, or the tyres if they give first, can pass between engine and wheels
+  // torque the clutch, or the tires if they give first, can pass between engine and wheels
   const clutchCap = clutch * clutchCapacity(e);
   const tyreCap = (spinning ? CAR.slide : 1) * CAR.grip * e.mass * 9.81 * CAR.wheel / G;
   const cap = G && running ? Math.min(clutchCap, tyreCap) : 0;
@@ -123,7 +123,7 @@ function stepCar(dt, alpha) {
     if (Math.abs(passed) <= cap) {
       speed = Math.max(0, speed + accel * CAR.wheel / G * dt);
       rpm = wheelRpm();
-    } else locked = false; // more torque than the clutch or tyres can take: they start to slip
+    } else locked = false; // more torque than the clutch or tires can take: they start to slip
   }
   if (!locked) {
     // slip direction: as it is, or, the moment a lock breaks, the way the torque was pushing
@@ -132,6 +132,6 @@ function stepCar(dt, alpha) {
     push(Tc * G / CAR.wheel);
     if (Math.sign(rpm - wheelRpm()) !== dir) { locked = true; rpm = wheelRpm(); } // speeds met: grab
   }
-  spinning = !locked && tyreCap < clutchCap; // slipping, and it's the tyres that gave
+  spinning = !locked && tyreCap < clutchCap; // slipping, and it's the tires that gave
   if (clutch > 0.5 && rpm < e.idle * CAR.stall) { state = 'off'; stalled = true; } // dragged down: stall
 }

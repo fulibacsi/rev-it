@@ -1,11 +1,11 @@
-// Rev: parked on the hard shoulder, keep the revs inside the target band; the band moves every few seconds.
+// Rev: parked on the shoulder, keep the revs inside the target band; the band moves every few seconds.
 // The original game of this app, now in the cockpit. Levels: [band width rpm, points per second].
 const REV = {
   id: 'rev', name: 'Rev', hud: 'levels', parked: true,
   blurb: 'Parked on the shoulder: keep the revs inside the band. It moves every 5 seconds.',
   levels: makeLevels([[1600, 5], [1200, 8], [900, 10], [700, 15], [550, 20], [420, 30], [300, 40]], 2, 6, 6),
   TARGET: 5, // seconds each band lasts
-  gears: () => 0, // handbrake on, stays in neutral: no slots in the gate
+  gears: () => 0, // parking brake on, stays in neutral: no slots in the gate
   start() { this.levels.reset(); Object.assign(this, { lo: 0, hi: 0, left: 0, on: false }); },
   update(dt) {
     speed = 0;
@@ -23,7 +23,7 @@ const REV = {
     this.band(mid);
     this.left = this.TARGET;
   },
-  band(mid) { // centred on mid, as wide as the level allows
+  band(mid) { // centered on mid, as wide as the level allows
     const width = this.levels.table[this.levels.level][0];
     this.lo = Math.round((mid - width / 2) / 50) * 50;
     this.hi = this.lo + width;

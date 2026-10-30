@@ -1,8 +1,8 @@
-"""The third act, simulated: the crew (26 Oct). From the first win (P1), with the car and the metres act 2 leaves, race
+"""The third act, simulated: the crew (26 Oct). From the first win (P1), with the car and the meters act 2 leaves, race
 after race until the crew is 51: the gang (act 4). The bot drives like act2.py's and runs the crew as a sensible player
 would (docs/design-notes.md, Act 3 redesign), with oil.js's bestSpot: at most 4 presses of SEND a second, a spot only a
 second after it shows on the tracker, the one ahead with the most to pay before you pass it that its free cars can fill
-(with Overfill, the spare cars on the richest). Between races it turns the metres it doesn't need into fuel at the
+(with Overfill, the spare cars on the richest). Between races it turns the meters it doesn't need into fuel at the
 converter; once the oil is on it rides as many cars as the next run's road has room for (1.3 places in reach a car)
 and races the rest, with enough harvesters and brewers for the biggest spots and more brewers with crude in the tank;
 it saves for the first levels of Harvesting and Sonar range, buys a bigger tank when it ended a run full, and otherwise
@@ -20,8 +20,8 @@ from common import URL, launch
 # the car at P1 in act2.py's runs (13 Oct): everything but 7th gear and Daredevil
 ACT2 = dict(power=10, rev=4, gears=3, tyres=4, time=6, clutch=1, gas=1, shift=1, steer=1, cruise=1, engine=2, flash=5, grid=100,
             rolling=6, reckless=1, chicken=1, ecuRev=4, recklessCruise=1, cooling=3, ecuPower=4, nitro=5)
-BANK = 44000     # metres unspent at P1 in act2.py's runs (18 Oct, after the traffic and brakes fixes: 40-47k)
-RESERVE = 3000   # metres kept back for the nitro refill and repairs
+BANK = 44000     # meters unspent at P1 in act2.py's runs (18 Oct, after the traffic and brakes fixes: 40-47k)
+RESERVE = 3000   # meters kept back for the nitro refill and repairs
 CREW = ["fleetTab", "fleet", "harvesting", "brewing", "sonarRange", "crudeTank", "wells", "overfill", "doubleUp", "fleetPace"]
 GOAL = 51        # crew: the gang
 RACES = int(sys.argv[1]) if len(sys.argv) > 1 else 60
@@ -46,7 +46,7 @@ with sync_playwright() as p:
         js(f"{f'rng = {SEED * 1000 + race}; ' if SEED is not None else ''}window.nextPress = 0; simRun({json.dumps(lv)}, 2, 1, {{}}, true)")
         r = js("""({ p: run.race && run.race.p, dnf: run.race && run.race.dnf, m: run.gain, team: run.team, dues: run.dues, crude: run.crude, fuel: run.fuel,
                   riders: riders(), worked: run.worked, t: runTime() - run.left, oil: progress.oil, tank: progress.crude })""")
-        js("while (repair() && progress.damage > 0);")  # metres pay the repairs
+        js("while (repair() && progress.damage > 0);")  # meters pay the repairs
         got = js(f"(() => {{ const n = Math.max(0, Math.floor((progress.bank - {RESERVE}) / pumpPrice())); convert(n); return n; }})()")
         # the roles, once the oil is on (the script's until then): as many riders as the next run's road has room for (the
         # places in the tracker's reach, 1.3 a car), the rest racing; enough harvesters for the biggest oil spot and

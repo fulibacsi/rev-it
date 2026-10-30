@@ -39,10 +39,10 @@ with sync_playwright() as p:
         const f = () => { out.push(+brakePedal.toFixed(2)); out.length < 20 ? requestAnimationFrame(f) : res(out); }; // lasts one
         requestAnimationFrame(f); })"""); kb.up("b")
     check("your foot on the brake: autocruise leaves it to you", min(got) == 1, got)
-    # 4. knocked into neutral while the tyres spin (a broken gear, a shift): Auto gas stays a number, the revs too
+    # 4. knocked into neutral while the tires spin (a broken gear, a shift): Auto gas stays a number, the revs too
     got = js("(() => { gear = 0; spinning = true; locked = false; autoGas(); return Number.isFinite(gasPedal) ? gasPedal : String(gasPedal); })()")
     pg.wait_for_timeout(300)
-    check("neutral with the tyres spinning: Auto gas floors it (no NaN), the revs stay a number", got == 1 and js("Number.isFinite(rpm)"), [got, js("rpm")])
+    check("neutral with the tires spinning: Auto gas floors it (no NaN), the revs stay a number", got == 1 and js("Number.isFinite(rpm)"), [got, js("rpm")])
     # 5. on the move, your foot on the brake: Auto gas lifts off (it held the gas down, so braking by hand slowed the car
     #    less than half as hard), and floors it again once you let go. Measured in game time (the run's clock)
     js("traffic.forEach(c => c.z = odo + 4000)"); pg.wait_for_function("gear >= 3 && speed > 30 && gasPedal > 0.5", timeout=10000)

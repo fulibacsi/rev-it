@@ -51,7 +51,7 @@ with sync_playwright() as p:
     js(f"({SETUP})(1); speed = 60; Object.assign(prey, {{ lane: 0, x: MY_LANES[0], z: odo + 250, v: 40, want: 40, d: 250 }}); 0")
     got = js(f"({WATCH})(16)")
     check("far off in your lane: no steering round it, into it", got["lanes"] == [0] and got["hit"] and got["brake"] < 0.3, got)
-    # 2d. a wreck skidding off in your lane (the car just totalled): no swerving or braking for it, it can't be hit
+    # 2d. a wreck skidding off in your lane (the car just totaled): no swerving or braking for it, it can't be hit
     js(f"({SETUP})(0); speed = 60; Object.assign(prey, {{ lane: 0, x: MY_LANES[0], z: odo + 60, v: 20, want: 20, wreck: true, hp: 0, d: 60 }}); impact = null; 0")
     got = js("""() => new Promise(res => { const t0 = performance.now(), out = { lanes: new Set(), brake: 0 };
       const f = () => { out.lanes.add(lane); out.brake = Math.max(out.brake, brakePedal);

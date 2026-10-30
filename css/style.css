@@ -10,7 +10,7 @@ body:not([data-game="distance"]) #kit { display: none; }
 #cracks { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; fill: none;
           stroke: #f4f6ffcc; stroke-width: 1.6; stroke-linejoin: round; filter: drop-shadow(0 0 1px #000a); }
 
-/* head-up display, projected on the windscreen */
+/* heads-up display, projected on the windshield */
 #hud { position: fixed; left: 50%; top: 45vh; transform: translateX(-50%); width: 360px; text-align: center;
        color: var(--hud); text-shadow: 0 0 8px #0f8a, 0 0 2px #000;
        font-variant-numeric: tabular-nums; pointer-events: none; }
@@ -55,7 +55,7 @@ body:not([data-game="distance"]) #kit { display: none; }
 .low #timer-fill { background: linear-gradient(#ff8a7a, #d33); box-shadow: 0 0 10px #f448; animation: blink 0.5s steps(2) infinite; }
 @keyframes blink { 50% { opacity: 0.45; } }
 /* the car stereo (stereo.js): a row of lights in the cluster's hood that jumps with the beat, tapped for the next
-   tape; on a desktop also a head unit in the dash, left of the cluster: the tape's name, an 8-band equaliser, a button */
+   tape; on a desktop also a head unit in the dash, left of the cluster: the tape's name, an 8-band equalizer, a button */
 #beat, #beat-hit { display: none; }
 .has-stereo #beat, .has-stereo #beat-hit { display: inline; }
 #beat-hit { pointer-events: fill; cursor: pointer; touch-action: none; }
@@ -86,7 +86,7 @@ body:not([data-game="distance"]) #kit { display: none; }
 .has-heat #scanner { display: block; }
 .garage #scanner { display: none; }
 
-/* the gang's AR layer on the windscreen: a reticle round the target car, its health above it */
+/* the gang's AR layer on the windshield: a reticle round the target car, its health above it */
 #ar { display: none; position: fixed; pointer-events: none; --ar: #ff5a3c; filter: drop-shadow(0 0 3px #f40a); }
 .ar-on #ar { display: block; }
 .garage #ar { display: none; }
@@ -114,7 +114,7 @@ body:not([data-game="distance"]) #kit { display: none; }
 #sonar-blips .red { fill: #f33; }
 #sonar-blips .blue { fill: #39f; }
 #sonar-blips .tank { fill: #f22; }
-/* act 3's crew (oil.js): the tracker on the sonar's right, ‹ SEND › under them, the tag on the windscreen over the spot
+/* act 3's crew (oil.js): the tracker on the sonar's right, ‹ SEND › under them, the tag on the windshield over the spot
    picked, the crude tank on the right A-pillar (the police scanner's place, which comes only in act 4, when the whole
    crew races and the tank goes) */
 #tracker { display: none; position: fixed; left: calc(5vw + 116px); top: 96px; width: 132px; pointer-events: none; }
@@ -149,7 +149,7 @@ body:not([data-game="distance"]) #kit { display: none; }
 .has-flash #stalk, .has-flash #stalk-hit { display: inline; }
 #stalk-hit { pointer-events: stroke; cursor: pointer; touch-action: none; }
 #stalk { transition: transform 0.06s; }
-.flashing #stalk { transform: translate(-3px, 9px); } /* pulled towards you */
+.flashing #stalk { transform: translate(-3px, 9px); } /* pulled toward you */
 #flash { position: absolute; left: 50%; top: -10px; opacity: 0; white-space: nowrap; font-size: 30px; font-weight: bold; }
 .garage #hud { display: none; }
 
@@ -277,7 +277,7 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
 #menu-button { position: fixed; left: 9vw; top: 52px; z-index: 5; width: 38px; height: 34px; border-radius: 8px;
                background: #0b0d16cc; color: #ccc; border: 1px solid #2c3140; font-size: 18px; cursor: pointer; }
 
-/* garage between runs, over the windscreen */
+/* garage between runs, over the windshield */
 #garage { display: none; position: fixed; z-index: 4; /* over the controls on small screens */ left: 50%; top: 5vh; transform: translateX(-50%); width: min(780px, 66vw);
           max-height: 80vh; overflow: auto; /* over the cluster too: nothing to read there in the garage */ box-sizing: border-box; padding: 14px 16px; border-radius: 12px;
           background: #0b0d16ee; border: 1px solid #2c3140; font-size: 13px; color: #bbb; }
@@ -314,7 +314,7 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
 .card.locked { border-style: dashed; opacity: 0.5; } /* only its name and what it needs: what it does is a surprise */
 .card.exchange { grid-column: span 2; border-color: #3a5a8a; }
 .card.exchange input { width: 100%; margin: 2px 0; accent-color: var(--accent); touch-action: pan-x; }
-/* the role card (oil.js): wide, the crew's split as a bar in the roles' colours, a slider for each role between − and + */
+/* the role card (oil.js): wide, the crew's split as a bar in the roles' colors, a slider for each role between − and + */
 .card.roles { grid-column: span 2; border-color: #2f6b46; --racer: #3f6; --harvester: #ffb03a; --brewer: #7ab8ff; --raider: #ff6a4a; }
 .card.roles .split { display: flex; height: 10px; margin: 2px 0 4px; border-radius: 5px; overflow: hidden; background: #262a36; }
 .card.roles .split i { display: block; min-width: 0; transition: flex-grow 0.1s; }
@@ -364,7 +364,7 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
 .depth::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; border-radius: 2px;
                 height: calc(var(--depth, 0) * 100%); background: var(--accent); } /* how far the pedal is pressed */
 
-/* touch layout (phones and tablets held sideways): gear lever on the left, pedals on the right, all bigger.
+/* touch layout (phones and tablets held sideways): gear shifter on the left, pedals on the right, all bigger.
    dvh: the height actually visible between the browser's bars; env(): clear of the notch */
 .touch { --hud-scale: 1; --shifter-h: min(52vh, 300px);
           /* clear of the screen's swipe zones (home bar: app switcher; left edge: back) and the notch or island */
@@ -383,7 +383,7 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
 .touch #shifter { left: var(--edge-l); top: auto; bottom: var(--edge-b); height: calc(var(--shifter-h) * 3.2 / var(--gate-w)); }
 .touch #ignition { left: calc(var(--edge-l) + var(--shifter-h) * 3.2 / 3.5 + 8px); /* right of the shifter */
                    top: 62vh; top: 62dvh; /* as wide as the room left of the cluster (its left edge at 36vw), at least
-                   48px: the notch pushes the shifter in, and the key once covered the rev counter */
+                   48px: the notch pushes the shifter in, and the key once covered the tachometer */
                    width: max(48px, min(10vw, 90px, calc(36vw - var(--edge-l) - var(--shifter-h) * 3.2 / 3.5 - 14px))); }
 .touch #pedals { right: var(--edge-r); bottom: var(--edge-b); gap: 1.5vw; }
 .touch .pedal { width: 8.5vw; }

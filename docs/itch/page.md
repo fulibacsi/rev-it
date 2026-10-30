@@ -26,10 +26,10 @@ A stick shift, a coast road at sunset, and a few seconds to see how far you get.
 **Rev It** is a stick-shift car with real engine sounds, and a coast road at sunset. Turn the key, push the clutch
 down, find first, ease off the clutch, and drive as far as you can before the clock runs out.
 
-Every metre you drive is money for the garage: more power, more gears, grippier tyres, more seconds on the clock.
+Every meter you drive is money for the garage: more power, more gears, grippier tires, more seconds on the clock.
 Or buy a robot driver, an aid at a time, that works the same pedals and lever you do, until the car drives itself.
 
-- A real H-pattern gearbox: drag the knob through the H, clutch down, or use the arrow keys. Stall it, and the
+- A real H-pattern transmission: drag the knob through the H, clutch down, or use the arrow keys. Stall it, and the
   engine dies.
 - Engine sounds from real cars: a JDM boxer, a muscle V8, a turbo straight six.
 - A car stereo with synthwave tapes.
@@ -43,17 +43,17 @@ car ahead out of your lane · M next tape · Esc pause.
 
 **A game in progress.** Rev It is still being made, and what you think shapes it: tell us with FEEDBACK, under
 STATS once you've played. On your first visit the game asks whether you'll send anonymous gameplay data; it sends
-it only with the box ticked: your runs, progress, upgrades and time played, touch or keys, the kind of device, the
+it only with the box checked: your runs, progress, upgrades and time played, touch or keys, the kind of device, the
 screen's size, and any errors. No personal data: no name, no account, nothing that tells us who you are. Change it
 any time in SETTINGS. Feedback goes with your play stats, nothing more.
 
-**Credits.** Code by fulibacsi, open source under the MIT licence:
+**Credits.** Code by fulibacsi, open source under the MIT license:
 [github.com/fulibacsi/rev-it](https://github.com/fulibacsi/rev-it).
 Engine sounds from [Freesound](https://freesound.org) (CC0), and "Car Engine Start, Rev, Idle, Switch Off" by
 iainmccurdy ([CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)), cut and looped.
 Cars: [JDM 90s pack](https://patricio449.itch.io/car-pack-jdm-sprites-whit-tuning-parts) by
 [Pay 'n' Sprite](https://patricio449.itch.io/).
 Music: "Neon Laser Horizon", "Chill Wave" and "Newer Wave" Kevin MacLeod (incompetech.com), Licensed under Creative
-Commons: By Attribution 4.0 License, http://creativecommons.org/licenses/by/4.0/ (levelled and re-encoded); the
+Commons: By Attribution 4.0 License, http://creativecommons.org/licenses/by/4.0/ (leveled and re-encoded); the
 other tapes by fulibacsi, made with [Suno](https://suno.com).
 Every detail: [CREDITS.md](https://github.com/fulibacsi/rev-it/blob/main/CREDITS.md).

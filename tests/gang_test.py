@@ -1,8 +1,8 @@
 """War Rig: nothing before 51 crew cars, nor in the garage at 51 (the owner, 27 Oct); then, about 5 s into the next run,
-the gang's moment on the road: its tutorial (total a car) and the AR layer on the windscreen, a reticle and a health
-bar on the nearest car ahead, kept until you pass it. The first car totalled leaves 3 s on the clock, then act IV. Bumps hurt the car you hit;
-at 0 health it skids onto the shoulder, out of your way, and pays scrap. A totalled rival is out of the race. The
-first total puts the War Rig's tab on sale, the page paid in scrap; a bull bar hurts them more and costs you less speed. Armour takes
+the gang's moment on the road: its tutorial (total a car) and the AR layer on the windshield, a reticle and a health
+bar on the nearest car ahead, kept until you pass it. The first car totaled leaves 3 s on the clock, then act IV. Bumps hurt the car you hit;
+at 0 health it skids onto the shoulder, out of your way, and pays scrap. A totaled rival is out of the race. The
+first total puts the War Rig's tab on sale, the page paid in scrap; a bull bar hurts them more and costs you less speed. Armor takes
 off your damage, spiked hubs make a side-swipe free and harder; your racers only race (no side-swipes, no shots: the
 war is the raiders', raiders_test). Guns, last: the wheel's red marker turns into the trigger (FIRE on it), shots hurt
 the car in the reticle within 200 m. The reticle moves to a nearer car when its own is out of reach, and starts afresh each race.
@@ -32,7 +32,7 @@ with sync_playwright() as p:
     got = js("[$('act-title').textContent, arOn(), crewOn()]")
     check("51 crew cars: still act III in the garage, no gang yet", got == ["ACT III · RECRUIT ▸", False, True] and "War Rig" not in tabs(), [got, tabs()])
     # 3. on the road: about 5 s in, the gang's moment, its tutorial once a car is in the reticle; the reticle on the
-    # nearest car ahead, at full health, labelled
+    # nearest car ahead, at full health, labeled
     js("progress.toured = progress.toured.filter(id => id !== 'warrig')")
     pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     js("""traffic.forEach(c => { if (!c.racer) { c.dir = -1; c.x = LANES.oncoming[0]; c.z = odo + 4000; } else if (!c.fleet) c.z = odo - 9000; else c.z = odo - 3000; });
@@ -73,21 +73,21 @@ with sync_playwright() as p:
     got = aside("""[{ v: 20, racer: 0 }, { v: 20, racer: 5 }, { v: 20, police: true }].map(c => { let n = 0;
         while (!c.wreck && n < 10) { ram({ car: c, kmh: 100, side: false, headOn: false }); n++; } return n; })""")
     check("hits to total, no bull bar: traffic 3, a racer 5, police 6", got == [3, 5, 6], got)
-    # 5. at 0 it is totalled: scrap, off onto the shoulder, out of your way; the reticle moves on to the next car
+    # 5. at 0 it is totaled: scrap, off onto the shoulder, out of your way; the reticle moves on to the next car
     js("cs[0].hp = 1; Object.assign(cs[0], { z: odo + 25, v: 5, want: 5 }); cs[0].hit = -1e9; Object.assign(cs[1], { z: odo + 120 })")
     trace = js("""() => new Promise(res => { const out = []; const f = () => { if (cs[0].wreck) out.push([+cs[0].x.toFixed(2), +cs[0].v.toFixed(2), Math.round(cs[0].z - odo)]);
         out.length < 12 ? requestAnimationFrame(f) : res(out); }; requestAnimationFrame(f); })""")
     got = js("({ scrap: progress.scrap, totals: progress.totals, run: run.scrap, next: target === cs[1] })")
-    check("totalled: 22 scrap, the next car in the reticle", got == {"scrap": 22, "totals": 1, "run": 22, "next": True}, got)
+    check("totaled: 22 scrap, the next car in the reticle", got == {"scrap": 22, "totals": 1, "run": 22, "next": True}, got)
     check("the first job done: 3 s left on the clock", 0 < js("run.left") <= 3 and js("run.phase") == "run", js("[run.left, run.phase]"))
     xs, vs = [t[0] for t in trace], [t[1] for t in trace]
-    check("the wreck skids towards the shoulder, slowing (then falls behind and is gone)", all(a < b for a, b in zip(xs, xs[1:])) and all(a >= b for a, b in zip(vs, vs[1:])) and js("crashes") <= 3,
+    check("the wreck skids toward the shoulder, slowing (then falls behind and is gone)", all(a < b for a, b in zip(xs, xs[1:])) and all(a >= b for a, b in zip(vs, vs[1:])) and js("crashes") <= 3,
           {"x": xs[::3], "v": vs[::3], "shoulder": js("+SHOULDER.toFixed(2)")})
     pg.screenshot(path=f"{OUT}/gang_wreck.png")
-    # 6. a totalled rival is out of the race: you move up
+    # 6. a totaled rival is out of the race: you move up
     js("window.r = rivals().find(c => c.racer === 30); Object.assign(r, { z: odo + 400, lane: 1, x: MY_LANES[1] })")
     p0 = js("position()"); js("total(r)"); p1 = js("position()")
-    check("a totalled rival is out of the race: up a place", p1 == p0 - 1, f"P{p0} -> P{p1}")
+    check("a totaled rival is out of the race: up a place", p1 == p0 - 1, f"P{p0} -> P{p1}")
     # 7. the first total puts the War Rig's tab on sale (1 scrap), a tap buys it; paid in scrap
     js("run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
     got = js("[$('act-title').textContent, currentCard().text(), currentCard().now?.()]")
@@ -182,7 +182,7 @@ with sync_playwright() as p:
     check("Auto gun switched off: no shots, the marker reads FIRE", js("[tg.hp, $('fire').textContent]") == [None, "FIRE"], js("[tg.hp, $('fire').textContent]"))
     js("progress.levels.autogun = 0; delete progress.off.autogun")
     # 15. the next race: its cars are new, so the reticle doesn't stay on the last one's rival still up the road
-    js("""window.tg = rivals().find(c => c.racer === 20 && !c.wreck) ?? rivals().find(c => !c.wreck); /* the gang may have totalled #20 */ traffic.forEach(c => { if (c !== tg) c.z = c.racer ? odo - 9000 : odo + 5000; });
+    js("""window.tg = rivals().find(c => c.racer === 20 && !c.wreck) ?? rivals().find(c => !c.wreck); /* the gang may have totaled #20 */ traffic.forEach(c => { if (c !== tg) c.z = c.racer ? odo - 9000 : odo + 5000; });
         Object.assign(tg, { lane: 0, x: MY_LANES[0], z: odo + 120, v: speed, want: speed, cool: 99, hp: null, wreck: false }); target = null""")
     pg.wait_for_function("target === tg", timeout=5000)
     js("Object.assign(tg, { z: odo + 2000, v: 60, want: 60 }); run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
@@ -208,7 +208,7 @@ with sync_playwright() as p:
         return { madLook: lookOf(m).madOf === m.look, saneLook: lookOf(s) === s.look, signals: indicator(m), weave: weave(m), still: weave(s) }; })()""")
     pg.wait_for_timeout(300)
     ws = [js("window.m ? weave(m) : null")] + [pg.wait_for_timeout(200) or js("window.m ? weave(m) : null") for _ in range(5)]  # over a second
-    check("a mad car: its own car gone to rust, no indicator as it moves over, weaving; a sane one as it was", isinstance(got, dict) and got["madLook"] and got["saneLook"]
+    check("a mad car: its own car gone to rust, no turn signal as it moves over, weaving; a sane one as it was", isinstance(got, dict) and got["madLook"] and got["saneLook"]
           and got["signals"] == 0 and got["still"] == 0 and all(w is not None and abs(w) <= 0.3 for w in ws) and max(ws) - min(ws) > 0.1, [got, ws])
     pg.screenshot(path=f"{OUT}/fuel_madness.png")
     got = js("""(() => { const o = traffic.find(c => !c.racer && !c.police && !c.wreck && !c.fleet && !c.tank && c !== m && mad(c));
@@ -216,7 +216,7 @@ with sync_playwright() as p:
         o.dir = 1; return r; })()""")
     check("an oncoming mad driver: its own car's mad front", got == {"mad": True, "own": True, "front": True}, got)
     got = aside("""(() => { Object.assign(m, { z: odo + 30, hp: null, wreck: false }); total(m); const r = [m.wreck, $('flash').textContent]; m.wreck = false; m.z = odo + 5000; return r; })()""")
-    check("a mad car's stolen fuel: double scrap", got == [True, "TOTALLED +44 SCRAP"], got)
+    check("a mad car's stolen fuel: double scrap", got == [True, "TOTALED +44 SCRAP"], got)
     js("progress.levels.baddrivers = 0; 0")
     # with a bull bar, the aids take the ram of a car that has just cut in: lane assist and autocruise look past it
     got = js("""(() => { const c = traffic.find(c => !c.racer && !c.police && !c.wreck); Object.assign(c, { dir: 1, z: odo + 30, x: MY_LANES[lane], cut: 2 });
@@ -228,7 +228,7 @@ with sync_playwright() as p:
     check("a mad driver's cut-in, with a bull bar: the aids take the ram (not without one, nor once it has settled)", got == [False, True, True], got)
     got = aside("""(() => { const c = traffic.find(c => !c.racer && !c.police && !c.wreck); Object.assign(c, { dir: 1, z: odo + 30, cut: 2, hp: null });
         ram({ car: c, kmh: 60, side: false, headOn: false }); const r = [c.wreck, $('flash').textContent]; c.wreck = false; c.z = odo + 5000; return r; })()""")
-    check("Fuel madness: ram a car that cut in, it's totalled", got == [True, "HAD IT COMING! +22 SCRAP"], got)
+    check("Fuel madness: ram a car that cut in, it's totaled", got == [True, "HAD IT COMING! +22 SCRAP"], got)
     # 17. the war kit shows on your car as bought, each part from its level up (the owner, 18 Oct); not in other games
     kit = "[...document.querySelectorAll('#kit > g')].filter(g => getComputedStyle(g).display !== 'none').map(g => g.dataset.kit)"
     js("Object.assign(progress.levels, { bullbar: 0, armour: 0, guns: 0, autogun: 0 }); renderKit(); 0")  # drawn now, not next frame

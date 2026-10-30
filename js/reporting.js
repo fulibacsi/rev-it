@@ -1,8 +1,8 @@
 // Feedback and gameplay data, from itch.io's build only (the owner, 22 Oct: the game is in progress, and players' word
 // shapes it). The repository leaves GATE empty, so GitHub Pages plays as before (SHARE, nothing sent); the itch.io build
-// (tools/build.py) fills it in. Then the first visit asks (main.js): gameplay data goes only with the box ticked, and
+// (tools/build.py) fills it in. Then the first visit asks (main.js): gameplay data goes only with the box checked, and
 // SETTINGS changes it. FEEDBACK takes SHARE's place (in STATS and on the ending) and sends a message with the player's
-// stats whatever the box says; ticked, the message can't be empty (the stats go anyway), unticked it can. Gameplay data
+// stats whatever the box says; checked, the message can't be empty (the stats go anyway), unchecked it can. Gameplay data
 // only, nothing personal: the save as it stands, the build, touch or keys, the kind of device, the screen's size, and
 // errors. Each goes to the gate (supabase/functions/report), which checks it and writes it; the page holds no key. A
 // failed send is dropped, and the game never waits on one.
@@ -21,7 +21,7 @@ function playStats() {
   return { layout: touchLayout() ? 'touch' : 'keys', screen: `${innerWidth}x${innerHeight}`, act: currentCard()?.id, save,
            device: /iPhone|iPad/.test(ua) ? 'iOS' : /Android/.test(ua) ? 'Android' : 'desktop' };
 }
-// gameplay data, with the box ticked: a game of Distance starting, each run's end, an error
+// gameplay data, with the box checked: a game of Distance starting, each run's end, an error
 function report(kind, data = {}) {
   try { if (settings.stats) post({ type: 'event', session, kind, build: BUILD, data: { ...playStats(), ...data } }); }
   catch { /* an error before the game has loaded: nothing to say yet */ }
@@ -39,7 +39,7 @@ const askStats = () => reporting() && settings.stats === undefined;
 function setStats(on) { settings.stats = on; saveSettings(); }
 function renderFeedback(note = '') {
   const empty = !$('feedback-text').value.trim();
-  $('feedback-send').disabled = settings.stats && empty; // ticked: the stats go anyway, so a word is needed
+  $('feedback-send').disabled = settings.stats && empty; // checked: the stats go anyway, so a word is needed
   $('feedback-note').textContent = note || (settings.stats ? '' : 'You can send it empty: just your play stats.');
 }
 async function submitFeedback() {

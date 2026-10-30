@@ -1,6 +1,6 @@
 """Fuel madness in the oncoming traffic (the War Rig page): a mad driver coming at you steers for you while you are on
 its side, and doesn't swerve for a game of chicken; a head-on with one is a hard crash, not the end of the run (it is
-totalled, for double scrap); with a sane driver a head-on still ends it. Back on your side, the mad ones leave you be."""
+totaled, for double scrap); with a sane driver a head-on still ends it. Back on your side, the mad ones leave you be."""
 from playwright.sync_api import sync_playwright
 from common import URL, launch
 CAR = ("power: 10, rev: 4, gears: 3, tyres: 4, time: 6, clutch: 1, gas: 1, shift: 1, engine: 2, flash: 5, reckless: 1, "
@@ -39,11 +39,11 @@ with sync_playwright() as p:
     got = js("them.swerve"); check("a mad driver won't chicken out", got is None, got)
     js(f"({SETUP})([false, 150, 2])"); js("them.x = carX; flashAhead(); 0")
     got = js("them.swerve"); check("a sane one swerves", got is not None, got)
-    # 3. a head-on with a mad driver: not the end, a hard crash; it is totalled, for double scrap
+    # 3. a head-on with a mad driver: not the end, a hard crash; it is totaled, for double scrap
     js(f"({SETUP})([true, 3, 2])"); js("them.x = carX; window.v0 = speed = 30; window.p0 = progress.scrap; 0")
     pg.wait_for_function("them.wreck || run.phase !== 'run'", timeout=5000); pg.wait_for_timeout(100)
     got = js("({ phase: run.phase, slower: speed < v0 * 0.5, damage: Math.round(progress.damage), scrap: progress.scrap - p0, flash: $('flash').textContent })")
-    check("a head-on with a mad driver: the run goes on, slower, hurt; it's totalled for 44 scrap",
+    check("a head-on with a mad driver: the run goes on, slower, hurt; it's totaled for 44 scrap",
           got["phase"] == "run" and got["slower"] and got["damage"] >= 40 and got["scrap"] == 44 and "HEAD-ON!" in got["flash"], got)
     # 4. back on your side, a mad one leaves you be
     js(f"({SETUP})([true, 200, 0])"); x0 = js("them.x"); pg.wait_for_timeout(1000)

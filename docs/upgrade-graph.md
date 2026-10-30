@@ -14,7 +14,7 @@ five levels of it. A label on a tab's arrow is a condition besides the price.
 | Autopilot | 500 m | Workshop | 2 km+ driven |
 | Black market | 1 point | Workshop | P100 |
 | Crew (the Fleet until 26 Oct) | 1 point | Black market | P1 |
-| War Rig | 1 scrap | Crew | totalled a car |
+| War Rig | 1 scrap | Crew | totaled a car |
 | Fortress (act 5, planned) | to set | War Rig | the tank beaten |
 
 ## The graph
@@ -25,8 +25,8 @@ flowchart TD
     workshop(["Workshop tab"])
     power["Power"]
     rev["Rev limit"]
-    gears["Gearbox"]
-    tyres["Tyres"]
+    gears["Transmission"]
+    tires["Tires"]
     time["Time"]
     steering["Steering"]
     stereo["Car stereo"]
@@ -78,7 +78,7 @@ flowchart TD
     warrig(["War Rig tab"])
     bullbar["Bull bar"]
     madness["Fuel madness"]
-    armour["Armour plating"]
+    armor["Armor plating"]
     spikes["Spiked hubs"]
     guns["Guns"]
     autogun["Auto gun"]
@@ -87,7 +87,7 @@ flowchart TD
     pack["Raiders"]
   end
 
-  workshop --> power & rev & gears & tyres & time & steering & stereo & flash
+  workshop --> power & rev & gears & tires & time & steering & stereo & flash
   power --> v8
   rev --> v8
   gears --> v8
@@ -128,8 +128,8 @@ flowchart TD
   overfill --> double
   double --> foreman
 
-  fleetTab -- "totalled a car" --> warrig
-  warrig --> bullbar & armour & spikes & radio & hunter
+  fleetTab -- "totaled a car" --> warrig
+  warrig --> bullbar & armor & spikes & radio & hunter
   bullbar --> madness
   spikes --> guns
   guns --> autogun
@@ -142,12 +142,12 @@ flowchart TD
 
 ## The rules
 
-1. **Bought is unlocked.** A tab or a card stays out of sight until one of its parents is bought. An arrow with a
-   count (**max**, **5+**) counts once the count is met: 7th gear shows once its tab is bought and the Gearbox maxed.
+1. **Bought is unlocked.** A tab or a card stays out of sight until one of its parents is bought. An arrow with a count
+   (**max**, **5+**) counts once the count is met: 7th gear shows once its tab is bought and the Transmission maxed.
 2. **To buy it, all its parents**, counts and conditions included.
-3. **Story conditions hide**: a tab waiting on one (P100, P1, a car totalled) stays out of sight until it is met and
+3. **Story conditions hide**: a tab waiting on one (P100, P1, a car totaled) stays out of sight until it is met and
    its parent bought. Any other condition (2 km driven) is part of its rule, in sight.
-4. **In sight and locked**, a card shows its name and its whole rule, what is done ticked. A parent still out of sight
+4. **In sight and locked**, a card shows its name and its whole rule, what is done checked. A parent still out of sight
    shows as ???: Flash recharge's in act I (Reckless driving) is a teaser, the owner's call.
 5. **A tab is bought by tapping it** in the tab row, where it shows with its price once in sight.
 6. **Free cards** (the Fuel converter) follow the same rules, with no price.
@@ -162,14 +162,14 @@ Each upgrade and what it needs, one line each: the list to edit.
 
 - Power ← Workshop
 - Rev limit ← Workshop
-- Gearbox ← Workshop
-- Tyres ← Workshop
+- Transmission ← Workshop
+- Tires ← Workshop
 - Time ← Workshop
 - Steering ← Workshop
 - Car stereo ← Workshop
 - Headlight flash ← Workshop
-- Muscle V8 ← Power, Rev limit, Gearbox
-- JDM Turbo I6 ← Muscle V8, Power max, Rev limit max, Gearbox max
+- Muscle V8 ← Power, Rev limit, Transmission
+- JDM Turbo I6 ← Muscle V8, Power max, Rev limit max, Transmission max
 - Flash recharge ← Headlight flash 5+, Reckless driving
 
 ### Autopilot (500 m; needs the Workshop, and 2 km+ driven)
@@ -192,7 +192,7 @@ Each upgrade and what it needs, one line each: the list to edit.
 - Cooling ← ECU: power
 - Nitro ← ECU: power
 - Daredevil ← Nitro max
-- 7th gear ← Nitro, Gearbox max
+- 7th gear ← Nitro, Transmission max
 - Reckless auto-drive ← Black market, Autocruise, 7th gear
 
 ### Crew (1 point; needs the Black Market, and reaching P1; the Fleet until 26 Oct)
@@ -211,11 +211,11 @@ Each upgrade and what it needs, one line each: the list to edit.
 - Double up ← Overfill
 - Foreman ← Double up (Scouting max and Sonar range max too until 27 Oct)
 
-### War Rig (1 scrap; needs the Crew, and a car totalled)
+### War Rig (1 scrap; needs the Crew, and a car totaled)
 
 - Bull bar ← War Rig
 - Fuel madness ← Bull bar
-- Armour plating ← War Rig
+- Armor plating ← War Rig
 - Spiked hubs ← War Rig
 - Guns ← Spiked hubs
 - Auto gun ← Guns
@@ -281,9 +281,9 @@ placing it) is open.
 ## What changed (23 Oct), against the game before
 
 - **The tabs are bought**: the Workshop and the Autopilot were open from the start, the Black market opened with the
-  reveal, the Fleet at P1, the War Rig with the first car totalled.
-- **Muscle V8** needs Power, Rev limit and Gearbox bought; it was 4,000 m with nothing before it.
-- **JDM Turbo I6** needs the V8, and Power, Rev limit and Gearbox maxed; it was 10,000 m after the V8.
+  reveal, the Fleet at P1, the War Rig with the first car totaled.
+- **Muscle V8** needs Power, Rev limit and Transmission bought; it was 4,000 m with nothing before it.
+- **JDM Turbo I6** needs the V8, and Power, Rev limit and Transmission maxed; it was 10,000 m after the V8.
 - **Flash recharge** needs 5 flashes and Reckless driving; it needed 10, and was on sale only after the reveal.
 - **Game of chicken** needs Flash recharge; it needed Headlight flash.
 - **The ECU** is a chain: ECU: rev limit, then ECU: power, then Cooling and Nitro; the first three needed only Reckless
@@ -293,7 +293,7 @@ placing it) is open.
   7th gear bought.
 - **Daredevil** needs Nitro maxed; it needed everything else maxed.
 - **The Fleet** needs the Black market, and the **War Rig** the Fleet.
-- **Mile converter**: the Exchange card (metres for miles), free, under the Fleet tab.
+- **Mile converter**: the Exchange card (meters for miles), free, under the Fleet tab.
 - **Fuel madness** needs Bull bar; it needed nothing.
 - **Hunter** needs the War Rig, Autocruise and Reckless auto-drive; it needed Autocruise.
 - **Hunting pack** needs Hunter, Fleet dues, Fleet tuning and Fleet flash; it needed nothing.

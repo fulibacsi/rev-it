@@ -4,18 +4,18 @@
 // the rev limit drops by 30 rpm per percent (3,000 rpm at 100%), a random gear breaks at 50% and another at 70%,
 // past 80% the gear pops out now and then under load, and at 100% the car is wrecked: a run ends there, and the next
 // one is limp mode, crawling on 30% power for 40 m, which pays for the first 1% of repairs (no dead end). Repairs
-// cost metres. The windscreen shows it all, cracks growing with damage.
-const REPAIR = 40; // metres per percent of damage
+// cost meters. The windshield shows it all, cracks growing with damage.
+const REPAIR = 40; // meters per percent of damage
 const damageOn = () => lvl('reckless') > 0;
 const revLoss = () => damageOn() ? 30 * progress.damage : 0;
-const LIMP = 40; // metres a wrecked car can limp in a run: one percent of repairs
+const LIMP = 40; // meters a wrecked car can limp in a run: one percent of repairs
 const wrecked = () => progress.damage >= 100;
 let popped = 0; // seconds the GEAR lamp stays lit after the gear jumped out
 let heat = 0;   // engine temperature with an ECU tune, 0 cold .. 1 the top of the red zone
 const HOT = 0.8; // the red zone: from here on the heat damages the engine
 const tuned = () => lvl('ecuRev') + lvl('ecuPower') > 0;
 
-// armour plating (gang.js) takes a quarter off a level
+// armor plating (gang.js) takes a quarter off a level
 function hurt(kmh, headOn) { addDamage((headOn ? 50 : clamp(kmh * 0.25, 2, 25)) * (1 - 0.25 * lvl('armour'))); }
 function addDamage(pct) {
   const before = progress.damage;
@@ -39,7 +39,7 @@ function popOut() { // the gear jumps out to neutral; the lever drops back onto 
 }
 function damageTick(dt) {
   popped = Math.max(0, popped - dt);
-  // a worn gearbox under load jumps out of gear: once in ~15 s at 80%, every ~5 s at 100%
+  // a worn transmission under load jumps out of gear: once in ~15 s at 80%, every ~5 s at 100%
   if (progress.damage >= 80 && gear && locked && throttle > 0.5 && Math.random() < dt * (progress.damage - 70) / 150) popOut();
   // the tune's heat: revving past the factory redline heats fast (held there, the red in ~6 s), the extra power while
   // it burns fuel slowly (floored, ~40 s; not while the limiter cuts it); easing off cools. In the red it damages the
@@ -53,7 +53,7 @@ function damageTick(dt) {
   if (was < HOT && heat >= HOT) { flash('OVERHEATING', '#f55', false); beep(220, 0.3); }
 }
 function coolDown() { heat = 0; nitro = nitroByAid = false; } // a fresh run starts with a cold engine
-// before a run the tank is topped up, paid in metres (as much as they cover); returns what it cost
+// before a run the tank is topped up, paid in meters (as much as they cover); returns what it cost
 function refillNitro() {
   const s = Math.min(nitroTank() - progress.nitro, progress.bank / NITRO_REFILL);
   if (s <= 0) return 0;
@@ -72,14 +72,14 @@ function nitroTick(dt) { // burns while held, the engine running in gear; the he
 
 const repairCost = () => Math.ceil(progress.damage * REPAIR);
 // the repair card's AUTO switch (the owner, 29 Oct), from act IV on, where ramming costs 5-100% a race (act4.py): at
-// each run's end it repairs as far as the metres go, before the next run's nitro refill takes its share. Off at first
+// each run's end it repairs as far as the meters go, before the next run's nitro refill takes its share. Off at first
 const autoRepairOn = () => gangOpen() && progress.autoRepair; // gang.js loads later
-function autoRepair() { // the metres it spent
+function autoRepair() { // the meters it spent
   const bank = progress.bank;
   if (repair()) { applyUpgrades(); buildDials(); buildGate(); } // the rev limit and the gears back at once, as addDamage
   return bank - progress.bank;
 }
-function repair() { // as much as the metres allow; gears come back once below the damage that broke them
+function repair() { // as much as the meters allow; gears come back once below the damage that broke them
   const pct = Math.min(progress.damage, progress.bank / REPAIR);
   if (pct <= 0) return false;
   progress.bank -= Math.ceil(pct * REPAIR);
@@ -89,7 +89,7 @@ function repair() { // as much as the metres allow; gears come back once below t
   return true;
 }
 
-// ---- what you see: cracks on the windscreen, damage and the GEAR lamp on the cluster ----
+// ---- what you see: cracks on the windshield, damage and the GEAR lamp on the cluster ----
 let shownCracks = -1;
 function renderDamage() {
   const d = Math.round(progress.damage);

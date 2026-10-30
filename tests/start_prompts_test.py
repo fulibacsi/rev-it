@@ -1,4 +1,4 @@
-"""Getting off the start line: standing still in a run (or stalled), the windscreen says what to do next, a step at a
+"""Getting off the start line: standing still in a run (or stalled), the windshield says what to do next, a step at a
 time, in the words of the layout (keyboard, then touch), until the car moves; nothing when the aids do it all."""
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch

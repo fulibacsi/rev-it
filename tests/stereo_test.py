@@ -43,7 +43,7 @@ with sync_playwright() as p:
     got = js(LISTEN)
     check("music: you can hear it, and it never clips", 0.01 < got["rms"] and got["peak"] < 1, {"peak": got["peak"], "rms": got["rms"]})
     check("the lights jump with the beat (most of them lit on a kick, then down)", max(got["lit"]) >= 12 and min(got["lit"]) <= 4, sorted(set(got["lit"])))
-    check("the head unit's equaliser moves", js("document.querySelectorAll('#stereo-eq u.on').length") > 0)
+    check("the head unit's equalizer moves", js("document.querySelectorAll('#stereo-eq u.on').length") > 0)
     pg.screenshot(path=f"{OUT}/stereo_desktop.png")
     # 3. the head unit's button, M, the lights: the next tape; after the last, off; the garage's switch follows
     pg.click("#stereo-next"); pg.wait_for_timeout(300)

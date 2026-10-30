@@ -6,18 +6,18 @@ const ROAD = {
   count: 1600,     // segments in the looping course (8 km)
   draw: 300,       // segments drawn ahead (1.5 km)
   half: 7,         // half the road width, m: two 3.5 m lanes each way, oncoming traffic on the left
-  rumble: 0.6,     // kerb width, m
-  shore: 16,       // ocean starts this far left of the centre line, m
+  rumble: 0.6,     // curb width, m
+  shore: 16,       // ocean starts this far left of the center line, m
   eye: 1.15,       // driver's eye height, m
-  seat: 0.35,      // the driver sits this far left of the car's centre, m
+  seat: 0.35,      // the driver sits this far left of the car's center, m
   fov: 75,         // horizontal field of view, degrees
   horizon: 0.40,   // horizon height as a share of the screen
   grade: 0.07,     // steepest slope of the hills (7%, like a highway)
 };
-const LANES = { mine: 5.25, passing: 1.75, oncoming: [-1.75, -5.25] }; // lane centres, m from the centre line
+const LANES = { mine: 5.25, passing: 1.75, oncoming: [-1.75, -5.25] }; // lane centers, m from the center line
 const MY_LANES = [LANES.mine, LANES.passing]; // your side of the double yellow: 0 the right lane, 1 the passing lane
 const ROAD_LANES = [...MY_LANES, ...LANES.oncoming]; // and, driving recklessly, the two oncoming lanes
-const SHOULDER = ROAD.half + ROAD.rumble + 1.4; // parked: off the road, right of the kerb
+const SHOULDER = ROAD.half + ROAD.rumble + 1.4; // parked: off the road, right of the curb
 
 let rng = 7; // small seeded random so the course is the same every time
 const rand = () => ((rng = (rng * 16807) % 2147483647) - 1) / 2147483646;
@@ -71,8 +71,8 @@ const PALM = sprite(160, 320, (g, w, h) => { // dark sunset silhouette
 });
 // ---- the cars: Pay 'n' Sprite's "JDM 90s pack" (assets/cars.js, made by tools/make_cars.py), pixel art, five
 // cars from behind and in front, and their bumpers, body kits and spoilers, each a layer that fits its car's frame.
-// A layer is a palette and runs of it a row at a time; its first `paint` colours are the paint, repainted here in
-// the car's own colour, each shade kept as much lighter or darker than the view's main paint colour
+// A layer is a palette and runs of it a row at a time; its first `paint` colors are the paint, repainted here in
+// the car's own color, each shade kept as much lighter or darker than the view's main paint color
 const MODELS = Object.keys(CAR_ART);
 const CAR_M = 1.9; // m across a car's sprite, mirrors and all (its height follows the art)
 const rgb = hex => hex.length < 7 ? [1, 2, 3].map(i => 17 * parseInt(hex[i], 16)) : [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16)); // #rgb or #rrggbb
@@ -122,7 +122,7 @@ function carLook(spec) {
   return lazyLook({ rear: () => pixelSprite(rear, back, spec.paint), front: () => pixelSprite(front, face, spec.paint),
     beams: () => beamsSprite(front, face, spec.paint) }, { spec });
 }
-// the traffic: every car in every colour, and a dozen fittings each: half of them as they came, a third with a wing,
+// the traffic: every car in every color, and a dozen fittings each: half of them as they came, a third with a wing,
 // a bumper or kit at the front and back alike. Still one draw on the traffic's dice a car (spawnCar)
 const FITS = 12, TRAFFIC = MODELS.length * CAR_COLORS.length * FITS, TRAFFIC_LOOKS = new Map();
 function trafficLook(k) {
@@ -135,7 +135,7 @@ function trafficLook(k) {
   }
   return TRAFFIC_LOOKS.get(k);
 }
-const WRECKS = new Map(); // a totalled car's rear view (Distance's War Rig): tipped over, burnt, smoking
+const WRECKS = new Map(); // a totaled car's rear view (Distance's War Rig): tipped over, burnt, smoking
 function wreckSprite(img) {
   const pad = Math.round(img.height * 0.3); // room above, as it tips
   if (!WRECKS.has(img)) WRECKS.set(img, Object.assign(sprite(img.width, img.height + pad, (g, w, h) => {
@@ -174,7 +174,7 @@ function rustLook(look) { // the first rusty cars on the road (act 3's foreshado
   return look.rust ??= lazyLook({ rear: () => madSprite(spec, 'rear', false, true), front: () => madSprite(spec, 'front', false, true),
     beams: () => madSprite(spec, 'front', true, true) }, { rustOf: look });
 }
-function madSprite(spec, side, beams, plain) { // from behind, or in front (bars over the windscreen, a spiked bull bar); plain: no bars or spikes
+function madSprite(spec, side, beams, plain) { // from behind, or in front (bars over the windshield, a spiked bull bar); plain: no bars or spikes
   const v = CAR_ART[spec.model][side], pad = 4, [gx0, gy0, gx1, gy1] = v.glass, [bx0, , bx1, by1] = v.body, bw = bx1 - bx0, low = by1 - gy1;
   const primer = (x, y) => y > gy1 && x - bx0 > bw * (spec.k % 2 ? 0.64 : 0.14) && x - bx0 < bw * (spec.k % 2 ? 0.84 : 0.34) && '#7c7a70';
   const parts = side === 'rear' ? [v.car, v.bumpers[spec.bumper], v.spoilers[spec.spoiler]] : [v.car, v.bumpers[spec.front]];
@@ -292,7 +292,7 @@ function racerArt(model, n, numbered, team) { // each number its own bumper and 
   const kit = [v.car, v.bumpers[(n + v.bumpers.length - 1) % v.bumpers.length], v.spoilers[Math.floor(n / MODELS.length) % v.spoilers.length]];
   const stripe = (x, y) => Math.abs(x + 0.5 - mid) > gap && Math.abs(x + 0.5 - mid) <= gap + sw && (team ? '#e8c440' : '#c62828');
   const c = pixelSprite(v, kit, team ? '#1a1a20' : '#f4f4f4', { mask: stripe }), at = (...b) => dab(c, 0, ...b);
-  if (numbered) { // the number on a roundel on the boot
+  if (numbered) { // the number on a roundel on the trunk
     const digits = [...String(n)].map(Number), tw = digits.length * 4 - 1, r = Math.ceil(tw / 2) + 3;
     const cy = Math.round(v.glass[3] + (v.body[3] - v.glass[3]) * 0.4), cx = Math.round(mid);
     for (let y = -r; y <= r; y++) { const half = Math.round(Math.sqrt(r * r - y * y)); at('#111', cx - half, cy + y, 2 * half, 1); }
@@ -327,7 +327,7 @@ function boardSprite(value) {
 let bestBanner = { value: NaN }; // checkered banner across the road at the best distance; redrawn when it moves
 function bannerSprite(value) {
   if (bestBanner.value !== value) bestBanner = { value, img: sprite(640, 240, (g, w, h) => {
-    g.fillStyle = '#777'; g.fillRect(0, 0, 10, h); g.fillRect(w - 10, 0, 10, h); // poles at the kerbs
+    g.fillStyle = '#777'; g.fillRect(0, 0, 10, h); g.fillRect(w - 10, 0, 10, h); // poles at the curbs
     for (let x = 10; x < w - 10; x += 20) for (let y = 0; y < 60; y += 20) { // checkered cloth
       g.fillStyle = (x + y) / 20 % 2 ? '#111' : '#f4f4f4'; g.fillRect(x, y, 20, 20);
     }
@@ -351,21 +351,21 @@ function spawnCar(car, d) {
   Object.assign(car, {
     z: odo + d, dir: oncoming ? -1 : 1, lane, look: trafficLook(Math.floor(rand() * TRAFFIC)),
     x: oncoming ? LANES.oncoming[rand() < 0.5 ? 0 : 1] : MY_LANES[lane],
-    v: kmh / 3.6, want: kmh / 3.6, signal: 0, // m/s now, and what it cruises at; s of indicator before it pulls out
+    v: kmh / 3.6, want: kmh / 3.6, signal: 0, // m/s now, and what it cruises at; s of turn signal before it pulls out
     serial: ++spawned, // which car it is (a mad one or not: Fuel madness)
     cut: 0, jumped: false, // a mad driver: s it counts as having just cut in on you; whether it has jumped in front of you
     d: NaN, // distance last frame: unknown for a fresh car, so it can't trigger a pass-by sound
     hit: -Infinity, // when you last ran into it (s on the clock): one crash per bump
     warned: false, beams: 0, // an oncoming car: has it flashed and honked at you yet, and for how much longer
     swerve: null, // an oncoming car flashed out of your way (a game of chicken): the lane it is moving to
-    wreck: false, hp: null, // totalled (Distance's War Rig), and its health when hurt (null: unhurt)
+    wreck: false, hp: null, // totaled (Distance's War Rig), and its health when hurt (null: unhurt)
     police: false, stage: null, passing: false, // a police car (Distance's War Rig, police.js), how far into its move
     tank: false, w: undefined, h: undefined, // the final boss (boss.js), and its size, m
   });
 }
 const sameLane = (a, x) => Math.abs(a - x) < CAR_W; // two lateral positions close enough to touch
-// nobody going this way, you included, within back..front metres of car in x; with a mirror check (mirror s), nobody
-// further back who would close those metres on it in that time either: 20 m is under a second when you come up
+// nobody going this way, you included, within back..front meters of car in x; with a mirror check (mirror s), nobody
+// further back who would close those meters on it in that time either: 20 m is under a second when you come up
 // 100 km/h quicker
 function roomAt(car, x, back, front, mirror = 0) {
   const behind = v => back + Math.max(0, v - car.v) * mirror;
@@ -395,7 +395,7 @@ function leader(car) { // the nearest thing ahead in its lane: a car, or you
 const LANE_GAP = { racer: 5, car: 2 }; // seconds a car waits between lane changes: racers don't weave to block you
 // passing, as drivers do (the playtests of 15-18 Oct: cars cut in just as you got there, and pairs drove side by side):
 // only when clearly quicker than the car ahead (PASS m/s, 10 km/h), or it follows; after a look in the mirror for
-// anything closing in under MIRROR s; and with SIGNAL s of indicator first
+// anything closing in under MIRROR s; and with SIGNAL s of turn signal first
 const PASS = 10 / 3.6, MIRROR = 4, SIGNAL = 1;
 // Fuel madness (the game's madness(), Distance's War Rig: the share of drivers gone mad, 0 to 1): which ordinary cars
 // are mad, going your way or coming at you (the owner, 18 Oct: the oncoming traffic had none). Picked by serial in golden-ratio steps: an even spread, and no draw on the traffic's seeded
@@ -410,7 +410,7 @@ function driveCar(c, dt) { // follow at a safe distance, or pull out and pass
   c.cool = Math.max(0, (c.cool ?? 0) - dt);
   c.cut = Math.max(0, (c.cut ?? 0) - dt); // s it still counts as having just cut in (a mad driver: aids.js takeRam)
   if (c.fleet) teamwork(c, dt); // one of your fleet (fleet.js)
-  // a mad driver: no look in the mirror, no indicator, out whenever quicker; and it jumps in front of you: you closing
+  // a mad driver: no look in the mirror, no turn signal, out whenever quicker; and it jumps in front of you: you closing
   // on it in its other lane, 0.8-2 s behind, it swerves across into your lane, briskly, once (the owner, 18 Oct: "jump
   // in front of the player")
   const bad = mad(c);
@@ -466,7 +466,7 @@ function flashAhead() {
   for (const c of traffic) if (sameLane(c.x, carX) && yields(c, to)) Object.assign(c, { lane: to, yielding: true, cool: LANE_GAP.car + 2 });
 }
 
-// a totalled car (Distance's War Rig) skids off onto the right shoulder and stops there
+// a totaled car (Distance's War Rig) skids off onto the right shoulder and stops there
 function skid(c, dt) {
   c.v = Math.max(0, c.v - 14 * dt);
   c.z += c.v * dt;
@@ -477,7 +477,7 @@ function skid(c, dt) {
 // frame, each of them searching the whole road was most of the traffic's work in act 4
 let RIVALS = [];
 // a head-on with a mad driver (Fuel madness) isn't the end of your run (the owner, 18 Oct): you lose most of your speed
-// and the game hears of a hard crash (Distance: heavy damage, and the mad car totalled); it ends up spun round, stopped
+// and the game hears of a hard crash (Distance: heavy damage, and the mad car totaled); it ends up spun round, stopped
 function madHeadOn(c) {
   impact = { kmh: (speed + c.v) * 3.6, headOn: true, mad: true, car: c };
   speed *= 0.25;
@@ -526,7 +526,7 @@ const elevation = pos => { // road height at a course position, m
   const i = Math.floor(pos / ROAD.segment), f = pos / ROAD.segment - i;
   return seg(i).y * (1 - f) + seg(i + 1).y * f;
 };
-// slope under the car (rise per metre), for gravity in car.js
+// slope under the car (rise per meter), for gravity in car.js
 function roadSlope(pos) { return elevation(pos + 0.5) - elevation(pos - 0.5); }
 
 // a mad driver's car is rusty and weaves in its lane, drawn only (its place on the road stays put), so you know it
@@ -555,7 +555,7 @@ function drawRoad(g, w, h, dt) {
   scenery += here.curve * speed * dt * 40;
   drawSky(g, w, horizon);
 
-  // project every segment edge: screen centre-line x, y, and px per metre sideways
+  // project every segment edge: screen center-line x, y, and px per meter sideways
   const proj = [];
   let x = 0, dx = -here.curve * frac;
   for (let n = 0; n <= ROAD.draw; n++) {
@@ -580,7 +580,7 @@ function drawRoad(g, w, h, dt) {
     clip[n] = maxy;
     if (proj[n + 1].y >= maxy || a.y <= proj[n + 1].y) continue; // hidden behind a crest, or sloping away from us
     // beyond about 70 m a segment is under a pixel tall: they go in one slice until it is a pixel tall (or bends 4 px
-    // sideways), the first one's colours for all; 300 slices of nine shapes a frame were most of a phone's work
+    // sideways), the first one's colors for all; 300 slices of nine shapes a frame were most of a phone's work
     let m = n + 1;
     while (m < ROAD.draw && a.y - proj[m + 1].y < 1 && proj[m + 1].y < proj[m].y && Math.abs(proj[m + 1].x - a.x) < 4) clip[m++] = maxy;
     const b = proj[m];
@@ -597,9 +597,9 @@ function drawRoad(g, w, h, dt) {
       g.fillStyle = light ? '#3d3b78' : '#393670';
       g.beginPath(); g.moveTo(0, a.y + 1); g.lineTo(sa, a.y + 1); g.lineTo(sb, b.y); g.lineTo(0, b.y); g.fill();
     }
-    quad(a, b, -R - ROAD.rumble, R + ROAD.rumble, Math.floor(i / 3) % 2 ? '#d33' : '#eee'); // kerbs
+    quad(a, b, -R - ROAD.rumble, R + ROAD.rumble, Math.floor(i / 3) % 2 ? '#d33' : '#eee'); // curbs
     quad(a, b, -R, R, light ? '#4a4a55' : '#45454f'); // asphalt
-    quad(a, b, -0.25, -0.1, '#f2c12e'); quad(a, b, 0.1, 0.25, '#f2c12e'); // double yellow centre line
+    quad(a, b, -0.25, -0.1, '#f2c12e'); quad(a, b, 0.1, 0.25, '#f2c12e'); // double yellow center line
     if (Math.floor(i / 3) % 2) { quad(a, b, -3.6, -3.4, '#eee'); quad(a, b, 3.4, 3.6, '#eee'); } // lane dashes
     maxy = b.y;
     n = m - 1;
@@ -611,7 +611,7 @@ function drawRoad(g, w, h, dt) {
     g.drawImage(img, 0, 0, img.width, img.height * vis / dh, x, y, dw, vis);
   };
 
-  // sprites, far to near: palms, traffic and the game's marks (x: metres from the centre line, w/h: metres)
+  // sprites, far to near: palms, traffic and the game's marks (x: meters from the center line, w/h: meters)
   const marks = (game.marks?.() ?? []).map(m => ({ z: m.z, ...MARKS[m.kind](m.value), ref: m.ref })); // ref: told where it is
   const look = c => c.wreck ? wreckSprite(lookOf(c).rear) : c.dir > 0 ? lookOf(c).rear : c.beams ? lookOf(c).beams : lookOf(c).front;
   const placed = c => { const img = look(c), w = c.w ?? (img.pixel ? CAR_M : 1.8); // a car's art sets its height
@@ -620,7 +620,7 @@ function drawRoad(g, w, h, dt) {
     .map(o => ({ ...o, d: o.z - odo })).filter(o => o.d > 2 && o.d < (ROAD.draw - 2) * ROAD.segment).sort((p, q) => q.d - p.d);
   for (const c of [...traffic, ...marks.map(m => m.ref).filter(Boolean)]) c.seen = null; // where each car (and a mark that
                                                                     // asks: an act 3 spot) is on the screen, canvas px
-  const blinkOn = performance.now() % 660 < 330; // indicators: about 1.5 flashes a second
+  const blinkOn = performance.now() % 660 < 330; // turn signals: about 1.5 flashes a second
   let t = 0;
   for (let n = ROAD.draw - 1; n > 0; n--) {
     const a = proj[n], s = segments[(base + n) % ROAD.count], fog = Math.min(1, 1.6 - n / ROAD.draw * 1.6);

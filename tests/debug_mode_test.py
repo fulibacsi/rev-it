@@ -1,4 +1,4 @@
-"""Debug mode: 5 taps on the menu's title (then OK) switch Distance to a save of its own with unlimited metres,
+"""Debug mode: 5 taps on the menu's title (then OK) switch Distance to a save of its own with unlimited meters,
 points, fuel and scrap, every grid slot and quicker police heat. The real save is never touched and comes back when
 it is switched off; fewer taps do nothing."""
 import json

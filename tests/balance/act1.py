@@ -15,7 +15,7 @@ with sync_playwright() as p:
     pg.goto(URL); js = pg.evaluate
     js("localStorage.clear()"); pg.reload(); pg.add_script_tag(path=str(HERE / "sim.js")); js("progress.toured = TUTORIALS.map(t => t.id); progress.runs = 1"); pg.click('[data-play="distance"]'); pg.click("#drive"); pg.wait_for_timeout(1500)  # a game under way: a new one skips the garage
     if len(sys.argv) > 2 and sys.argv[2] != "-": js(f"HEAD_START.splice(0, HEAD_START.length, ...{sys.argv[2]})")
-    # what the white car's head start counts (race.js): everything paid in metres, the Autopilot page's aids too, but
+    # what the white car's head start counts (race.js): everything paid in meters, the Autopilot page's aids too, but
     # nothing that adds no speed (the stereo, Flash recharge); and the tabs (23 Oct), bought as soon as they can be
     U = js("Object.fromEntries(Object.entries(UPGRADES).filter(([, u]) => inMetres(u) && (u.built !== 0 || u.opens)).map(([k, u]) => [k, { max: u.max, tab: !!u.opens }]))")
     lv, bank, driven, revealed, clock = {}, 0, 0, None, 0

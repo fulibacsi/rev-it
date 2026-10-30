@@ -44,7 +44,7 @@ ENGINES = {
            "loops": [3300, 4200, 5100, 6000, 6800]},
     # the dyno recording has a loud turbo whine (7-12 kHz) at high rpm: cut it down so it doesn't pierce
     "supra": {"sweep": ("supra", 11.6, 25.4), "loops": [3300, 4200, 5200, 6200, 7200, 7900], "lowpass": 5500},
-    # this idle is almost all sub-bass, which laptop speakers can't play: cut it before normalising
+    # this idle is almost all sub-bass, which laptop speakers can't play: cut it before normalizing
     "boxer": {"idle": ("impreza", 6.5, 4.5, 855), "idle_highpass": 120, "sweep": ("frs", 8.4, 22.9),
               "loops": [3300, 4200, 5100, 6000, 6800, 7300]},
 }

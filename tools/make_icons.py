@@ -1,7 +1,7 @@
 # /// script
 # dependencies = ["pillow"]
 # ///
-"""The home-screen icon: a rev counter, needle in the red. Writes assets/icon-180.png, -192.png, -512.png."""
+"""The home-screen icon: a tachometer, needle in the red. Writes assets/icon-180.png, -192.png, -512.png."""
 import math
 from pathlib import Path
 from PIL import Image, ImageDraw
