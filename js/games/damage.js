@@ -71,6 +71,14 @@ function nitroTick(dt) { // burns while held, the engine running in gear; the he
 }
 
 const repairCost = () => Math.ceil(progress.damage * REPAIR);
+// the repair card's AUTO switch (the owner, 29 Oct), from act IV on, where ramming costs 5-100% a race (act4.py): at
+// each run's end it repairs as far as the metres go, before the next run's nitro refill takes its share. Off at first
+const autoRepairOn = () => gangOpen() && progress.autoRepair; // gang.js loads later
+function autoRepair() { // the metres it spent
+  const bank = progress.bank;
+  if (repair()) { applyUpgrades(); buildDials(); buildGate(); } // the rev limit and the gears back at once, as addDamage
+  return bank - progress.bank;
+}
 function repair() { // as much as the metres allow; gears come back once below the damage that broke them
   const pct = Math.min(progress.damage, progress.bank / REPAIR);
   if (pct <= 0) return false;
