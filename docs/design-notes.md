@@ -1084,7 +1084,7 @@ it takes another lane. It starts at 1×1, a single car's size, and grows longer 
   for a beat (about 0.2 s, turning solid), and anything else sends it back to its slot. Press and hold a placed part
   (a ring filling, about 0.5 s) to throw it off. To try against it: tap the slot, then one of the places lit up.
 - Each piece works, by what it came from (the owner), and its size is its strength (Claude's): a three-block gun
-  outguns a one-block gun, and needs the room. What each source drops: open.
+  outguns a one-block gun, and needs the room. What each source drops: the drop tables, below.
 - On the phone the shifter's place holds a grid four wide and five deep at about 36 px a cell, with the inventory
   beside it: 20 cells at most, unless the board takes more of the dash.
 
@@ -1101,6 +1101,57 @@ it takes another lane. It starts at 1×1, a single car's size, and grows longer 
   of its own, act 5 or not: built 30 Oct (see Act 2, Damage).
 - The grid's size, the inventory's slots and the parts' toughness are kept; the parts come and go. The grid settles
   where the loot coming in meets the parts falling off, and each expansion opens a gap to fill.
+
+**Size slows the rig, engines speed it up** (the owner, 30 Oct):
+- The fortress gets slower as it grows. Its size and the parts on it both count ("both size and mounted parts"), and
+  so do the parts waiting in the hold. Claude's mapping onto the car's own physics (`car.js`: air drag and mass): the
+  board's width is frontal area, so drag; its length adds a little drag; each cell of deck, each part mounted and each
+  part in the hold adds its weight. Drag sets the top speed; weight, how quickly the rig gets its speed back after a
+  ram, a brake check or a hill.
+- Measured (30 Oct): act 5's car on an empty road, so best cases (races with traffic come in at 2,600–3,700 m):
+
+  | The rig | Top speed | A run's distance |
+  |---|---|---|
+  | As it is (a lane wide, no parts) | 467 km/h | 5,833 m |
+  | Twice the drag (two lanes wide) | 373 km/h | 4,796 m |
+  | Four times the drag (four lanes wide) | 271 km/h | 3,630 m |
+  | 1,500 kg more | 448 km/h | 5,326 m |
+  | 4,500 kg more | 405 km/h | 4,658 m |
+  | Twice the drag, 1,500 kg more | 363 km/h | 4,534 m |
+  | Four times the drag, 4,500 kg more | 270 km/h | 3,573 m |
+  | … and an engine of 30%, 60% or 100% more power | 304, 334, 370 km/h | 3,905, 4,215, 4,608 m |
+- An engine is a part, from the loot (the owner: "like a second engine"): more power. Engines stack, each adding
+  power by its type (the owner); its size is its strength.
+- Its sound goes on top of yours (the owner): each engine on the board a voice of its own in `engine.js`, its
+  recording's loops crossfaded by the rig's revs (geared into its own rev range), louder the bigger it is; thrown off
+  or shot off, its voice goes. A preview mixed offline from the game's own loops, the I6 with the V8 on top, went to
+  the owner (30 Oct).
+- Two or three new recordings of robust engines (the owner), found as the first ones were: Freesound, CC0 or CC BY,
+  cut into loops by `tools/make_sounds.py`, credited in `CREDITS.md` and the credits screen. The V8 the game has is
+  one to use (the owner). Claude's picks to look for: a truck diesel (the rival rig's) and a tank's engine (a big
+  diesel, or a gas turbine, whose whine could also be made in code). Each engine adds about 300 kB to
+  `assets/sounds.js` (1.45 MB now). Diesels turn 600–2,500 rpm, under the pitch tracker's range (2,800–8,600), so
+  each recording gets a range of its own. On 30 Oct the cloud session couldn't reach Freesound (its network settings):
+  the search waits for `freesound.org` and `cdn.freesound.org` to be allowed.
+
+**Drop tables** (the owner, 30 Oct: "Each enemy should have a drop table"; the examples "just random ideas, we can
+explore them further"):
+- The owner's examples: a rival car, a very low chance of armor plating, spiked bars or its engine; a tank always drops
+  something: its turret (70%), armor plating (20%) or its engine (10%).
+- Claude's first draft, to explore (the chance of a drop, then what it is):
+
+  | Enemy | A drop | What |
+  |---|---|---|
+  | A rival gang car | 5% (its 2 shells always) | armor plating 40%, a spiked bar 40%, its engine 20% |
+  | A rival rig | 100% | armor plating 40%, a spiked ram bar 30%, its diesel 30% |
+  | A police SUV | 50% | armor plating 50%, its V8 30%, a gun 20% |
+  | A helicopter | 100% | its gun 60%, its turbine 40% |
+  | The tank | 100% | its turret 70%, armor plating 20%, its engine 10% (the owner's) |
+  | Traffic, police cars | none | scrap only |
+- The parts by what they do (Claude's, open): a turret fires shells at the reticle (the tank's cannon is one); a gun
+  fires at the reticle, as act IV's do; armor plating does nothing but take hits, the shield; a spiked bar makes rams
+  hurt more and side rams hurt less; an engine adds power and its sound. Each comes in the shapes that suit it (an
+  engine one or two blocks, armor a line). What each weighs, for `act5.py`: open.
 
 **Every resource builds the fortress** (the owner). Claude's first guesses, open: scrap for the grid's width and
 length; fuel for the crew (raiders); meters for repairs; points (about 4,900 piled up by the tank) for the inventory
@@ -1120,7 +1171,7 @@ following. Then the WARLORD screen. The act takes 10–15 races (the owner), so 
 hours.
 
 **Still open:** how places are counted (layer 5, below: Claude's reading built, the other waiting on the owner); the
-wheel at two lanes and more; what each source drops and does; the bridge or the cab (to try); the placing gesture (on
+drop tables and the parts (above: a first draft); which engine recordings; the wheel at two lanes and more; what each source drops and does; the bridge or the cab (to try); the placing gesture (on
 a phone); where the rest of the points go; the foreshadowing; the final fight's form; whether placing is automated;
 what comes after the ending (playing on, or a new game plus).
 
@@ -1214,7 +1265,8 @@ race, the loot lost to a full inventory, and the parts lost a race.
      the board) and how far: RIG · 83% · 5 SHOTS · 57 m. Act 4's reticle keeps its label (#7, TANK).
    - `rivals_test` checks it on both layouts.
 6. Loot on the road, the inventory, placing and removing; the grid longer and wider (from two lanes wide the wheel
-   changes, and the robot brakes for no one and rams: the owner, 30 Oct).
+   changes, and the robot brakes for no one and rams: the owner, 30 Oct); the drop tables; the rig slower as it grows
+   and heavier as it fills; engines, and their sounds on top of yours (the owner, 30 Oct).
 7. Damage by where it comes from, parts falling off, hits on empty cells reaching the rig.
 8. Four lanes: the Grinder, mines and the mine roller.
 9. The act's automation.
