@@ -431,7 +431,11 @@ driving is act 1's game, and the robot takes over as the fantasy moves on.
 - **Gearbox:** a gear breaks at 50% and another at 70%. Broken gears show as a red cross in the gate and are skipped.
 - **Pop-outs:** past 80% the car jumps out of gear into N under load, and the GEAR lamp lights.
 - **Head-on crash:** ends the run (DNF), with cracks on the windscreen.
-- **Repairs:** 40 m per %.
+- **Repairs:** 40 m per %. From act IV the repair card has an AUTO switch (the owner, 29 Oct; built 30 Oct, off at
+  first): at each run's end, once the run's metres are in and before the next run's nitro refill, it repairs as far as
+  they go, and the garage's line says what it cost ("repairs −1,200 m"). From then on the card stays, damaged or not,
+  so the switch can be turned off again. In act 4 the rams cost 21–100% a race before the guns and 5–35% after
+  (`act4.py`): a tap on the card every race. `damage_test` checks it.
 - **At 100% (wrecked):** there's no fail state. Limp mode gives 30% power, the run ends after 40 m, and those metres
   pay for 1% of repairs.
 
@@ -1071,8 +1075,8 @@ it takes another lane. It starts at 1×1, a single car's size, and grows longer 
 - Repairs are the garage's only, and the rig's only (the owner): parts keep their wear from run to run, so the churn
   is steady, and a worn part shows cracked. The repair card gets an auto-repair switch from act IV on (the owner, 29
   Oct). In act 4 the rig takes 21–100% damage a race before the guns and 5–35% after, 200–4,000 m of repairs every
-  race (`act4.py`); the switch repairs as far as the meters go at each run's end, before the nitro refill. It is a
-  change of its own, act 5 or not.
+  race (`act4.py`); the switch repairs as far as the meters go at each run's end, before the nitro refill. A change
+  of its own, act 5 or not: built 30 Oct (see Act 2, Damage).
 - The grid's size, the inventory's slots and the parts' toughness are kept; the parts come and go. The grid settles
   where the loot coming in meets the parts falling off, and each expansion opens a gap to fill.
 
@@ -1102,8 +1106,8 @@ race, the loot lost to a full inventory, and the parts lost a race.
 
 **Layers,** a PR each, the full suite before each merge, and every merge a working game:
 1. These notes and the upgrade graph.
-2. Changes of their own first: the auto-repair switch; US spelling across the game and the notes (the save keys and
-   upgrade ids unchanged).
+2. Changes of their own first: the auto-repair switch (built 30 Oct); US spelling across the game and the notes (the
+   save keys and upgrade ids unchanged).
 3. The doorway and the Rebuild: the tab, ACT V's card, the new cockpit (the board's place, the cannon's pedal, both
    seats to try), the 1×1 grid with the cannon, act IV's guns kept; `act5.py` begins.
 4. The reticle on the notable enemies only, the raiders on the rest; the rival gang and its ammo.
