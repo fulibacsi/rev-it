@@ -39,7 +39,8 @@ const teamPoints = () => Math.round(racers().filter(c => c.fleet && !c.wreck)
 // what it is (the owner, 20 Oct). Redrawn 15 times a second: plenty for a blip, and a phone stays cool
 const SONAR = 250; // m each way
 const BLIPS = ['car', 'rival', 'ally', 'red', 'blue', 'rig', 'tank']; // their order on the screen: the police, a rival rig
-                                                                      // (fortress.js) and the tank on top
+                                                                      // (fortress.js) and the tank on top; the notable
+                                                                      // ones (fortress.js) squares, a police SUV too
 let sonarAt = 0; // when it was last drawn
 function renderSonar() {
   const on = run.phase !== 'garage' && fleetSize() > 0, now = performance.now();
@@ -49,7 +50,7 @@ function renderSonar() {
   const X = x => (66 + 4.4 * x).toFixed(1), Y = z => (43 - 34 * (z - odo) / SONAR).toFixed(1);
   const kind = c => c.tank ? 'tank' : c.rig ? 'rig' : c.police ? (now % 500 < 250 ? 'red' : 'blue') : c.fleet ? 'ally' : c.racer ? 'rival' : 'car';
   $('sonar-blips').innerHTML = traffic.filter(c => !c.wreck && Math.abs(c.z - odo) < SONAR).map(c => [kind(c), c])
-    .sort((a, b) => BLIPS.indexOf(a[0]) - BLIPS.indexOf(b[0])).map(([k, c]) => k === 'tank' || k === 'rig'
+    .sort((a, b) => BLIPS.indexOf(a[0]) - BLIPS.indexOf(b[0])).map(([k, c]) => k === 'tank' || k === 'rig' || c.suv
       ? `<rect class="${k}" x="-3.5" y="-3.5" width="7" height="7" transform="translate(${X(c.x)},${Y(c.z)})"/>`
       : `<circle class="${k}" cx="${X(c.x)}" cy="${Y(c.z)}" r="2.4"/>`).join('');
   $('sonar-you').setAttribute('transform', `translate(${X(carX)},43)`);

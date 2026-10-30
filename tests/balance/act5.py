@@ -4,7 +4,7 @@ board and races on: act4.py's bot (Hunter, the guns, the crew as the Foreman sen
 the cannon fired whenever it is loaded, has a shell and the reticle's car (a rival rig or the tank) is in reach. Between
 races it repairs, turns the meters it doesn't need into fuel, buys the War Rig's guns and Racing, tuning and cars. Each
 race: the place, totals (the rival gang's among them), scrap, shells (fired, hits, gained, left), the rival rigs (come,
-totaled, their rams), the gang's brake checks, heat, damage, tanks beaten. The act's own targets (10-15 races to the
+totaled, their rams), the police SUVs (come, totaled), the gang's brake checks, heat, damage, tanks beaten. The act's own targets (10-15 races to the
 final fight) wait for its later layers.
 Usage: act5.py [races] [seed] [overrides], the overrides JavaScript run first to try other numbers ("CANNON.damage = 300")."""
 import json, sys
@@ -37,7 +37,8 @@ HABITS = """window.afterAids = () => { // act4.py's bot, and the cannon
 // counted for the table: the rigs that come and are totaled, their rams, the gang's totals and its brake checks
 const count = (name, f) => { const was = window[name]; window[name] = function (...a) { return f(was, ...a); }; };
 count('updateRigs', (f, dt) => { const had = traffic.some(c => c.rig && !c.wreck); f(dt); if (!had && traffic.some(c => c.rig && !c.wreck)) rigs++; });
-count('total', (f, c, ...a) => { if (c.rig) rigsDown++; if (c.racer && !c.fleet) gangDown++; return f(c, ...a); });
+count('total', (f, c, ...a) => { if (c.rig) rigsDown++; if (c.suv) suvsDown++; if (c.racer && !c.fleet) gangDown++; return f(c, ...a); });
+count('updatePolice', (f, dt) => { const had = traffic.some(c => c.suv && !c.wreck); f(dt); if (!had && traffic.some(c => c.suv && !c.wreck)) suvs++; });
 count('rigRam', (f, c) => { rams++; f(c); });
 count('gangDrive', (f, c, dt) => { const was = c.stage; const on = f(c, dt); if (was !== 'cut' && c.stage === 'cut') checks++; return on; }); 0"""
 with sync_playwright() as p:
@@ -58,10 +59,10 @@ with sync_playwright() as p:
     for race in range(1, RACES + 1):
         boss = js("bossRace()")
         r = js(f"""(() => {{ {f"rng = {SEED * 1000 + race};" if SEED is not None else ""} window.nextPress = 0; reloading = 0;
-                  Object.assign(window, {{ shells: 0, hits: 0, rigs: 0, rigsDown: 0, rams: 0, gangDown: 0, checks: 0 }});
+                  Object.assign(window, {{ shells: 0, hits: 0, rigs: 0, rigsDown: 0, rams: 0, gangDown: 0, checks: 0, suvs: 0, suvsDown: 0 }});
                   simRun({{ ...progress.levels }}, 2, 1, {{}}, true);
                   return {{ p: run.race && run.race.p, dnf: run.race && run.race.dnf, totals: run.totals, scrap: run.scrap, heat: Math.round(progress.wanted * 100),
-                  dmg: Math.round(progress.damage), shells, hits, got: run.shells, left: progress.shells, rigs, rigsDown, rams, gangDown, checks,
+                  dmg: Math.round(progress.damage), shells, hits, got: run.shells, left: progress.shells, rigs, rigsDown, rams, gangDown, checks, suvs, suvsDown,
                   beat: run.beatTank, tank: run.tank ? Math.round(Math.max(0, run.tank.hp ?? tankHealth())) : null }}; }})()""")
         js("while (repair() && progress.damage > 0);")
         fixed = js("[Math.round(progress.damage), progress.bank]")
@@ -76,7 +77,7 @@ with sync_playwright() as p:
             buyAll({json.dumps(WARRIG)}, true); buyAll({json.dumps(FLEET)}, false); return b.filter(x => !x.startsWith('fleet') || x.startsWith('fleetP')); }})()""")
         res = ("P" + str(r["p"])) if r["p"] else r["dnf"]
         print(f"race {race:2}: {res:10} totals {r['totals']:2} (gang {r['gangDown']:2}) +{r['scrap']:4} scrap  shells {r['shells']:2} hit {r['hits']:2} "
-              f"+{r['got']:2} left {r['left']:3}  rigs {r['rigs']} down {r['rigsDown']} rams {r['rams']:2}  checks {r['checks']:2}  heat {r['heat']:3}%  "
+              f"+{r['got']:2} left {r['left']:3}  rigs {r['rigs']} down {r['rigsDown']} rams {r['rams']:2}  suvs {r['suvs']} down {r['suvsDown']}  checks {r['checks']:2}  heat {r['heat']:3}%  "
               f"dmg {r['dmg']:3}% ({fixed[0]}% after repairs, {fixed[1]:,} m left)"
               + (f"  TANK {'beaten' if r['beat'] else str(r['tank']) + ' left'}" if boss else "") + f"  bought {' '.join(got)}")
     print(f"tanks beaten in {RACES} races: {js('progress.tanks') - tanks0} | scrap {js('progress.scrap')} | points {js('progress.points')} | crew {js('fleetSize()')}")
