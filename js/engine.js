@@ -85,7 +85,6 @@ async function start() {
   hiss.connect(nos.filter).connect(nos.gain).connect(carBus);
   hiss.start();
 
-  const decode = wav => ctx.decodeAudioData(Uint8Array.from(atob(wav), c => c.charCodeAt(0)).buffer);
   starterBuffer = await decode(SOUNDS.starter);
   await Promise.all(ENGINES.map(async e => {
     e.buffers = await Promise.all(e.loops.map(([, wav]) => decode(wav)));
@@ -93,29 +92,55 @@ async function start() {
   buildPlayers();
 }
 
+const decode = wav => ctx.decodeAudioData(Uint8Array.from(atob(wav), c => c.charCodeAt(0)).buffer);
+const looping = (buffer, rpm, out) => { // a loop playing silent into out, for the crossfade to fade in
+  const src = ctx.createBufferSource(), gain = ctx.createGain();
+  src.buffer = buffer;
+  src.loop = true;
+  gain.gain.value = 0;
+  src.connect(gain).connect(out);
+  src.start();
+  return { src, gain, rpm };
+};
 function buildPlayers() {
   players.forEach(p => p.src.stop());
-  players = engine.loops.map(([loopRpm], i) => {
-    const src = ctx.createBufferSource(), gain = ctx.createGain();
-    src.buffer = engine.buffers[i];
-    src.loop = true;
-    gain.gain.value = 0;
-    src.connect(gain).connect(filter);
-    src.start();
-    return { src, gain, rpm: loopRpm };
-  });
+  players = engine.loops.map(([loopRpm], i) => looping(engine.buffers[i], loopRpm, filter));
 }
 
 // equal-power crossfade (in log-rpm) between the two loops recorded closest to r
-function loopGains(r) {
-  const g = players.map(() => 0), hi = players.findIndex(p => p.rpm >= r);
+function loopGains(r, list = players) {
+  const g = list.map(() => 0), hi = list.findIndex(p => p.rpm >= r);
   if (hi <= 0) g[hi === 0 ? 0 : g.length - 1] = 1;
   else {
-    const lo = players[hi - 1].rpm, x = Math.log(r / lo) / Math.log(players[hi].rpm / lo);
+    const lo = list[hi - 1].rpm, x = Math.log(r / lo) / Math.log(list[hi].rpm / lo);
     g[hi - 1] = Math.cos(x * Math.PI / 2);
     g[hi] = Math.sin(x * Math.PI / 2);
   }
   return g;
+}
+
+// more engines heard over the car's own (Distance's war rig carries them as parts: fortress.js), a voice each: an
+// engine's loops (of SOUNDS, or of RIG_SOUNDS once its file is in), its range of revs geared to the car's, at its own
+// level, through the same throttle and muffling. setVoices({ name: level }) says which; each decoded the first time
+const VOICE_LOOPS = {}; // name: a promise of [[rpm, AudioBuffer]]
+let voices = []; // { name, level, out, players }
+const rigSoundsIn = () => typeof RIG_SOUNDS !== 'undefined'; // assets/rig-sounds.js, loaded later: a const, not on window
+const loopsOf = name => SOUNDS[name] ?? (rigSoundsIn() ? RIG_SOUNDS[name] : undefined);
+function setVoices(want) {
+  if (!ctx) return;
+  for (const v of voices) if (!(v.name in want)) { v.players.forEach(p => p.src.stop()); v.out.disconnect(); }
+  voices = voices.filter(v => v.name in want);
+  for (const [name, level] of Object.entries(want)) {
+    const had = voices.find(v => v.name === name);
+    if (had) { had.level = level; continue; }
+    if (!loopsOf(name)) continue; // its file not in yet: set again once it is
+    const v = { name, level, out: ctx.createGain(), players: [] };
+    v.out.gain.value = 0;
+    v.out.connect(filter);
+    voices.push(v);
+    VOICE_LOOPS[name] ??= Promise.all(loopsOf(name).map(async ([rpm, wav]) => [rpm, await decode(wav)]));
+    VOICE_LOOPS[name].then(loops => { if (voices.includes(v)) v.players = loops.map(([rpm, b]) => looping(b, rpm, v.out)); });
+  }
 }
 
 // the turbo's flutter on lift-off, "stu-tu-tu-tu" (the 18 Oct playtest expected it of a JDM turbo): with no blow-off
@@ -292,6 +317,16 @@ function updateAudio(shown) {
     players[i].gain.gain.setTargetAtTime(g, t, 0.03);
     players[i].src.playbackRate.setTargetAtTime(Math.max(0.05, shown / players[i].rpm), t, 0.03);
   });
+  const f = (shown - e.idle) / (e.redline - e.idle); // the revs, idle to redline: where each voice is in its own range
+  for (const v of voices) {
+    if (!v.players.length) continue; // still decoding
+    const lo = v.players[0].rpm, r = Math.max(0.8 * lo, lo + (v.players.at(-1).rpm - lo) * f);
+    loopGains(r, v.players).forEach((g, i) => {
+      v.players[i].gain.gain.setTargetAtTime(g, t, 0.03);
+      v.players[i].src.playbackRate.setTargetAtTime(Math.max(0.05, r / v.players[i].rpm), t, 0.03);
+    });
+    v.out.gain.setTargetAtTime(v.level, t, 0.1);
+  }
   filter.frequency.setTargetAtTime(overrun ? 2000 : 12000, t, 0.03);
   starterGain.gain.setTargetAtTime(state === 'cranking' ? 0.35 : 0, t, 0.03); // cut as soon as the engine catches
   master.gain.setTargetAtTime(state === 'off' ? level * Math.min(1, rpm / e.idle) : level, t, 0.03);

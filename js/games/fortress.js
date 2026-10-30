@@ -314,6 +314,25 @@ const rigDrag = () => rigged() ? 1 + 0.1 * (boardH() - 1) : 1; // its length a l
 const rigPower = () => rigged() ? progress.fortress.parts.reduce((k, p) => k + (p.kind === 'engine' ? ENGINE_POWER[p.from] * p.cells.length : 0), 0) : 0;
 const armorCut = () => Math.min(0.9, 0.25 * lvl('armour') + 0.05 * blocks('armor')); // Armor plating, and armor plates
 
+// an engine heard (the owner, 30 Oct: "a new engine sound added on top of the existing one"): a voice for each kind of
+// engine on the board, louder the more blocks of it (engine.js setVoices); the heavy ones' file loaded the first time
+// one is mounted, so the page weighs no more until then
+const ENGINE_SOUND = { gang: 'boxer', suv: 'v8', rig: 'truck', tank: 'tank' }; // a rival car's boxer, an SUV's V8, a rig's
+let heard = '', rigSounds = false;                                              // truck diesel, a tank's V12 diesel
+function engineVoices() { // renderRig, every frame: set again only when it changes
+  const want = {};
+  for (const p of rigged() ? progress.fortress.parts : []) {
+    if (p.kind === 'engine') want[ENGINE_SOUND[p.from]] = Math.min(1, (want[ENGINE_SOUND[p.from]] ?? 0.2) + 0.2 * p.cells.length);
+  }
+  if (!rigSounds && Object.keys(want).some(n => !SOUNDS[n])) {
+    rigSounds = true;
+    document.head.append(Object.assign(document.createElement('script'), { src: 'assets/rig-sounds.js', onload: () => { heard = ''; } }));
+  }
+  const key = JSON.stringify(want) + !!ctx + rigSoundsIn(); // before the first click there is no sound to set
+  if (key !== heard) { heard = key; setVoices(want); }
+}
+function quietRig() { heard = ''; setVoices({}); } // distance.js stop: leaving Distance
+
 let pedalDown = false;
 $('cannon-pedal').onpointerdown = e => { e.preventDefault(); pedalDown = true; fireCannon(); };
 for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) $('cannon-pedal').addEventListener(ev, () => { pedalDown = false; });
@@ -321,6 +340,7 @@ for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) $('cannon-pedal
 // every frame of Distance (distance.js render): the rig's cockpit, the board, a part being dragged or held, the pedal
 function renderRig() {
   const on = rigged(), now = performance.now();
+  engineVoices();
   document.body.classList.toggle('rig', on);
   if (!on) return;
   renderBoard();

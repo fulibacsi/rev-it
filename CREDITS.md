@@ -36,7 +36,7 @@ All six recordings come from [Freesound](https://freesound.org).
 ### The war rig's engines
 
 Five more recordings from [Freesound](https://freesound.org), in `assets/rig-sounds.js`: the heavy engines act 5's war
-rig will carry as parts (the game doesn't play them yet).
+rig carries as parts, heard over the car's own engine.
 
 | Recording | Author | License | Used for |
 |---|---|---|---|

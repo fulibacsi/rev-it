@@ -1308,7 +1308,7 @@ race, the loot lost to a full inventory, and the parts lost a race.
    changes, and the robot brakes for no one and rams: the owner, 30 Oct); the drop tables; the rig slower as it grows
    and heavier as it fills; engines, and their sounds on top of yours (the owner, 30 Oct). In three PRs: the loot, the
    hold, Lengthen and the weight first (built 30 Oct); then Widen, the rig a lane wider on the road (from two lanes
-   the wheel, and no brakes); then the engines' sounds.
+   the wheel, and no brakes); then the engines' sounds (built 30 Oct, before Widen: its design was settled).
    - Drops: on the war rig a totaled enemy drops a part by its drop table (Claude's draft, above: the rival gang's cars
      5%, the rigs always, the SUVs half the time, the tank always); the tank's goes straight into the hold (its race
      ends there), the rest skid along the road in a crate, from where it fell at its speed, slowing at 8 m/s², so it
@@ -1337,6 +1337,17 @@ race, the loot lost to a full inventory, and the parts lost a race.
      (2,500-3,600, the top speed is the drag's, and the rolling start at 250 km/h), the scrap now spent. The board a
      lane wide is too small for the loot: Widen comes next.
    - `loot_test` checks it on both layouts.
+   - The engines heard (the owner, 30 Oct: "a new engine sound added on top of the existing one"): `engine.js` plays
+     voices over the car's engine, each an engine's loops crossfaded as the car's are, its range of revs geared to the
+     car's (idle to redline onto its lowest loop to its highest), through the same throttle and muffling, at a level of
+     its own. A voice for each kind of engine on the board, louder the more blocks of it (0.4 a block's, 0.6 two, at
+     most 1): a rival car's boxer, an SUV's V8 (the game's own), a rig's truck diesel, a tank's V12 diesel (the new
+     recordings); the turbine waits for the helicopters. The heavy ones' file (`assets/rig-sounds.js`, 1.29 MB) loads
+     the first time one is mounted, so the page weighs what it did; leaving Distance silences them. The credits screen
+     names the CC BY recordings now heard (the Leopard's idle, the tank on sand) with their titles, authors, licenses
+     and changes, and, to fit a phone, counts the eight CC0 ones instead of naming them (CREDITS.md does). `loot_test`
+     checks the voices: the file not loaded before, a rig's engine heard as the truck geared to your revs, an SUV's V8
+     a second voice, one thrown off gone, none in Free drive.
 7. Damage by where it comes from, parts falling off, hits on empty cells reaching the rig.
 8. Four lanes: the Grinder, mines and the mine roller.
 9. The act's automation.
