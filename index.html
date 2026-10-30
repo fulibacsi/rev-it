@@ -193,6 +193,11 @@
   </g>
 </svg>
 
+<!-- act 5's war rig (fortress.js): in the shifter's place the fortress's board, its plan from above, ahead up, and the
+  hold beside it; a part being dragged floats over it -->
+<div id="board"><b>FORTRESS</b><div id="fort-grid"></div><div id="fort-hold"></div></div>
+<div id="fort-drag" hidden></div>
+
 <div id="pedals">
   <div class="pedal-box"><i class="depth"></i><svg id="clutch" class="pedal" viewBox="0 0 80 140" aria-label="clutch pedal"><use href="#pedal-art"/></svg>CLUTCH</div>
   <div class="pedal-box"><i class="depth"></i><svg id="brake" class="pedal" viewBox="0 0 80 140" aria-label="brake pedal"><use href="#pedal-art"/></svg>BRAKE</div>
@@ -202,6 +207,9 @@
       <rect x="4" y="4" width="72" height="58" rx="12" fill="#a3262b" stroke="#777" stroke-width="2"/>
       <text x="40" y="38" font-family="system-ui, sans-serif" font-size="22" font-weight="bold" fill="#fcc" text-anchor="middle">NOS</text>
       <g fill="#bbb" stroke="#555" stroke-width="1.5"><circle cx="14" cy="52" r="4"/><circle cx="44" cy="52" r="4"/></g></svg></div>
+  <!-- the war rig's only pedal: the cannon's, a shell a press; the bar beside it fills as it reloads (fortress.js) -->
+  <div class="pedal-box cannon-box"><i class="depth reload"></i><svg id="cannon-pedal" class="pedal" viewBox="0 0 80 140"
+    aria-label="cannon firing pedal"><title>fire the cannon: a press, a shell (or Space)</title><use href="#fire-pedal-art"/></svg>FIRE</div>
 </div>
 <svg width="0" height="0" style="position: absolute">
   <symbol id="pedal-art" viewBox="0 0 80 140">
@@ -212,6 +220,13 @@
       <line x1="18" y1="78" x2="62" y2="78"/><line x1="18" y1="92" x2="62" y2="92"/>
       <line x1="18" y1="106" x2="62" y2="106"/>
     </g>
+    <rect x="26" y="124" width="28" height="12" rx="3" fill="#555"/>
+  </symbol>
+  <symbol id="fire-pedal-art" viewBox="0 0 80 140"> <!-- the cannon's: dark red steel, the reticle on it -->
+    <rect x="4" y="4" width="72" height="118" rx="12" fill="#5a1a1c" stroke="#888" stroke-width="2"/>
+    <g stroke="#3a0e10" stroke-width="4" stroke-linecap="round"><line x1="18" y1="22" x2="62" y2="22"/><line x1="18"
+      y1="106" x2="62" y2="106"/></g>
+    <g fill="none" stroke="#ffcf3f" stroke-width="3"><circle cx="40" cy="64" r="18"/><path d="M40 38v14M40 76v14M14 64h14M52 64h14"/></g>
     <rect x="26" y="124" width="28" height="12" rx="3" fill="#555"/>
   </symbol>
 </svg>
@@ -273,18 +288,23 @@
     <h2>CONTROLS</h2> <!-- data-has: only once the car has it (main.js) -->
     <div class="menu-help touch-only">
       <b>Key</b> turn it to START and hold it until the engine runs ·
-      <b>Pedals</b> touch a pedal to press it all the way, slide your finger up to ease off; let go and it springs back ·
-      <b>Gears</b> drag the knob through the H with the clutch held down ·
+      <span data-not="rebuild"><b>Pedals</b> touch a pedal to press it all the way, slide your finger up to ease off; let go
+      and it springs back · <b>Gears</b> drag the knob through the H with the clutch held down · </span><span
+      data-has="rebuild"><b>Cannon</b> press the firing pedal: a shell a press, at the car in the reticle · <b>Fortress</b>
+      drag a part from the hold onto the board, hold it still on green, let go; press and hold a part to throw it off · </span>
       <b>Lanes</b> grab the steering wheel and turn it<span data-has="flash"> · <b>Lights</b> pull the stalk left of the
       wheel to flash the car ahead out of your lane</span>. Slower cars use your lane: overtake them, a crash costs most of your speed.
       <span id="ios-tip"><br><b>Full screen</b> on an iPhone: Share → Add to Home Screen, then start it from there.</span>
     </div>
     <div class="menu-help desk-only">
-      <b>Keyboard</b> Enter engine on/off · Space gas · Shift clutch · B brake · ↑ ↓ gears · ← → change lanes ·
-      <span data-has="flash">F flash · </span><span data-has="nitro">N nitro · </span><span data-has="guns">G fire · </span><span
+      <b>Keyboard</b> Enter engine on/off · <span data-not="rebuild">Space gas · Shift clutch · B brake · ↑ ↓ gears · </span><span
+      data-has="rebuild">Space fire the cannon · </span>← → change lanes ·
+      <span data-has="flash">F flash · </span><span data-has="nitro" data-not="rebuild">N nitro · </span><span data-has="guns">G fire · </span><span
       data-has="stereo">M next tape · </span>1–3 engine · Esc pause<br>
-      <b>Mouse</b> drag the ignition key to START and hold it · drag the pedals down (they stay put, double-click lets
-      go) · drag the gear knob through the H with the clutch down · grab the steering wheel and turn it to change lanes.
+      <b>Mouse</b> drag the ignition key to START and hold it · <span data-not="rebuild">drag the pedals down (they stay
+      put, double-click lets go) · drag the gear knob through the H with the clutch down · </span><span
+      data-has="rebuild">click the firing pedal · drag a part from the hold onto the board, hold a part to throw it off ·
+      </span>grab the steering wheel and turn it to change lanes.
       Slower cars use your lane: overtake them, a crash costs most of your speed.
     </div>
     <footer><button data-back>◀ BACK</button></footer>
@@ -377,6 +397,7 @@
 <script src="js/games/gang.js"></script>
 <script src="js/games/police.js"></script>
 <script src="js/games/boss.js"></script>
+<script src="js/games/fortress.js"></script>
 <script src="js/games/damage.js"></script>
 <script src="js/games/aids.js"></script>
 <script src="js/main.js"></script>

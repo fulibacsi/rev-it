@@ -59,7 +59,8 @@ talking about upgrades. Keep it up to date with every change to an upgrade, a ta
   upgrades, runs, save, the act cards), `race.js` (the hidden race, the Black market's upgrades, scoring), `fleet.js` (the Crew:
   paid-off racers and their teamwork), `oil.js` (the crew's roles, the oil spots and refineries, the tracker, crude and
   fuel, the Foreman, act 3's foreshadowing), `gang.js` (War Rig: the AR target, totals, parts, guns), `police.js` (police
-  heat, the scanner, police cars), `boss.js` (the tank, the ending), `damage.js` (damage, heat, nitro), `aids.js`
+  heat, the scanner, police cars), `boss.js` (the tank), `fortress.js` (act 5, being built: the Rebuild, the war rig's
+  cockpit, the fortress's board, the cannon), `damage.js` (damage, heat, nitro), `aids.js`
   (Distance's driver aids: robot feet and hands working the same pedals and lever as the player).
 - Saves: `localStorage` keys `car-rev-settings` and `car-rev-incremental` (Distance progress). Keep these names so
   players keep their saves. Debug mode plays `car-rev-incremental-debug` and never writes the real save.
@@ -98,7 +99,8 @@ uv run --no-project --with playwright playwright install chromium         # once
   `Input.dispatchTouchEvent` (a `touchEnd` lists the finger that lifts). `Emulation.setSafeAreaInsetsOverride` fakes
   the iPhone's notch and home bar. Force a layout with `settings.layout = 'touch'; applyLayout()`.
 - After changing anything that feeds Distance's economy or the race, run the simulations in `tests/balance/`
-  (`act1.py [cheapest|value]`, `act2.py`, `act3.py` for the Crew, `act4.py` for the War Rig, to the tank) and compare
+  (`act1.py [cheapest|value]`, `act2.py`, `act3.py` for the Crew, `act4.py` for the War Rig, to the tank, `act5.py`
+  for the Fortress, as far as it is built) and compare
   with the targets in the design notes.
 - Testing is emulation only. Say so when a change depends on how a real phone behaves.
 - Tests never send anything: the repository's build has no gate address. `reporting_test` builds the itch.io copy

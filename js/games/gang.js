@@ -93,7 +93,7 @@ function updateGang(dt) { // every frame of a run
 // sight. Auto gun holds it for you, only while there is something to hit. The tracers are drawn over the road
 // (renderGang)
 let reload = 0;
-const tracers = []; // [from, to, when]: from a car's middle on the screen, or null for your hood
+const tracers = []; // [from, to, when]: from a car's middle on the screen, null for your hood, 'cannon' the rig's cannon
 function fireGuns(dt) {
   reload = Math.max(0, reload - dt);
   const auto = lvl('autogun') && !progress.off.autogun && target?.seen && target.z - odo < RANGE;
@@ -229,16 +229,18 @@ function drawTracers() {
   while (tracers.length && now - tracers[0][2] > 100) tracers.shift();
   for (const [from, to, when] of tracers) {
     const side = Math.round(when / 250) % 2 ? 1 : -1; // twin guns on the hood, in turn
-    const [x1, y1] = from ? from.seen && middle(from.seen) || [] : [w * MUZZLES[side][0], h * MUZZLES[side][1]];
+    const shell = from === 'cannon', [x1, y1] = shell ? [w / 2, h * 0.6] // the rig's cannon (fortress.js): a shell
+      : from ? from.seen && middle(from.seen) || [] : [w * MUZZLES[side][0], h * MUZZLES[side][1]];
     const [x2, y2] = to === 'you' ? [w / 2, h * 0.66] : to?.seen ? middle(to.seen) // the tank at you; a miss: off
       : [x1 + side * w * 0.02, h * 0.42];                                          // into the distance
     if (x1 === undefined) continue;
     g2d.globalAlpha = 1 - (now - when) / 100;
-    g2d.strokeStyle = '#ffd36a'; g2d.lineWidth = Math.max(2, w / 500);
+    g2d.strokeStyle = shell ? '#ff9a3c' : '#ffd36a'; g2d.lineWidth = Math.max(2, w / (shell ? 160 : 500));
     g2d.beginPath(); g2d.moveTo(x1, y1); g2d.lineTo(x2, y2); g2d.stroke();
-    if (!from || from.tank) { // a muzzle flash
-      g2d.fillStyle = '#fff3c0'; g2d.beginPath(); g2d.arc(x1, y1, w / (from ? 50 : 120), 0, 2 * Math.PI); g2d.fill();
+    if (!from || from.tank || shell) { // a muzzle flash
+      g2d.fillStyle = '#fff3c0'; g2d.beginPath(); g2d.arc(x1, y1, w / (from && !shell ? 50 : shell ? 40 : 120), 0, 2 * Math.PI); g2d.fill();
     }
+    if (shell && to?.seen) { g2d.fillStyle = '#ffb347'; g2d.beginPath(); g2d.arc(x2, y2, w / 30, 0, 2 * Math.PI); g2d.fill(); } // the hit
   }
   g2d.globalAlpha = 1;
 }

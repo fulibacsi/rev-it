@@ -1115,9 +1115,9 @@ camera rises and falls back, and the fortress, four lanes wide, crosses the wast
 following. Then the WARLORD screen. The act takes 10–15 races (the owner), so the game about 70–95 races, 1.5–2
 hours.
 
-**Still open:** the wheel at two lanes and more; what each source drops and does; the bridge or the cab (to try); the placing gesture (to
-try); where the points go; the foreshadowing; the final fight's form; whether placing is automated; what comes after
-the ending (playing on, or a new game plus).
+**Still open:** whether the robot brakes at all; the wheel at two lanes and more; what each source drops and does; the
+bridge or the cab (to try); the placing gesture (on a phone); where the rest of the points go; the foreshadowing; the
+final fight's form; whether placing is automated; what comes after the ending (playing on, or a new game plus).
 
 **How we make sure:** `act5.py`, from the tank to the final fight: the races (10–15), how full the grid stays race by
 race, the loot lost to a full inventory, and the parts lost a race.
@@ -1137,9 +1137,33 @@ race, the loot lost to a full inventory, and the parts lost a race.
    80 crew, 17 harvesters, 9 brewers, 6 raiders; as in play 8,000 m, 2,800 points, 7 L, 300 scrap). Claude's calls:
    the card's name BUILD (a verb, as the others) and its words, the tab's price, the sign. `boss_test` and
    `debug_acts_test` check it.
-4. The Rebuild: the new cockpit (the board's place, the cannon's pedal, both seats to try; the aids it drives with
-   locked on, their cards under a bolted metal plate, the owner, 30 Oct), the 1×1 grid with the cannon, act IV's guns
-   kept; `act5.py` begins.
+4. The Rebuild (built 30 Oct; `fortress.js`). The owner's answers of 30 Oct: no brake either ("we are an unstoppable
+   fortress, we brake for no-one"), one shot a press, the drag built now, and the seats tried once there is a deck to
+   look at (a full grid simulated in a few setups, screenshots on the phone and the desktop for the owner).
+   - The Fortress page's first card, 1,500 points (piled up by the tank: 1,800-2,900 in `act4.py`; Claude's price).
+     Bought, the tank's cannon goes into the hold, and the rig's tutorial pops up.
+   - The cockpit: the shifter, the clutch, the brake, the gas and the nitro pedal go. In their place a firing pedal,
+     dark red with the reticle on it, a bar beside it filling as it reloads; Space fires too, and Shift, B, ↑ ↓ and N do
+     nothing. The robot drives: Auto clutch, Auto gas, Auto shift, Lane assist (Autocruise needs it) and Autocruise
+     drive whatever their switches say, and their cards stay on the Autopilot page under a bolted plate, BOLTED ON, the
+     war rig drives itself. Auto flash, Reckless auto-drive (its nitro too) and Hunter keep their switches. The robot
+     still brakes behind traffic it can't pass: whether it should brake at all is the owner's to say (Claude's
+     reading of "we brake for no-one": the pedal; it would ram every slower car, which at a lane wide with no parts
+     wrecks the rig; with the Grinder it fits). The wheel stays as it is until two lanes wide (the owner).
+   - The board, in the shifter's place: a steel plate, FORTRESS, the plan (1×1) and the hold beside it (one slot).
+     Dragged from the hold, a part floats a cell above the finger and a ghost shows where it would go, green or red;
+     it goes on only once the finger has rested still (6 px) on green for 0.2 s, else back to the hold. Pressed and
+     held for 0.5 s, a ring closing, a part is thrown off, gone for good; a shorter press or a slide leaves it.
+     Claude's numbers, to try on a phone. The board is in the save (`progress.fortress`).
+   - The cannon, mounted: a shell a press at the reticle's car within 300 m, 250 damage (a car, a racer or a police
+     car in one; the next tank, 1,500, in six), 2 s to reload, a gun shot's heat ten times over, the rig jolting.
+     Act IV's guns stay. First guesses.
+   - The Driving tutorial closes once rigged (its controls are gone); HOW TO DRIVE's controls follow the rig.
+   - `act5.py` begins (from `act4.py`'s tank, seeds 1 and 2): the Rebuild bought at once (1,300 points left), and
+     with the reticle still on every car the cannon totals 21-27 a race (act 4's play-on: 14-22), the heat full again
+     in 2 races (was 4-5), each tank beaten in its race with 4-5 shells, and scrap piles up: 5,400-5,550 by race 10,
+     with nothing yet to buy. The numbers wait for the next layer, the reticle on the notable enemies only.
+   - `fortress_test` checks it on both layouts.
 5. The reticle on the notable enemies only, the raiders on the rest; the rival gang and its ammo.
 6. Loot on the road, the inventory, placing and removing; the grid longer and wider (the wheel changes once the rig is
    two lanes wide or more: the owner, 30 Oct).
