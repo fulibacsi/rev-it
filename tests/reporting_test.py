@@ -1,6 +1,6 @@
 """Feedback and gameplay data, in the itch.io build (tools/build.py fills in the gate's address; served over HTTP, as
-itch.io serves it; the gate answered here, nothing leaves the machine; the gate itself: gate_test). The first visit asks, the box unticked; unticked, a
-run sends nothing, and FEEDBACK (in SHARE's place) can go empty with the stats; ticked, a game's start and each run
+itch.io serves it; the gate answered here, nothing leaves the machine; the gate itself: gate_test). The first visit asks, the box unchecked; unchecked, a
+run sends nothing, and FEEDBACK (in SHARE's place) can go empty with the stats; checked, a game's start and each run
 go, FEEDBACK needs a word, an error is reported; a failed send says so. Inside a page's frame (itch.io's) the iPhone's
 "Add to Home Screen" tip is gone. The repository's own build (GitHub Pages) has none of it: SHARE, no question, nothing
 sent."""
@@ -41,26 +41,26 @@ with sync_playwright() as p:
         pg.wait_for_function("run.phase === 'run'", timeout=15000); pg.wait_for_timeout(800)
         js("run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000); pg.wait_for_timeout(300)
         pg.keyboard.press("Escape"); pg.click("#to-main")
-    # 1. the first visit: the question, unticked; it fits the phone
+    # 1. the first visit: the question, unchecked; it fits the phone
     pg.goto(f"{ITCH}/index.html"); pg.wait_for_timeout(400)
     got = js("[screen, $('stats-ok').checked, document.querySelector('[data-screen=hello]').innerText]")
-    check("first visit: A GAME IN PROGRESS, the box unticked", got[0] == "hello" and not got[1] and "A GAME IN PROGRESS" in got[2]
+    check("first visit: A GAME IN PROGRESS, the box unchecked", got[0] == "hello" and not got[1] and "A GAME IN PROGRESS" in got[2]
           and "I accept to send anonymous gameplay data" in got[2] and "No personal data" in got[2], got[:2])
     r = js("(() => { const r = $('menu-panel').getBoundingClientRect(); return [r.top, r.bottom, $('menu').scrollHeight > $('menu').clientHeight]; })()")
     check("it fits the phone", r[0] >= 0 and r[1] <= 390 and not r[2], r)
     pg.screenshot(path=f"{OUT}/reporting_hello.png")
-    # 2. unticked: CONTINUE, a game and a run, nothing sent
+    # 2. unchecked: CONTINUE, a game and a run, nothing sent
     pg.click("#hello-go"); got = js("[screen, settings.stats, JSON.parse(localStorage.getItem('car-rev-settings')).stats]")
-    check("CONTINUE unticked: the main menu, no gameplay data (kept)", got == ["main", False, False], got)
+    check("CONTINUE unchecked: the main menu, no gameplay data (kept)", got == ["main", False, False], got)
     js("progress.toured = TUTORIALS.map(t => t.id)"); race()
-    check("unticked: a game and a run send nothing", not sent, sent)
+    check("unchecked: a game and a run send nothing", not sent, sent)
     pg.reload(); pg.wait_for_timeout(300)
     check("answered: not asked again", js("screen") == "main", js("screen"))
-    # 3. FEEDBACK in SHARE's place; unticked it can go empty, with the stats
+    # 3. FEEDBACK in SHARE's place; unchecked it can go empty, with the stats
     pg.click("#to-stats"); check("STATS: FEEDBACK, not SHARE", shown() == ["◀ BACK", "FEEDBACK"], shown())
     pg.click('[data-show="feedback"]')
     got = js("[$('feedback-note').textContent, $('feedback-send').disabled]")
-    check("unticked: it can go empty, and says so", got == ["You can send it empty: just your play stats.", False], got)
+    check("unchecked: it can go empty, and says so", got == ["You can send it empty: just your play stats.", False], got)
     pg.screenshot(path=f"{OUT}/reporting_feedback.png")
     pg.click("#feedback-send"); pg.wait_for_timeout(300)
     f = sent[-1] if sent else {}
@@ -70,17 +70,17 @@ with sync_playwright() as p:
     check("... then thanks, in the form's place, the box cleared", got[0] == "thanks" and "Thanks for your feedback!" in got[1] and got[2] == "", got)
     pg.click("[data-back]:visible"); check("its BACK: to STATS, where FEEDBACK came from", js("screen") == "stats", js("screen"))
     pg.click('[data-show="feedback"]'); pg.click("[data-back]:visible"); check("the form's ◀ BACK: to STATS", js("screen") == "stats", js("screen"))
-    # 4. ticked in SETTINGS: a game's start and its run go; FEEDBACK needs a word
+    # 4. checked in SETTINGS: a game's start and its run go; FEEDBACK needs a word
     pg.click("[data-back]:visible"); pg.click('[data-show="settings"]'); pg.click("#stats-switch")
     check("SETTINGS: gameplay data ON", js("[$('stats-switch').textContent, settings.stats]") == ["ON", True], js("$('stats-switch').textContent"))
     pg.click("[data-back]:visible"); n = len(sent); race()
     ev = [e for e in sent[n:] if e["table"] == "events"]
-    check("ticked: the game's start, then its run", [e["kind"] for e in ev] == ["start", "run"], [e["kind"] for e in ev])
+    check("checked: the game's start, then its run", [e["kind"] for e in ev] == ["start", "run"], [e["kind"] for e in ev])
     run = ev[-1]["data"] if ev else {}
-    check("the run: its metres, the save, touch, the screen, one session", run.get("run", {}).get("gain") is not None and run["save"]["runs"] == 2
+    check("the run: its meters, the save, touch, the screen, one session", run.get("run", {}).get("gain") is not None and run["save"]["runs"] == 2
           and run["screen"] == "844x390" and ev[0]["session"] == ev[-1]["session"] == f["session"], {k: run.get(k) for k in ["layout", "device", "screen", "act"]})
     pg.click("#to-stats"); pg.click('[data-show="feedback"]')
-    check("ticked: empty, SEND is off, no word about it", js("[$('feedback-send').disabled, $('feedback-note').textContent]") == [True, ""], "")
+    check("checked: empty, SEND is off, no word about it", js("[$('feedback-send').disabled, $('feedback-note').textContent]") == [True, ""], "")
     # typed on a phone (an iPhone's keyboard takes the lower half): the form packs into the top, SEND in sight, and a tap
     # on it sends; after, the form as it was, nothing scrolled (iOS could leave the page out of place: the owner, 25 Oct)
     js("settings.layout = 'touch'; applyLayout()"); pg.tap("#feedback-text"); pg.keyboard.type("The tank is too strong"); pg.wait_for_timeout(50)
@@ -98,7 +98,7 @@ with sync_playwright() as p:
     check("a failed send: says so on the form, the words kept", js("[screen, $('feedback-note').textContent, $('feedback-text').value]") == ["feedback", "Couldn't send it: try again later.", "again"],
           js("$('feedback-note').textContent"))
     check("no preflight: the browser sends straight to the gate", not asked, asked)
-    # 5. an error: reported, ticked
+    # 5. an error: reported, checked
     n = len(sent); js("setTimeout(() => { throw new Error('on purpose') }); 0"); pg.wait_for_timeout(300)
     e = sent[n] if len(sent) > n else {}
     check("an error: reported", e.get("kind") == "error" and e["data"]["message"].endswith("on purpose"), e.get("data", {}).get("message"))

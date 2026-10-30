@@ -22,9 +22,9 @@ function updateAids(dt) {
 
 const launchRpm = () => 0.6 * engine.redline; // revs to set off at: well into the pull, clear of the limiter
 
-// auto clutch: out at once while the gear lever moves, and on the line until GO so the revs can build. Coming in
+// auto clutch: out at once while the gear shifter moves, and on the line until GO so the revs can build. Coming in
 // it follows the revs, like a centrifugal clutch, so it can neither stall nor bog the engine; once the car has
-// caught up it stays in. It knows nothing about grip: with a lot of power it will spin the tyres.
+// caught up it stays in. It knows nothing about grip: with a lot of power it will spin the tires.
 function autoClutch(dt) {
   if (touching('clutch')) return; // your foot on the clutch: it's yours
   if (lever.held || lever.path || run.phase === 'countdown') { clutchPedal = 1; return; }
@@ -35,7 +35,7 @@ function autoClutch(dt) {
 }
 
 // auto gas: holds the launch revs on the line, otherwise flat out, shifts included (the limiter catches the revs
-// while the clutch is out). Once the clutch has caught up it is traction control: no more gas than the tyres can
+// while the clutch is out). Once the clutch has caught up it is traction control: no more gas than the tires can
 // take (worked out from the torque the engine makes at these revs), and well under that if they spin anyway. Your
 // foot on the brake lifts it off the gas on the move, as a driver would: it held the gas down, and braking by hand
 // slowed the car less than half as hard (25 Oct). Your nitro pedal still floors it
@@ -43,7 +43,7 @@ function autoGas() {
   if (pushing()) return; // your own foot on the gas: it's yours (the nitro pedal only floors it, then this trims it)
   if (speed < 1 && (!gear || clutch < 0.05)) gasPedal = clamp(0.5 + (launchRpm() - rpm) / 800, 0, 1);
   else if (touching('brake') && !nitroHeld) gasPedal = 0;
-  // in neutral (mid-shift, or a gear knocked out while the tyres spin) the grip sum would divide by a ratio of 0
+  // in neutral (mid-shift, or a gear knocked out while the tires spin) the grip sum would divide by a ratio of 0
   else if (!gear || !locked && !spinning) gasPedal = 1;
   else {
     const a0 = engineAccel(engine, rpm, 0), a1 = engineAccel(engine, rpm, 1); // the pull is linear in the throttle
@@ -60,7 +60,7 @@ function autoShift() {
   const at = revsIn, up = next(1), down = next(-1);
   // up near the limiter, unless that gear would lug the engine; down by road speed (after a crash the clutch may be
   // slipping in far too high a gear), unless the lower gear would be straight back at the limiter: with a broken
-  // gear in between, the two neighbours are far apart, and this keeps it from hunting between them
+  // gear in between, the two neighbors are far apart, and this keeps it from hunting between them
   const want = !gear ? up
     : rpm > r - 200 && up <= topGear() && locked && at(up) > 0.35 * r ? up
     : down >= 1 && at(gear) < 0.45 * r && at(down) < r - 400 ? down : gear;
@@ -69,7 +69,7 @@ function autoShift() {
 
 // ---- steering: a robot hand on the wheel (it turns by itself as the car moves over) ----
 // the nearest car going your way ahead in lane x, leaving out any that past(c, x) says won't be in your way there. A
-// wreck is never in the way: it can't be hit, and skids off (the aids swerved round the cars Hunter had just totalled)
+// wreck is never in the way: it can't be hit, and skids off (the aids swerved round the cars Hunter had just totaled)
 function nextCar(x, past = () => false) {
   let near = null;
   for (const c of traffic) if (c.dir > 0 && !c.wreck && sameLane(c.x, x) && c.z > odo && !past(c, x) && (!near || c.z < near.z)) near = c;
@@ -88,7 +88,7 @@ function carAhead(x, past) {
   const near = nextCar(x, past);
   return near && { gap: near.z - odo - MY_FRONT, closing: speed - near.v };
 }
-// room in lane x to move over into: nobody alongside, and nobody slower within `ahead` metres
+// room in lane x to move over into: nobody alongside, and nobody slower within `ahead` meters
 function laneClear(x, ahead) {
   return !traffic.some(c => c.dir > 0 && !c.wreck && sameLane(c.x, x) && c.z + CAR_LEN > odo - MY_REAR - 3 && c.z < odo + ahead);
 }
@@ -106,7 +106,7 @@ function laneAssist() {
 // autocruise: drives the whole run like a good driver. It takes whichever lane lets it go further before catching
 // a slower car, moves over only when nobody is alongside, and keeps right when that costs nothing. When it can't get
 // past, it is adaptive cruise control: it brakes, late and firmly, to match the car ahead's speed before reaching it
-// (from 300 km/h that still takes a couple of hundred metres), then follows until there is a way past. It brakes for
+// (from 300 km/h that still takes a couple of hundred meters), then follows until there is a way past. It brakes for
 // the first car you would hit: not one already moving out of your lane (for a flash, say), and nothing while that is
 // a car to ram (the ram slows you to its speed; it braked for the car beyond the one Hunter was ramming).
 let cruiseBrake = false; // the car it has its foot on the brake for, or false (so it knows to take it off again)
@@ -171,7 +171,7 @@ function autoFlash() {
 // when nothing is coming for 6 s, or when whatever comes can be flashed out of the way (Game of chicken and a flash
 // left). It goes home when something it can't flash away comes within 3.5 s (cutting in beside a car only to escape a
 // head-on under 2 s away), or once your side is open again. While the tank is on the road it keeps to your side: it
-// can't be passed (the owner, 14 Oct); and while Hunter hunts, it leaves your side to it. It pushes the nitro pedal when a racer is close ahead, the tyres grip and
+// can't be passed (the owner, 14 Oct); and while Hunter hunts, it leaves your side to it. It pushes the nitro pedal when a racer is close ahead, the tires grip and
 // neither it nor you is braking.
 let tunedRevs = true; // the aids rev into the tune now (see updateAids)
 // an oncoming car in your lane, under 4.5 s away, that a flash would make swerve: a game of chicken to play
@@ -192,7 +192,7 @@ function recklessLanes() {
     if (lane === 1 && boxed && !tank && !hunted(target) && speed > 15 && (meets(ROAD_LANES[2]) > 6 || brave)) changeLane(-1);
     return;
   }
-  if (lane === 3) return changeLane(1); // the far oncoming lane: back towards your side
+  if (lane === 3) return changeLane(1); // the far oncoming lane: back toward your side
   if (brave && facing()) flashLights(); // a game of chicken, with or without Auto flash
   const coming = meets(ROAD_LANES[2]), home = laneClear(MY_LANES[1], MY_FRONT + 6);
   if (coming < 3.5 && (home || coming < 2) || home && (tank || reach(carAhead(MY_LANES[1])) > 4)) changeLane(1);

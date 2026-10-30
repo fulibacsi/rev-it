@@ -25,7 +25,7 @@ with sync_playwright() as p:
         bought = []
         while (opts := options()):
             if policy == "cheapest": k = min(opts, key=lambda k: cost(k, lv.get(k, 0)))
-            else:  # best metres gained per metre spent, by trying each
+            else:  # best meters gained per meter spent, by trying each
                 k = max(opts, key=lambda k: (sim({**lv, k: lv.get(k, 0) + 1}) - m) / cost(k, lv.get(k, 0)))
             c = cost(k, lv.get(k, 0)); bank -= c; spent += c; lv[k] = lv.get(k, 0) + 1; bought.append(f"{k}{lv[k]}")
         print(f"run {r:2} {m:5} m  bank {bank:6}  bought {' '.join(bought)}")

@@ -1,7 +1,7 @@
 """Raiders (the owner, 27 Oct; the Hunting pack until then): the War Rig page's Raiders card, once Hunter, Racing and a
 level of Crew tuning are bought, makes raiding a role of the crew's: a Raiders row on the role card, none before. On
 the road the car in the reticle is on the tracker, a red row; picked, SEND sends a raider up the shoulder and into it
-without braking for it, a ram every 1.5 s or so, till it is totalled; several on one car take turns (its scrap yours), and the raider is free again; three at most a car, and FULL
+without braking for it, a ram every 1.5 s or so, till it is totaled; several on one car take turns (its scrap yours), and the raider is free again; three at most a car, and FULL
 after. The tank takes a fifth of a raider's ram, as of yours; the Foreman sends raiders first."""
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -41,7 +41,7 @@ with sync_playwright() as p:
     check("the role card: a Raiders row", js("!!document.querySelector('.roles .role.raider input')"), js("$('cards').innerText")[:200])
     for _ in range(4): pg.click('.role.raider [data-by="1"]'); pg.wait_for_timeout(50)
     check("four raiders: four fewer racers", js("[role('raider'), racersOf(), riders()]") == [4, 56, 4], js("[role('raider'), racersOf(), riders()]"))
-    # 2. on the road: the car in the reticle on the tracker; SEND: a raider up the shoulder, into it, till it is totalled
+    # 2. on the road: the car in the reticle on the tracker; SEND: a raider up the shoulder, into it, till it is totaled
     pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     js(f"({PLACE})(90)"); pg.wait_for_function("raidAhead() && raidAhead().car === tg", timeout=5000); pg.wait_for_timeout(200)
     check("the reticle's car on the tracker: a red row", js("!!document.querySelector('#track-spots .raid')"), js("$('track-spots').innerHTML")[:200])
@@ -58,7 +58,7 @@ with sync_playwright() as p:
     check("no braking for it: the last 15 m at 10 m/s or more on its car", got[0] > 0 and float(got[1]) >= 10, got)
     pg.wait_for_function("tg.wreck", timeout=15000); pg.wait_for_timeout(100)
     got = js("[progress.scrap - s0, $('flash').textContent, raiding().length, free('raid')]")
-    check("totalled: its scrap yours, the raider back with you", got == [22, "THE GANG TOTALLED A CAR +22 SCRAP", 0, 4], got)
+    check("totaled: its scrap yours, the raider back with you", got == [22, "THE GANG TOTALED A CAR +22 SCRAP", 0, 4], got)
     # 3. three at most on a car
     js(f"({PLACE})(150)"); pg.wait_for_function("raidAhead() && raidAhead().car === tg", timeout=5000)
     js("run.pick = raidAhead()")

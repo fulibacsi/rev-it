@@ -1,5 +1,5 @@
 // Speed signs: hold the road speed set by the roadside signs. Levels: [band width km/h, points per second on
-// target, metres between signs]. Better levels narrow the band and bring the signs closer, so more of the time
+// target, meters between signs]. Better levels narrow the band and bring the signs closer, so more of the time
 // goes into reaching the next speed: shifting, braking, reading hills, getting past traffic. The gauge drains
 // twice as fast as it fills, so holding a level takes about 2/3 of the time on target.
 const SIGNS = {
@@ -9,7 +9,7 @@ const SIGNS = {
   gears: () => 6,
   start() {
     this.levels.reset();
-    Object.assign(this, { lo: 0, hi: 0, on: false, signs: [] }); // signs: [{ z: odometer metres, value: km/h }]
+    Object.assign(this, { lo: 0, hi: 0, on: false, signs: [] }); // signs: [{ z: odometer meters, value: km/h }]
     for (let i = 0; i < 3; i++) this.addSign();
   },
   addSign() { // the next one 20-50 km/h away from the previous, 40-160 km/h
@@ -19,7 +19,7 @@ const SIGNS = {
     while (value < 40 || value > 160);
     this.signs.push({ z, value });
   },
-  band(mid) { // centred on mid, as wide as the level allows
+  band(mid) { // centered on mid, as wide as the level allows
     const width = this.levels.table[this.levels.level][0];
     [this.lo, this.hi] = [mid - width / 2, mid + width / 2];
   },

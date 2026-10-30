@@ -1,5 +1,5 @@
 // In-page fast simulation: a bot drives one run with the real physics and aids, faster than real time.
-// skill scales how long each hand/foot action takes (1 = practised, 2 = casual).
+// skill scales how long each hand/foot action takes (1 = practiced, 2 = casual).
 window.TRAVEL = 0.35; window.REACT = 0.3; window.TRACE_EVERY = 30;
 window.simRun = (levels, engineIdx = 0, skill = 1, off = {}, withTraffic = false) => {
   window.passedAt = null;

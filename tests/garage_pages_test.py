@@ -1,14 +1,14 @@
 """The garage's pages, by the owner's upgrade graph (docs/upgrade-graph.md): every tab is bought, a tap on it when it is
 for sale. A new game shows the Workshop's tab and nothing else; then the Autopilot's after 2 km driven, the Black
 market's once the race is revealed (and not a word of it before), the Fleet's at P1, the War Rig's with a car
-totalled. A card shows once one of its parents is bought (a count on the arrow once met), locked, with its name and
-its whole rule: what is done ticked, a parent out of sight as ??? (Flash recharge's in act I, a teaser). The next
+totaled. A card shows once one of its parents is bought (a count on the arrow once met), locked, with its name and
+its whole rule: what is done checked, a parent out of sight as ??? (Flash recharge's in act I, a teaser). The next
 engine is a card. A tab with an upgrade unlocked that you haven't looked at yet has a yellow !, until you do (kept in
 the save). A save from before the tabs keeps its pages."""
 import re
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
-WORKSHOP = ["Power", "Rev limit", "Gearbox", "Tyres", "Time", "Steering", "Headlight flash", "Car stereo"]
+WORKSHOP = ["Power", "Rev limit", "Transmission", "Tires", "Time", "Steering", "Headlight flash", "Car stereo"]
 errors, fails = [], []
 def check(name, ok, got=""):
     print(f"{'ok ' if ok else 'FAIL'} {name}" + (f": {got}" if got != "" else ""))
@@ -38,14 +38,14 @@ with sync_playwright() as p:
     check("the Autopilot's tab in sight, waiting on 2 km driven", tabs() == ["Workshop", "Autopilot 0 of 2 km driven [off]"], tabs())
     check("the engines: yours", js("[...document.querySelectorAll('#engine-row button')].map(b => b.textContent)") == ["JDM Boxer"], "")
     set_("progress.levels.power = 1")
-    check("Power bought: the next engine, a card: the V8's rule", rule("Engine swap") == "needs ✓ Power · Rev limit · Gearbox", rule("Engine swap"))
+    check("Power bought: the next engine, a card: the V8's rule", rule("Engine swap") == "needs ✓ Power · Rev limit · Transmission", rule("Engine swap"))
     # 2. the Autopilot: 2 km driven, 500 m
     set_("progress.driven = 2100")
     check("2 km driven: the Autopilot's tab for 500 m", tabs() == ["Workshop", "Autopilot 500 m"], tabs())
     page("autopilot")
     check("a tap buys it: its roots, Auto flash waiting on 5 flashes", cards() == ["Auto flash", "Auto clutch", "Auto gas", "Lane assist"]
           and rule("Auto flash") == "needs Headlight flash 0/5", [cards(), rule("Auto flash")])
-    check("Autopilot: paid in metres", set(prices()) == {"m"}, prices())
+    check("Autopilot: paid in meters", set(prices()) == {"m"}, prices())
     set_("progress.levels.steer = 1")
     check("Lane assist bought: Autocruise in sight, Auto shift out of it: ???", rule("Autocruise") == "needs ✓ Lane assist · ??? · Auto gas", rule("Autocruise"))
     set_("progress.levels.clutch = 1")
@@ -80,18 +80,18 @@ with sync_playwright() as p:
                   ["Bribe the starter", "Jump the start", "Reckless driving", "Game of chicken", "Reckless auto-drive", "Cooling", "ECU: rev limit", "ECU: power", "Nitro"],
                   ["Bribe the starter", "Jump the start", "Reckless driving", "Game of chicken", "Reckless auto-drive", "Cooling", "ECU: rev limit", "ECU: power", "Nitro", "7th gear"],
                   ["Bribe the starter", "Jump the start", "Reckless driving", "Game of chicken", "Reckless auto-drive", "Cooling", "ECU: rev limit", "ECU: power", "Nitro", "7th gear", "Daredevil"]], got)
-    check("Game of chicken needs Flash recharge; 7th gear the Gearbox maxed", rule("Game of chicken") == "needs ✓ Reckless driving · Flash recharge"
-          and rule("7th gear") == "needs ✓ Nitro · Gearbox 0/3", [rule("Game of chicken"), rule("7th gear")])
+    check("Game of chicken needs Flash recharge; 7th gear the Transmission maxed", rule("Game of chicken") == "needs ✓ Reckless driving · Flash recharge"
+          and rule("7th gear") == "needs ✓ Nitro · Transmission 0/3", [rule("Game of chicken"), rule("7th gear")])
     pg.screenshot(path=f"{OUT}/pages_black.png")
     page("workshop")
     check("Flash recharge for sale now, Reckless driving bought", rule("Flash recharge") is None and "Flash recharge" in cards(), [rule("Flash recharge"), cards()])
-    check("Workshop: still in metres", set(prices()) == {"m"}, prices())
+    check("Workshop: still in meters", set(prices()) == {"m"}, prices())
     # 5. the story tabs: out of sight till their moment
-    check("no Crew before P1, no War Rig before a car totalled", not any(t.startswith(("Crew", "War Rig")) for t in tabs()), tabs())
+    check("no Crew before P1, no War Rig before a car totaled", not any(t.startswith(("Crew", "War Rig")) for t in tabs()), tabs())
     set_("progress.finish = 1")
     check("P1: the Crew's tab for a point", tabs()[3:] == ["Crew 1 pt"], tabs())
     set_("Object.assign(progress, { totals: 1 }); progress.levels.fleetTab = 1")
-    check("a car totalled: the War Rig's tab, 1 scrap, none to spend", tabs()[4:] == ["War Rig 1 scrap [off]"], tabs())
+    check("a car totaled: the War Rig's tab, 1 scrap, none to spend", tabs()[4:] == ["War Rig 1 scrap [off]"], tabs())
     # 6. a save from before the tabs: its pages kept, nothing for sale
     set_("progress.levels = { power: 3, clutch: 1, reckless: 1 }")
     check("a save from before the tabs: its pages kept", tabs()[:3] == ["Workshop", "Autopilot", "Black market"], tabs())

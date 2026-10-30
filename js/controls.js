@@ -1,4 +1,4 @@
-// Input. Keyboard, mouse and touch all work at once, on the same key, pedals, gear lever and steering wheel.
+// Input. Keyboard, mouse and touch all work at once, on the same key, pedals, gear shifter and steering wheel.
 // Mouse: drag them like the real thing. One pointer can't hold two pedals, so a pedal stays where the mouse leaves
 // it (double-click lets it go). Keyboard and fingers hold a pedal only while the key or finger is down; several
 // fingers can hold several controls.
@@ -76,8 +76,8 @@ const touching = id => PEDALS[id].hold !== null || PEDALS[id].down;
 const pushing = () => touching('gas');
 function holdPedal(id, down) { const p = PEDALS[id]; p.hold = down ? 1 : null; if (!down) p.back = p.release; }
 
-// ---- gear lever in an H gate: slide along the neutral rail, push up or down into a slot when lined up with it.
-// Gate units: x -1..1 across the three slots, y -1 (towards the dash: 1, 3, 5) .. 1 (2, 4, 6). Only the gears the
+// ---- gear shifter in an H gate: slide along the neutral rail, push up or down into a slot when lined up with it.
+// Gate units: x -1..1 across the three slots, y -1 (toward the dash: 1, 3, 5) .. 1 (2, 4, 6). Only the gears the
 // game gives you are cut into the gate. path: points it is being moved through (keyboard, auto shift).
 const SLOTS = { '-1,-1': 1, '-1,1': 2, '0,-1': 3, '0,1': 4, '1,-1': 5, '1,1': 6, '2,-1': 7 }; // 7th: a fourth column
 const LEVER_SPEED = 8; // gate units per second when moved for you: about 0.3 s a shift
@@ -135,11 +135,11 @@ function stepLever(dt) {
 // a finger on a small screen rarely follows the H exactly: it cuts corners, or ends up between two columns. So once a
 // finger has taken the lever out through neutral, wherever it is in the top or bottom row (as deep as a gear engages)
 // the lever sits in the slot of the nearest column, as deep as the finger, and follows it if it drifts to another
-// column. Between two columns the revs tip it: near the limiter towards the next gear up, with the revs sagging the
+// column. Between two columns the revs tip it: near the limiter toward the next gear up, with the revs sagging the
 // next one down (2nd at the limiter, pushed up halfway between 1st and 3rd: 3rd). You still take it there yourself,
 // with the clutch down, and the gear is the one the lever is in when you let go: it forgives the route, it does not
 // shift for you.
-const HINT = 0.4; // columns the gear the revs suggest is favoured by
+const HINT = 0.4; // columns the gear the revs suggest is favored by
 function hintGear(from) { // the gear the road speed suggests after gear from, if any
   const top = gateGears(), r = engine.redline, next = step => { let g = from + step; while (brokenGears.includes(g)) g += step; return g; };
   if (!from) { let g = 1; while (g < top && (brokenGears.includes(g) || revsIn(g) > 0.75 * r)) g++; return g; } // the lowest that won't over-rev

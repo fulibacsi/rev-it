@@ -18,8 +18,8 @@ SIM = """([kmh, steer, seconds, seed]) => {
       else if (lane === 1 && backFree && Math.abs(carX - other) > 2) { changeLane(1); changes++; } // keep right
     }
     stepCar(dt, 0); speed = kmh / 3.6;
-    const before = traffic.map(c => [c.d, c.lane, c.signalled ?? 0, c.z]);
-    traffic.forEach(c => { c.signalled = c.signal > 0 ? (c.signalled ?? 0) + dt : 0; });
+    const before = traffic.map(c => [c.d, c.lane, c.signaled ?? 0, c.z]);
+    traffic.forEach(c => { c.signaled = c.signal > 0 ? (c.signaled ?? 0) + dt : 0; });
     updateTraffic(dt, clock += dt);
     traffic.forEach((c, j) => {
       if (c.dir > 0 && before[j][0] > 0 && c.d <= 0) passed++;

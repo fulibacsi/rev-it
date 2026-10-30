@@ -13,7 +13,7 @@ const pace = n => (n >= 20 ? 140 + (FIELD - n) * 2 : 300 + (20 - n) * 8) / 3.6;
 const ROLLING = [[1, 50], [2, 90], [3, 130], [4, 170], [5, 210], [6, 250]]; // rolling start levels: [gear, km/h]
 const ordinal = n => n + (['st', 'nd', 'rd'][n - 1] ?? 'th');
 const nitroTank = (l = lvl('nitro')) => 2 * l; // seconds of nitro the tank holds
-const NITRO_REFILL = 100; // metres per second of nitro, refilled before each run
+const NITRO_REFILL = 100; // meters per second of nitro, refilled before each run
 
 Object.assign(UPGRADES, { // the Black market (distance.js PAGES), paid in race points
   // prices: everything here costs about the 5,050 points the positions pay once, plus places gained along the way
@@ -21,7 +21,7 @@ Object.assign(UPGRADES, { // the Black market (distance.js PAGES), paid in race 
           max: () => debugSave ? FIELD : FIELD + 1 - progress.finish,
           info: l => l ? `start P${FIELD + 1 - l}` : 'start at the back', locked: 'finish higher to unlock' },
   rolling: { name: 'Jump the start', tab: 'black', max: ROLLING.length, base: 5, growth: 2.3, needs: ['grid'],
-             gate: l => ROLLING[l][0] <= topGear() || 'needs Gearbox',
+             gate: l => ROLLING[l][0] <= topGear() || 'needs Transmission',
              info: l => l ? `${ROLLING[l - 1][1]} km/h in ${ordinal(ROLLING[l - 1][0])}` : 'standing start' },
   reckless: { name: 'Reckless driving', tab: 'black', max: 1, base: 100, needs: ['blackTab'],
               info: () => 'the oncoming lanes are yours too. From now on, collisions damage the car' },
@@ -72,7 +72,7 @@ function racer(n, z) {
 }
 // before the reveal #100 is one quick car up the road. Its head start shrinks as the car gets built, so it can only be
 // caught once the car is nearly done (around run 20 for a perfect player, just before the bell): [share of the car
-// upgrades bought, metres ahead], straight lines in between. An upgrade's `built` levels are all that count towards
+// upgrades bought, meters ahead], straight lines in between. An upgrade's `built` levels are all that count toward
 // it (the flashes past the first are extras)
 const HEAD_START = [[0, 1300], [0.55, 1300], [0.78, 980], [1, 400]];
 function headStart() {
@@ -95,7 +95,7 @@ const racers = () => traffic.filter(c => c.racer);
 const rivals = () => racers().filter(c => !c.fleet); // your fleet races for you (fleet.js)
 const ahead = c => c.z + CAR_LEN / 2 > odo - (MY_REAR - MY_FRONT) / 2; // its middle is past yours
 const position = () => { // racers not on the road (before the reveal: all but #100) are the faster ones, ahead; your
-  const field = rivals();  // fleet doesn't count, nor do the rivals you have totalled (gang.js)
+  const field = rivals();  // fleet doesn't count, nor do the rivals you have totaled (gang.js)
   return 1 + FIELD - fleetSize() - field.length + field.filter(c => !c.wreck && ahead(c)).length;
 };
 
@@ -132,7 +132,7 @@ function raceFinish(dnf) {
   return { start, p, points: finish + fresh, finish, fresh };
 }
 
-// the rivals either side of you, for the head-up display
+// the rivals either side of you, for the heads-up display
 function nearestRacers() {
   let front = null, back = null;
   for (const c of rivals()) {

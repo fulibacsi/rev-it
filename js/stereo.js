@@ -6,7 +6,7 @@
 // ahead (an iPhone loads no media before it plays, whatever the page asks): the save's tape while the main menu is up
 // (main.js), the next one while a tape plays, so a tap on the lights changes tapes at once. Pausing (the menu
 // suspends the context) pauses the tape. On the dash: a row of lights in the cluster's hood that jumps with the beat
-// (the kick drum, heard in the music's bass); on a desktop, a head unit with the tape's name and an equaliser. A tap
+// (the kick drum, heard in the music's bass); on a desktop, a head unit with the tape's name and an equalizer. A tap
 // on either (or M) plays the next tape; after the last one it goes off.
 const TAPES = [
   { name: 'NEON LASER HORIZON', file: 'neon-laser-horizon' }, // Kevin MacLeod
@@ -19,7 +19,7 @@ const TAPES = [
   { name: 'EMBER CHARGE', war: true, file: 'ember-charge' },   // 余烬冲锋
   { name: 'WAR RIGS OF THE WASTELAND', war: true, file: 'war-rigs-of-the-wasteland' },
 ];
-const MUSIC = 0.48; // the stereo's level: about 6 dB under the engine at 4,000 rpm (as loud as the synthesised tapes were)
+const MUSIC = 0.48; // the stereo's level: about 6 dB under the engine at 4,000 rpm (as loud as the synthesized tapes were)
 const stereo = { on: false, tape: 0, el: null, out: null, eq: null, volume: 1, bins: null, avg: 0, level: 0, at: 0 }; // volume: the settings' (main.js)
 
 // a tape's MP3, downloaded once into memory: a promise of a URL for the <audio> element. One that can't be downloaded
@@ -86,7 +86,7 @@ function label(text) {
 
 // the lights: in the cluster, a row that jumps with the beat (a kick drum, a jump in the music's bass over its recent
 // level, lights it all; then they fall); on the head unit, the tape's name and eight bands of the music, as on an 80s
-// graphic equaliser. Switched off, both stay, greyed and dark, for a tap to start it again
+// graphic equalizer. Switched off, both stay, greyed and dark, for a tap to start it again
 function renderStereo() {
   document.body.classList.toggle('has-stereo', !!game.stereo?.());
   document.body.classList.toggle('stereo-off', !stereo.on);
@@ -106,7 +106,7 @@ function renderStereo() {
   for (let i = 0; i < leds.length; i++) leds[i].classList.toggle('on', Math.abs(i - (leds.length - 1) / 2) < lit / 2);
   const tape = TAPES[s.tape];
   label(`${onSameRadio(s.tape).indexOf(tape) + 1} ${tape.name}`); // its place on its radio
-  [...$('stereo-eq').children].forEach((band, b) => { // bands spaced like an equaliser's, low to high
+  [...$('stereo-eq').children].forEach((band, b) => { // bands spaced like an equalizer's, low to high
     const v = bins[Math.round(4 * (1 + 1.8 ** b))] / 255;
     [...band.children].forEach((led, i) => led.classList.toggle('on', v > (i + 0.5) / band.children.length));
   });

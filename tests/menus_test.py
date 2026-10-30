@@ -94,10 +94,10 @@ with sync_playwright() as p:
     check("Free drive from ARCADE", js("[game.id, menuOpen]") == ["free", False], js("[game.id, menuOpen]"))
     pg.keyboard.press("Escape")
     check("pausing an arcade game: no END RUN", shown() == ["RESUME ▶", "HOW TO DRIVE", "EXIT TO MAIN MENU"], shown())
-    # 6. the credits: a small link, the full credit behind it (CC BY 4.0: author, title, licence, changes)
+    # 6. the credits: a small link, the full credit behind it (CC BY 4.0: author, title, license, changes)
     pg.click("#to-main"); pg.click('[data-show="credits"]')
     cr = js("document.querySelector('[data-screen=credits]').innerText")
-    check("credits: the CC BY recording, its author, licence and the change", all(k in cr for k in ["Car Engine Start, Rev, Idle, Switch Off", "iainmccurdy", "CC BY 4.0", "cut and looped"]), "")
+    check("credits: the CC BY recording, its author, license and the change", all(k in cr for k in ["Car Engine Start, Rev, Idle, Switch Off", "iainmccurdy", "CC BY 4.0", "cut and looped"]), "")
     pg.screenshot(path=f"{OUT}/menus_credits.png")
     # 7. the phone: every screen fits the screen held sideways, clear of the notch
     ph = b.new_context(viewport={"width": 852, "height": 393}, device_scale_factor=2, is_mobile=True, has_touch=True).new_page()

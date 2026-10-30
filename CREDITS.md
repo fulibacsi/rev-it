@@ -22,7 +22,7 @@ All six recordings come from [Freesound](https://freesound.org).
 
 - **Basic processing (all six):**
   - Freesound's preview files are mixed to mono and resampled to 24 kHz.
-  - Each loop is normalised to the same loudness.
+  - Each loop is normalized to the same loudness.
 - **Dyno recordings:**
   - The rpm is tracked through each pull and the audio cut at fixed rpms.
   - Each piece is resampled so its pitch stays constant, then looped on whole engine cycles.
@@ -42,8 +42,8 @@ allowed." So the pack itself is not in this repository, and the art in `assets/c
 Rev It.
 
 **Changes made.** [`tools/make_cars.py`](tools/make_cars.py), run on a copy of the pack, puts each car together
-(tyres, the interior and glass over a dark cabin, the body) and keeps its bumpers, body kits and spoilers as layers,
-written as palettes and runs of pixels. The game fits the parts at random, repaints each car in its traffic colours,
+(tires, the interior and glass over a dark cabin, the body) and keeps its bumpers, body kits and spoilers as layers,
+written as palettes and runs of pixels. The game fits the parts at random, repaints each car in its traffic colors,
 the racers' and police's liveries and the rust of Fuel madness, and draws on top the racers' stripes and numbers,
 the police light bar, and the mad drivers' primer, rust holes, bars, pipe bar, spikes and dead tail light
 (`js/road.js`).
@@ -80,5 +80,5 @@ The code was written from scratch, following these write-ups:
 
 - **The pseudo-3D road** (segments projected from the driver's seat, curves and hills): Jake Gordon's
   "How to build a racing game" articles on [codeincomplete.com](https://codeincomplete.com/).
-- **The car physics** (engine torque through the gearbox against drag, rolling resistance and brakes): Marco Monster's
-  "Car Physics for Games".
+- **The car physics** (engine torque through the transmission against drag, rolling resistance and brakes): Marco
+  Monster's "Car Physics for Games".

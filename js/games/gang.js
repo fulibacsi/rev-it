@@ -1,10 +1,10 @@
 // The War Rig, Distance's fourth act (called Mad Max until 18 Oct). Once your crew outnumbers the rivals (51 of the
-// 100 race for you) it is a gang: about 5 s into the next run the windscreen gains an AR layer, a reticle and a health
+// 100 race for you) it is a gang: about 5 s into the next run the windshield gains an AR layer, a reticle and a health
 // bar on the car ahead, kept on it until you pass it or total it, and its tutorial pops up on the road. Its first job
 // for you: total a car; the run ends 3 s later, and act IV's card follows (the owner, 27 Oct: on the road, not in the
 // garage, where the crew's roles used to vanish as the 51st was bought). A ram is a hit (three for a car, five
 // for a racer, six for the police; a bull bar makes them count up to three times), and one closing at over 200 km/h
-// totals it outright; at 0 health it skids off onto the shoulder (road.js) and you collect its scrap. A totalled rival
+// totals it outright; at 0 health it skids off onto the shoulder (road.js) and you collect its scrap. A totaled rival
 // is out of the race (race.js position). The first total opens the War Rig page, paid in scrap: it is to the Fleet
 // what the Black market is to the Workshop. Its gear is yours and your raiders': with guns (last) the wheel's red
 // marker is your trigger. From act IV your racers only race (the owner, 27 Oct); the Raiders card makes raiding a
@@ -14,7 +14,7 @@ Object.assign(UPGRADES, {
   // from the gang to the tank, something to buy every few races, the guns as the last big save
   bullbar: { name: 'Bull bar', tab: 'warrig', needs: ['warrigTab'], max: 3, base: 20, growth: 2.5,
              info: l => l ? `a hit hurts them ${Math.round(200 * l / 3)}% more and costs you less speed` : 'the factory bumper' },
-  armour: { name: 'Armour plating', tab: 'warrig', needs: ['warrigTab'], max: 3, base: 30, growth: 2.5,
+  armour: { name: 'Armor plating', tab: 'warrig', needs: ['warrigTab'], max: 3, base: 30, growth: 2.5,
             info: l => l ? `collisions do ${25 * l}% less damage to your car` : 'factory panels' },
   spikes: { name: 'Spiked hubs', tab: 'warrig', needs: ['warrigTab'], max: 1, base: 150,
             info: () => 'a side-swipe (into a car while moving over) costs you no speed and counts one more hit' },
@@ -30,7 +30,7 @@ Object.assign(UPGRADES, {
   // scrap, or buying it slowed act 4 down (act4.py: the tank in races 18-21, 16 without it). Prices: see act4.py
   baddrivers: { name: 'Fuel madness', tab: 'warrig', max: 4, base: 30, growth: 2.5, toggle: true, needs: ['bullbar'],
                 info: l => l ? `${Math.round(100 * madShare(l))}% of drivers mad for fuel` : 'drivers check their mirrors. ' +
-                  'Mad ones (rusty, weaving) jump in front of you; ram one that does: totalled. Stolen fuel: double scrap' },
+                  'Mad ones (rusty, weaving) jump in front of you; ram one that does: totaled. Stolen fuel: double scrap' },
   // the owner's idea (18 Oct): autocruise hunts the car in the reticle (aids.js hunt), as act4.py's bot did by hand; a
   // switch. Price: a first guess, see act4.py
   hunter: { name: 'Hunter', tab: 'warrig', max: 1, base: 100, needs: ['warrigTab', 'cruise', 'recklessCruise'], on: ['cruise'],
@@ -46,7 +46,7 @@ Object.assign(UPGRADES, {
   // the id kept for the saves. Price: act4.py
   pack: { name: 'Raiders', tab: 'warrig', max: 1, base: 150, needs: ['hunter', 'dues', 'fleetPace'],
           info: () => 'your crew can ride as raiders: the car in the reticle shows on the tracker, and SEND sends one at ' +
-            'it, to ram it till it is totalled: your bull bar and guns are its too' },
+            'it, to ram it till it is totaled: your bull bar and guns are its too' },
 });
 const GUN = 6, RANGE = 200; // damage a shot a level; m your guns reach (a raider's: 80)
 // the share of drivers gone mad a level of Fuel madness, up to 90% (the owner, 18 Oct: "there should be still an
@@ -55,7 +55,7 @@ const MADNESS = 0.25, MAD_TOP = 0.9;
 const madShare = l => Math.min(MAD_TOP, MADNESS * l);
 const GANG = FIELD / 2 + 1; // fleet cars that make a gang
 const health = c => c.tank ? tankHealth() : c.police ? 200 : c.racer ? 150 : 100; // full health (the tank: boss.js)
-// scrap from a totalled car: 2.2 times the first guesses (with the heat), so act 4 takes about 15 races (act4.py)
+// scrap from a totaled car: 2.2 times the first guesses (with the heat), so act 4 takes about 15 races (act4.py)
 const SCRAP = { car: 22, racer: 55 };
 const arOn = () => progress.racing && (progress.gang || progress.totals > 0); // the AR layer: from the gang's moment
 const gangOpen = () => progress.totals > 0; // the first job done: act IV, the War Rig page; the oil's roles are over
@@ -89,11 +89,11 @@ function updateGang(dt) { // every frame of a run
   fireGuns(dt);
 }
 
-// guns: held, the trigger fires 4 shots a second from the bonnet at the car in the reticle, if it is in reach and in
+// guns: held, the trigger fires 4 shots a second from the hood at the car in the reticle, if it is in reach and in
 // sight. Auto gun holds it for you, only while there is something to hit. The tracers are drawn over the road
 // (renderGang)
 let reload = 0;
-const tracers = []; // [from, to, when]: from a car's middle on the screen, or null for your bonnet
+const tracers = []; // [from, to, when]: from a car's middle on the screen, or null for your hood
 function fireGuns(dt) {
   reload = Math.max(0, reload - dt);
   const auto = lvl('autogun') && !progress.off.autogun && target?.seen && target.z - odo < RANGE;
@@ -116,7 +116,7 @@ function ram(i) {
   const c = i.car;
   if (!c || c.wreck || c.fleet || i.headOn || !i.side && i.kmh < NUDGE) return;
   if (i.kmh > OHKO && !c.tank) return total(c, false, 'OHKO!');
-  if (c.cut > 0) return total(c, false, 'HAD IT COMING!'); // Fuel madness: it cut in on you, it's totalled (road.js c.cut)
+  if (c.cut > 0) return total(c, false, 'HAD IT COMING!'); // Fuel madness: it cut in on you, it's totaled (road.js c.cut)
   hurtCar(c, HIT * (1 + 2 / 3 * lvl('bullbar') + (i.side && spikes ? 1 : 0)) * (c.tank ? 0.2 : 1));
 }
 function hurtCar(c, hp, gang) {
@@ -136,13 +136,13 @@ function total(c, gang, how) { // the scrap is yours, whoever did it; the heat t
   run.totals++;
   if (progress.totals === 1) { run.firstTotal = true; run.left = Math.min(run.left, 3); } // the first job done: 3 s more
   const who = c.racer ? `#${c.racer}` : c.police ? 'A POLICE CAR' : 'A CAR'; // raiders ram anything
-  flash(`${gang ? `THE GANG TOTALLED ${who}` : how ?? 'TOTALLED'} +${scrap} SCRAP`, '#ff6a4a', true);
+  flash(`${gang ? `THE GANG TOTALED ${who}` : how ?? 'TOTALED'} +${scrap} SCRAP`, '#ff6a4a', true);
 }
 
 // ---- raiders (the owner, 27 Oct: the Hunting pack as a role, riding with you as harvesters and brewers do): the car in
 // the reticle is on the tracker as a target (oil.js), and SEND sends a raider at it, up the shoulder and into it: a ram
 // every 1.5 s or so (the bull bar counts, and the tank takes a fifth, as yours do) and its guns, if any, once a second,
-// until it is totalled or you pass it; then it rides with you again. Up to RAID raiders a car, the tank RAID_TANK
+// until it is totaled or you pass it; then it rides with you again. Up to RAID raiders a car, the tank RAID_TANK
 const RAID = 3, RAID_TANK = 6;
 // a ram knocks it back: KNOCK s falling back BACK m/s, then it charges again and hits at about 17 m/s, a ram every
 // 1.5 s (Claude's numbers: the pace it had before, 27 Oct). Several on one car take turns (the owner, 27 Oct, after
@@ -204,7 +204,7 @@ function renderGang() {
   const t = arOn() && run.phase === 'run' ? target : null, s = t?.seen;
   document.body.classList.toggle('ar-on', !!s);
   if (t) $('ar').style.setProperty('--hp', Math.max(0, t.hp ?? health(t)) / health(t)); // right as soon as it shows again
-  if (!s) return; // out of sight: under your bonnet just after a bump, say
+  if (!s) return; // out of sight: under your hood just after a bump, say
   const k = 1 / canvas.px, w = Math.max(26, s[2] * k), h = Math.max(20, s[3] * k); // canvas px to page px (main.js resize)
   Object.assign($('ar').style, { left: `${(s[0] + s[2] / 2) * k - w / 2}px`, top: `${(s[1] + s[3] / 2) * k - h / 2}px`,
                                  width: `${w}px`, height: `${h}px` });
@@ -212,7 +212,7 @@ function renderGang() {
 }
 
 // your car's war kit, seen from the seat (index.html #kit): each part shows from its level up, the Auto gun's red lamps
-// while it is switched on (the owner, 18 Oct: the guns and armour should show). Spiked hubs can't be seen from inside
+// while it is switched on (the owner, 18 Oct: the guns and armor should show). Spiked hubs can't be seen from inside
 let shownKit = '';
 function renderKit() {
   const have = { bullbar: lvl('bullbar'), armour: lvl('armour'), guns: lvl('guns'), autogun: lvl('autogun') && !progress.off.autogun ? 1 : 0 };
@@ -228,7 +228,7 @@ function drawTracers() {
   const now = performance.now(), w = canvas.width, h = canvas.height;
   while (tracers.length && now - tracers[0][2] > 100) tracers.shift();
   for (const [from, to, when] of tracers) {
-    const side = Math.round(when / 250) % 2 ? 1 : -1; // twin guns on the bonnet, in turn
+    const side = Math.round(when / 250) % 2 ? 1 : -1; // twin guns on the hood, in turn
     const [x1, y1] = from ? from.seen && middle(from.seen) || [] : [w * MUZZLES[side][0], h * MUZZLES[side][1]];
     const [x2, y2] = to === 'you' ? [w / 2, h * 0.66] : to?.seen ? middle(to.seen) // the tank at you; a miss: off
       : [x1 + side * w * 0.02, h * 0.42];                                          // into the distance

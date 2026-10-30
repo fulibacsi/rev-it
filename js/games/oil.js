@@ -3,7 +3,7 @@
 // SEND a car, to the spots by the road: oil spots, which pump crude into the tank on the right A-pillar, and
 // refineries, which brew it into fuel, the Crew page's money. A spot pays once it is fully crewed, until you drive past
 // it (or an oil spot runs dry); then its crew rejoins you. The tracker beside the sonar shows the spots ahead, < and >
-// pick one, and a tag on the windscreen says what it is. Each run's spots are drawn before it, on dice of their own;
+// pick one, and a tag on the windshield says what it is. Each run's spots are drawn before it, on dice of their own;
 // the first come scripted, with their tutorials: an oil puddle, then a refinery (oilScript).
 
 // the roles' upgrades and the crew's, on the Crew page (fleet.js has the rest), paid in fuel. Prices: the design notes'
@@ -12,9 +12,9 @@ Object.assign(UPGRADES, {
   harvesting: { name: 'Harvesting', tab: 'fleet', max: 5, base: 5, growth: 3, needs: ['fleetTab'], story: () => progress.oil >= 1,
                 info: l => l ? `harvesters pump ${20 * l}% more` : 'harvesters pump as they come' },
   brewing: { name: 'Brewing', tab: 'fleet', max: 5, base: 5, growth: 3, needs: ['fleetTab'], story: () => progress.oil >= 2,
-             info: l => `${fmtL(brewRatio(l))} litres of crude make a litre of fuel` },
+             info: l => `${fmtL(brewRatio(l))} liters of crude make a liter of fuel` },
   crudeTank: { name: 'Crude tank', tab: 'fleet', max: 3, base: 10, growth: 2.5, needs: ['harvesting'],
-               info: l => `the tank on the pillar holds ${tankSize(l)} litres` },
+               info: l => `the tank on the pillar holds ${tankSize(l)} liters` },
   sonarRange: { name: 'Sonar range', tab: 'fleet', max: 2, base: 10, growth: 3, needs: ['harvesting'],
                 info: l => `the tracker reaches ${fmtKm(reach(l))}` },
   scouting: { name: 'Scouting', tab: 'fleet', max: 3, base: 15, growth: 2.5, needs: ['sonarRange'],
@@ -33,12 +33,12 @@ Object.assign(UPGRADES, {
 });
 const fmtL = n => (Math.round(n * 10) / 10).toString();
 const fmtKm = m => m < 1000 ? `${m} m` : `${m / 1000} km`;
-const TANK_L = [20, 35, 60, 100];        // litres of crude the tank holds a level
+const TANK_L = [20, 35, 60, 100];        // liters of crude the tank holds a level
 const tankSize = (l = lvl('crudeTank')) => TANK_L[l];
 const REACH = [1000, 2000, 3000];      // m the tracker reaches a level of Sonar range: 1 km is 16 s at act 3's 60 m/s
 const reach = (l = lvl('sonarRange')) => REACH[l];
 const SCOUT = [2000, 4000];            // m of the run Scouting lists a level (the last level: all of it)
-const brewRatio = (l = lvl('brewing')) => 2 - 0.2 * l; // litres of crude a litre of fuel
+const brewRatio = (l = lvl('brewing')) => 2 - 0.2 * l; // liters of crude a liter of fuel
 const ARRIVE = 1.6;                     // s a car takes to get to its spot; Crew tuning shortens it
 const arrive = () => ARRIVE * (1 - 0.1 * lvl('fleetPace'));
 const cap = s => Math.floor(s.count * (1 + 0.25 * lvl('overfill'))); // cars a spot takes
@@ -274,8 +274,8 @@ function omenMarks() {
 
 // ---- what you see: the tracker on the sonar's right (the owner's: on the far left your hand would hide it): the next
 // four spots ahead, one a row, the farthest on top as on the sonar, each with its crew, what it pays and how far it
-// is (the owner, 27 Oct: the log-scale strip it was could not be read at speed); a tag on the windscreen on the spot
-// picked, in the head-up display's look and the sonar's green (not act 4's red gunsight, which stays new); the crude
+// is (the owner, 27 Oct: the log-scale strip it was could not be read at speed); a tag on the windshield on the spot
+// picked, in the heads-up display's look and the sonar's green (not act 4's red gunsight, which stays new); the crude
 // tank on the right A-pillar. Redrawn with the sonar, 15 times a second
 const ROWS = 4, ROW = 15; // rows on the tracker, and their height in its frame (the nearest at the bottom, y 63)
 const fmtAhead = d => d < 1000 ? `${Math.round(d / 10) * 10}m` : `${(d / 1000).toFixed(1)}k`;
@@ -328,7 +328,7 @@ function renderCrew() {
 }
 
 // ---- the garage: who does what (from the oil on), and what Scouting has seen of the next run. A wide card: the crew's
-// split as a bar in the roles' colours, a slider for each role (the owner, 27 Oct: the counts were hard to take in),
+// split as a bar in the roles' colors, a slider for each role (the owner, 27 Oct: the counts were hard to take in),
 // and − and + for a car at a time. A racer moved into a role leaves the grid; one moved out races again; the racers
 // are the rest
 const ROLES = [['racer', 'Racers'], ['harvester', 'Harvesters'], ['brewer', 'Brewers'], ['raider', 'Raiders']];
@@ -341,7 +341,7 @@ function roleCard() {
       `value="${role(r)}"><button data-role="${r}" data-by="1">+</button>`) + '</span>';
   return `<div class="card roles"><b>Roles · ${fleetSize()} cars</b><div class="split">` +
     shownRoles().map(([r]) => `<i class="${r}" style="flex-grow: ${countOf(r)}"></i>`).join('') + '</div>' +
-    shownRoles().map(row).join('') + '<small>racers race for metres and places · harvesters pump crude · brewers brew it ' +
+    shownRoles().map(row).join('') + '<small>racers race for meters and places · harvesters pump crude · brewers brew it ' +
     `into fuel${lvl('pack') ? ' · raiders ram the car in the reticle, for scrap' : ''} · a car with no spot to work ` +
     `earns nothing${scouted() ? ` · <i>${scouted()}</i>` : ''}</small></div>`;
 }
@@ -389,7 +389,7 @@ TUTORIALS.splice(TUTORIALS.findIndex(t => t.id === 'fleet') + 1, 0,
     { title: 'THE TANK', at: '#tank',
       both: 'Your crude waits in the tank on the right pillar, from run to run.' },
     { title: 'ROLES',
-      both: 'The Crew page in the garage splits your crew: racers race for metres and places, harvesters pump crude, ' +
+      both: 'The Crew page in the garage splits your crew: racers race for meters and places, harvesters pump crude, ' +
         'brewers make fuel. A car with no spot to work earns nothing.' },
   ] },
 );

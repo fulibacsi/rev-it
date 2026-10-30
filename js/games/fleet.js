@@ -1,9 +1,9 @@
 // The Crew (the Fleet until 26 Oct), Distance's third act. Once you have won a race the racers you beat take offers, the
-// slowest first. One you pay off keeps its number, its place in the field and its pace, in your team's colours, and
-// races for you: it gives way when you come up behind it, and moves across to block a rival closing on it from behind.
+// slowest first. One you pay off keeps its number, its place in the field and its pace, in your team's colors, and
+// races for you: it yields when you come up behind it, and moves across to block a rival closing on it from behind.
 // Your position counts the rivals only. From the 5th, the crew has roles (oil.js): racers stay on the grid, harvesters
 // and brewers ride with you and work the oil. Paid in fuel: the oil's, and the Crew page's Fuel converter
-// (distance.js). Here: the racers' places at the finish (points), Racing (a share of the metres they drive), and Crew
+// (distance.js). Here: the racers' places at the finish (points), Racing (a share of the meters they drive), and Crew
 // tuning.
 
 Object.assign(UPGRADES, {
@@ -17,14 +17,14 @@ Object.assign(UPGRADES, {
   // that got there before the oil: Raiders need it); the role upgrades and tuning grow steeply (the owner, 26
   // Oct). Crew flash went (it never fired at P1: the racers are far behind you)
   dues: { name: 'Racing', tab: 'fleet', max: 5, base: 5, growth: 3, needs: ['fleetTab'], story: () => progress.oil >= 1 || arOn(),
-          info: l => l ? `each racer pays you ${10 * l}% of the metres it drives` : 'your racers drive for nothing' },
+          info: l => l ? `each racer pays you ${10 * l}% of the meters it drives` : 'your racers drive for nothing' },
   fleetPace: { name: 'Crew tuning', tab: 'fleet', max: 5, base: 3, growth: 3, needs: ['fleet'],
                info: l => l ? `your racers ${5 * l}% quicker, and your cars get to their spots sooner` : 'as they came' },
 });
 const fleetSize = () => lvl('fleet');
 const inFleet = n => progress.racing && n > FIELD - fleetSize(); // racer n is yours
 const fleetPace = () => 1 + 0.05 * lvl('fleetPace');
-// the dues for a run: a share of the metres your fleet drove from the grid, paid into the bank at the finish
+// the dues for a run: a share of the meters your fleet drove from the grid, paid into the bank at the finish
 const fleetDues = () => Math.round(0.1 * lvl('dues') * racers().reduce((m, c) => m + (c.fleet ? Math.max(0, c.z - c.grid) : 0), 0));
 // team places (the owner, 23 Oct; points since 26 Oct, so what is left on the Black market stays in reach): at the
 // finish each racer of yours pays TEAM points for each ten places it is from the back (P101 to P92 one, P2 ten), so
@@ -35,7 +35,7 @@ const teamPoints = () => Math.round(racers().filter(c => c.fleet && !c.wreck)
   .reduce((pts, c) => pts + TEAM * Math.ceil((FIELD + 2 - placeOf(c)) / 10), 0));
 
 // the sonar on the A-pillar: the road 250 m ahead of you and behind, from above, ahead up. The lanes to scale across
-// (4.4 px a metre: the lanes 15 px apart), squeezed along (34 px for 250 m); you in the middle, every car coloured by
+// (4.4 px a meter: the lanes 15 px apart), squeezed along (34 px for 250 m); you in the middle, every car colored by
 // what it is (the owner, 20 Oct). Redrawn 15 times a second: plenty for a blip, and a phone stays cool
 const SONAR = 250; // m each way
 const BLIPS = ['car', 'rival', 'ally', 'red', 'blue', 'tank']; // their order on the screen: the police and the tank on top
@@ -56,7 +56,7 @@ function renderSonar() {
 }
 
 // a racer of yours at work, before it drives on (road.js driveCar): out of your way, or in the way of a rival. From act
-// IV it only races, flat out for metres and places (the owner, 27 Oct: you hunt now, there is no road to clear for
+// IV it only races, flat out for meters and places (the owner, 27 Oct: you hunt now, there is no road to clear for
 // you; the war is the raiders', gang.js)
 function teamwork(c, dt) {
   if (gangOpen()) return;

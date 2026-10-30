@@ -45,7 +45,7 @@ const TUTORIALS = [
     { title: 'FLASH', at: '#stalk',
       touch: 'Pull the stalk, left of the wheel.', desk: 'Press F, or pull the stalk left of the wheel.',
       both: 'A slower car ahead in your lane moves over to your other lane, if there is room. A run has a few flashes: ' +
-        'the head-up display counts them.' },
+        'the heads-up display counts them.' },
     { title: 'AUTO FLASH', at: '#stalk', if: () => lvl('autoflash') > 0,
       both: 'Auto flash pulls the stalk for you, at a slower car that would move over, before you would have to brake.' },
   ] },
@@ -73,7 +73,7 @@ const TUTORIALS = [
   ] },
   { id: 'race', name: 'The race', for: ['grid', 'rolling'], open: () => progress.racing, pages: [
     { title: "IT'S A RACE",
-      both: 'You are in a race, from the back of the grid: the head-up display shows your place and how far the cars ' +
+      both: 'You are in a race, from the back of the grid: the heads-up display shows your place and how far the cars ' +
         'just ahead and behind are. Each race pays points by place, and points buy the Black market.' },
     { title: 'POINTS', // the owner (22 Oct): how places pay, here rather than in a hint
       both: 'A place pays its big points only the first time you take it, and the nearer the front, the more: P50 pays ' +
@@ -85,8 +85,8 @@ const TUTORIALS = [
       desk: 'Keep going with ← past your lanes: the oncoming ones are yours too.',
       both: 'Cars come at you there: a head-on ends the run.' },
     { title: 'DAMAGE', at: '#cluster',
-      both: 'From now on collisions damage the car: the cluster says how much, and the windscreen cracks. The rev limit ' +
-        'drops, gears break, and at 100% the car is wrecked. Repairs, in the Workshop, cost metres.' },
+      both: 'From now on collisions damage the car: the cluster says how much, and the windshield cracks. The rev limit ' +
+        'drops, gears break, and at 100% the car is wrecked. Repairs, in the Workshop, cost meters.' },
     { title: 'GAME OF CHICKEN', at: '#stalk', if: () => lvl('chicken') > 0,
       both: 'Flash a car coming at you and it swerves into its other lane, if there is room.' },
   ] },
@@ -101,11 +101,11 @@ const TUTORIALS = [
       touch: 'Press the small pedal on the gas pedal.', desk: 'Hold N, or press the small pedal on the gas pedal.',
       both: 'It floors the gas and adds power while it burns, and the heat goes straight into the red.' },
     { title: 'THE BOTTLE', at: '#nos-gauge',
-      both: 'The gauge in the cluster shows what is left. The garage refills it, for metres.' },
+      both: 'The gauge in the cluster shows what is left. The garage refills it, for meters.' },
   ] },
   { id: 'fleet', name: 'The Crew', for: ['fleet', 'dues', 'fleetPace'], open: () => fleetSize() > 0, pages: [
     { title: 'YOUR CREW',
-      both: 'The racers you pay off race for you, in your colours: they give way when you come up behind them, and ' +
+      both: 'The racers you pay off race for you, in your colors: they yield when you come up behind them, and ' +
         'move across to block a rival closing on them. Your place counts the rivals only. At the finish their places ' +
         'pay you points, more the further up they are.' },
     { title: 'THE SONAR', at: '#sonar',
@@ -114,13 +114,13 @@ const TUTORIALS = [
   ] },
   { id: 'warrig', name: 'The War Rig', for: ['bullbar', 'armour', 'spikes'], open: () => arOn(), pages: [
     { title: 'THE RETICLE', at: '#ar',
-      both: '51 of the field race for you: your crew is a gang now. On the windscreen, the car ahead going your way is ' +
+      both: '51 of the field race for you: your crew is a gang now. On the windshield, the car ahead going your way is ' +
         'in the reticle, its health above it.' },
     { title: 'TOTAL IT',
       both: 'Its first job for you: total a car. Ram it: each bump is a hit (a nudge under 30 km/h is not; over 200 km/h totals it at once). At no health ' +
-        'it is totalled, and its scrap is yours.' },
-    { title: 'THE WAR RIG PAGE', if: () => gangOpen(), // it opens with the first car totalled, after this pops up
-      both: 'Scrap buys what is on the War Rig page in the garage: a bull bar, armour, guns.' },
+        'it is totaled, and its scrap is yours.' },
+    { title: 'THE WAR RIG PAGE', if: () => gangOpen(), // it opens with the first car totaled, after this pops up
+      both: 'Scrap buys what is on the War Rig page in the garage: a bull bar, armor, guns.' },
   ] },
   { id: 'raiders', name: 'Raiders', for: ['pack'], open: () => lvl('pack') > 0, pages: [ // a role since 27 Oct, the Hunting pack before (gang.js)
     { title: 'RAIDERS',
@@ -128,16 +128,16 @@ const TUTORIALS = [
         'harvesters and brewers. Your racers just race.' },
     { title: 'SEND A RAIDER', at: '#tracker',
       both: 'The car in the reticle is on the tracker, a red diamond. Pick it, then SEND: a raider comes up the shoulder ' +
-        'and rams it till it is totalled, with guns if you have them, then rides with you again. Up to three a car.' },
+        'and rams it till it is totaled, with guns if you have them, then rides with you again. Up to three a car.' },
   ] },
   { id: 'madness', name: 'Fuel madness', for: ['baddrivers'], open: () => lvl('baddrivers') > 0, pages: [
     { title: 'MAD FOR FUEL',
-      both: 'Rusty, weaving cars are mad for fuel: no mirror, no indicator, and each jumps in front of you once. Ram one ' +
-        'that does and it is totalled, for double scrap. Coming at you, they steer for you.' },
+      both: 'Rusty, weaving cars are mad for fuel: no mirror, no turn signal, and each jumps in front of you once. Ram one ' +
+        'that does and it is totaled, for double scrap. Coming at you, they steer for you.' },
   ] },
   { id: 'police', name: 'Police heat', open: () => gangOpen(), pages: [
     { title: 'THE SCANNER', at: '#scanner',
-      both: 'Every car totalled raises the police heat: the scanner on the A-pillar. The police come after you (red ' +
+      both: 'Every car totaled raises the police heat: the scanner on the A-pillar. The police come after you (red ' +
         'and blue on the sonar), and at 100% the army sends a tank, once you have guns.' },
   ] },
   { id: 'guns', name: 'Guns', for: ['guns', 'autogun'], open: () => lvl('guns') > 0, pages: [

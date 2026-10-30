@@ -45,7 +45,7 @@ with sync_playwright() as p:
     js("progress.damage = 69; applyUpgrades()"); r69 = js("engine.redline"); js("progress.damage = 100; applyUpgrades()"); r100 = js("engine.redline")
     print("rev limit at 50% / 69% / 100%:", r50, r69, r100)
     js("progress.damage = 100; progress.bank = 0; renderGarage()")
-    print("wrecked, no metres: drive button:", js("document.getElementById('drive').disabled"), js("document.getElementById('drive').textContent"))
+    print("wrecked, no meters: drive button:", js("document.getElementById('drive').disabled"), js("document.getElementById('drive').textContent"))
     pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000)
     print("limp run:", js("({ limp: run.limp, refill: run.refill, hud: document.getElementById('run-dist').textContent })"))
     pg.wait_for_function("run.phase !== 'run'", timeout=60000)
@@ -58,7 +58,7 @@ with sync_playwright() as p:
     js("progress.bank = 9000; renderGarage()"); pg.click("[data-repair]"); pg.wait_for_timeout(100)
     print("full repair:", js("({ dmg: progress.damage, bank: progress.bank, broken: progress.broken, limit: engine.redline, cracks: document.querySelectorAll('#cracks polyline').length })"))
     # the repair card's AUTO switch (the owner, 29 Oct): from act IV on, off at first; on, each run's end repairs as far
-    # as the metres go, and the garage's line says what it cost
+    # as the meters go, and the garage's line says what it cost
     check = lambda name, ok, got: print(f"{'ok ' if ok else 'FAIL'} {name}: {got}")
     js("progress.damage = 30; progress.bank = 5000; renderGarage()")
     check("before act IV: no AUTO on the repair card", js("!document.querySelector('[data-autorepair]')"), pg.inner_text(".card.repair").replace("\n", " · "))
@@ -68,14 +68,14 @@ with sync_playwright() as p:
     pg.click("[data-autorepair]"); pg.wait_for_timeout(100)
     got = js("({ on: progress.autoRepair, text: document.querySelector('[data-autorepair]').textContent, saved: JSON.parse(localStorage.getItem(saveKey())).autoRepair })")
     check("tapped: AUTO ON, saved", got == {"on": True, "text": "AUTO ON", "saved": True}, got)
-    def run_out(setup):  # a run that ends with the damage and metres set just before the bell
+    def run_out(setup):  # a run that ends with the damage and meters set just before the bell
         pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=15000); pg.wait_for_timeout(500)
         js(f"{setup}; run.left = 0.05"); pg.wait_for_function("run.phase === 'garage'", timeout=15000); pg.wait_for_timeout(200)
         return js("({ dmg: progress.damage, bank: Math.round(progress.bank), repaired: run.repaired, line: $('report').textContent })")
     got = run_out("progress.damage = 30; progress.bank = 5000")
     check("AUTO on: the run's end repairs it all, and the line says so", got["dmg"] == 0 and got["repaired"] >= 1200 and "repairs −" in got["line"], got)
     got = run_out("progress.damage = 30; progress.bank = 0")
-    check("AUTO on, short of metres: as far as the run's metres go", 0 < got["dmg"] < 30 and got["bank"] < 40 and got["repaired"] > 0, got)
+    check("AUTO on, short of meters: as far as the run's meters go", 0 < got["dmg"] < 30 and got["bank"] < 40 and got["repaired"] > 0, got)
     js("progress.damage = 0; applyUpgrades(); renderGarage()"); pg.click("[data-autorepair]"); pg.wait_for_timeout(100)
     got = run_out("progress.damage = 30; progress.bank = 5000")
     check("AUTO off: the damage stays for the card", got["dmg"] >= 30 and not got["repaired"] and "repairs" not in got["line"], got)

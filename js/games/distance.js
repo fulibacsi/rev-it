@@ -1,6 +1,6 @@
 // Distance: an incremental game. Each run gives you a few seconds to get as far as you can from a standing start;
-// the metres driven are the money for upgrades in the garage between runs. Rules, saved progress, and its own
-// screens: the garage and the run read-out on the head-up display.
+// the meters driven are the money for upgrades in the garage between runs. Rules, saved progress, and its own
+// screens: the garage and the run read-out on the heads-up display.
 
 // upgrade costs follow the usual incremental-game curve (Cookie Clicker, Hill Climb Racing): level n costs
 // base · growth^n. info(level) describes what the car has at that level. needs: its parents in the owner's graph
@@ -9,12 +9,12 @@
 // whyNot). on: the aids it works on top of: one switched off switches it off too (aid).
 // tab: the garage page it is on, see PAGES; max can depend on
 // progress (then locked says why there is no more yet); gate(level) can hold the next level back with a reason;
-// built: how many levels count towards the car being built (headStart in race.js), when not all of them.
+// built: how many levels count toward the car being built (headStart in race.js), when not all of them.
 const UPGRADES = {
   power:  { name: 'Power', max: 10, base: 80, growth: 1.55, needs: ['workshopTab'], info: l => `+${12 * l}% torque` },
   rev:    { name: 'Rev limit', max: 4, base: 150, growth: 2, needs: ['workshopTab'], info: l => `${limiter(engine, l)} rpm` },
-  gears:  { name: 'Gearbox', max: 3, base: 250, growth: 2.5, needs: ['workshopTab'], info: l => `${3 + l} gears` },
-  tyres:  { name: 'Tyres', max: 4, base: 400, growth: 1.8, needs: ['workshopTab'],
+  gears:  { name: 'Transmission', max: 3, base: 250, growth: 2.5, needs: ['workshopTab'], info: l => `${3 + l} gears` },
+  tyres:  { name: 'Tires', max: 4, base: 400, growth: 1.8, needs: ['workshopTab'],
             info: l => `${tyreGrip(l).toFixed(1)} g grip: launches and braking` },
   time:   { name: 'Time', max: 6, base: 200, growth: 1.9, needs: ['workshopTab'], info: l => `${runTime(l)} s a run` },
   steering: { name: 'Steering', max: 3, base: 300, growth: 2, needs: ['workshopTab'],
@@ -22,7 +22,7 @@ const UPGRADES = {
   flash:  { name: 'Headlight flash', max: 10, base: 300, growth: 1.25, built: 1, needs: ['workshopTab'], // the racers only after the reveal
             info: l => `${l} flash${l === 1 ? '' : 'es'} a run. F or the stalk left of the wheel: the car ahead in your lane moves over` +
               (progress.racing ? " (racers won't)" : '') },
-  // Reckless driving a parent (the owner, 23 Oct): on sale before the reveal, it took the metres the car needed, and
+  // Reckless driving a parent (the owner, 23 Oct): on sale before the reveal, it took the meters the car needed, and
   // the white car fell 3 to 10 runs later (tests/balance/act1.py, cheapest and value); in sight from 5 flashes, a teaser
   flashRecharge: { name: 'Flash recharge', max: 5, base: 2500, growth: 1.5, built: 0, needs: [['flash', 5], 'reckless'],
                    info: l => l ? `a flash back every ${rechargeTime(l)} s` : 'a flash used is gone for the run' },
@@ -76,11 +76,11 @@ function applyUpgrades() { // the garage's work on the engines and the car, and 
 const SAVE_KEY = 'car-rev-incremental';
 // off: aids switched off; racing: the race has been revealed; points: race points; finish: best finishing position;
 // damage: % (damage.js), broken: gears it broke; nitro: seconds in the tank; fuel: the Crew's money (miles until 26
-// Oct), crude: litres in the tank, oil: how far the oil is on (0, 1 the first crude, 2 the first fuel), roles: the
+// Oct), crude: liters in the tank, oil: how far the oil is on (0, 1 the first crude, 2 the first fuel), roles: the
 // crew's harvesters and brewers, pace: your m/s of late (oil.js); gang: the gang's moment has come, scrap: the
-// War Rig's, from totals: cars totalled (gang.js); wanted: police heat, 0 to 1 (police.js); tanks: tanks beaten (boss.js);
+// War Rig's, from totals: cars totaled (gang.js); wanted: police heat, 0 to 1 (police.js); tanks: tanks beaten (boss.js);
 // autoRepair: the repair card's AUTO switch (damage.js);
-// tape: the one in the stereo (stereo.js); time: seconds played, driven: metres in all, races: runs raced (the
+// tape: the one in the stereo (stereo.js); time: seconds played, driven: meters in all, races: runs raced (the
 // menu's STATS)
 const FRESH = () => ({ bank: 0, best: 0, runs: 0, levels: {}, off: {}, engine: 0, racing: false, points: 0, finish: 101,
                        damage: 0, broken: [], nitro: 0, fuel: 0, crude: 0, oil: 0, roles: { harvester: 0, brewer: 0, raider: 0 }, pace: 70,
@@ -95,7 +95,7 @@ let debugSave = false;
 const bottomless = () => debugSave && settings.debugMoney !== false; // main.js loads later
 const saveKey = () => debugSave ? SAVE_KEY + '-debug' : SAVE_KEY;
 const progress = Object.assign(FRESH(), load());
-function load() { // a save from before fuel (26 Oct) has miles: they are litres now, one for one
+function load() { // a save from before fuel (26 Oct) has miles: they are liters now, one for one
   let s = {};
   try { s = JSON.parse(localStorage.getItem(saveKey())) ?? {}; } catch { /* none */ }
   if ('miles' in s) { s.fuel ??= s.miles; delete s.miles; }
@@ -134,7 +134,7 @@ function debugMoney(on) { // the switch: on, the wallets fill; off, they empty (
 // act's start. From a fresh game, the story so far, and the pages before the act bought out as the graph allows (the
 // debug wallets pay); everything open by then counts as seen; then the act's own moment, so its card pops up as it
 // does in play. Anything of the act's or later is gone. With the money switch off, the wallets the act starts with in
-// the simulations (tests/balance: act 2's metres left at P1, act 4's reserve). act: 0 for the first (a new game)
+// the simulations (tests/balance: act 2's meters left at P1, act 4's reserve). act: 0 for the first (a new game)
 const ACTS = [
   { pages: [] },
   { pages: ['workshop', 'autopilot'], story: { runs: 20, driven: 60000, best: 3000 },
@@ -164,10 +164,10 @@ function debugAct(act) {
   forgetRun();
 }
 
-// the garage's pages: the car itself and the robot driver, paid in metres; the illegal and forbidden, paid in race
+// the garage's pages: the car itself and the robot driver, paid in meters; the illegal and forbidden, paid in race
 // points (race.js fills it); the Crew, paid in fuel (fleet.js, oil.js); War Rig, paid in scrap (gang.js). Each is a tab you
 // buy (the owner's graph, 23 Oct): the Black market's once the race is revealed, the Crew's once you have won a race,
-// the War Rig's once you have totalled a car. Each page's currency: the key in progress, and its unit
+// the War Rig's once you have totaled a car. Each page's currency: the key in progress, and its unit
 const PAGES = [['workshop', 'Workshop'], ['autopilot', 'Autopilot'], ['black', 'Black market'], ['fleet', 'Crew'],
                ['warrig', 'War Rig']];
 const WALLETS = { workshop: 'bank', autopilot: 'bank', black: 'points', fleet: 'fuel', warrig: 'scrap' };
@@ -196,7 +196,7 @@ function shows(id) {
   return !needs.length || needs.some(has);
 }
 const inSight = id => shows(id) && (!!UPGRADES[id].opens || pageOpen(pageOf(UPGRADES[id]))); // a card: on a page you have
-// what it needs, in full: done ticked, a parent out of sight as ??? (a card's own tab goes without saying)
+// what it needs, in full: done checked, a parent out of sight as ??? (a card's own tab goes without saying)
 function rule(id) {
   const u = UPGRADES[id];
   return 'needs ' + needsOf(id).filter(([p]) => u.opens || p !== TAB[pageOf(u)]).map(([p, n]) => {
@@ -206,7 +206,7 @@ function rule(id) {
   }).join(' · ');
 }
 function cost(id) {
-  const u = UPGRADES[id], step = inMetres(u) ? 10 : 1; // metres in round tens, the rest one by one
+  const u = UPGRADES[id], step = inMetres(u) ? 10 : 1; // meters in round tens, the rest one by one
   return Math.max(step, Math.round(u.base * (u.growth ?? 1) ** lvl(id) / step) * step);
 }
 function whyNot(id) { // reason an upgrade can't be bought now, or '' if it can
@@ -252,7 +252,7 @@ function startRun() { // back to the start line, engine running, in neutral, hel
   brakePedal = 1;
   coolDown();
   copClock = copEvery(); // police.js: the first police car after a while
-  run.refill = run.limp ? 0 : refillNitro(); // limping: keep the metres for the repair
+  run.refill = run.limp ? 0 : refillNitro(); // limping: keep the meters for the repair
   crewRun(); // oil.js: this run's spots
   if (run.boss) sendTank(); // boss.js: up the road, waiting
 }
@@ -269,7 +269,7 @@ function finishRun(dnf) { // dnf: why the run ended early (a crash), if it did
   if (run.race) { progress.races++; progress.dry++; }
   run.dues = fleetDues(); // fleet.js
   progress.bank += run.dues;
-  run.repaired = autoRepairOn() ? autoRepair() : 0; // damage.js: the repair card's AUTO, once the run's metres are in
+  run.repaired = autoRepairOn() ? autoRepair() : 0; // damage.js: the repair card's AUTO, once the run's meters are in
   run.team = run.race ? teamPoints() : 0; // fleet.js: your racers' places pay points
   crewEnd(); // oil.js: what is still at work counts
   progress.points += run.team;
@@ -304,7 +304,7 @@ function rechargeFlash(dt) {
 }
 
 // a collision (once you drive recklessly): damage; a head-on, or the damage that wrecks the car, ends the run. A
-// head-on with a mad driver (Fuel madness) doesn't: it hurts as much, and the mad car is totalled
+// head-on with a mad driver (Fuel madness) doesn't: it hurts as much, and the mad car is totaled
 function onCollision(i) {
   if (run.phase !== 'run') return;
   if (arOn()) ram(i); // gang.js: the car you hit takes it too
@@ -324,12 +324,12 @@ function roadMarks() {
   return marks;
 }
 
-// the Crew's Fuel converter (the Mile converter until 26 Oct): metres for fuel, one way, at the pump price: a mile's
-// metres a litre at first (the owner: thousands, not hundreds), climbing with the crew to three times at the gang (a
+// the Crew's Fuel converter (the Mile converter until 26 Oct): meters for fuel, one way, at the pump price: a mile's
+// meters a liter at first (the owner: thousands, not hundreds), climbing with the crew to three times at the gang (a
 // first guess). It buys the first cars, and the oil takes over
-const PUMP = 7500; // m a litre at first: act 2's 40-47k m buy 4 or 5 cars (the owner, 27 Oct: it was a mile, and bought 19)
+const PUMP = 7500; // m a liter at first: act 2's 40-47k m buy 4 or 5 cars (the owner, 27 Oct: it was a mile, and bought 19)
 const pumpPrice = () => Math.round(PUMP * (1 + 2 * Math.min(fleetSize(), GANG) / GANG));
-let exchange = 0;  // litres on its slider
+let exchange = 0;  // liters on its slider
 const canExchange = () => Math.floor(progress.bank / pumpPrice());
 function convert(l) {
   l = Math.min(l, canExchange());
@@ -344,8 +344,8 @@ const exchangeLabel = () => `${fmt(exchange)} L for ${fmt(exchange * pumpPrice()
 function exchangeCard() {
   const can = canExchange();
   exchange = Math.min(exchange, can);
-  return `<div class="card exchange"><b>Fuel converter</b><small>metres for fuel, one way, at the pump: ${fmt(pumpPrice())} m a ` +
-    `litre · ${money(progress.fuel)} L to spend</small><input type="range" id="exchange" min="0" max="${can}" value="${exchange}">` +
+  return `<div class="card exchange"><b>Fuel converter</b><small>meters for fuel, one way, at the pump: ${fmt(pumpPrice())} m a ` +
+    `liter · ${money(progress.fuel)} L to spend</small><input type="range" id="exchange" min="0" max="${can}" value="${exchange}">` +
     `<span><button data-exchange${exchange ? '' : ' disabled'}>${exchangeLabel()}</button> ` +
     `<button data-exchange-all${can ? '' : ' disabled'}>all available · ${money(can)} L</button></span></div>`;
 }
@@ -358,7 +358,7 @@ function exchangeCard() {
 // current one again, with where you stand and the last run in full; the garage keeps a line of the run's numbers
 TUTORIALS.unshift(
   { id: 'act1', name: 'DRIVE', open: () => true,
-    text: () => `You get ${runTime()} seconds a run. Drive as far as you can: every metre is money for the garage, its ` +
+    text: () => `You get ${runTime()} seconds a run. Drive as far as you can: every meter is money for the garage, its ` +
       'Workshop first. New to a stick shift? HOW TO DRIVE takes you through it.' },
   { id: 'act2', act: 'II', name: 'RACE', open: () => progress.racing,
     text: () => 'That quick car was racer #100. You are in a race of a hundred: every run is a race now, and your place ' +
@@ -368,17 +368,17 @@ TUTORIALS.unshift(
       (hint() ? ` Stuck? ${hint()}.` : '') },
   { id: 'act3', act: 'III', name: 'RECRUIT', open: () => fleetOpen(),
     text: () => 'P1! The racers you beat are open to offers. Buy the Crew tab and pay them off in fuel, from the ' +
-      'converter: they race for you, in your colours, and their places at the finish pay you points.',
+      'converter: they race for you, in your colors, and their places at the finish pay you points.',
     now: () => progress.gang ? 'Your crew is a gang now: ram the car in the reticle until its health bar is empty.'
       : !fleetSize() ? 'None of the field races for you yet.' : progress.oil ? `Your crew: ${racersOf()} racing, ` +
       `${role('harvester')} harvesting, ${role('brewer')} brewing.` : `${fleetSize()} of the field race${fleetSize() === 1 ? 's' : ''} for you.` },
-  // the gang's first car totalled, on the road (gang.js gangMoment): act IV (the owner, 27 Oct; it popped up in the
+  // the gang's first car totaled, on the road (gang.js gangMoment): act IV (the owner, 27 Oct; it popped up in the
   // garage as the 51st was bought, and the next card, NO LAW OUT HERE, at the first total: one card now)
   { id: 'act4', act: 'IV', name: 'WAR', open: () => gangOpen(),
-    text: () => 'Totalled! No law out here any more. Your car becomes a war rig, the oil still flowing, and your racers ' +
+    text: () => 'Totaled! No law out here any more. Your car becomes a war rig, the oil still flowing, and your racers ' +
       'just race: the War Rig tab is for sale, paid in scrap.',
     now: () => progress.wanted >= 1 ? `Police heat 100%: the army has a tank ready for when you are ${lvl('guns') ? 'repaired' : 'armed'}.`
-      : `Every car totalled raises the police heat, now ${heatPct()}. At 100% the army sends a tank` +
+      : `Every car totaled raises the police heat, now ${heatPct()}. At 100% the army sends a tank` +
         (lvl('guns') ? '.' : ', once you have guns.') },
   { id: 'tanksent', name: 'THE ARMY SENDS A TANK', open: () => bossRace() || progress.tanks > 0,
     text: () => 'Police heat 100%: the army has sent a tank. It is waiting up the road: outgun it' +
@@ -407,7 +407,7 @@ function runLine() {
     run.team && `team places +${fmt(run.team)} pts`, run.dues && `racing +${fmt(run.dues)} m`,
     run.crude >= 0.05 && `crude +${fmtL(run.crude)} L`, run.fuel >= 0.05 && `fuel +${fmtL(run.fuel)} L`,
     run.refill && `nitro refill −${fmt(run.refill)} m`, run.repaired && `repairs −${fmt(run.repaired)} m`,
-    run.totals && `totalled ${run.totals}, +${fmt(run.scrap)} scrap`, run.beatTank && `the tank scrapped, +${TANK.scrap} scrap`,
+    run.totals && `totaled ${run.totals}, +${fmt(run.scrap)} scrap`, run.beatTank && `the tank scrapped, +${TANK.scrap} scrap`,
     arOn() && `police heat ${heatPct()}`, hint() && `<i>stuck? ${hint()}</i>`]
     .filter(Boolean).join(' · ');
 }
@@ -424,7 +424,7 @@ function runRows() {
     if (run.dues) rows.push(['Racing', `+${fmt(run.dues)} m`]);
     if (run.refill) rows.push(['Nitro refill', `−${fmt(run.refill)} m`]);
     if (run.repaired) rows.push(['Repairs', `−${fmt(run.repaired)} m`]);
-    if (run.totals) rows.push(['Totalled', `${run.totals}, +${fmt(run.scrap)} scrap`]);
+    if (run.totals) rows.push(['Totaled', `${run.totals}, +${fmt(run.scrap)} scrap`]);
     if (run.beatTank) rows.push(['The tank', `scrapped, +${TANK.scrap} scrap`]);
   }
   if (progress.runs) rows.push(['Best run', `${fmt(progress.best)} m`]);
@@ -543,7 +543,7 @@ function drive() {
 // the tapes the stereo plays (stereo.js): the War Rig radio's while it is bought and switched on (gang.js), or synthwave
 const onRadio = () => TAPES.filter(t => !!t.war === (lvl('warradio') > 0 && !progress.off.warradio));
 
-// ---- head-up display: the run ----
+// ---- heads-up display: the run ----
 let shownPhase, shownCount, passedBest = false, shownReveal = false;
 function renderRun() {
   if (run.phase !== shownPhase) { // a new phase starts
@@ -591,7 +591,7 @@ function renderRun() {
   $('hud-beam').style.setProperty('--charge', run.phase === 'run' ? run.recharge / rechargeTime() : 0); // the refill
 }
 
-// stalled, or standing still for 1.5 s in a run: the windscreen says what to do next, in the words of the layout you
+// stalled, or standing still for 1.5 s in a run: the windshield says what to do next, in the words of the layout you
 // drive with, until the car moves (the playtests of 18 Oct: one player couldn't get off the start line for three runs,
 // another skipped the first run's how-to). Nothing to say when the aids do it all
 const stuck = () => (state === 'off' || run.still > 1.5) && !!nextStep();
@@ -612,7 +612,7 @@ function gaps() { // the racers just ahead and just behind you
 
 const DISTANCE = {
   id: 'distance', name: 'Distance', hud: 'run',
-  blurb: 'A few seconds to get as far as you can. Every metre buys upgrades: power, gears, time, driver aids.',
+  blurb: 'A few seconds to get as far as you can. Every meter buys upgrades: power, gears, time, driver aids.',
   gears: topGear,
   engine: () => progress.engine, // the garage's engines, not the menu's
   tune: applyUpgrades,
@@ -631,7 +631,7 @@ const DISTANCE = {
       ['Runs', fmt(progress.runs)], ['Best run', `${fmt(progress.best)} m`], ['Distance driven', `${fmt(progress.driven)} m`]];
     if (progress.racing) s.push(['Races', fmt(progress.races)], ['Best place', `P${progress.finish}`]);
     if (fleetOpen()) s.push(['Crew', `${fleetSize()} cars`]);
-    if (gangOpen()) s.push(['Cars totalled', fmt(progress.totals)]);
+    if (gangOpen()) s.push(['Cars totaled', fmt(progress.totals)]);
     if (progress.tanks) s.push(['Tanks beaten', fmt(progress.tanks)]);
     return s;
   },

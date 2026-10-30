@@ -154,7 +154,7 @@ with sync_playwright() as p:
     check("closed: the sonar and the reticle hidden again in the garage", pj("[getComputedStyle($('sonar')).display, getComputedStyle($('ar')).display]") == ["none", "none"],
           pj("[getComputedStyle($('sonar')).display, getComputedStyle($('ar')).display]"))
     # 9. bought, their keys and the Music setting; the aids' pages name Hunter only once bought, the War Rig's the page's
-    #    parts only once the page is open (it opens with the first car totalled, after its tutorial has popped up)
+    #    parts only once the page is open (it opens with the first car totaled, after its tutorial has popped up)
     js("closeMenu(); openMenu('help')"); got = js("document.querySelector('[data-screen=help]').innerText")
     check("all bought: their keys", "change lanes · F flash · N nitro · G fire · M next tape · 1–3 engine" in got, got[:160])
     js("showScreen('settings')"); check("... and Music in SETTINGS", "Music" in js("document.querySelector('[data-screen=settings]').innerText"), "")
