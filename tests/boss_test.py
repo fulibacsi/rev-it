@@ -73,7 +73,7 @@ with sync_playwright() as p:
     tabs = lambda: js("[...document.querySelectorAll('#tabs button')].map(b => b.textContent)")
     got = js("({ menu: menuOpen, screen, no: $('act-no').textContent, name: $('act-name').textContent, text: $('act-text').textContent })")
     check("then act V (the owner, 29 Oct: the tank no longer ends the game): its card pops up over the garage, under construction",
-          got["menu"] and got["screen"] == "act" and got["no"] == "ACT V" and got["name"] == "BUILD" and "Fortress" in got["text"]
+          got["menu"] and got["screen"] == "act" and got["no"] == "ACT V" and got["name"] == "FORTRESS" and "Fortress" in got["text"]
           and "Under construction" in got["text"], got)
     pg.screenshot(path=f"{OUT}/boss_act5.png")
     pg.click("#act-go"); pg.wait_for_timeout(100)
