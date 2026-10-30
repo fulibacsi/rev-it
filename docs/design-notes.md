@@ -1146,6 +1146,14 @@ it takes another lane. It starts at 1×1, a single car's size, and grows longer 
   their own (the truck's from an inline six's idle at 650, the tank's V12 idling at 670, the turbine's in Hz of its
   whine), mapped onto the rig's when they play. Previews went to the owner: each alone, then under the Turbo I6. The
   credits screen lists them once the game plays them.
+- The tank disappeared at high revs (the owner, 30 Oct, from the preview): its revs (a tank recorded from a distance)
+  are 89–98% bass under 120 Hz, which a phone or a laptop barely plays, and evened out by energy, as the car's loops
+  are, they came out about 10 dB quieter as heard than its idle (A-weighted: −34 to −37 dB against −25). Fixed in
+  `make_sounds.py`: the truck's and the tank's loops high-passed at 120 Hz (the truck's two lowest dipped 5 dB the
+  same way), and the three engines' loops evened out by loudness as heard (−24 dB A-weighted), none clipping (the
+  tank's loudest peaks at −2.3 dBFS). Each new loop is the old one filtered and scaled, nothing else (correlation
+  1.0000), so its pitch is as it was. In the new preview the tank grows louder as it revs (−34 dB A at idle to −23 at
+  the top), where it stayed flat or faded before.
 
 **Drop tables** (the owner, 30 Oct: "Each enemy should have a drop table"; the examples "just random ideas, we can
 explore them further"):
