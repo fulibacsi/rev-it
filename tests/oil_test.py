@@ -64,13 +64,18 @@ with sync_playwright() as p:
     got = js("[...$('track-spots').querySelectorAll('text')].map(t => t.textContent)")
     check("the tracker its tutorial lights has the refinery on it", len(got) == 3 and got[0] == "0/2", got)
     while js("menuOpen"): pg.tap("#tour-next"); pg.wait_for_timeout(100)
-    js("run.pick = run.spots[1]"); pg.tap("#crew-send"); pg.tap("#crew-send"); pg.wait_for_timeout(1900)
+    js("progress.crude = 7; run.pick = run.spots[1]"); pg.tap("#crew-send"); pg.tap("#crew-send"); pg.wait_for_timeout(1900)  # a puddle's worth
     c0 = js("progress.crude"); pg.wait_for_timeout(600)
     got = js("[run.spots[1].crew, progress.crude, progress.fuel]")
     check("the refinery crewed: the crude brews into fuel (2 liters a liter)", got[0] == 2 and got[1] < c0 and got[2] > 20, [c0] + got)
-    js("odo = run.spots[1].z + 10"); pg.wait_for_timeout(200)
-    check("past the refinery: the oil is on", js("progress.oil") == 2, js("progress.oil"))
-    js("finishRun()"); pg.wait_for_function("run.phase === 'garage'", timeout=10000); pg.wait_for_timeout(300)
+    # the owner, 30 Oct: after the tutorial the run went on for 18 s; the script's refinery brews the tank in about 3 s
+    # and the run ends 3 s later
+    pg.wait_for_function("progress.crude < 0.01", timeout=10000)
+    got = js("[run.spots[1].done, progress.oil, run.left <= 3, run.phase, +(runTime() - run.left).toFixed(1)]")
+    check("the crude all brewed: the refinery done, the oil on, 3 s left on the clock", got[:4] == [True, 2, True, "run"], got)
+    pg.wait_for_function("run.phase !== 'run'", timeout=5000)
+    check("the run over then, early (the run's own clock)", js("run.t") < 45, js("+run.t.toFixed(1)"))
+    pg.wait_for_function("run.phase === 'garage'", timeout=10000); pg.wait_for_timeout(300)
     if js("menuOpen"): js("closeMenu()")
     # 4. the garage: the role card
     js("garageTab = 'fleet'; renderGarage()")
