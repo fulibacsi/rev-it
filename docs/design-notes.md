@@ -1115,7 +1115,7 @@ camera rises and falls back, and the fortress, four lanes wide, crosses the wast
 following. Then the WARLORD screen. The act takes 10–15 races (the owner), so the game about 70–95 races, 1.5–2
 hours.
 
-**Still open:** whether the robot brakes at all; the wheel at two lanes and more; what each source drops and does; the
+**Still open:** the wheel at two lanes and more; what each source drops and does; the
 bridge or the cab (to try); the placing gesture (on a phone); where the rest of the points go; the foreshadowing; the
 final fight's form; whether placing is automated; what comes after the ending (playing on, or a new game plus).
 
@@ -1147,9 +1147,10 @@ race, the loot lost to a full inventory, and the parts lost a race.
      nothing. The robot drives: Auto clutch, Auto gas, Auto shift, Lane assist (Autocruise needs it) and Autocruise
      drive whatever their switches say, and their cards stay on the Autopilot page under a bolted plate, BOLTED ON, the
      war rig drives itself. Auto flash, Reckless auto-drive (its nitro too) and Hunter keep their switches. The robot
-     still brakes behind traffic it can't pass: whether it should brake at all is the owner's to say (Claude's
-     reading of "we brake for no-one": the pedal; it would ram every slower car, which at a lane wide with no parts
-     wrecks the rig; with the Grinder it fits). The wheel stays as it is until two lanes wide (the owner).
+     still brakes behind traffic it can't pass, while the rig is a lane wide: from two lanes wide it brakes for no one
+     and rams (the owner, 30 Oct: "the Foreman should deal with most of them anyway"). Claude's reading: Lane assist's
+     swerve goes too, and the Autocruise and Lane assist plates say so, BOLTED ON, no brakes: the rig rams; built with
+     the grid growing wider (layer 6). The wheel stays as it is until two lanes wide (the owner).
    - The board, in the shifter's place: a steel plate, FORTRESS, the plan (1×1) and the hold beside it (one slot).
      Dragged from the hold, a part floats a cell above the finger and a ghost shows where it would go, green or red;
      it goes on only once the finger has rested still (6 px) on green for 0.2 s, else back to the hold. Pressed and
@@ -1165,8 +1166,8 @@ race, the loot lost to a full inventory, and the parts lost a race.
      with nothing yet to buy. The numbers wait for the next layer, the reticle on the notable enemies only.
    - `fortress_test` checks it on both layouts.
 5. The reticle on the notable enemies only, the raiders on the rest; the rival gang and its ammo.
-6. Loot on the road, the inventory, placing and removing; the grid longer and wider (the wheel changes once the rig is
-   two lanes wide or more: the owner, 30 Oct).
+6. Loot on the road, the inventory, placing and removing; the grid longer and wider (from two lanes wide the wheel
+   changes, and the robot brakes for no one and rams: the owner, 30 Oct).
 7. Damage by where it comes from, parts falling off, hits on empty cells reaching the rig.
 8. Four lanes: the Grinder, mines and the mine roller.
 9. The act's automation.
