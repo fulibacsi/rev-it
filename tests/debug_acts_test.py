@@ -66,7 +66,7 @@ with sync_playwright() as p:
     check("act V: the War Rig bought out, 80 crew, the Fortress not bought", got == [1, 3, 3, 1, 3, 1, 1, 1, 80, 0], got)
     got = js("[progress.tanks, progress.wanted, inSight('fortressTab'), progress.roles.raider]")
     check("act V: a tank beaten, no heat, the Fortress tab in sight, raiders riding", got == [1, 0, True, 6], got)
-    check("act V: its card pops up (the tank's own seen in its race)", card() == ["act", "ACT V", "BUILD"], card())
+    check("act V: its card pops up (the tank's own seen in its race)", card() == ["act", "ACT V", "FORTRESS"], card())
 
     # back to act II: everything later sold
     to_act(1)

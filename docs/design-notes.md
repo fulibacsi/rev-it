@@ -226,8 +226,8 @@ machine or session. Keep it current: update a section when a decision changes, a
   the first run, after the Driving tutorial on a first game), ACT II · RACE (the reveal),
   III · RECRUIT (the first win), IV · WAR (the first car totaled: it was the gang's 51st car, bought in the garage,
   and NO LAW OUT HERE a card of its own at the first total, until the owner moved act IV onto the road, 27 Oct); then,
-  without a number, the last act's turn: THE ARMY SENDS A TANK; and since 30 Oct, the tank beaten, V · BUILD (act 5,
-  under construction: its card says so). The first act has no number, nor does anything before the
+  without a number, the last act's turn: THE ARMY SENDS A TANK; and since 30 Oct, the tank beaten, V · FORTRESS (act 5,
+  under construction: its card says so; BUILD until the owner named it after its tab, 30 Oct). The first act has no number, nor does anything before the
   reveal (the owner, 21 Oct: "Act I" would say more is to come): the garage's title stays GARAGE and the pause
   menu's button reads WHAT TO DO, so ACT II is the first the game says of acts. The owner's picks: verbs for the names, the tank a turn in act 4
   rather than an act of its own. Each pops up once, before any tutorial that opens with it (they ride first in the
@@ -1198,13 +1198,14 @@ race, the loot lost to a full inventory, and the parts lost a race.
    Armor plating. The save keys, upgrade ids and code names keep the old spelling (`armour`, `tyres`), so saves carry
    over; CLAUDE.md says so.
 3. The doorway (built 30 Oct): beating the tank opens act 5 instead of the ending (the owner, 29 Oct: GitHub is for
-   the playtests, so the ending goes from the first act 5 PR). ACT V · BUILD's card pops up in the garage after TANK
+   the playtests, so the ending goes from the first act 5 PR). ACT V · FORTRESS's card pops up in the garage after TANK
    DOWN, once (in a save already past the tank, at its next garage). The Fortress tab, 1 scrap, out of sight until the
    tank is beaten; its page a work sign in hazard stripes, UNDER CONSTRUCTION, and the card says so too (the owner: for
    the playtesters on the GitHub build). The tanks keep coming, each tougher. The main menu's check mark waits for
    act 5's ending; the WARLORD screen stays, unreached until then. Debug mode starts at act V too (act4.py at the tank:
    80 crew, 17 harvesters, 9 brewers, 6 raiders; as in play 8,000 m, 2,800 points, 7 L, 300 scrap). Claude's calls:
-   the card's name BUILD (a verb, as the others) and its words, the tab's price, the sign. `boss_test` and
+   its words, the tab's price, the sign; and the card's name, BUILD (a verb, as the others), until the owner named the
+   act after its tab, FORTRESS (30 Oct). `boss_test` and
    `debug_acts_test` check it.
 4. The Rebuild (built 30 Oct; `fortress.js`). The owner's answers of 30 Oct: no brake either ("we are an unstoppable
    fortress, we brake for no-one"), one shot a press, the drag built now, and the seats tried once there is a deck to

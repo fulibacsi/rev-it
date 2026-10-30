@@ -399,9 +399,10 @@ TUTORIALS.unshift(
       (lvl('pack') ? ', and send your raiders at it.' : '.'),
     now: () => bossRace() ? '' : `The tank is scrap and the road is yours (${progress.tanks} beaten). Push the heat ` +
       `to 100% again, now ${heatPct()}, and the next one is tougher.` },
-  // the tank beaten opens act 5 (the owner, 29 Oct: its ending goes; WARLORD comes at act 5's end). Built a piece at a
-  // time on the playtest build, so it says so (the owner: for the playtesters on it)
-  { id: 'act5', act: 'V', name: 'BUILD', open: () => progress.tanks > 0,
+  // the tank beaten opens act 5 (the owner, 29 Oct: its ending goes; WARLORD comes at act 5's end), named after its tab
+  // (the owner, 30 Oct; BUILD before). Built a piece at a time on the playtest build, so it says so (the owner: for the
+  // playtesters on it)
+  { id: 'act5', act: 'V', name: 'FORTRESS', open: () => progress.tanks > 0,
     text: () => 'The tank is scrap, and its parts are yours. A war rig is not enough out here any more: build a fortress ' +
       'on wheels from what the army leaves behind. The Fortress tab is for sale, paid in scrap. ' + UNDER_CONSTRUCTION,
     now: () => bossRace() ? 'The army has sent another tank: it waits up the road.'
