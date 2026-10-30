@@ -1,8 +1,9 @@
 """The final boss: at 100% heat the garage warns of the tank, and the next race has it (never the race the heat fills
 in): its card pops up over the road as you drive off, the tank already up the road, waiting. It holds the road about 80 m
 ahead of you in your lane, is the AR target ("TANK"), shells you (8% damage each, less with armor), and shrugs off
-rams; your guns and the gang's wear it down. Destroyed: TANK DOWN, the run stops there; the ending (heat back to 0,
-scrap), and the next tank is tougher. Not destroyed by the bell: a DNF, and the heat drops to half."""
+rams; your guns and the gang's wear it down. Destroyed: TANK DOWN, the run stops there (heat back to 0, scrap), and act
+V opens: its card, the Fortress tab for sale (out of sight before), its page under construction; the next tank is
+tougher. Not destroyed by the bell: a DNF, and the heat drops to half."""
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
 CAR = ("power: 10, rev: 4, gears: 3, tyres: 4, time: 6, clutch: 1, gas: 1, shift: 1, engine: 2, reckless: 1, flash: 5, "
@@ -28,6 +29,8 @@ with sync_playwright() as p:
     # 1. 99%: no tank; 100%: the act's card (the pause menu's, the garage's title) warns of it
     card = lambda: js("[currentCard().id, currentCard().text(), currentCard().now()].join(' | ')")
     garage(0.99); check("99% heat: no tank", not js("bossRace()") and card().startswith("act4 |"), card())
+    check("before the tank: no Fortress, no word of act V", not any(t.startswith("Fortress") for t in js("[...document.querySelectorAll('#tabs button')].map(b => b.textContent)"))
+          and not js("CARDS.find(c => c.id === 'act5').open()"), "")
     race(); js("raiseHeat(1)"); pg.wait_for_timeout(1500)
     check("the heat filling mid-race: no tank in that race", js("[progress.wanted, run.boss, !!run.tank, traffic.some(c => c.tank)]") == [1, False, False, False],
           js("[progress.wanted, run.boss, !!run.tank, traffic.some(c => c.tank)]"))
@@ -67,23 +70,26 @@ with sync_playwright() as p:
     pg.screenshot(path=f"{OUT}/boss_tank_down.png")
     pg.wait_for_timeout(3000); check("held a while (4 s), longer than a finish", js("run.phase") == "finish", js("run.phase"))
     pg.wait_for_function("run.phase === 'garage'", timeout=5000)
-    rep = js("$('report').textContent") # the garage is out of sight behind the ending
-    check("the ending, then play on: a result, not a DNF; the act's card says to push for the next", "+300 scrap" in rep and "DNF" not in rep
-          and "The tank is scrap" in card() and "the next one is tougher" in card(), [rep, card()])
+    tabs = lambda: js("[...document.querySelectorAll('#tabs button')].map(b => b.textContent)")
+    got = js("({ menu: menuOpen, screen, no: $('act-no').textContent, name: $('act-name').textContent, text: $('act-text').textContent })")
+    check("then act V (the owner, 29 Oct: the tank no longer ends the game): its card pops up over the garage, under construction",
+          got["menu"] and got["screen"] == "act" and got["no"] == "ACT V" and got["name"] == "BUILD" and "Fortress" in got["text"]
+          and "Under construction" in got["text"], got)
+    pg.screenshot(path=f"{OUT}/boss_act5.png")
+    pg.click("#act-go"); pg.wait_for_timeout(100)
+    rep = js("$('report').textContent")
+    check("in the garage: a result, not a DNF; the act's card says the next tank is tougher", "+300 scrap" in rep and "DNF" not in rep
+          and card().startswith("act5 |") and "another tank, tougher" in card(), [rep, card()])
     check("the next tank is half as tough again", js("tankHealth()") == 1500, js("tankHealth()"))
-    got = js("({ menu: menuOpen, screen, text: $('menu').innerText })")
-    check("then the ending: WARLORD OF THE COAST ROAD, the stats, a tank beaten", got["menu"] and got["screen"] == "win"
-          and "WARLORD OF THE COAST ROAD" in got["text"] and "Tanks beaten\n1" in got["text"], {k: v for k, v in got.items() if k != "text"})
-    buttons = js("[...document.querySelectorAll('[data-screen=win] button')].filter(b => !b.hidden).map(b => b.textContent)")
-    check("its buttons: MAIN MENU, SHARE, BACK TO THE GARAGE (no NEW GAME)", buttons == ["MAIN MENU", "SHARE", "BACK TO THE GARAGE"], buttons)
-    check("over the road: the garage not behind it", js("getComputedStyle($('garage')).visibility") == "hidden", js("getComputedStyle($('garage')).visibility"))
-    pg.screenshot(path=f"{OUT}/boss_win.png")
-    pg.click("#win-garage"); pg.wait_for_timeout(100)
-    check("BACK TO THE GARAGE: playing on, the garage there", js("[menuOpen, run.phase, getComputedStyle($('garage')).visibility]") == [False, "garage", "visible"],
-          js("[menuOpen, run.phase, getComputedStyle($('garage')).visibility]"))
-    js("openMenu('win')")
-    pg.click("#win-main"); got = js("[screen, $('continue').textContent, $('continue').classList.contains('done')]")
-    check("exit to the main menu: CONTINUE with the tick, and it plays on in the garage", got == ["main", "CONTINUE", True], got)
+    check("the Fortress tab for sale, for a scrap", "Fortress1 scrap" in tabs(), tabs())
+    pg.click('#tabs [data-tab="fortress"]'); pg.wait_for_timeout(100)
+    got = js("[garageTab, $('cards').innerText]")
+    check("bought: its page, a sign: under construction, the tanks keep coming", got[0] == "fortress" and "UNDER CONSTRUCTION" in got[1]
+          and "tanks keep coming" in got[1], got)
+    pg.screenshot(path=f"{OUT}/boss_fortress_page.png")
+    js("openMenu(); showScreen('main')"); pg.wait_for_timeout(100)
+    got = js("[screen, $('continue').textContent, getComputedStyle($('continue'), '::after').content]")
+    check("the main menu: CONTINUE, no check mark (that comes with act 5's ending)", got[:2] == ["main", "CONTINUE"] and got[2] in ("none", "normal", '""'), got)
     pg.click("#continue"); pg.wait_for_timeout(100)
     check("CONTINUE: back in the garage, playing on", js("[menuOpen, run.phase]") == [False, "garage"], js("[menuOpen, run.phase]"))
     # 6. lost at the bell: a DNF, the heat down to half

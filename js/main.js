@@ -100,7 +100,6 @@ function showScreen(name, back = false) {
 }
 function renderMenu() {
   $('continue').textContent = started() ? 'CONTINUE' : 'NEW GAME';
-  $('continue').classList.toggle('done', progress.tanks > 0); // the tank beaten: a green check mark
   $('to-stats').hidden = !started();
   $('end-run').hidden = !(game === DISTANCE && run.phase === 'run');
   $('act-button').hidden = !(game === DISTANCE && playing); // the act's card again: what to do (distance.js)

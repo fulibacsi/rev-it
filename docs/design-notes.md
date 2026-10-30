@@ -169,7 +169,8 @@ machine or session. Keep it current: update a section when a decision changes, a
     pedal's corner (4–8% of its touch area), so a thumb on the gas doesn't fire nitro by accident.
 
 **Menus** (the owner's design, 14 Oct, for playtests): Rev It is an incremental game (Distance) with side gigs.
-- **Main menu:** CONTINUE (NEW GAME without a save; a green check mark once the tank is beaten, and it plays on), STATS
+- **Main menu:** CONTINUE (NEW GAME without a save; until 30 Oct a green check mark once the tank was beaten: it comes
+  back with act 5's ending), STATS
   (once a game has started), SETTINGS, ARCADE (the other games, with the engine pick and their bests), and a small
   credits link in a corner. On a phone the buttons sit two to a row, so every screen fits without scrolling.
 - **Pause menu** (Esc, ☰, or leaving the app; the game is paused): RESUME, HOW TO DRIVE, END RUN (a Distance run, after
@@ -213,7 +214,8 @@ machine or session. Keep it current: update a section when a decision changes, a
   Inside itch.io's frame the iPhone's "Add to Home Screen" tip is gone (it would keep itch.io's page). itch.io: no
   payments (the Suno tracks are non-commercial only). Claude's calls: the words, what goes in a report, errors capped
   at five a visit, a visit's id kept in memory, the gate's limits.
-- **The ending** (the win screen) follows the tank's destruction, a modal in fire and rust (the owner, 20 Oct: the HUD's
+- **The ending** (the win screen) followed the tank's destruction until 30 Oct; now beating the tank opens act 5 (its
+  card, below), and the screen waits for act 5's end (the owner, 29 Oct). A modal in fire and rust (the owner, 20 Oct: the HUD's
   GAME OVER and a plain screen felt underwhelming; their pick of title and words): "WARLORD OF THE COAST ROAD. Steel,
   smoke and silence where the tank stood. A hundred engines howl your name. Nobody's chasing you any more. They're
   following." Then the stats, MAIN MENU, SHARE and BACK TO THE GARAGE (play on). Its NEW GAME went: a red "erase
@@ -224,7 +226,8 @@ machine or session. Keep it current: update a section when a decision changes, a
   the first run, after the Driving tutorial on a first game), ACT II · RACE (the reveal),
   III · RECRUIT (the first win), IV · WAR (the first car totaled: it was the gang's 51st car, bought in the garage,
   and NO LAW OUT HERE a card of its own at the first total, until the owner moved act IV onto the road, 27 Oct); then,
-  without a number, the last act's turn: THE ARMY SENDS A TANK. The first act has no number, nor does anything before the
+  without a number, the last act's turn: THE ARMY SENDS A TANK; and since 30 Oct, the tank beaten, V · BUILD (act 5,
+  under construction: its card says so). The first act has no number, nor does anything before the
   reveal (the owner, 21 Oct: "Act I" would say more is to come): the garage's title stays GARAGE and the pause
   menu's button reads WHAT TO DO, so ACT II is the first the game says of acts. The owner's picks: verbs for the names, the tank a turn in act 4
   rather than an act of its own. Each pops up once, before any tutorial that opens with it (they ride first in the
@@ -951,8 +954,9 @@ DNF that halved the heat. Till then the act's card says "the army has a tank rea
   like losing) and the run stops there, the tank burning, held for 4 s (the owner, 14 Oct: that's the end state);
   then the ending's screen. The garage: "The tank is scrap: the road is yours", 300
   scrap, the heat back to 0. You can still play on, the next tank half as tough again (1,500, then 2,000 ...), until
-  the menus are talked about. To change with act 5 (the owner, 28 Oct): beating the tank opens it, and the ending
-  moves to its end (see [Act 5](#act-5-the-fortress-decided-2829-oct-to-build)).
+  the menus are talked about. Since 30 Oct beating the tank opens act 5 instead of the ending, which moves to act 5's
+  end (the owner, 28-29 Oct; see [Act 5](#act-5-the-fortress-decided-2829-oct-to-build)): TANK DOWN, then ACT V's card
+  in the garage.
 - **Lost** (wrecked, a head-on, or the bell with the tank still going): a DNF ("the tank held the road"), and the heat
   drops to half, so you have to push for it again.
 - Claude's calls: the tank stayed (the owner's pick; it fits the army being called in when the police can't cope), its
@@ -1026,8 +1030,11 @@ rig, and the cockpit changes with it:
 - the gear shifter goes, and the clutch with it (Claude's); the fortress's board takes the shifter's place (below);
 - the gas pedal becomes the cannon's trigger (the owner's, with a question mark). The robot drives the speed from then
   on, and nitro goes with the gas pedal;
-- the wheel changes; how is open. Claude's two: a truck's big wheel with a spinner knob, its lane changes slower as
-  the fortress widens; or a wheel that locks at four lanes, when there is no lane left to change to;
+- the wheel changes only once the rig is two lanes wide or more (the owner, 30 Oct); how is open. Claude's two: a
+  truck's big wheel with a spinner knob, its lane changes slower as the fortress widens; or a wheel that locks at four
+  lanes, when there is no lane left to change to;
+- with no shifter and no gas pedal the rig drives itself: Auto shift and Autocruise stay on (the owner, 30 Oct), said
+  in words, and their cards stay in the garage, disabled, not removed, perhaps under a metal plate bolted over them;
 - where you sit is an experiment (the owner): a cab at the front, the fortress behind you and seen only on the board,
   like Fury Road's War Rig pulling its tanker; or a bridge at the stern, looking out over the deck you built (the eye
   raised: above);
@@ -1098,7 +1105,7 @@ camera rises and falls back, and the fortress, four lanes wide, crosses the wast
 following. Then the WARLORD screen. The act takes 10–15 races (the owner), so the game about 70–95 races, 1.5–2
 hours.
 
-**Still open:** the wheel; what each source drops and does; the bridge or the cab (to try); the placing gesture (to
+**Still open:** the wheel at two lanes and more; what each source drops and does; the bridge or the cab (to try); the placing gesture (to
 try); where the points go; the foreshadowing; the final fight's form; whether placing is automated; what comes after
 the ending (playing on, or a new game plus).
 
@@ -1111,14 +1118,25 @@ race, the loot lost to a full inventory, and the parts lost a race.
    US names too (the owner, 30 Oct: windshield, hood, curb; built 30 Oct). Three cards renamed: Tires, Transmission,
    Armor plating. The save keys, upgrade ids and code names keep the old spelling (`armour`, `tyres`), so saves carry
    over; CLAUDE.md says so.
-3. The doorway and the Rebuild: the tab, ACT V's card, the new cockpit (the board's place, the cannon's pedal, both
-   seats to try), the 1×1 grid with the cannon, act IV's guns kept; `act5.py` begins.
-4. The reticle on the notable enemies only, the raiders on the rest; the rival gang and its ammo.
-5. Loot on the road, the inventory, placing and removing; the grid longer and wider.
-6. Damage by where it comes from, parts falling off, hits on empty cells reaching the rig.
-7. Four lanes: the Grinder, mines and the mine roller.
-8. The act's automation.
-9. The foreshadowing, the final fight and the ending.
+3. The doorway (built 30 Oct): beating the tank opens act 5 instead of the ending (the owner, 29 Oct: GitHub is for
+   the playtests, so the ending goes from the first act 5 PR). ACT V · BUILD's card pops up in the garage after TANK
+   DOWN, once (in a save already past the tank, at its next garage). The Fortress tab, 1 scrap, out of sight until the
+   tank is beaten; its page a work sign in hazard stripes, UNDER CONSTRUCTION, and the card says so too (the owner: for
+   the playtesters on the GitHub build). The tanks keep coming, each tougher. The main menu's check mark waits for
+   act 5's ending; the WARLORD screen stays, unreached until then. Debug mode starts at act V too (act4.py at the tank:
+   80 crew, 17 harvesters, 9 brewers, 6 raiders; as in play 8,000 m, 2,800 points, 7 L, 300 scrap). Claude's calls:
+   the card's name BUILD (a verb, as the others) and its words, the tab's price, the sign. `boss_test` and
+   `debug_acts_test` check it.
+4. The Rebuild: the new cockpit (the board's place, the cannon's pedal, both seats to try; the aids it drives with
+   locked on, their cards under a bolted metal plate, the owner, 30 Oct), the 1×1 grid with the cannon, act IV's guns
+   kept; `act5.py` begins.
+5. The reticle on the notable enemies only, the raiders on the rest; the rival gang and its ammo.
+6. Loot on the road, the inventory, placing and removing; the grid longer and wider (the wheel changes once the rig is
+   two lanes wide or more: the owner, 30 Oct).
+7. Damage by where it comes from, parts falling off, hits on empty cells reaching the rig.
+8. Four lanes: the Grinder, mines and the mine roller.
+9. The act's automation.
+10. The foreshadowing, the final fight and the ending.
 
 ### Balance targets and results
 

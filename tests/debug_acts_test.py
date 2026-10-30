@@ -60,6 +60,14 @@ with sync_playwright() as p:
     check("act IV: the AR layer on, the first car totaled, the oil running on", js("[arOn(), progress.totals, progress.wanted, crewOn()]") == [True, 1, 0, True], js("[arOn(), progress.totals, progress.wanted, crewOn()]"))
     check("act IV: its card pops up", card() == ["act", "ACT IV", "WAR"], card())
 
+    # act V: the tank beaten; the War Rig bought out, the crew at 80 (act4.py's by the tank); the Fortress tab for sale
+    to_act(4)
+    got = levels("warrigTab", "bullbar", "armour", "spikes", "guns", "autogun", "hunter", "pack", "fleet", "fortressTab")
+    check("act V: the War Rig bought out, 80 crew, the Fortress not bought", got == [1, 3, 3, 1, 3, 1, 1, 1, 80, 0], got)
+    got = js("[progress.tanks, progress.wanted, inSight('fortressTab'), progress.roles.raider]")
+    check("act V: a tank beaten, no heat, the Fortress tab in sight, raiders riding", got == [1, 0, True, 6], got)
+    check("act V: its card pops up (the tank's own seen in its race)", card() == ["act", "ACT V", "BUILD"], card())
+
     # back to act II: everything later sold
     to_act(1)
     got = levels("fleet", "fleetTab", "blackTab", "reckless", "nitro") + js("[progress.finish]")
