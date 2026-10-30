@@ -142,6 +142,13 @@ function rigKey(k, repeat) {
 // ---- the road (the owner, 30 Oct): the reticle takes only the notable enemies, the army's tanks and the rival gang's
 // war rigs (police SUVs and helicopters to come); the rest are the raiders' (gang.js crewTarget), and Hunter's
 const notable = c => !!(c.tank || c.rig);
+// the reticle's tag (gang.js renderGang), as the crew's over a spot (oil.js; the owner, 30 Oct: "I really like how the
+// resources have their metadata over them"): what it is, its health, the shells it would take, how far
+function notableTag(t) {
+  const shots = Math.ceil(Math.max(0, t.hp ?? health(t)) / CANNON.damage);
+  return [t.tank ? 'TANK' : 'RIG', `${Math.round(100 * hpLeft(t))}%`, cannonOn() && `${shots} SHOT${shots === 1 ? '' : 'S'}`,
+          `${Math.round(t.z - odo)} m`].filter(Boolean).join(' · ');
+}
 
 // the rival gang (the owner, 30 Oct): once the war rig is built, the racers you never paid off turn on you. Every
 // GANG_CAR.every s it sends the nearest one still behind you, from beyond the sonar (so you see it come) up your other
@@ -266,6 +273,8 @@ TUTORIALS.push( // the war rig's, once rebuilt (the owner's: the controls change
     { title: 'A RIVAL RIG', at: '#ar',
       both: "The rival gang's war rig. Only rigs and tanks are in the reticle now: the cannon and the guns are for " +
         'them. It holds the road ahead of you, then drops back and rams you from the side.' },
+    { title: 'ITS TAG', at: '#ar',
+      both: 'Over the reticle: what it is, its health, the shells it would take, how far.' },
     { title: 'THE RIVAL GANG',
       both: 'The racers you never paid off are a gang now. They come past you, cut in and stamp on the brakes. Your ' +
         'raiders go after them, and the rest of the traffic: Hunter too.' },

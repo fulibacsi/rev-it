@@ -1208,6 +1208,10 @@ race, the loot lost to a full inventory, and the parts lost a race.
      their rams rare once Guns are at level 3 (2 in the first race, none after: the arsenal kills a rig in its first
      hold); a tank every 4-5 races (heat full in 3), beaten with 4-6 shells; 48-83% damage a race before repairs
      (16-46% in layer 4: the brake checks); 1,000-1,350 scrap a race, 7,700-8,100 by race 10 with nothing yet to buy.
+   - The reticle's tag (the owner, 30 Oct: "I really like how the resources have their metadata over them", asking the
+     same for the notable targets): on the war rig the reticle's label is a tag in the crew tag's shape and the
+     reticle's red, over the health bar: what it is, its health, the shells it would take (left out with no cannon on
+     the board) and how far: RIG · 83% · 5 SHOTS · 57 m. Act 4's reticle keeps its label (#7, TANK).
    - `rivals_test` checks it on both layouts.
 6. Loot on the road, the inventory, placing and removing; the grid longer and wider (from two lanes wide the wheel
    changes, and the robot brakes for no one and rams: the owner, 30 Oct).
