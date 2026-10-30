@@ -100,6 +100,9 @@ body:not([data-game="distance"]) #kit { display: none; }
 #ar-bar i { display: block; height: 100%; width: calc(var(--hp, 1) * 100%); background: var(--ar); }
 #ar-label { position: absolute; left: 50%; bottom: calc(100% + 17px); transform: translateX(-50%); white-space: nowrap;
             color: var(--ar); font: 600 11px system-ui, sans-serif; letter-spacing: 1px; }
+#ar-label:empty { display: none; }
+.rig #ar-label { padding: 2px 7px; border: 1px solid var(--ar); border-radius: 4px; background: #2a0a0699; color: #ffc0b0;
+                 font: 700 12px monospace; letter-spacing: 0; } /* the war rig's: a tag, as the crew's (#crew-tag) */
 
 /* the fleet's sonar, bolted to the left A-pillar under the menu button (only with a fleet, only on the road) */
 #sonar { display: none; position: fixed; left: 5vw; top: 96px; width: 120px; pointer-events: none; }

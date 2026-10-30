@@ -4,8 +4,9 @@ first; it is Hunter's too, and tagged on the windshield when picked. The racers 
 come from behind, cut into your lane and brake, in the gang's welded-up look; each one totaled gives the cannon two
 shells. The cannon needs shells: the count on its pedal, none left and it fires nothing. A rival rig comes up from
 behind, holds the road ahead in the reticle, then rams you from the side; totaled, its scrap; none in a race the tank
-is in; its tutorial pops up as the first one shows. Before the rig, act 4's reticle as it was. Phone and desktop."""
-import json
+is in; its tutorial pops up as the first one shows. Over a notable one the reticle's tag: what it is, its health, the
+shells it would take, how far. Before the rig, act 4's reticle as it was. Phone and desktop."""
+import json, re
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
 LEVELS = dict(workshopTab=1, autopilotTab=1, blackTab=1, fleetTab=1, warrigTab=1, fortressTab=1, rebuild=1, power=10, rev=4, gears=3,
@@ -63,8 +64,12 @@ with sync_playwright() as p:
         check(f"{layout}: a rival rig ahead: in the reticle; a shell fired at it (11 left), 250 off its 1,500", got == [True, True, True, 11, 1250], got)
         pg.wait_for_timeout(400)
         got = js("[menuOpen && screen, tour.id, $('ar-label').textContent]")
-        check(f"{layout}: the first rig in sight: the rival gang's tutorial pops up; the reticle reads RIG", got == ["tour", "rivals", "RIG"], got)
+        check(f"{layout}: the first rig in sight: the rival gang's tutorial pops up; the reticle's tag: RIG, 83%, 5 shots to go, how far",
+              got[:2] == ["tour", "rivals"] and re.fullmatch(r"RIG · 83% · 5 SHOTS · \d+ m", got[2]) is not None, got)
         pg.screenshot(path=f"{OUT}/rivals_{layout}_tour.png")
+        got = js("(() => { const tank = { tank: true, hp: null, z: odo + 80 }, f = progress.fortress, parts = f.parts; const a = notableTag(tank); "
+                 "f.parts = []; const b = notableTag(tank); f.parts = parts; return [a, b]; })()")
+        check(f"{layout}: the tank's tag the same (1,500 health: 6 shots); no cannon on the board, no shots", got == ["TANK · 100% · 6 SHOTS · 80 m", "TANK · 100% · 80 m"], got)
         while js("menuOpen"): js("turnTour(1)"); pg.wait_for_timeout(50)
         js("rigClock = gangClock = 1e9"); pg.wait_for_timeout(300)
         pg.screenshot(path=f"{OUT}/rivals_{layout}_rig.png")

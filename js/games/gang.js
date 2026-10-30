@@ -218,7 +218,7 @@ function renderGang() {
   const k = 1 / canvas.px, w = Math.max(26, s[2] * k), h = Math.max(20, s[3] * k); // canvas px to page px (main.js resize)
   Object.assign($('ar').style, { left: `${(s[0] + s[2] / 2) * k - w / 2}px`, top: `${(s[1] + s[3] / 2) * k - h / 2}px`,
                                  width: `${w}px`, height: `${h}px` });
-  text('ar-label', t.tank ? 'TANK' : t.rig ? 'RIG' : !gangOpen() ? 'TOTAL IT' : t.racer ? `#${t.racer}` : '');
+  text('ar-label', rigged() ? notableTag(t) : t.tank ? 'TANK' : !gangOpen() ? 'TOTAL IT' : t.racer ? `#${t.racer}` : ''); // fortress.js
 }
 
 // your car's war kit, seen from the seat (index.html #kit): each part shows from its level up, the Auto gun's red lamps
