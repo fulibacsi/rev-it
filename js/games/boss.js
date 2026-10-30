@@ -42,7 +42,7 @@ function tankDrive(c, dt) {
   if (c.shell > 0 || gap < 0 || gap > TANK.reach || run.phase !== 'run') return;
   c.shell = TANK.reload;
   tracers.push([c, 'you', performance.now()]);
-  addDamage(TANK.hit * (1 - 0.25 * lvl('armour'))); // damage.js; armor plating (gang.js)
+  addDamage(TANK.hit * (1 - armorCut())); // damage.js; armor (fortress.js)
   flash('HIT', '#f55', false);
   crashSound();
   shake = 0.5;
@@ -52,6 +52,7 @@ function tankDrive(c, dt) {
 // destroyed (gang.js total): the ending. The run stops (the owner, 14 Oct: that's the end state)
 function tankDown(c) {
   Object.assign(c, { wreck: true, hp: 0 });
+  dropLoot(c); // fortress.js: on the war rig its parts, into the hold
   progress.tanks++;
   progress.scrap += TANK.scrap;
   run.scrap += TANK.scrap;

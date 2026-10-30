@@ -1306,7 +1306,37 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - `rivals_test` checks it on both layouts.
 6. Loot on the road, the inventory, placing and removing; the grid longer and wider (from two lanes wide the wheel
    changes, and the robot brakes for no one and rams: the owner, 30 Oct); the drop tables; the rig slower as it grows
-   and heavier as it fills; engines, and their sounds on top of yours (the owner, 30 Oct).
+   and heavier as it fills; engines, and their sounds on top of yours (the owner, 30 Oct). In three PRs: the loot, the
+   hold, Lengthen and the weight first (built 30 Oct); then Widen, the rig a lane wider on the road (from two lanes
+   the wheel, and no brakes); then the engines' sounds.
+   - Drops: on the war rig a totaled enemy drops a part by its drop table (Claude's draft, above: the rival gang's cars
+     5%, the rigs always, the SUVs half the time, the tank always); the tank's goes straight into the hold (its race
+     ends there), the rest skid along the road in a crate, from where it fell at its speed, slowing at 8 m/s², so it
+     can be steered for: hazard stripes, a beacon, a panel in the part's color (1.6 m wide, big enough to spot on a
+     phone), a gold diamond on the sonar. Steered over, it goes into the hold; with the hold full it stays on the road
+     (HOLD FULL), passed it is gone. The Loot tutorial pops up at the first drop.
+   - A part's shape is drawn at random among its sizes, and among the shapes no wider than the board (Claude's: one
+     wider could never fit; with the board a lane wide, until Widen, only single blocks and parts along it drop). On the
+     board and in the hold a part is its blocks (a bent three leaves its corner empty and takes no touch there), its
+     icon on the first; a three-block part shrinks to its one hold slot.
+   - The parts at work, by blocks (size is strength), until layer 7 gives them their own health: a cannon block adds
+     250 to every shell (one shell a press, the tank's cannon one block); a gun block adds a level's damage to every
+     shot of the guns; an armor block takes 5% off every hit to the rig, on top of Armor plating's 25% a level (90% at
+     most); a spike block adds a third of a hit to every ram; an engine block pulls 6% more (a rival car's), 10% (an
+     SUV's), 15% (a rig's) or 25% (the tank's). Every block weighs (a cannon 900 kg, armor 500, an engine 700, spikes
+     300, a gun 250), and so does every cell of deck (250 kg), the hold's parts too; each row past the first adds 10%
+     drag. Placing a part or throwing one off applies it at once.
+   - Lengthen (4 levels, 400 scrap doubling: the board to five rows) and Inventory (2 levels, 600 points doubling: the
+     hold to three slots), both after the Rebuild. Claude's prices: about 1,000-1,300 scrap and 400 points come in a
+     race, and the scrap had nothing to buy.
+   - `act5.py` (seeds 1 and 2, 10 races; the bot steers its hand on the wheel for a crate within 150 m on your side of
+     the road, puts the hold on the board between races, front rows first, and buys both cards as it can): 1-4 parts
+     dropped a race, 1-2 picked up while the hold has room (the other lane is often taken); Inventory bought out by race
+     2, Lengthen by race 9; the board, a lane wide, full by race 3-4 at three rows and again at five, the hold full from
+     race 4-5 and the crates after left on the road; the rig 1,750-6,650 kg (from 1,500); the run's meters hardly move
+     (2,500-3,600, the top speed is the drag's, and the rolling start at 250 km/h), the scrap now spent. The board a
+     lane wide is too small for the loot: Widen comes next.
+   - `loot_test` checks it on both layouts.
 7. Damage by where it comes from, parts falling off, hits on empty cells reaching the rig.
 8. Four lanes: the Grinder, mines and the mine roller.
 9. The act's automation.

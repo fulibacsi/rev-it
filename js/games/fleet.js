@@ -53,6 +53,8 @@ function renderSonar() {
     .sort((a, b) => BLIPS.indexOf(a[0]) - BLIPS.indexOf(b[0])).map(([k, c]) => k === 'tank' || k === 'rig' || c.suv
       ? `<rect class="${k}" x="-3.5" y="-3.5" width="7" height="7" transform="translate(${X(c.x)},${Y(c.z)})"/>`
       : `<circle class="${k}" cx="${X(c.x)}" cy="${Y(c.z)}" r="2.4"/>`).join('');
+  $('sonar-blips').innerHTML += (run.loot ?? []).filter(l => Math.abs(l.z - odo) < SONAR) // act 5's loot (fortress.js): gold
+    .map(l => `<rect class="loot" x="-2" y="-2" width="4" height="4" transform="translate(${X(l.x)},${Y(l.z)}) rotate(45)"/>`).join(''); // diamonds
   $('sonar-you').setAttribute('transform', `translate(${X(carX)},43)`);
   $('sonar-dash').style.strokeDashoffset = -(odo * 34 / SONAR) % 6; // the lane lines go by as fast as the road does
 }

@@ -35,7 +35,7 @@ with sync_playwright() as p:
         pg = ctx.new_page(); js = pg.evaluate; pg.on("pageerror", lambda e: errors.append(str(e))); pg.on("dialog", lambda d: d.accept())
         pg.goto(URL); js("localStorage.clear()")
         js(f"Object.assign(progress, {{ racing: true, finish: 1, gang: true, totals: 60, tanks: 1, oil: 2, runs: 80, races: 60, bank: 9000, "
-           f"points: 2000, shells: 10, fortress: {{ w: 1, h: 1, parts: [{{ kind: 'cannon', cells: [[0, 0]], x: 0, y: 0 }}], hold: [] }}, "
+           f"points: 2000, shells: 10, fortress: {{ parts: [{{ kind: 'cannon', cells: [[0, 0]], x: 0, y: 0 }}], hold: [] }}, "
            f"roles: {{ harvester: 17, brewer: 9, raider: 6 }}, levels: {json.dumps(LEVELS)}, "
            f"toured: TUTORIALS.map(t => t.id).filter(id => id !== 'rivals') }}); save()")
         if phone: js("settings.layout = 'touch'; applyLayout()")

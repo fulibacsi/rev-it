@@ -73,7 +73,7 @@ with sync_playwright() as p:
         pg.click('[data-buy="rebuild"]'); pg.wait_for_timeout(300)
         got = js("[progress.points, JSON.stringify(progress.fortress), menuOpen && screen, tour.id]")
         check(f"{layout}: bought: 500 points left, the tank's cannon in the hold, the rig's tutorial pops up",
-              got == [500, '{"w":1,"h":1,"parts":[],"hold":[{"kind":"cannon","cells":[[0,0]]}]}', "tour", "rig"], got)
+              got == [500, '{"parts":[],"hold":[{"kind":"cannon","cells":[[0,0]]}]}', "tour", "rig"], got)
         while js("menuOpen"): js("turnTour(1)"); pg.wait_for_timeout(50)
         js("garageTab = 'autopilot'; renderGarage()"); pg.wait_for_timeout(100)
         got = js("[...document.querySelectorAll('#cards .card')].map(c => [c.querySelector('b').textContent, !!c.querySelector('.plate'), !!c.querySelector('button')])")

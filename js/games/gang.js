@@ -110,7 +110,7 @@ function fireGuns(dt) {
   raiseHeat(WANTED.shot);
   const hit = target?.seen && target.z - odo < RANGE ? target : null;
   tracers.push([null, hit, performance.now()]);
-  if (hit) hurtCar(hit, GUN * lvl('guns'));
+  if (hit) hurtCar(hit, GUN * (lvl('guns') + blocks('gun'))); // the guns on the board too (fortress.js)
 }
 
 // you hit car c (impact from car.js): a hit, HIT off its health. The owner's numbers (14 Oct): traffic goes down in 3,
@@ -124,7 +124,8 @@ function ram(i) {
   if (!c || c.wreck || c.fleet || i.headOn || !i.side && i.kmh < NUDGE) return;
   if (i.kmh > OHKO && !notable(c)) return total(c, false, 'OHKO!');
   if (c.cut > 0) return total(c, false, 'HAD IT COMING!'); // Fuel madness: it cut in on you, it's totaled (road.js c.cut)
-  hurtCar(c, HIT * (1 + 2 / 3 * lvl('bullbar') + (i.side && spikes ? 1 : 0)) * (notable(c) ? 0.2 : 1));
+  // the war rig's spiked parts (fortress.js) a third of a hit a block, as a bull bar's level is two thirds
+  hurtCar(c, HIT * (1 + 2 / 3 * lvl('bullbar') + (i.side && spikes ? 1 : 0) + blocks('spikes') / 3) * (notable(c) ? 0.2 : 1));
 }
 function hurtCar(c, hp, gang) {
   c.hp = (c.hp ?? health(c)) - hp;
@@ -137,6 +138,7 @@ function total(c, gang, how) { // the scrap is yours, whoever did it; the heat t
   const scrap = c.rig ? RIG.scrap : c.suv ? SUV.scrap : (c.racer ? SCRAP.racer : SCRAP.car) * (mad(c) ? 2 : 1), shells = gangShells(c);
   raiseHeat(gang ? WANTED.gang : c.police ? WANTED.police : c.racer || c.rig ? WANTED.racer : WANTED.car);
   Object.assign(c, { wreck: true, hp: 0 });
+  dropLoot(c); // fortress.js: a part, maybe
   if (c === target) target = nextTarget(); // the reticle moves on at once: for a frame Hunter had nothing to hunt, and
   if (c === quarry) quarry = nextQuarry(); // autocruise steered away from the car it would hunt next
   progress.totals++;
