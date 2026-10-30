@@ -54,6 +54,9 @@ the revs cut at fixed points, each piece resampled to a constant pitch and loope
 - **Truck diesel:** the revs are a Mack semi pulling away in first gear; the idle is a Ford LTL 9000's.
 - **Tank:** the revs are a tank reversing on sand, track creak and all; the idle is a Leopard 2A4's.
 - **Gas turbine:** cut from the turbine spooling up, with no idle loop of its own.
+- **Loudness:** the truck's and the tank's loops are high-pass filtered at 120 Hz, and all three engines' loops are
+  evened out by loudness as heard (A-weighted) rather than by energy: the tank's revs, almost all deep bass, came out
+  too quiet to hear otherwise.
 
 ## Cars
 

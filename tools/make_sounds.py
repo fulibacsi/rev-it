@@ -72,14 +72,17 @@ ENGINES = {
     # Their rpms are a scale of their own, from that line: the truck an inline 6 (its idle line, 3 a turn, at 650 rpm),
     # the tank's V12 idling at 670, the turbine's in Hz of its whine. A truck diesel: a Mack semi pulling away in 1st,
     # the idle a Ford LTL 9000's (the Mack's own is 3 s)
+    # Their revs are mostly bass under 120 Hz, which a phone can't play (the tank's 89-98%): evened out by energy, the
+    # tank's revs came out 10 dB quieter than its idle and vanished (the owner, 30 Oct). So the bass is cut (highpass)
+    # and every loop evened out by loudness as heard (A-weighted: heard)
     "truck": {"idle": ("ltl", 40.0, 4.5, 608), "sweep": ("mack", 3.1, 5.8), "line": ((38, 110), 42.5, 20, 0.25),
-              "loops": [900, 1150, 1400, 1650, 1900]},
+              "loops": [900, 1150, 1400, 1650, 1900], "highpass": 120, "heard": True},
     # a tank's V12 diesel: a Leopard 2A4 idling, and a tank reversing on sand (tracks creaking)
     "tank": {"idle": ("leopard", 20.0, 4.5, 670), "sweep": ("sand", 41.0, 45.5), "line": ((40, 90), 45.8, 15, 0.4),
-             "loops": [760, 880, 1000, 1120]},
+             "loops": [760, 880, 1000, 1120], "highpass": 120, "heard": True},
     # the M1A1's gas turbine spooling up to speed: its whine rises steadily for 8 s, then wanders, so no idle loop
     "turbine": {"sweep": ("abrams", 3.0, 11.0), "line": ((2800, 6800), 3276, 1, 0.4),
-                "loops": [3500, 4100, 4700, 5300, 5900, 6300]},
+                "loops": [3500, 4100, 4700, 5300, 5900, 6300], "heard": True},
 }
 RIG = {"truck", "tank", "turbine"}  # written to RIG_OUT
 LOOP_SECONDS, SEAM_SECONDS = 0.8, 0.1
@@ -160,8 +163,19 @@ def unwav(b64):
     return sf.read(io.BytesIO(base64.b64decode(b64)))[0]
 
 
-def wav_b64(x):
-    x = x / np.sqrt(np.mean(x ** 2)) * 10 ** (-18 / 20)  # -18 dBFS RMS
+def a_weighted(x):
+    """A-weighting (IEC 61672): roughly how loud a sound is heard, the deep bass counting for little."""
+    f1, f2, f3, f4 = 20.6, 107.7, 737.9, 12194.0
+    p = [-2 * np.pi * f for f in (f1, f1, f2, f3, f4, f4)]
+    sos = signal.zpk2sos(*signal.bilinear_zpk([0] * 4, p, (2 * np.pi * f4) ** 2 * 10 ** (1.9997 / 20), SR))
+    return signal.sosfilt(sos, np.tile(x, 2))[len(x):]  # a loop's second time round: no start-up transient
+
+
+def wav_b64(x, heard=False):
+    if heard:  # -24 dB A-weighted: the heavy engines' loops all sound as loud, and none clips
+        x = x / np.sqrt(np.mean(a_weighted(x) ** 2)) * 10 ** (-24 / 20)
+    else:
+        x = x / np.sqrt(np.mean(x ** 2)) * 10 ** (-18 / 20)  # -18 dBFS RMS
     buf = io.BytesIO()
     sf.write(buf, np.clip(x, -1, 1), SR, format="WAV", subtype="PCM_16")
     return base64.b64encode(buf.getvalue()).decode()
@@ -197,6 +211,11 @@ def main(folder=None):
         if "lowpass" in cfg:
             sos = signal.butter(4, cfg["lowpass"], "lowpass", fs=SR, output="sos")
             loops = [[rpm, wav_b64(loop_filter(sos, unwav(b64)))] for rpm, b64 in loops]
+        if "highpass" in cfg:
+            sos = signal.butter(4, cfg["highpass"], "highpass", fs=SR, output="sos")
+            loops = [[rpm, wav_b64(loop_filter(sos, unwav(b64)))] for rpm, b64 in loops]
+        if cfg.get("heard"):
+            loops = [[rpm, wav_b64(unwav(b64), heard=True)] for rpm, b64 in loops]
         out[name] = loops
     src, start, length, period = STARTER
     out["starter"] = wav_b64(make_loop(audio[src][int(start * SR):int((start + length) * SR)], period))
