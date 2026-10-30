@@ -272,8 +272,9 @@ TUTORIALS.push( // the war rig's, once rebuilt (the owner's: the controls change
   { id: 'rivals', name: 'The rival gang', open: () => rigged() && progress.toured.includes('rivals'), pages: [
     { title: 'A RIVAL RIG', at: '#ar',
       both: "The rival gang's war rig. Only rigs and tanks are in the reticle now: the cannon and the guns are for " +
-        'them. Above it: its health, the shells it would take, how far. It holds the road ahead of you, then drops ' +
-        'back and rams you from the side.' },
+        'them. It holds the road ahead of you, then drops back and rams you from the side.' },
+    { title: 'ITS TAG', at: '#ar',
+      both: 'Over the reticle: what it is, its health, the shells it would take, how far.' },
     { title: 'THE RIVAL GANG',
       both: 'The racers you never paid off are a gang now. They come past you, cut in and stamp on the brakes. Your ' +
         'raiders go after them, and the rest of the traffic: Hunter too.' },
