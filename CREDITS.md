@@ -1,7 +1,8 @@
 # Credits
 
 The code is released under the MIT license (see [LICENSE](LICENSE)). The engine sounds, the cars and the music are not
-covered by it: `assets/sounds.js` holds audio derived from the recordings below, and each keeps its own license;
+covered by it: `assets/sounds.js` and `assets/rig-sounds.js` hold audio derived from the recordings below, and each
+keeps its own license;
 `assets/cars.js` holds pixel art from the car pack below, under its own terms; `assets/music` holds the car stereo's
 tapes, each under its own license or terms (below).
 
@@ -31,6 +32,28 @@ All six recordings come from [Freesound](https://freesound.org).
 - **Filtering:**
   - The Turbo I6 loops are low-pass filtered at 5.5 kHz to tame the turbo whine.
   - The Boxer's idle is high-pass filtered at 120 Hz so small speakers can play it.
+
+### The war rig's engines
+
+Five more recordings from [Freesound](https://freesound.org), in `assets/rig-sounds.js`: the heavy engines act 5's war
+rig will carry as parts (the game doesn't play them yet).
+
+| Recording | Author | License | Used for |
+|---|---|---|---|
+| [truck mack transport semi trailer idle at red light and pull away slow long diesel rev](https://freesound.org/s/451935/) | [kyles](https://freesound.org/people/kyles/) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | Truck diesel, revving |
+| [FORD LTL 9000_engine start and idle](https://freesound.org/s/435656/) | [YellowJacketStudios](https://freesound.org/people/YellowJacketStudios/) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | Truck diesel, idle |
+| [WAR-TANK, LEOPARD-ENGINE STAND BY-Leopard 2A4 48000 cc diesel engine close by-0003](https://freesound.org/s/161897/) | [JoniHeinonen](https://freesound.org/people/JoniHeinonen/) | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) | Tank V12 diesel, idle |
+| [Panssarivaunu ohi / Tank passing by and reversing back on sand, tracks creaking](https://freesound.org/s/386590/) | [YleArkisto](https://freesound.org/people/YleArkisto/) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | Tank V12 diesel, revving |
+| [Start-up Sound - U.S. Army M1A1 Tank - Gas Turbine Engine](https://freesound.org/s/542582/) | [adr1911](https://freesound.org/people/adr1911/) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | Gas turbine |
+
+**Changes made,** by the same tool and in the same way as above (mono, 24 kHz, the same loudness; idles cut and looped;
+the revs cut at fixed points, each piece resampled to a constant pitch and looped), with these differences:
+
+- **Pitch:** these engines turn too slowly for the rpm tracker, so one strong harmonic is followed through each rev
+  instead.
+- **Truck diesel:** the revs are a Mack semi pulling away in first gear; the idle is a Ford LTL 9000's.
+- **Tank:** the revs are a tank reversing on sand, track creak and all; the idle is a Leopard 2A4's.
+- **Gas turbine:** cut from the turbine spooling up, with no idle loop of its own.
 
 ## Cars
 

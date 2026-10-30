@@ -1127,12 +1127,25 @@ it takes another lane. It starts at 1×1, a single car's size, and grows longer 
   or shot off, its voice goes. A preview mixed offline from the game's own loops, the I6 with the V8 on top, went to
   the owner (30 Oct).
 - Two or three new recordings of robust engines (the owner), found as the first ones were: Freesound, CC0 or CC BY,
-  cut into loops by `tools/make_sounds.py`, credited in `CREDITS.md` and the credits screen. The V8 the game has is
-  one to use (the owner). Claude's picks to look for: a truck diesel (the rival rig's) and a tank's engine (a big
-  diesel, or a gas turbine, whose whine could also be made in code). Each engine adds about 300 kB to
-  `assets/sounds.js` (1.45 MB now). Diesels turn 600–2,500 rpm, under the pitch tracker's range (2,800–8,600), so
-  each recording gets a range of its own. On 30 Oct the cloud session couldn't reach Freesound (its network settings):
-  the search waits for `freesound.org` and `cdn.freesound.org` to be allowed.
+  cut into loops by `tools/make_sounds.py`, credited in `CREDITS.md`. The V8 the game has is one to use (the owner).
+  Freesound turns away the cloud sessions (403 from its own servers, even with the hosts allowed: 30 Oct), so the
+  owner's local session collected six candidates and the six recordings already used, with a manifest of their
+  windows; `make_sounds.py` now rebuilds from such a folder (the old loops come out within one bit of 16-bit audio).
+  Built 30 Oct, three, in `assets/rig-sounds.js` (1.29 MB: not loaded until the engine parts need it, so the page
+  weighs what it did):
+  - a truck diesel (the rival rig's): a Mack semi pulling away (CC0; a clean rise of 2.27×, in 2.7 s) and a Ford LTL
+    9000's idle (CC0);
+  - a tank's V12 diesel: a Leopard 2A4 idling (CC BY 3.0, very steady) and a tank reversing on sand (CC BY 4.0, 1.68×,
+    track creak and all);
+  - a gas turbine: an M1A1 Abrams spooling up (CC0, 1.95× over 8 s; no idle of its own: its whine wanders after).
+
+  Turned down: a farm tractor's diesel (clean ramps, but a tractor), two Merlin V12s (a P-51 taking off, its pitch
+  bent by the plane coming past; a Merlin on a stand, its idle lumpy, 15%). They turn too slowly for the rpm tracker
+  (2,800–8,600, and its 0.3 s window), so one strong harmonic is followed through each rev instead; each loop's pitch
+  holds within about 1% (the truck's idle 2.4%), and no seam jumps more than the loop does. Their rpm are a scale of
+  their own (the truck's from an inline six's idle at 650, the tank's V12 idling at 670, the turbine's in Hz of its
+  whine), mapped onto the rig's when they play. Previews went to the owner: each alone, then under the Turbo I6. The
+  credits screen lists them once the game plays them.
 
 **Drop tables** (the owner, 30 Oct: "Each enemy should have a drop table"; the examples "just random ideas, we can
 explore them further"):
@@ -1171,7 +1184,7 @@ following. Then the WARLORD screen. The act takes 10–15 races (the owner), so 
 hours.
 
 **Still open:** how places are counted (layer 5, below: Claude's reading built, the other waiting on the owner); the
-drop tables and the parts (above: a first draft); which engine recordings; the wheel at two lanes and more; what each source drops and does; the bridge or the cab (to try); the placing gesture (on
+drop tables and the parts (above: a first draft); the wheel at two lanes and more; what each source drops and does; the bridge or the cab (to try); the placing gesture (on
 a phone); where the rest of the points go; the foreshadowing; the final fight's form; whether placing is automated;
 what comes after the ending (playing on, or a new game plus).
 

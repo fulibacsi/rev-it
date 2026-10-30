@@ -2,9 +2,13 @@
 # requires-python = ">=3.10"
 # dependencies = ["numpy", "scipy", "soundfile"]
 # ///
-"""Builds assets/sounds.js: seamless constant-RPM engine loops cut from Freesound recordings.
+"""Builds assets/sounds.js: seamless constant-RPM engine loops cut from Freesound recordings; and assets/rig-sounds.js,
+the heavy engines Distance's war rig can carry (act 5: loaded only once it needs them).
 
-    uv run tools/make_sounds.py
+    uv run tools/make_sounds.py [folder]
+
+folder: local copies of the previews, each named <anything>_<freesound id>.mp3, for a machine Freesound won't serve (it
+turns away the cloud sessions: 30 Oct). Without it they are downloaded.
 
 Dyno sweeps are pitch-tracked, cut at target RPMs, resampled so the pitch inside each
 loop is constant, and looped on whole engine cycles. Idle loops come from idle recordings.
@@ -12,6 +16,7 @@ loop is constant, and looped on whole engine cycles. Idle loops come from idle r
 import base64
 import io
 import json
+import sys
 import urllib.request
 from pathlib import Path
 
@@ -20,6 +25,7 @@ import soundfile as sf
 from scipy import signal
 
 OUT = Path(__file__).resolve().parent.parent / "assets" / "sounds.js"  # next to the page that loads it
+RIG_OUT = OUT.with_name("rig-sounds.js")
 
 SR = 24000  # output sample rate
 SOURCES = {  # key: (preview url, credit)
@@ -35,6 +41,20 @@ SOURCES = {  # key: (preview url, credit)
                 "subaru impreza start up-idle-launch limiter by t33kno (CC0) freesound.org/s/369797"),
     "justy": ("https://cdn.freesound.org/previews/643/643126_3655844-hq.mp3",
               "Car Engine Start, Rev, Idle, Switch Off by iainmccurdy (CC BY 4.0) freesound.org/s/643126"),
+    # the war rig's heavy engines (30 Oct; found by the owner's local session, its manifest's windows checked here)
+    "mack": ("https://cdn.freesound.org/previews/451/451935_612689-hq.mp3",
+             "truck mack transport semi trailer idle at red light and pull away slow long diesel rev by kyles (CC0) "
+             "freesound.org/s/451935"),
+    "ltl": ("https://cdn.freesound.org/previews/435/435656_2347916-hq.mp3",
+            "FORD LTL 9000_engine start and idle by YellowJacketStudios (CC0) freesound.org/s/435656"),
+    "leopard": ("https://cdn.freesound.org/previews/161/161897_2826383-hq.mp3",
+                "WAR-TANK, LEOPARD-ENGINE STAND BY-Leopard 2A4 48000 cc diesel engine close by-0003 by JoniHeinonen "
+                "(CC BY 3.0) freesound.org/s/161897"),
+    "sand": ("https://cdn.freesound.org/previews/386/386590_4415905-hq.mp3",
+             "Panssarivaunu ohi / Tank passing by and reversing back on sand, tracks creaking by YleArkisto (CC BY 4.0) "
+             "freesound.org/s/386590"),
+    "abrams": ("https://cdn.freesound.org/previews/542/542582_10366986-hq.mp3",
+               "Start-up Sound - U.S. Army M1A1 Tank - Gas Turbine Engine by adr1911 (CC0) freesound.org/s/542582"),
 }
 # starter motor cranking, shared by all engines: (source, start s, length s, chug period s from envelope autocorrelation)
 STARTER = ("justy", 2.08, 1.2, 0.243)
@@ -47,13 +67,31 @@ ENGINES = {
     # this idle is almost all sub-bass, which laptop speakers can't play: cut it before normalizing
     "boxer": {"idle": ("impreza", 6.5, 4.5, 855), "idle_highpass": 120, "sweep": ("frs", 8.4, 22.9),
               "loops": [3300, 4200, 5100, 6000, 6800, 7300]},
+    # the war rig's (RIG_OUT). They turn too slowly for track_rpm (its range, and a 0.3 s window can't resolve their
+    # harmonics), so one strong harmonic line is followed instead: line (band Hz, start Hz, rpm per Hz, window s).
+    # Their rpms are a scale of their own, from that line: the truck an inline 6 (its idle line, 3 a turn, at 650 rpm),
+    # the tank's V12 idling at 670, the turbine's in Hz of its whine. A truck diesel: a Mack semi pulling away in 1st,
+    # the idle a Ford LTL 9000's (the Mack's own is 3 s)
+    "truck": {"idle": ("ltl", 40.0, 4.5, 608), "sweep": ("mack", 3.1, 5.8), "line": ((38, 110), 42.5, 20, 0.25),
+              "loops": [900, 1150, 1400, 1650, 1900]},
+    # a tank's V12 diesel: a Leopard 2A4 idling, and a tank reversing on sand (tracks creaking)
+    "tank": {"idle": ("leopard", 20.0, 4.5, 670), "sweep": ("sand", 41.0, 45.5), "line": ((40, 90), 45.8, 15, 0.4),
+             "loops": [760, 880, 1000, 1120]},
+    # the M1A1's gas turbine spooling up to speed: its whine rises steadily for 8 s, then wanders, so no idle loop
+    "turbine": {"sweep": ("abrams", 3.0, 11.0), "line": ((2800, 6800), 3276, 1, 0.4),
+                "loops": [3500, 4100, 4700, 5300, 5900, 6300]},
 }
+RIG = {"truck", "tank", "turbine"}  # written to RIG_OUT
 LOOP_SECONDS, SEAM_SECONDS = 0.8, 0.1
 
 
-def load(key):
-    with urllib.request.urlopen(SOURCES[key][0]) as r:
-        x, sr = sf.read(io.BytesIO(r.read()), always_2d=True)
+def load(key, folder=None):
+    if folder:
+        data = next(Path(folder).glob(f"*_{SOURCES[key][0].rsplit('/', 1)[1].split('_')[0]}.mp3")).read_bytes()
+    else:
+        with urllib.request.urlopen(SOURCES[key][0]) as r:
+            data = r.read()
+    x, sr = sf.read(io.BytesIO(data), always_2d=True)
     x = signal.resample_poly(x.mean(axis=1), SR, sr)
     return signal.sosfiltfilt(signal.butter(2, 25, "highpass", fs=SR, output="sos"), x)
 
@@ -81,6 +119,18 @@ def track_rpm(x, rpm_min=2800, rpm_max=8600, win=0.3, hop=0.025, fmax=1200):
     for j in range(score.shape[1] - 1, 0, -1):
         idx.append(back[idx[-1], j])
     return t, H[idx[::-1]] * 120
+
+
+def follow_line(x, band, start, win, hop=0.02, step=0.04):
+    """One harmonic line's Hz over time: from `start`, the strongest peak within `step` of the last, inside `band`."""
+    f, t, Z = signal.stft(x, SR, nperseg=int(win * SR), noverlap=int((win - hop) * SR), nfft=1 << 16)
+    A, (lo, hi), cur, out = np.abs(Z), np.searchsorted(f, band), start, []
+    for j in range(A.shape[1]):
+        a, b = np.searchsorted(f, [cur * (1 - step), cur * (1 + step)])
+        a, b = max(a, lo), min(max(b, a + 1), hi)
+        cur = f[a + np.argmax(A[a:b, j])]
+        out.append(cur)
+    return t, signal.medfilt(np.array(out), 5)
 
 
 def make_loop(x, period):
@@ -117,8 +167,8 @@ def wav_b64(x):
     return base64.b64encode(buf.getvalue()).decode()
 
 
-def main():
-    audio = {k: load(k) for k in SOURCES}
+def main(folder=None):
+    audio = {k: load(k, folder) for k in SOURCES}
     out = {}
     for name, cfg in ENGINES.items():
         loops = []
@@ -130,7 +180,12 @@ def main():
             loops.append([rpm, wav_b64(make_loop(seg, 120 / rpm))])  # engine cycle = 2 crank turns
         src, a, b = cfg["sweep"]
         sweep = audio[src][int(a * SR):int(b * SR)]
-        t, rpm = track_rpm(sweep)
+        if "line" in cfg:
+            band, start, per_hz, win = cfg["line"]
+            t, line = follow_line(sweep, band, start, win)
+            rpm = line * per_hz
+        else:
+            t, rpm = track_rpm(sweep)
         size = int((LOOP_SECONDS + SEAM_SECONDS) * SR)
         for target in cfg["loops"]:
             mid = t[np.argmin(np.abs(rpm - target))]
@@ -145,12 +200,16 @@ def main():
         out[name] = loops
     src, start, length, period = STARTER
     out["starter"] = wav_b64(make_loop(audio[src][int(start * SR):int((start + length) * SR)], period))
-    credits = "\n".join(f"//   {c}" for _, c in SOURCES.values())
-    with open(OUT, "w") as fh:
-        fh.write(f"// Generated by tools/make_sounds.py. Engine loops as [rpm, base64 WAV]. Sources (Freesound):\n{credits}\n")
-        fh.write(f"const SOUNDS = {json.dumps(out)};\n")
-    print(f"wrote {OUT}")
+    rig = {name: out.pop(name) for name in ENGINES if name in RIG}  # in ENGINES order, so a rebuild writes the same file
+    used = lambda names: {k for n in names for k in (ENGINES[n].get("idle", [None])[0], ENGINES[n]["sweep"][0])}
+    for path, const, sounds, keys in [(OUT, "SOUNDS", out, used(set(ENGINES) - RIG) | {STARTER[0]}),
+                                      (RIG_OUT, "RIG_SOUNDS", rig, used(RIG))]:
+        credits = "\n".join(f"//   {c}" for k, (_, c) in SOURCES.items() if k in keys)
+        with open(path, "w") as fh:
+            fh.write(f"// Generated by tools/make_sounds.py. Engine loops as [rpm, base64 WAV]. Sources (Freesound):\n{credits}\n")
+            fh.write(f"const {const} = {json.dumps(sounds)};\n")
+        print(f"wrote {path}")
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1] if len(sys.argv) > 1 else None)
