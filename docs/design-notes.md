@@ -1322,7 +1322,7 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - The parts at work, by blocks (size is strength), until layer 7 gives them their own health: a cannon block adds
      250 to every shell (one shell a press, the tank's cannon one block); a gun block adds a level's damage to every
      shot of the guns; an armor block takes 5% off every hit to the rig, on top of Armor plating's 25% a level (90% at
-     most); a spike block adds a third of a hit to every ram; an engine block pulls 6% more (a rival car's), 10% (an
+     most; layer 7 ended it, armor being the shield); a spike block adds a third of a hit to every ram; an engine block pulls 6% more (a rival car's), 10% (an
      SUV's), 15% (a rig's) or 25% (the tank's). Every block weighs (a cannon 900 kg, armor 500, an engine 700, spikes
      300, a gun 250), and so does every cell of deck (250 kg), the hold's parts too; each row past the first adds 10%
      drag. Placing a part or throwing one off applies it at once.
@@ -1378,7 +1378,46 @@ race, the loot lost to a full inventory, and the parts lost a race.
        cover an oncoming one); 4-50% damage a race (40-80% a lane wide: the gang can no longer pass to brake-check);
        P1 every race (no lane for the gang to come past in); the scrap spent to under 1,400.
      - `widen_test` checks it on both layouts.
-7. Damage by where it comes from, parts falling off, hits on empty cells reaching the rig.
+7. Damage by where it comes from, parts falling off, hits on empty cells reaching the rig; and the helicopters, layer
+   5's third PR, with it (a helicopter's job is strafing a lane of the fortress). In two PRs: the shield first (built 31
+   Oct), then the helicopters.
+   - Where a hit lands (Claude's): on the board's cell facing where it comes from, ahead up as on the sonar. It came in
+     through the face it overlaps the rig least on, as a collision does (`fortress.js` cellAt): across, from beside
+     you, on that side's column, a row at random (a rival rig's ram, a car cutting in as it touches); along, on the
+     front row for what is ahead (a car run into, the tank's shells, a head-on rammed through or not) or the back row
+     for what is behind, in the column across from it (one beyond the rig's lanes on the nearest). A lane wide and a
+     car long, the one cell takes it all. First built on "its rear ahead of your eye", which put a car cutting in
+     beside you, its rear a little behind your eye, on the back row: the overlap tells them apart.
+   - A part there takes the whole hit; an empty cell lets it through to the rig, today's damage, up to wrecked and a
+     DNF. Both less Armor plating's quarter a level, so a part's health counts in the rig's own damage. The engine's
+     heat (the ECU's, nitro's) is the rig's own. The cell flashes amber on a part, red through to the rig. The hold's
+     parts aren't hit.
+   - A part's health is its blocks' (the owner: "growing with its size"), a block's by what it is: the tank's cannon,
+     a turret, 100; armor 20; spikes 15; an engine 10; a gun 8. Claude's numbers from `act5.py`: on the first board,
+     a single cell, the cannon takes every hit of the first race (7-8, 30-40 health), and at 40 a block it was lost in
+     the second race on both seeds; the rest are expendable, armor the most of them. Armor blocks no longer take 5% off
+     every hit: armor is the shield now.
+   - Worn, a part shows cracked: a crack under two thirds of its health, more under a third. Its wear is kept from race
+     to race and in the save (`progress.fortress.parts[].hp`; a part never hit has none, and is whole); repairs mend the
+     rig only (the owner). With no health left the whole part falls off, gone for good (ARMOR 2 LOST): it blinks on the
+     board for a second, a hole its shape left, and what it did goes with it (its weight, pull, voice, strength).
+   - The board grows as the rig does (Claude's): Lengthen's row at its front, the bow, and Widen's lane on its left (the
+     rig widens over the double yellow), the parts on it moving back and right. Built at the back and the right, it
+     kept the tank's cannon, mounted on the single first cell, on the front row for good, where the hits come.
+   - The tutorial The shield (where a hit lands; worn out) pops up at the first hit on a part.
+   - Where the hits come from, counted over act5.py's first four races (seed 1): mostly from behind, cars rear-ending
+     the rig as it changes lanes in their way (the rival gang's cars catching up 108 km/h quicker, police cars and
+     SUVs 72 km/h, rival rigs 54 km/h); then from ahead (a car run into, the tank's shells); from beside rarely. So the
+     back row is no safer than the front: the middle rows are.
+   - `act5.py` (seeds 1 and 2, 12 races; the bot now puts armor and spikes on the end rows first and the rest on the
+     middle rows first, as a player who knows the shield would, and buys before it mounts, so a new row or lane is
+     filled at once): the first race, on the single cell, puts all its 7-8 hits on the tank's cannon (31-38 of its 100);
+     it lasts 4 races (seed 1; on seed 2 the next tank's cannon joins it in race 4); 0-14 hits on parts a race and 0-16
+     through to the rig, 0-44% damage a race (4-50% in layer 6 widened, 40-80% a lane wide); 0-2 parts lost a race (9
+     and 4 in the 12 races), the board's parts at 25-100% of their health after a race; P1 or P2 every race. The loot
+     still outruns the losses (1-4 parts dropped a race, the hold often full and crates left on the road): the
+     helicopters, strafing a lane, are next.
+   - `shield_test` checks it on both layouts.
 8. Four lanes: the Grinder, mines and the mine roller.
 9. The act's automation.
 10. The foreshadowing, the final fight and the ending.
