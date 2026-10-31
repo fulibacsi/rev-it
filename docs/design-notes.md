@@ -1395,15 +1395,19 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - A part's health is its blocks' (the owner: "growing with its size"), a block's by what it is: the tank's cannon,
      a turret, 100; armor 20; spikes 15; an engine 10; a gun 8. Claude's numbers from `act5.py`: on the first board,
      a single cell, the cannon takes every hit of the first race (7-8, 30-40 health), and at 40 a block it was lost in
-     the second race on both seeds; the rest are expendable, armor the most of them. Armor blocks no longer take 5% off
+     the second race on both seeds (the board growing at the front then); the rest are expendable, armor the most of them. Armor blocks no longer take 5% off
      every hit: armor is the shield now.
    - Worn, a part shows cracked: a crack under two thirds of its health, more under a third. Its wear is kept from race
      to race and in the save (`progress.fortress.parts[].hp`; a part never hit has none, and is whole); repairs mend the
      rig only (the owner). With no health left the whole part falls off, gone for good (ARMOR 2 LOST): it blinks on the
      board for a second, a hole its shape left, and what it did goes with it (its weight, pull, voice, strength).
-   - The board grows as the rig does (Claude's): Lengthen's row at its front, the bow, and Widen's lane on its left (the
-     rig widens over the double yellow), the parts on it moving back and right. Built at the back and the right, it
-     kept the tank's cannon, mounted on the single first cell, on the front row for good, where the hits come.
+   - The board grows backward and to the right (the owner, 31 Oct: "My basic instinct is backwards and right"):
+     Lengthen's row behind, Widen's column on the board's right, nothing mounted moving when you buy. Built first the
+     other way for a day (Claude's: a bow growing at the front, so that the tank's cannon, mounted on the single first
+     cell, didn't stay on the front row), on the first simulations' count of the hits, which put most on the front
+     row. With the rule above corrected most come from behind (below), and what kept the cannon was its health, not
+     the direction. On the road the rig widens to the left, over the double yellow, so the board's first column ends
+     up over the leftmost lane: three lanes wide, an oncoming lane, where the head-ons rammed through land.
    - The tutorial The shield (where a hit lands; worn out) pops up at the first hit on a part.
    - Where the hits come from, counted over act5.py's first four races (seed 1): mostly from behind, cars rear-ending
      the rig as it changes lanes in their way (the rival gang's cars catching up 108 km/h quicker, police cars and
@@ -1411,11 +1415,12 @@ race, the loot lost to a full inventory, and the parts lost a race.
      back row is no safer than the front: the middle rows are.
    - `act5.py` (seeds 1 and 2, 12 races; the bot now puts armor and spikes on the end rows first and the rest on the
      middle rows first, as a player who knows the shield would, and buys before it mounts, so a new row or lane is
-     filled at once): the first race, on the single cell, puts all its 7-8 hits on the tank's cannon (31-38 of its 100);
-     it lasts 4 races (seed 1; on seed 2 the next tank's cannon joins it in race 4); 0-14 hits on parts a race and 0-16
-     through to the rig, 0-44% damage a race (4-50% in layer 6 widened, 40-80% a lane wide); 0-2 parts lost a race (9
-     and 4 in the 12 races), the board's parts at 25-100% of their health after a race; P1 or P2 every race. The loot
-     still outruns the losses (1-4 parts dropped a race, the hold often full and crates left on the road): the
+     filled at once): the first race, on the single cell, puts all its 7-8 hits on the tank's cannon (31-38 of its
+     100); with the board growing backward it stays on the front row and lasts 8 races (seed 1) and 11 (seed 2, the
+     next tank's cannon beside it from race 7), where growing at the front it lasted 4; 0-17 hits on parts a race and
+     0-15 through to the rig, 0-53% damage a race (4-50% in layer 6 widened, 40-80% a lane wide); 0-2 parts lost a race
+     (5 and 4 in the 12 races), the board's parts at 33-100% of their health after a race; P1 or P2 every race. The loot
+     still outruns the losses (1-5 parts dropped a race, the hold often full and crates left on the road): the
      helicopters, strafing a lane, are next.
    - `shield_test` checks it on both layouts.
 8. Four lanes: the Grinder, mines and the mine roller.

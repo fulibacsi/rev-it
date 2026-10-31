@@ -17,15 +17,16 @@ Object.assign(UPGRADES, {
                `cannon for its board, ${SHELLS.tank} shells and a firing pedal` },
   // the board longer, a row a level (the owner: the grid grows longer and wider; wider comes with the rig taking more
   // lanes), and the hold's slots (the owner: one, upgraded to three). Prices Claude's first guesses, for act5.py: about
-  // 1,000-1,300 scrap and 400 points come in a race. The new row is the bow (growBoard)
-  lengthen: { name: 'Lengthen', tab: 'fortress', max: 4, base: 400, growth: 2, needs: ['rebuild'], bought: () => growBoard(0, 1),
-              info: l => `the fortress ${1 + l} car${l ? 's' : ''} long: room for ${1 + l} row${l ? 's' : ''} of parts, the ` +
-                'new one in front, and every row weighs and drags' },
+  // 1,000-1,300 scrap and 400 points come in a race. It grows backward and to the right (the owner, 31 Oct: "my basic
+  // instinct is backwards and right"), nothing mounted moving
+  lengthen: { name: 'Lengthen', tab: 'fortress', max: 4, base: 400, growth: 2, needs: ['rebuild'],
+              info: l => `the fortress ${1 + l} car${l ? 's' : ''} long: room for ${1 + l} row${l ? 's' : ''} of parts, and ` +
+                'every row weighs and drags' },
   inventory: { name: 'Inventory', tab: 'fortress', max: 2, base: 600, growth: 2, wallet: 'points', needs: ['rebuild'],
                info: l => `${1 + l} slot${l ? 's' : ''} in the hold for the parts you pick up` },
   // the board a lane wider a level, to the road's four (the owner: its width is lanes), and the rig with it: from two
   // lanes wide a truck's wheel shifts it a lane at a time, the robot brakes for no one, and it rams (the owner, 30 Oct)
-  widen: { name: 'Widen', tab: 'fortress', max: 3, base: 800, growth: 2.5, needs: ['rebuild'], bought: () => growBoard(1, 0),
+  widen: { name: 'Widen', tab: 'fortress', max: 3, base: 800, growth: 2.5, needs: ['rebuild'],
            info: l => l ? `the fortress ${1 + l} lanes wide: a truck's wheel shifts it a lane at a time, it brakes for no ` +
              'one and rams, head-on too; every lane drags' : 'a lane wide' },
 });
@@ -37,10 +38,6 @@ const rigDrives = id => rigged() && RIG_AIDS.includes(id);
 const ONE = [[0, 0]]; // a part's cells, across (lanes) and along (ahead up): a single block
 const holdSize = () => 1 + lvl('inventory'); // the hold's slots (the owner: one, upgraded to three)
 const boardW = () => 1 + lvl('widen'), boardH = () => 1 + lvl('lengthen'); // lanes, car lengths
-// the board grows as the rig does (Claude's): a row at its front, the bow, and a lane on its left (on the road the rig
-// widens over the double yellow), the parts on it moving back and right with the old deck. So the tank's cannon,
-// mounted on the first single cell, doesn't stay on the front row, where the hits come (the shield, below)
-const growBoard = (dx, dy) => { for (const p of progress.fortress.parts) { p.x += dx; p.y += dy; } };
 
 // ---- the board: the fortress's plan, progress.fortress ({ parts placed, hold }) ----
 const ICONS = { // a part from above, ahead up, on its first block: the tank's turret and its gun; twin guns; a riveted

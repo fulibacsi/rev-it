@@ -43,8 +43,8 @@ with sync_playwright() as p:
         got = js("[...document.querySelectorAll('#cards .card')].map(c => c.querySelector('b').textContent)")
         check(f"{layout}: the Fortress page: Rebuild, Lengthen, Inventory", all(n in got for n in ["Rebuild", "Lengthen", "Inventory"]), got)
         got = js("[boardH(), holdSize(), buy('lengthen'), buy('inventory'), boardH(), holdSize(), progress.scrap, progress.points, progress.fortress.parts[0].y, refreshCar()].slice(0, 9)")
-        check(f"{layout}: Lengthen a row for 400 scrap, in front (the cannon a row back); Inventory a slot for 600 points",
-              got == [1, 1, True, True, 2, 2, 4600, 4400, 1], got)
+        check(f"{layout}: Lengthen a row for 400 scrap, behind (the cannon stays in front); Inventory a slot for 600 points",
+              got == [1, 1, True, True, 2, 2, 4600, 4400, 0], got)
         pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=20000)
         js(CLEAR); pg.wait_for_timeout(200)
 
@@ -73,7 +73,7 @@ with sync_playwright() as p:
         check(f"{layout}: the hold full: the crate stays on the road, said so; passed, gone", got[:2] == [1, 2] and "HOLD FULL" in got[2] and got[3] == 0, got)
 
         # 4. on the board: a part as it comes, never turned; the parts at work
-        js("progress.fortress.hold = []; progress.fortress.parts[0].y = 0; progress.levels.lengthen = 2; applyUpgrades()")  # three rows: the cannon in the first
+        js("progress.fortress.hold = []; progress.levels.lengthen = 2; applyUpgrades()")  # three rows: the cannon in the first
         got = js("""(() => { const f = progress.fortress, two = [[0, 0], [0, 1]], three = [[0, 0], [0, 1], [0, 2]];
             return [boardH(), fitsAt(f, two, 0, 1), fitsAt(f, two, 0, 2), fitsAt(f, three, 0, 0), fitsAt(f, [[0, 0], [1, 0]], 0, 1)]; })()""")
         check(f"{layout}: three rows: two stacked fit behind the cannon, not past the end, nor over it; two side by side don't on a lane",

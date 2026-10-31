@@ -41,8 +41,8 @@ with sync_playwright() as p:
         js("garageTab = 'fortress'; renderGarage()"); pg.wait_for_timeout(100)
         pg.click('[data-buy="widen"]'); pg.wait_for_timeout(300)
         got = js("[progress.scrap, boardW(), rigW, menuOpen && screen, tour.id, progress.fortress.parts[0].x]")
-        check(f"{layout}: Widen for 800 scrap: two lanes wide, the new lane on the left (the cannon a column right), its tutorial pops up",
-              got == [19200, 2, 2, "tour", "wide", 1], got)
+        check(f"{layout}: Widen for 800 scrap: two lanes wide, the new column on the right (the cannon stays put), its tutorial pops up",
+              got == [19200, 2, 2, "tour", "wide", 0], got)
         while js("menuOpen"): js("turnTour(1)"); pg.wait_for_timeout(50)
         js("garageTab = 'autopilot'; renderGarage()"); pg.wait_for_timeout(100)
         got = js("Object.fromEntries([...document.querySelectorAll('#cards .card.plated')].map(c => [c.querySelector('b').textContent, c.querySelector('small').textContent]))")
