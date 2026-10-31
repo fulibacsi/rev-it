@@ -176,7 +176,7 @@ function rigKey(k, repeat) {
 // ---- the road (the owner, 30 Oct): the reticle takes only the notable enemies, the army's tanks, the rival gang's war
 // rigs and the police's pursuit SUVs (police.js; helicopters to come); the rest are the raiders' (gang.js crewTarget),
 // and Hunter's
-const notable = c => !!(c.tank || c.rig || c.suv);
+const notable = c => !!(c.tank || c.rig || c.suv || c.heli);
 // the lane beside the rig on your side of the road, for an enemy coming past it: your other lane while it is a lane
 // wide, the one to the right of a fortress over the double yellow; none while it fills your side (car.js lane, rigW)
 const sideLane = () => rigW === 1 ? (lane <= 1 ? 1 - lane : null) : lane >= 1 ? Math.min(lane - 1, 1) : null;
@@ -184,7 +184,7 @@ const sideLane = () => rigW === 1 ? (lane <= 1 ? 1 - lane : null) : lane >= 1 ? 
 // resources have their metadata over them"): what it is, its health, the shells it would take, how far
 function notableTag(t) {
   const shots = Math.ceil(Math.max(0, t.hp ?? health(t)) / CANNON.damage);
-  return [t.tank ? 'TANK' : t.rig ? 'RIG' : 'SUV', `${Math.round(100 * hpLeft(t))}%`, cannonOn() && `${shots} SHOT${shots === 1 ? '' : 'S'}`,
+  return [t.tank ? 'TANK' : t.rig ? 'RIG' : t.heli ? 'HELI' : 'SUV', `${Math.round(100 * hpLeft(t))}%`, cannonOn() && `${shots} SHOT${shots === 1 ? '' : 'S'}`,
           `${Math.round(t.z - odo)} m`].filter(Boolean).join(' · ');
 }
 
@@ -230,7 +230,9 @@ function gangDrive(c, dt) { // road.js updateTraffic: true while it is at you; e
 // totaled. Rams barely scratch it, as the tank. First guesses, for act5.py: six shells, or four and the guns
 const RIG = { hp: 1500, first: 10, every: 12, ahead: 45, hold: 3, hit: 6, scrap: 150, w: 2.8, h: 3.4 }; // s, m, s, % a ram
 let rigClock = 0;
-const rigRun = () => { rigClock = RIG.first; gangClock = GANG_CAR.every; }; // distance.js startRun: the rigs, the gang
+const rigRun = () => { rigClock = RIG.first; gangClock = GANG_CAR.every; heliClock = HELI.first; }; // distance.js startRun: the
+                                                                                                     // rigs, the gang, the
+                                                                                                     // police's helicopters
 function updateRigs(dt) { // distance.js updateRun
   if (!rigged() || run.boss || traffic.some(c => c.rig && !c.wreck) || (rigClock -= dt) > 0) return;
   const c = traffic.find(c => !c.racer && !c.police && !c.tank && !c.rig && !c.fleet && c !== target && c !== quarry && c.z - odo > 600);
@@ -288,11 +290,12 @@ const DROPS = { // an enemy's chance of a part, and which (the owner's examples:
   rig: [1, { armor: 0.4, spikes: 0.3, engine: 0.3 }],
   suv: [0.5, { armor: 0.5, engine: 0.3, gun: 0.2 }],
   tank: [1, { cannon: 0.7, armor: 0.2, engine: 0.1 }],
+  heli: [1, { gun: 0.6, engine: 0.4 }], // the police's helicopter (police.js): its gun or its turbine
 };
-const ENGINE_POWER = { gang: 0.06, suv: 0.1, rig: 0.15, tank: 0.25 }; // more pull a block, by the engine it came from
+const ENGINE_POWER = { gang: 0.06, suv: 0.1, rig: 0.15, tank: 0.25, heli: 0.2 }; // more pull a block, by the engine it came from
 const LOOT = { slow: 8, reach: 3 }; // m/s² a crate skids to a stop at; m either way it is picked up within
 const pick = table => { let r = rand(); const ks = Object.keys(table); return ks.find(k => (r -= table[k]) < 0) ?? ks.at(-1); };
-const sourceOf = c => c.tank ? 'tank' : c.rig ? 'rig' : c.suv ? 'suv' : c.racer && !c.fleet ? 'gang' : null;
+const sourceOf = c => c.tank ? 'tank' : c.rig ? 'rig' : c.suv ? 'suv' : c.heli ? 'heli' : c.racer && !c.fleet ? 'gang' : null;
 function makePart(kind, from) { // a size it comes in, then a shape of it no wider than the board (one wider never fits)
   const sizes = PARTS[kind].sizes, shapes = SHAPES[sizes[Math.floor(rand() * sizes.length)]].filter(c => extent(c, 0) <= boardW());
   return { kind, from, cells: shapes[Math.floor(rand() * shapes.length)] };
@@ -364,7 +367,17 @@ function cellAt(x, z) {
 function strike(pct, x, z) { // damage.js hurt, boss.js, rigRam: pct the hit's damage before Armor plating, from x, z
   const d = pct * (1 - armorCut());
   if (!rigged()) return addDamage(d); // damage.js
-  const f = progress.fortress, [cx, cy] = cellAt(x, z), i = partAt(f, cx, cy);
+  hitCell(d, ...cellAt(x, z));
+}
+// a helicopter's round (police.js strafeRun) on the road's lane at x: on the column over it, at row; with none, a miss
+function strafe(pct, x, row) {
+  const w = boardW(), cx = Math.round((x - carX) / LANE_W + (w - 1) / 2);
+  if (cx < 0 || cx >= w) return false;
+  hitCell(pct * (1 - armorCut()), cx, row);
+  return true;
+}
+function hitCell(d, cx, cy) { // d: the hit's damage after Armor plating
+  const f = progress.fortress, i = partAt(f, cx, cy);
   struck = { x: cx, y: cy, part: i >= 0, t: performance.now() };
   if (i < 0) return addDamage(d); // through to the rig
   const p = f.parts[i];
@@ -384,8 +397,8 @@ function fallOff(i) { // and what it did goes with it: its weight, its pull, its
 // an engine heard (the owner, 30 Oct: "a new engine sound added on top of the existing one"): a voice for each kind of
 // engine on the board, louder the more blocks of it (engine.js setVoices); the heavy ones' file loaded the first time
 // one is mounted, so the page weighs no more until then
-const ENGINE_SOUND = { gang: 'boxer', suv: 'v8', rig: 'truck', tank: 'tank' }; // a rival car's boxer, an SUV's V8, a rig's
-let heard = '', rigSounds = false;                                              // truck diesel, a tank's V12 diesel
+const ENGINE_SOUND = { gang: 'boxer', suv: 'v8', rig: 'truck', tank: 'tank', heli: 'turbine' }; // a rival car's boxer, an
+let heard = '', rigSounds = false; // SUV's V8, a rig's truck diesel, a tank's V12 diesel, a helicopter's gas turbine
 function engineVoices() { // renderRig, every frame: set again only when it changes
   const want = {};
   for (const p of rigged() ? progress.fortress.parts : []) {
@@ -436,6 +449,7 @@ function renderRig() {
   const first = id => target?.seen && run.phase === 'run' && !progress.toured.includes(id); // the first one in sight
   if (target?.rig && first('rivals')) openTour('rivals', true);
   else if (target?.suv && first('pursuit')) openTour('pursuit', true);
+  else if (target?.heli && first('heli')) openTour('heli', true);
 }
 
 TUTORIALS.push( // the war rig's, once rebuilt (the owner's: the controls change with it)
@@ -498,6 +512,15 @@ TUTORIALS.push( // the war rig's, once rebuilt (the owner's: the controls change
     { title: 'WORN OUT', at: '#board',
       both: "The bigger a part, the more it takes, the tank's cannon most of all. Worn, it cracks, and repairs mend only " +
         'the rig: worn out, it falls off, gone for good.' },
+  ] },
+  // on the road, the first time a police helicopter is in the reticle (renderRig); listed once seen
+  { id: 'heli', name: 'Police helicopters', open: () => rigged() && progress.toured.includes('heli'), pages: [
+    { title: 'A HELICOPTER', at: '#ar',
+      both: "The police's helicopter, in the reticle: the cannon's and the guns'. It hovers ahead and strafes the " +
+        'fortress, again and again, until you bring it down.' },
+    { title: 'ITS SEARCHLIGHT', at: '#board',
+      both: 'Its light on a lane: a beat later its rounds walk down it and hit that column of the board, front to back. ' +
+        'Get off the lane in time and they miss.' },
   ] },
   // on the road, the first time a police SUV is in the reticle (renderRig); listed once seen
   { id: 'pursuit', name: 'Police SUVs', open: () => rigged() && progress.toured.includes('pursuit'), pages: [

@@ -286,6 +286,53 @@ const RIG_SPRITE = sprite(280, 340, (g, w, h) => {
   for (let i = 0; i < 7; i++) { const x = w * (0.22 + i * 0.093); g.beginPath(); g.moveTo(x - 6, h * 0.81); g.lineTo(x, h * 0.9); g.lineTo(x + 6, h * 0.81); g.fill(); }
   steel(w * 0.2, h * 0.8, w * 0.6, h * 0.03);
 });
+// the police's helicopter (Distance's act 5, police.js), side on as it hovers across the road, nose to the left: the
+// police's black and white, POLICE along the tail boom, a gun pod under the nose, a searchlight, skids, the light bar
+// on top lit red (0) or blue (1) in turn with the rotor's blur, long or short, so the rotor turns as the lights flash
+function heliSprite(f) {
+  return sprite(340, 150, (g, w, h) => {
+    const box = (c, x, y, bw, bh, r = 0) => { g.fillStyle = c; g.beginPath(); g.roundRect(w * x, h * y, w * bw, h * bh, r); g.fill(); };
+    box('#1c1c22', 0.5, 0.42, 0.42, 0.07, 4); // the tail boom, out to the right
+    box('#e9e9ee', 0.5, 0.42, 0.42, 0.03, 2);
+    g.fillStyle = '#f4f4f4'; g.font = `bold ${h * 0.07}px sans-serif`; g.fillText('POLICE', w * 0.6, h * 0.485);
+    box('#1c1c22', 0.88, 0.22, 0.05, 0.26, 4); // the fin, its tail rotor a blur
+    g.fillStyle = '#9a9aa4a0'; g.beginPath(); g.ellipse(w * 0.905, h * 0.32, w * 0.012, h * 0.15, 0, 0, 2 * Math.PI); g.fill();
+    box('#1c1c22', 0.12, 0.36, 0.44, 0.36, 26); // the cabin: black below, white above
+    box('#e9e9ee', 0.16, 0.34, 0.38, 0.18, 20);
+    box('#26303c', 0.13, 0.38, 0.17, 0.2, 16); // the canopy
+    box('#3a4656', 0.15, 0.4, 0.06, 0.04, 4);
+    box('#3c3c42', 0.06, 0.62, 0.12, 0.07, 3); box('#14161a', 0.02, 0.645, 0.06, 0.025); // the gun pod, its barrel
+    g.fillStyle = '#f4f0d8'; g.beginPath(); g.arc(w * 0.2, h * 0.74, h * 0.035, 0, 2 * Math.PI); g.fill(); // the searchlight
+    g.strokeStyle = '#2b2b30'; g.lineWidth = 4; // the skids, on two struts each
+    g.beginPath(); g.moveTo(w * 0.12, h * 0.9); g.lineTo(w * 0.56, h * 0.9); g.stroke();
+    for (const x of [0.22, 0.46]) { g.beginPath(); g.moveTo(w * x, h * 0.72); g.lineTo(w * (x - 0.02), h * 0.9); g.stroke(); }
+    box('#3c3c42', 0.32, 0.22, 0.04, 0.13); // the mast, the light bar on the roof
+    box('#222', 0.24, 0.28, 0.2, 0.06, 3);
+    g.shadowColor = g.fillStyle = f ? '#48f' : '#f33'; g.shadowBlur = 12;
+    box(f ? '#48f' : '#f33', f ? 0.34 : 0.24, 0.28, 0.1, 0.06, 3);
+    g.shadowBlur = 0;
+    const blade = f ? 0.33 : 0.24; // the main rotor: a blur across the top
+    g.fillStyle = '#c8c8d080'; g.beginPath(); g.ellipse(w * 0.34, h * 0.21, w * blade, h * 0.025, 0, 0, 2 * Math.PI); g.fill();
+    box('#2b2b30', 0.32, 0.18, 0.04, 0.05, 2);
+  });
+}
+const HELI_LOOKS = [0, 1].map(f => { const s = heliSprite(f); return { rear: s, front: s, beams: s }; });
+// its searchlight on the lane it is about to strafe (a cone down from it, a pool of light on the road), and the dust
+// its rounds kick up (police.js heliMarks)
+const SPOT = sprite(120, 300, (g, w, h) => {
+  const cone = g.createLinearGradient(0, 0, 0, h);
+  cone.addColorStop(0, '#fff6c820'); cone.addColorStop(1, '#fff6c8a0');
+  g.fillStyle = cone; g.beginPath(); g.moveTo(w * 0.42, 0); g.lineTo(w * 0.58, 0); g.lineTo(w, h * 0.94); g.lineTo(0, h * 0.94); g.fill();
+  const pool = g.createRadialGradient(w / 2, h * 0.94, 2, w / 2, h * 0.94, w / 2);
+  pool.addColorStop(0, '#fffdf0ff'); pool.addColorStop(0.6, '#fff6c8c0'); pool.addColorStop(1, '#fff6c800');
+  g.fillStyle = pool; g.beginPath(); g.ellipse(w / 2, h * 0.94, w / 2, h * 0.06, 0, 0, 2 * Math.PI); g.fill();
+});
+const DUST = sprite(80, 60, (g, w, h) => {
+  for (const [x, y, r, c] of [[0.5, 0.6, 0.34, '#b89a70c0'], [0.3, 0.7, 0.22, '#d2b88cc0'], [0.7, 0.68, 0.24, '#a08460c0'], [0.5, 0.4, 0.2, '#e0c89ca0']]) {
+    g.fillStyle = c; g.beginPath(); g.arc(w * x, h * y, w * r, 0, 2 * Math.PI); g.fill();
+  }
+  g.fillStyle = '#ffd36a'; g.beginPath(); g.arc(w / 2, h * 0.85, w * 0.08, 0, 2 * Math.PI); g.fill(); // the spark
+});
 // act 3's spots by the road (oil.js), in the palms' sunset silhouette with lamps lit: an oil puddle on the sand, a
 // pumpjack nodding (two frames, the beam up and down), a refinery with its flare flickering (two frames)
 const PUDDLE = sprite(240, 48, (g, w, h) => {
@@ -438,6 +485,7 @@ function spawnCar(car, d) {
     police: false, stage: null, passing: false, // a police car (Distance's War Rig, police.js), how far into its move
     tank: false, rig: false, suv: false, w: undefined, h: undefined, // the final boss (boss.js), a rival war rig
                                                                      // (fortress.js), a police SUV (police.js); its size, m
+    heli: false, alt: undefined, // the police's helicopter (police.js), and how high it flies, m
   });
 }
 const sameLane = (a, x) => Math.abs(a - x) < CAR_W; // two lateral positions close enough to touch
@@ -546,6 +594,7 @@ function flashAhead() {
 
 // a totaled car (Distance's War Rig) skids off onto the right shoulder and stops there
 function skid(c, dt) {
+  if (c.alt) { c.alt = Math.max(0, c.alt - 15 * dt); if (!c.alt) c.dir = 1; } // a helicopter shot down falls onto the road
   c.v = Math.max(0, c.v - 14 * dt);
   c.z += c.v * dt;
   c.x += clamp(SHOULDER - c.x, -4 * dt, 4 * dt);
@@ -567,6 +616,7 @@ function updateTraffic(dt, clock) {
   RIVALS = traffic.filter(o => o.racer && !o.fleet);
   for (const c of traffic) {
     if (c.wreck) skid(c, dt);
+    else if (c.heli) heliDrive(c, dt); // the police's helicopter (police.js)
     else if (c.police) policeDrive(c, dt); // police.js
     else if (c.tank) tankDrive(c, dt); // boss.js
     else if (c.rig) rigDrive(c, dt); // a rival war rig (fortress.js)
@@ -582,9 +632,9 @@ function updateTraffic(dt, clock) {
     const d = c.z - odo;
     if (c.d > 0 && d <= 0) whoosh(Math.abs(speed - c.dir * c.v) * 3.6, c.x < carX ? -0.7 : 0.7); // went past the driver
     c.d = d;
-    if (c.racer || c.passing || c.tank || c.rig && !c.wreck || c.runner || c.raider) { /* racers stay where they are,
-      however far: their places are the race; a police car comes up from behind; the tank holds the road, and a rig
-      comes and goes round you; a car of your crew goes on to its spot, or after its car */ }
+    if (c.racer || c.passing || c.tank || (c.rig || c.heli) && !c.wreck || c.runner || c.raider) { /* racers stay where
+      they are, however far: their places are the race; a police car comes up from behind; the tank holds the road, a
+      rig comes and goes round you, a helicopter flies in; a car of your crew goes on to its spot, or after its car */ }
     else if (d < -40 || c.dir > 0 && d < -8 && c.v < speed - 1) spawnAhead(c); // left behind: back to the horizon
     else if (d > ROAD.draw * ROAD.segment + 100) { // pulled away: comes up from behind instead, in a lane you're not in
       spawnCar(c, -30);
@@ -592,7 +642,7 @@ function updateTraffic(dt, clock) {
       c.x = MY_LANES[c.lane];
     }
     // you ran into it: your front into its back, sideways into it while changing lanes, or head-on
-    const touching = !c.wreck && !c.raider && onCar(c.x) && c.z < odo + MY_FRONT && c.z + CAR_LEN > odo - MY_REAR && clock - c.hit > 1.5;
+    const touching = !c.wreck && !c.raider && !c.alt && onCar(c.x) && c.z < odo + MY_FRONT && c.z + CAR_LEN > odo - MY_REAR && clock - c.hit > 1.5;
     if (touching) { c.hit = clock; c.dir > 0 ? bump(c) : mad(c) ? madHeadOn(c) : headOn(c); }
     // an oncoming car with you in its lane: flashes its lights and sounds its horn, once, about 3 s out
     c.beams = Math.max(0, (c.beams ?? 0) - dt);
@@ -645,6 +695,9 @@ const MARKS = {
   shell: v => { const img = wreckSprite(trafficLook(v).rear); return { x: SHOULDER + 0.8, w: CAR_M, h: CAR_M * img.height / img.width, img }; },
   // act 5's loot (fortress.js lootMarks), in its lane
   loot: v => ({ x: v.x, w: 1.6, h: 1.25, img: crateSprite(v.part.kind) }), // big enough to spot on a phone
+  // a helicopter's searchlight on a lane, from up where it hovers; its rounds' dust (police.js heliMarks)
+  spot: v => ({ x: v.x, w: 4.5, h: v.alt, img: SPOT }),
+  dust: v => ({ x: v.x, w: 1.4, h: 1, img: DUST }),
 };
 function drawRoad(g, w, h, dt) {
   const depth = 1 / Math.tan(ROAD.fov / 2 * Math.PI / 180), horizon = h * ROAD.horizon, k0 = w / 2;
@@ -712,8 +765,8 @@ function drawRoad(g, w, h, dt) {
   // sprites, far to near: palms, traffic and the game's marks (x: meters from the center line, w/h: meters)
   const marks = (game.marks?.() ?? []).map(m => ({ z: m.z, ...MARKS[m.kind](m.value), ref: m.ref })); // ref: told where it is
   const look = c => c.wreck ? wreckSprite(lookOf(c).rear) : c.dir > 0 ? lookOf(c).rear : c.beams ? lookOf(c).beams : lookOf(c).front;
-  const placed = c => { const img = look(c), w = c.w ?? (img.pixel ? CAR_M : 1.8); // a car's art sets its height
-    return { z: c.z, x: c.x + weave(c), w, h: c.h ?? (img.pixel ? w * img.height / img.width : 1.4), img, car: c }; };
+  const placed = c => { const img = look(c), w = c.w ?? (img.pixel ? CAR_M : 1.8); // a car's art sets its height; up
+    return { z: c.z, x: c.x + weave(c), w, h: c.h ?? (img.pixel ? w * img.height / img.width : 1.4), img, car: c, up: c.alt ?? 0 }; }; // in the air: m
   const ahead = [...traffic.map(placed), ...marks]
     .map(o => ({ ...o, d: o.z - odo })).filter(o => o.d > 2 && o.d < (ROAD.draw - 2) * ROAD.segment).sort((p, q) => q.d - p.d);
   for (const c of [...traffic, ...marks.map(m => m.ref).filter(Boolean)]) c.seen = null; // where each car (and a mark that
@@ -729,10 +782,13 @@ function drawRoad(g, w, h, dt) {
     }
     while (t < ahead.length && ahead[t].d >= a.z) { // cars and signs within this segment
       const o = ahead[t++], f = (o.d - a.z) / ROAD.segment, b = proj[n + 1] || a;
-      const k = a.k + (b.k - a.k) * f, cx = a.x + (b.x - a.x) * f, cy = a.y + (b.y - a.y) * f;
-      if (o.h * k > 1) drawClipped(o.img, cx + (o.x - o.w / 2) * k, cy - o.h * k, o.w * k, o.h * k, clip[n]); // not a dot far off
+      const k = a.k + (b.k - a.k) * f, cx = a.x + (b.x - a.x) * f, cy = a.y + (b.y - a.y) * f, up = (o.up ?? 0) * k;
+      if (up && o.h * k > 1 && cy < clip[n]) { // in the air: its shadow on the road under it
+        g.fillStyle = '#0000004d'; g.beginPath(); g.ellipse(cx + o.x * k, cy, o.w * k * 0.32, o.w * k * 0.05, 0, 0, 2 * Math.PI); g.fill();
+      }
+      if (o.h * k > 1) drawClipped(o.img, cx + (o.x - o.w / 2) * k, cy - o.h * k - up, o.w * k, o.h * k, clip[n]); // not a dot far off
       const who = o.car ?? o.ref;
-      if (who && cy - o.h * k < clip[n]) who.seen = [cx + (o.x - o.w / 2) * k, cy - o.h * k, o.w * k, o.h * k];
+      if (who && cy - o.h * k - up < clip[n]) who.seen = [cx + (o.x - o.w / 2) * k, cy - o.h * k - up, o.w * k, o.h * k];
       const side = o.car && indicator(o.car); // over the outer half of a tail light (the art's, else where a car's is)
       const L = side && (o.img.lamps?.[side < 0 ? 0 : 1] ?? (side < 0 ? [0.03, 0.5, 0.25, 0.64] : [0.75, 0.5, 0.97, 0.64]));
       const outer = L && (side < 0 ? [L[0], (L[0] + L[2]) / 2] : [(L[0] + L[2]) / 2, L[2]]);
