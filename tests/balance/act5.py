@@ -6,10 +6,11 @@ races it repairs, turns the meters it doesn't need into fuel, buys the War Rig's
 race: the place, totals (the rival gang's among them), scrap, shells (fired, hits, gained, left), the rival rigs (come,
 totaled, their rams), the police SUVs (come, totaled), the gang's brake checks, heat, damage, tanks beaten; the loot
 (parts dropped, picked up: the bot steers over a crate within 150 m on your side of the road, its hand on the wheel as
-a player's would be), the board's blocks and the hold, the rig's weight and the run's meters. Between races it puts what
-the hold carries on the board, armor and spikes on the end rows first (the shield: hits come from ahead and behind),
-the rest on the middle rows first, after buying Lengthen, Inventory and Widen as they come (a new row or lane gets
-filled at once). Widened, it shifts
+a player's would be), the board's blocks and the hold, the rig's weight and the run's meters. As it drives (packing is
+the race's, never the garage's) it puts what the hold carries on the board, armor and spikes on the end rows first
+(the shield: hits come from ahead and behind) and the rest on the middle rows first, or swaps it in where it throws off
+the least health; it counts the parts mounted and swapped, and how often the board changes (the owner's aim: about
+every 5 s). Between races it buys Lengthen, Inventory and Widen as they come. Widened, it shifts
 the fortress over a crate's lane and back to its side of the road; it counts the cars crushed and the head-ons rammed
 through. The shield (layer 7): the hits the board's parts took and those that reached the rig, the parts that fell off,
 and the health the board's parts have left after the race (worn parts aren't repaired). The police's helicopters
@@ -61,7 +62,27 @@ const seekLoot = () => {
   const to = MY_LANES.findIndex(x => sameLane(x, l.x));
   if (to >= 0 && to !== lane) changeLane(lane < to ? -1 : 1);
 };
-const habits = window.afterAids; window.afterAids = () => { habits(); seekLoot(); };
+// the board, packed as you drive (the owner, 31 Oct: never in the garage): a part from the hold every half second, the
+// first that fits, the shield (armor, spikes) on the end rows first and the rest in the middle; with no room, the
+// first that swaps in where it throws off the least health, if that is less than its own
+const pack = () => {
+  const f = progress.fortress;
+  if (run.phase !== 'run' || !f.hold.length || run.t < window.packAt) return;
+  window.packAt = run.t + 0.5;
+  const h = boardH(), w = boardW(), ends = [...Array(h).keys()].sort((a, b) => Math.min(a, h - 1 - a) - Math.min(b, h - 1 - b));
+  for (const [slot, p] of f.hold.entries()) // each part in the hold in turn: the first that goes on, or swaps in
+    for (const y of ['armor', 'spikes'].includes(p.kind) ? ends : [...ends].reverse())
+      for (let x = 0; x < w; x++) if (fitsAt(f, p.cells, x, y)) { mount(slot, x, y); mounts++; return; }
+  for (const [slot, p] of f.hold.entries()) {
+    let best = null;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (onBoard(p.cells, x, y)) {
+      const lost = under(f, p.cells, x, y).reduce((k, i) => k + hpOf(f.parts[i]), 0);
+      if (!best || lost < best.lost) best = { x, y, lost };
+    }
+    if (best && best.lost < hpOf(p)) { mount(slot, best.x, best.y); swaps++; return; }
+  }
+};
+const habits = window.afterAids; window.afterAids = () => { habits(); seekLoot(); pack(); };
 // counted for the table: the rigs that come and are totaled, their rams, the gang's totals and its brake checks
 const count = (name, f) => { const was = window[name]; window[name] = function (...a) { return f(was, ...a); }; };
 count('updateRigs', (f, dt) => { const had = traffic.some(c => c.rig && !c.wreck); f(dt); if (!had && traffic.some(c => c.rig && !c.wreck)) rigs++; });
@@ -98,11 +119,11 @@ with sync_playwright() as p:
         boss = js("bossRace()")
         w0 = js(WALLET)
         r = js(f"""(() => {{ {f"rng = {SEED * 1000 + race};" if SEED is not None else ""} window.nextPress = 0; reloading = 0;
-                  Object.assign(window, {{ shells: 0, hits: 0, rigs: 0, rigsDown: 0, rams: 0, gangDown: 0, checks: 0, suvs: 0, suvsDown: 0, made: 0, picked: 0, crushed: 0, through: 0, onParts: 0, onRig: 0, fell: [], helis: 0, helisDown: 0, bursts: 0 }});
+                  Object.assign(window, {{ shells: 0, hits: 0, rigs: 0, rigsDown: 0, rams: 0, gangDown: 0, checks: 0, suvs: 0, suvsDown: 0, made: 0, picked: 0, crushed: 0, through: 0, onParts: 0, onRig: 0, fell: [], helis: 0, helisDown: 0, bursts: 0, mounts: 0, swaps: 0, packAt: 0 }});
                   simRun({{ ...progress.levels }}, 2, 1, {{}}, true);
                   return {{ p: run.race && run.race.p, dnf: run.race && run.race.dnf, totals: run.totals, scrap: run.scrap, heat: Math.round(progress.wanted * 100),
                   dmg: Math.round(progress.damage), shells, hits, got: run.shells, left: progress.shells, rigs, rigsDown, rams, gangDown, checks, suvs, suvsDown,
-                  beat: run.beatTank, tank: run.tank ? Math.round(Math.max(0, run.tank.hp ?? tankHealth())) : null, made, picked, m: run.gain, crushed, through, w: rigW, onParts, onRig, fell, helis, helisDown, bursts,
+                  beat: run.beatTank, tank: run.tank ? Math.round(Math.max(0, run.tank.hp ?? tankHealth())) : null, made, picked, m: run.gain, crushed, through, w: rigW, onParts, onRig, fell, helis, helisDown, bursts, mounts, swaps, secs: runTime(),
                   worn: Math.round(100 * progress.fortress.parts.reduce((k, p) => k + hpOf(p), 0) / Math.max(1, progress.fortress.parts.reduce((k, p) => k + fullHp(p), 0))) }}; }})()""")
         w1 = js(WALLET)  # the race's takings: meters (the run's, the crew's racing, less the nitro), points, refined fuel, scrap
         wheel = js("wheel.held = false")
@@ -119,14 +140,10 @@ with sync_playwright() as p:
         got = js(f"""(() => {{ const b = [], buyAll = (ids, cheapest) => {{ for (;;) {{ const ok = ids.filter(id => !whyNot(id));
             if (!ok.length) return; const id = cheapest ? ok.sort((a, c) => cost(a) - cost(c))[0] : ok[0]; buy(id); b.push(id + lvl(id)); }} }};
             buyAll({json.dumps(WARRIG)}, true); buyAll(["lengthen", "inventory", "widen"], true); buyAll({json.dumps(FLEET)}, false); return b.filter(x => !x.startsWith('fleet') || x.startsWith('fleetP')); }})()""")
-        board = js("""(() => { const f = progress.fortress, h = boardH(); // then the hold onto the board (the new rows too): the shield on the ends, the
-            const ends = [...Array(h).keys()].sort((a, b) => Math.min(a, h - 1 - a) - Math.min(b, h - 1 - b)); // rest in the middle
-            for (const p of [...f.hold]) { const rows = ['armor', 'spikes'].includes(p.kind) ? ends : [...ends].reverse();
-              for (let k = 0, done = false; k < h && !done; k++) for (let x = 0, y = rows[k]; x < boardW() && !done; x++)
-                if (fitsAt(f, p.cells, x, y)) { f.parts.push({ ...p, x, y }); f.hold.splice(f.hold.indexOf(p), 1); done = true; } }
-            applyUpgrades();
-            const by = {}; for (const p of f.parts) by[p.kind] = (by[p.kind] ?? 0) + p.cells.length;
+        board = js("""(() => { const f = progress.fortress, by = {}; // the board after the race (packing is the race's)
+            for (const p of f.parts) by[p.kind] = (by[p.kind] ?? 0) + p.cells.length;
             return [Object.entries(by).map(([k, n]) => `${k} ${n}`).join(' '), f.hold.length, Math.round(rigWeight())]; })()""")
+        moves = r["mounts"] + r["swaps"] + len(r["fell"])
         w4 = js(WALLET)
         ledger = (f"meters +{w1['bank'] - w0['bank']:,} repairs -{w1['bank'] - w2['bank']:,} to fuel -{w2['bank'] - w3['bank']:,} "
                   f"cards -{w3['bank'] - w4['bank']:,} left {w4['bank']:,} | points +{w1['points'] - w0['points']:,} cards -{w3['points'] - w4['points']:,} "
@@ -137,7 +154,8 @@ with sync_playwright() as p:
               f"+{r['got']:2} left {r['left']:3}  rigs {r['rigs']} down {r['rigsDown']} rams {r['rams']:2}  suvs {r['suvs']} down {r['suvsDown']}  helis {r['helis']} down {r['helisDown']} bursts {r['bursts']}  checks {r['checks']:2}  heat {r['heat']:3}%  "
               f"dmg {r['dmg']:3}% ({fixed[0]}% after repairs, {fixed[1]:,} m left)  loot +{r['made']} got {r['picked']}  board [{board[0]}] "
               f"hold {board[1]}  {board[2]:,} kg  {r['m']:,} m  {r['w']} wide, crushed {r['crushed']} through {r['through']}  "
-              f"hits on parts {r['onParts']:2} on the rig {r['onRig']:2}, lost [{', '.join(r['fell'])}], health left {r['worn']}%"
+              f"hits on parts {r['onParts']:2} on the rig {r['onRig']:2}, lost [{', '.join(r['fell'])}], health left {r['worn']}%  "
+              f"packed: {r['mounts']} on, {r['swaps']} swapped" + (f" (the board changed every {r['secs'] / moves:.0f} s)" if moves else "")
               + (f"  TANK {'beaten' if r['beat'] else str(r['tank']) + ' left'}" if boss else "") + f"  bought {' '.join(got)}")
         print("          " + ledger)
     print(f"tanks beaten in {RACES} races: {js('progress.tanks') - tanks0} | scrap {js('progress.scrap')} | points {js('progress.points')} | crew {js('fleetSize()')}")
