@@ -26,13 +26,15 @@ function updatePolice(dt) {
   if (!arOn() || !progress.wanted) return;
   copClock -= dt;
   if (copClock > 0 || traffic.filter(c => c.police && !c.wreck).length >= 2) return;
-  const c = traffic.find(c => !c.racer && !c.police && !c.tank && !c.rig && c !== target && c !== quarry && c.z - odo > 600), other = 1 - lane;
-  if (!c || lane <= 1 && !laneClear(MY_LANES[other], 10)) return;
+  // from behind in the lane beside you (fortress.js sideLane); with none (the oncoming lanes, or a fortress filling your
+  // side) head-on, in the oncoming lane nearest you
+  const c = traffic.find(c => !c.racer && !c.police && !c.tank && !c.rig && c !== target && c !== quarry && c.z - odo > 600), other = sideLane();
+  if (!c || other != null && !laneClear(MY_LANES[other], 10)) return;
   copClock = copEvery();
   const chance = suvChance(), suv = chance > 0 && rand() < chance; // the traffic's dice only on the war rig
   const reset = { police: true, suv, w: suv ? SUV.w : undefined, h: suv ? SUV.h : undefined, hp: null, wreck: false, swerve: null,
                   warned: false, beams: 0, d: NaN, hit: -Infinity };
-  if (lane > 1) Object.assign(c, reset, { dir: -1, lane, x: ROAD_LANES[lane], z: odo + 450, v: 25, want: 70 });
+  if (other == null) Object.assign(c, reset, { dir: -1, lane: Math.max(2, lane), x: ROAD_LANES[Math.max(2, lane)], z: odo + 450, v: 25, want: 70 });
   else Object.assign(c, reset, { dir: 1, lane: other, x: MY_LANES[other], z: odo - 60, v: speed + 20, stage: 'pass',
                                  passing: true }); // from behind, in your other lane
 }
@@ -57,10 +59,10 @@ function policeDrive(c, dt) {
   else if (c.stage === 'brake') {
     c.v = Math.max(0, c.v - 9 * dt);
     if ((c.t -= dt) <= 0) Object.assign(c, c.suv ? { stage: 'back' } : { stage: 'leave', want: speed + 30 });
-  } else if (c.stage === 'back') { // the SUV: into the lane you're not in, and back behind you
-    c.v = Math.max(0, speed - 12);
-    if (lane <= 1) c.lane = 1 - lane;
-    if (ahead < -30) c.stage = 'pass';
+  } else if (c.stage === 'back') { // the SUV: into the lane beside you, and back behind you; with none, off it goes
+    const side = sideLane();
+    if (side == null) Object.assign(c, { stage: 'leave', want: speed + 30 });
+    else { c.v = Math.max(0, speed - 12); c.lane = side; if (ahead < -30) c.stage = 'pass'; }
   } else c.v += clamp(c.want - c.v, -9 * dt, 6 * dt);
   c.x += clamp(MY_LANES[c.lane] - c.x, -3 * dt, 3 * dt);
   c.z += c.v * dt;

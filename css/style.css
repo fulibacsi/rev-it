@@ -422,6 +422,9 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
 .rig #shifter, .rig #pedals .pedal-box:not(.cannon-box) { display: none; }
 .rig .cannon-box { display: flex; }
 .rig #board { display: flex; }
+#wheel-knob { display: none; } /* a fortress's truck wheel (fortress.js): a thicker rim and a spinner knob */
+.wide #wheel-knob { display: inline; }
+.wide #wheel-rim > circle:first-child { stroke-width: 96; }
 #board { position: fixed; left: max(1.5vw, calc(17vw - 19vh * 3.2 / 3.5)); top: 76vh; width: calc(19vh * 3.2 / 3.5);
          height: 21vh; box-sizing: border-box; padding: 6px; flex-wrap: wrap; align-content: flex-start;
          justify-content: center; gap: 8px; border: 2px solid #55555f; border-radius: 8px; touch-action: none;

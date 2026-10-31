@@ -441,13 +441,14 @@ function spawnCar(car, d) {
   });
 }
 const sameLane = (a, x) => Math.abs(a - x) < CAR_W; // two lateral positions close enough to touch
+const onCar = x => Math.abs(x - carX) < CAR_W + 1.75 * (rigW - 1); // touching your car, however many lanes it covers
 // nobody going this way, you included, within back..front meters of car in x; with a mirror check (mirror s), nobody
 // further back who would close those meters on it in that time either: 20 m is under a second when you come up
 // 100 km/h quicker
 function roomAt(car, x, back, front, mirror = 0) {
   const behind = v => back + Math.max(0, v - car.v) * mirror;
   for (const o of traffic) if (o !== car && o.dir > 0 && sameLane(o.x, x) && o.z > car.z - behind(o.v) && o.z < car.z + front) return false;
-  return !(sameLane(carX, x) && odo + MY_FRONT > car.z - behind(speed) && odo - MY_REAR < car.z + front);
+  return !(onCar(x) && odo + MY_FRONT > car.z - behind(speed) && odo - MY_REAR < car.z + front);
 }
 function spawnAhead(car, d = 900 + rand() * 600) { // over the horizon, with room around it in both your lanes, so
   for (let tries = 0; tries < 6; tries++, d += 60) { // it never appears beside another car as a wall nobody can pass
@@ -466,7 +467,7 @@ function leader(car) { // the nearest thing ahead in its lane: a car, or you
   let lead = null;
   for (const o of traffic) if (o.dir > 0 && o !== car && sameLane(o.x, car.x) && o.z > car.z && (!lead || o.z < lead.z)) lead = o;
   const me = odo - MY_REAR;
-  if (sameLane(carX, car.x) && me > car.z && (!lead || me < lead.z)) lead = { z: me, v: speed };
+  if (onCar(car.x) && me > car.z && (!lead || me < lead.z)) lead = { z: me, v: speed };
   return lead;
 }
 const LANE_GAP = { racer: 5, car: 2 }; // seconds a car waits between lane changes: racers don't weave to block you
@@ -532,11 +533,11 @@ const yields = (c, to) => !c.racer && !c.police && !c.tank && !c.rig && !c.yield
 // nobody is there within 25 m of it
 let chicken = false;
 const across = x => sameLane(x, LANES.oncoming[0]) ? LANES.oncoming[1] : LANES.oncoming[0];
-const swerves = c => c.dir < 0 && !c.police && !mad(c) && c.swerve == null && c.z > odo && c.z - odo <= 250 && !(sameLane(carX, across(c.x)) ||
+const swerves = c => c.dir < 0 && !c.police && !mad(c) && c.swerve == null && c.z > odo && c.z - odo <= 250 && !(onCar(across(c.x)) ||
   traffic.some(o => o !== c && sameLane(o.swerve ?? o.x, across(c.x)) && Math.abs(o.z - c.z) < 25));
 function flashAhead() {
   if (lane > 1) { // over there they are coming at you: only a game of chicken moves them
-    if (chicken) for (const c of traffic) if (sameLane(c.x, carX) && swerves(c)) c.swerve = across(c.x);
+    if (chicken) for (const c of traffic) if (onCar(c.x) && swerves(c)) c.swerve = across(c.x);
     return;
   }
   const to = 1 - lane;
@@ -556,6 +557,7 @@ let RIVALS = [];
 // a head-on with a mad driver (Fuel madness) isn't the end of your run (the owner, 18 Oct): you lose most of your speed
 // and the game hears of a hard crash (Distance: heavy damage, and the mad car totaled); it ends up spun round, stopped
 function madHeadOn(c) {
+  if (rigW > 1) return headOn(c); // a fortress rams it through as any other (car.js)
   impact = { kmh: (speed + c.v) * 3.6, headOn: true, mad: true, car: c };
   speed *= 0.25;
   crashed = true;
@@ -573,6 +575,7 @@ function updateTraffic(dt, clock) {
     else if (c.dir > 0) { if (!(c.racer && gangDrive(c, dt))) driveCar(c, dt); } // the rival gang's moves (fortress.js)
     else { // oncoming: a mad driver steers for you while you are on its side, until 1.2 s out (as the police do)
       if (mad(c) && lane > 1 && (c.z - odo) / Math.max(1, speed + c.v) > 1.2) c.x += clamp(carX - c.x, -3 * dt, 3 * dt);
+      if (rigW > 1 && onCar(c.x) && swerves(c)) c.swerve = across(c.x); // a fortress coming: out of its way, if there is room
       c.z -= c.v * dt;
       if (c.swerve != null) c.x += clamp(c.swerve - c.x, -3.5 * dt, 3.5 * dt); // as brisk as yielding
     }
@@ -589,11 +592,11 @@ function updateTraffic(dt, clock) {
       c.x = MY_LANES[c.lane];
     }
     // you ran into it: your front into its back, sideways into it while changing lanes, or head-on
-    const touching = !c.wreck && !c.raider && sameLane(c.x, carX) && c.z < odo + MY_FRONT && c.z + CAR_LEN > odo - MY_REAR && clock - c.hit > 1.5;
+    const touching = !c.wreck && !c.raider && onCar(c.x) && c.z < odo + MY_FRONT && c.z + CAR_LEN > odo - MY_REAR && clock - c.hit > 1.5;
     if (touching) { c.hit = clock; c.dir > 0 ? bump(c) : mad(c) ? madHeadOn(c) : headOn(c); }
     // an oncoming car with you in its lane: flashes its lights and sounds its horn, once, about 3 s out
     c.beams = Math.max(0, (c.beams ?? 0) - dt);
-    if (c.dir < 0 && !c.warned && sameLane(c.x, carX) && c.d > 0 && c.d < 3 * (speed + c.v)) { c.warned = true; c.beams = 2; horn(); }
+    if (c.dir < 0 && !c.warned && onCar(c.x) && c.d > 0 && c.d < 3 * (speed + c.v)) { c.warned = true; c.beams = 2; horn(); }
   }
 }
 

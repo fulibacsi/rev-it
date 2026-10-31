@@ -60,7 +60,7 @@ talking about upgrades. Keep it up to date with every change to an upgrade, a ta
   paid-off racers and their teamwork), `oil.js` (the crew's roles, the oil spots and refineries, the tracker, crude and
   fuel, the Foreman, act 3's foreshadowing), `gang.js` (War Rig: the AR target, totals, parts, guns), `police.js` (police
   heat, the scanner, police cars and act 5's SUVs), `boss.js` (the tank), `fortress.js` (act 5, being built: the Rebuild, the war rig's
-  cockpit, the fortress's board, the cannon and its shells, the rival gang and its war rigs, the loot), `damage.js` (damage, heat, nitro), `aids.js`
+  cockpit, the fortress's board, the cannon and its shells, the rival gang and its war rigs, the loot, the rig widened), `damage.js` (damage, heat, nitro), `aids.js`
   (Distance's driver aids: robot feet and hands working the same pedals and lever as the player).
 - Saves: `localStorage` keys `car-rev-settings` and `car-rev-incremental` (Distance progress). Keep these names so
   players keep their saves. Debug mode plays `car-rev-incremental-debug` and never writes the real save.

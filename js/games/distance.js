@@ -68,6 +68,8 @@ function applyUpgrades() { // the garage's work on the engines and the car, and 
   }
   CAR.grip = tyreGrip();
   CAR.drag = STOCK_DRAG * rigDrag();
+  rigW = rigged() ? boardW() : 1; // the war rig's lanes (fortress.js): car.js keeps it on the road
+  lane = Math.min(lane, Math.max(0, (lvl('reckless') ? ROAD_LANES.length : MY_LANES.length) - rigW));
   openLanes = lvl('reckless') ? ROAD_LANES.length : MY_LANES.length;
   chicken = lvl('chicken') > 0; // a flash moves oncoming cars too
   steering = 1 + 0.4 * lvl('steering');
@@ -324,8 +326,9 @@ function rechargeFlash(dt) {
 function onCollision(i) {
   if (run.phase !== 'run') return;
   if (arOn()) ram(i); // gang.js: the car you hit takes it too
-  if (i.mad) total(i.car, false, 'HEAD-ON!'); // gang.js
+  if (i.mad && !i.plow) total(i.car, false, 'HEAD-ON!'); // gang.js
   if (!damageOn()) return;
+  if (i.plow) { addDamage(plowDamage(i)); if (wrecked() && !run.limp) finishRun('wrecked'); return; } // a fortress rams on (fortress.js)
   hurt(i.kmh, i.headOn);
   if (i.mad) { if (wrecked() && !run.limp) finishRun('wrecked'); return; }
   if (i.headOn) finishRun('head-on'); else if (wrecked() && !run.limp) finishRun('wrecked');
@@ -516,8 +519,8 @@ function renderGarage(bought) {
   $('cards').innerHTML = first + repairCard + building + (garageTab === 'fleet' && pageOpen('fleet') ? exchangeCard() + roleCard() : '') +
     Object.entries(UPGRADES).filter(onTab).map(([id, u]) => {
     // the aids the war rig drives with, bolted on (fortress.js): their cards stay, under a metal plate (the owner, 30 Oct)
-    if (rigDrives(id)) return `<div class="card plated"><b>${u.name}</b><i class="plate">BOLTED ON<small>the war rig ` +
-      'drives itself</small></i></div>';
+    if (rigDrives(id)) return `<div class="card plated"><b>${u.name}</b><i class="plate">BOLTED ON<small>` + (rigW > 1 &&
+      ['cruise', 'steer'].includes(id) ? 'no brakes: the rig rams' : 'the war rig drives itself') + '</small></i></div>';
     if (isLocked(id)) return `<div class="card locked"><b>${u.name}</b><small>${whyNot(id)}</small></div>`;
     const l = lvl(id), why = whyNot(id), max = maxOf(u), steps = typeof u.max === 'function' ? 0 : max;
     const pips = steps > 1 ? `<i>${'■'.repeat(l)}${'□'.repeat(steps - l)}</i>` : '';

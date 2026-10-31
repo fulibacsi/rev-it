@@ -23,6 +23,11 @@ Object.assign(UPGRADES, {
                 'every row weighs and drags' },
   inventory: { name: 'Inventory', tab: 'fortress', max: 2, base: 600, growth: 2, wallet: 'points', needs: ['rebuild'],
                info: l => `${1 + l} slot${l ? 's' : ''} in the hold for the parts you pick up` },
+  // the board a lane wider a level, to the road's four (the owner: its width is lanes), and the rig with it: from two
+  // lanes wide a truck's wheel shifts it a lane at a time, the robot brakes for no one, and it rams (the owner, 30 Oct)
+  widen: { name: 'Widen', tab: 'fortress', max: 3, base: 800, growth: 2.5, needs: ['rebuild'],
+           info: l => l ? `the fortress ${1 + l} lanes wide: a truck's wheel shifts it a lane at a time, it brakes for no ` +
+             'one and rams, head-on too; every lane drags' : 'a lane wide' },
 });
 const rigged = () => lvl('rebuild') > 0;
 // with no shifter and no pedals the rig drives itself (the owner, 30 Oct): the aids that work them, bolted on, their
@@ -31,7 +36,7 @@ const RIG_AIDS = ['clutch', 'gas', 'shift', 'steer', 'cruise'];
 const rigDrives = id => rigged() && RIG_AIDS.includes(id);
 const ONE = [[0, 0]]; // a part's cells, across (lanes) and along (ahead up): a single block
 const holdSize = () => 1 + lvl('inventory'); // the hold's slots (the owner: one, upgraded to three)
-const boardW = () => 1, boardH = () => 1 + lvl('lengthen'); // lanes, car lengths
+const boardW = () => 1 + lvl('widen'), boardH = () => 1 + lvl('lengthen'); // lanes, car lengths
 
 // ---- the board: the fortress's plan, progress.fortress ({ parts placed, hold }) ----
 const ICONS = { // a part from above, ahead up, on its first block: the tank's turret and its gun; twin guns; a riveted
@@ -62,8 +67,10 @@ function renderBoard() {
   const f = progress.fortress, n = holdSize(), w = boardW(), h = boardH(), key = JSON.stringify(f) + [n, w, h, innerWidth, innerHeight];
   if (key === shownBoard) return;
   shownBoard = key;
-  const b = $('board').getBoundingClientRect(), gap = 8, label = 16; // the cells as big as the plate allows, the
-  const cell = Math.floor(Math.min(72, (b.width - 3 * gap) / (w + 1), (b.height - label - 2 * gap) / Math.max(h, n))); // hold beside
+  // the cells as big as the plate allows, the hold beside the plan: inside its padding (6 px), past the label (16 px),
+  // the gaps (8 px; 4 px between slots) and the 1 px borders of the plan and each slot
+  const b = $('board'), inW = b.clientWidth - 12, inH = b.clientHeight - 12 - 16 - 8;
+  const cell = Math.floor(Math.min(72, (inW - 8 - 4) / (w + 1), (inH - 2) / h, (inH - 6 * n) / n));
   $('board').style.setProperty('--cell', `${cell}px`);
   Object.assign($('fort-grid').style, { width: `${cell * w}px`, height: `${cell * h}px` });
   $('fort-grid').innerHTML = f.parts.map((p, i) => partHtml(p, `data-part="${i}"`)).join('') + '<i id="fort-ghost"></i>';
@@ -167,6 +174,9 @@ function rigKey(k, repeat) {
 // rigs and the police's pursuit SUVs (police.js; helicopters to come); the rest are the raiders' (gang.js crewTarget),
 // and Hunter's
 const notable = c => !!(c.tank || c.rig || c.suv);
+// the lane beside the rig on your side of the road, for an enemy coming past it: your other lane while it is a lane
+// wide, the one to the right of a fortress over the double yellow; none while it fills your side (car.js lane, rigW)
+const sideLane = () => rigW === 1 ? (lane <= 1 ? 1 - lane : null) : lane >= 1 ? Math.min(lane - 1, 1) : null;
 // the reticle's tag (gang.js renderGang), as the crew's over a spot (oil.js; the owner, 30 Oct: "I really like how the
 // resources have their metadata over them"): what it is, its health, the shells it would take, how far
 function notableTag(t) {
@@ -185,11 +195,12 @@ const GANG_CAR = { every: 8, from: 260, closing: 30 }; // s, m behind you, m/s q
 const CHECK = { near: 25, far: 60, cut: 3, stop: 2, again: 8 }; // m ahead; s to get across, braking, between goes
 let gangClock = 0;
 function updateGangCars(dt) { // distance.js updateRun
-  if (!rigged() || (gangClock -= dt) > 0 || lane > 1) return;
+  const side = sideLane(); // no lane to come past in: none sent
+  if (!rigged() || (gangClock -= dt) > 0 || side == null) return;
   const c = rivals().filter(c => !c.wreck && !c.stage && c.z < odo - GANG_CAR.from).sort((a, b) => b.z - a.z)[0];
   if (!c) return;
   gangClock = GANG_CAR.every;
-  Object.assign(c, { stage: 'chase', z: odo - GANG_CAR.from, lane: 1 - lane, x: MY_LANES[1 - lane], v: speed + GANG_CAR.closing });
+  Object.assign(c, { stage: 'chase', z: odo - GANG_CAR.from, lane: side, x: MY_LANES[side], v: speed + GANG_CAR.closing });
 }
 function gangDrive(c, dt) { // road.js updateTraffic: true while it is at you; else it races as any racer does
   if (!rigged() || c.fleet || c.wreck) return false;
@@ -220,20 +231,27 @@ const rigRun = () => { rigClock = RIG.first; gangClock = GANG_CAR.every; }; // d
 function updateRigs(dt) { // distance.js updateRun
   if (!rigged() || run.boss || traffic.some(c => c.rig && !c.wreck) || (rigClock -= dt) > 0) return;
   const c = traffic.find(c => !c.racer && !c.police && !c.tank && !c.rig && !c.fleet && c !== target && c !== quarry && c.z - odo > 600);
-  const side = 1 - lane;
-  if (!c || lane > 1 || !laneClear(MY_LANES[side], 10)) return;
+  const side = sideLane(), wide = side == null && rigW > 1 && lane <= 1; // a fortress filling your side: it waits up the road
+  if (!c || !wide && (side == null || !laneClear(MY_LANES[side], 10))) return;
   rigClock = RIG.every;
-  Object.assign(c, { rig: true, dir: 1, lane: side, x: MY_LANES[side], z: odo - 60, v: speed + 15, stage: 'pass', look: { rear: RIG_SPRITE },
-                     w: RIG.w, h: RIG.h, hp: null, wreck: false, swerve: null, warned: false, beams: 0, d: NaN, hit: -Infinity });
+  Object.assign(c, { rig: true, dir: 1, look: { rear: RIG_SPRITE }, w: RIG.w, h: RIG.h, hp: null, wreck: false, swerve: null, warned: false,
+                     beams: 0, d: NaN, hit: -Infinity }, wide ? { lane, x: MY_LANES[lane], z: odo + 300, v: speed, stage: 'hold', t: RIG.hold }
+                     : { lane: side, x: MY_LANES[side], z: odo - 60, v: speed + 15, stage: 'pass' });
   flash('RIVAL RIG!', '#f55', false);
   horn();
 }
 function rigDrive(c, dt) { // road.js updateTraffic
-  const gap = c.z - odo, by = lane <= 1 && run.phase === 'run'; // you on your side of the road, in the race
-  if (c.stage === 'pass') { c.v = speed + 15; if (by) c.lane = 1 - lane; if (gap > RIG.ahead) Object.assign(c, { stage: 'hold', t: RIG.hold }); }
+  // a lane beside you to come at you in, in the race; with none (a fortress filling your side) it holds the road ahead
+  const gap = c.z - odo, side = sideLane(), by = side != null && run.phase === 'run';
+  if (c.stage === 'pass') { c.v = speed + 15; if (by) c.lane = side; if (gap > RIG.ahead) Object.assign(c, { stage: 'hold', t: RIG.hold }); }
   else if (c.stage === 'hold') { c.v = Math.max(0, speed + (RIG.ahead - gap) * 0.6); if ((c.t -= dt) <= 0 && by) c.stage = 'drop'; }
-  else if (c.stage === 'drop') { c.v = Math.max(0, speed - 15); if (by) c.lane = 1 - lane; if (gap < 1) c.stage = by ? 'ram' : 'pass'; }
-  else { c.v = speed; c.x += clamp(carX - c.x, -4 * dt, 4 * dt); if (!by) c.stage = 'pass'; else if (Math.abs(c.x - carX) < (RIG.w + CAR_W) / 2) rigRam(c); }
+  else if (c.stage === 'drop') { c.v = Math.max(0, speed - 15); if (by) c.lane = side; if (gap < 1) c.stage = by ? 'ram' : 'pass'; }
+  else { // its side into yours, however wide you are
+    c.v = speed;
+    c.x += clamp(carX - c.x, -4 * dt, 4 * dt);
+    if (!by) c.stage = 'pass';
+    else if (Math.abs(c.x - carX) < (RIG.w + CAR_W) / 2 + 1.75 * (rigW - 1)) rigRam(c);
+  }
   if (c.stage !== 'ram') c.x += clamp(MY_LANES[c.lane] - c.x, -2 * dt, 2 * dt);
   c.z += c.v * dt;
 }
@@ -298,7 +316,7 @@ function lootTick(dt) { // distance.js updateRun: the crates skid to a stop; ste
   for (const l of run.loot) { // full hold leaves it); passed, gone
     l.v = Math.max(0, l.v - LOOT.slow * dt);
     l.z += l.v * dt;
-    if (!l.tried && Math.abs(l.z - odo) < LOOT.reach && sameLane(l.x, carX)) { l.tried = true; l.got = stow(l.part); }
+    if (!l.tried && Math.abs(l.z - odo) < LOOT.reach && onCar(l.x)) { l.tried = true; l.got = stow(l.part); } // any lane it covers
   }
   run.loot = run.loot.filter(l => !l.got && l.z > odo - 20);
 }
@@ -310,7 +328,8 @@ const blocks = kind => rigged() ? progress.fortress.parts.reduce((n, p) => n + (
 const DECK = 250; // kg a cell of deck
 const rigWeight = () => !rigged() ? 0 : boardW() * boardH() * DECK +
   [...progress.fortress.parts, ...progress.fortress.hold].reduce((kg, p) => kg + PARTS[p.kind].kg * p.cells.length, 0);
-const rigDrag = () => rigged() ? 1 + 0.1 * (boardH() - 1) : 1; // its length a little; its width (to come) much more
+const rigDrag = () => rigged() ? boardW() + 0.1 * (boardH() - 1) : 1; // its width is frontal area: a lane's more each; its
+                                                                       // length a little
 const rigPower = () => rigged() ? progress.fortress.parts.reduce((k, p) => k + (p.kind === 'engine' ? ENGINE_POWER[p.from] * p.cells.length : 0), 0) : 0;
 const armorCut = () => Math.min(0.9, 0.25 * lvl('armour') + 0.05 * blocks('armor')); // Armor plating, and armor plates
 
@@ -333,6 +352,11 @@ function engineVoices() { // renderRig, every frame: set again only when it chan
 }
 function quietRig() { heard = ''; setVoices({}); } // distance.js stop: leaving Distance
 
+// a fortress's rams (car.js bump and headOn, distance.js onCollision): a car crushed hurts the rig by the weight it
+// carries against a car's; head-on, it rams through for HEADON% (the owner, 30 Oct: "about 20%"), less its armor
+const HEADON = 20;
+const plowDamage = i => (i.headOn ? HEADON : clamp(i.kmh * 0.25, 2, 25) * CAR_KG / engine.mass) * (1 - armorCut());
+
 let pedalDown = false;
 $('cannon-pedal').onpointerdown = e => { e.preventDefault(); pedalDown = true; fireCannon(); };
 for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) $('cannon-pedal').addEventListener(ev, () => { pedalDown = false; });
@@ -342,6 +366,7 @@ function renderRig() {
   const on = rigged(), now = performance.now();
   engineVoices();
   document.body.classList.toggle('rig', on);
+  document.body.classList.toggle('wide', on && rigW > 1); // a truck's wheel
   if (!on) return;
   renderBoard();
   $('fort-drag').classList.toggle('armed', armed());
@@ -393,6 +418,15 @@ TUTORIALS.push( // the war rig's, once rebuilt (the owner's: the controls change
         'raiders go after them, and the rest of the traffic: Hunter too.' },
     { title: 'SHELLS', at: '.cannon-box',
       both: `Every gang car totaled is out of the race, behind you, and brings ${SHELLS.gang} shells for the cannon.` },
+  ] },
+  // the fortress widened (the owner, 30 Oct: the wheel changes from two lanes wide, and the robot rams)
+  { id: 'wide', name: 'A wide fortress', for: ['widen'], open: () => lvl('widen') > 0, pages: [
+    { title: 'A TRUCK\'S WHEEL', at: '#wheel',
+      both: "Two lanes wide and more, a truck's wheel steers the fortress: a turn shifts it a lane, slowly, over the " +
+        'double yellow too, as far as the road goes.' },
+    { title: 'NO BRAKES',
+      both: 'The robot brakes for no one now and leaves the lanes to you: a car in the way is crushed, for a little speed. ' +
+        'Head-on, the fortress rams through: the car is scrap, the rig takes a beating.' },
   ] },
   // on the road, the first loot dropped (dropLoot); listed once seen
   { id: 'loot', name: 'Loot', open: () => rigged() && progress.toured.includes('loot'), pages: [
