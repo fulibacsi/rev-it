@@ -81,10 +81,10 @@ with sync_playwright() as p:
         js("progress.shells = 10")
 
         # 3. the rig rams: dropped back beside you, it swings into your side; rams barely scratch it; totaled, its scrap
-        got = js("""(() => { const c = target, d0 = progress.damage; Object.assign(c, { stage: 'drop', z: odo + 0.5 });
+        got = js("""(() => { const c = target, d0 = progress.damage, h0 = hpOf(progress.fortress.parts[0]); Object.assign(c, { stage: 'drop', z: odo + 0.5 });
             for (let i = 0; i < 60 && c.stage !== 'pass'; i++) rigDrive(c, 1 / 60);
-            return [c.stage, +(progress.damage - d0).toFixed(2), $('flash').textContent]; })()""")
-        check(f"{layout}: beside you it rams: 6% less a quarter for each Armor plating level (1.5%), RAMMED, then pulls ahead",
+            return [c.stage, +(progress.damage - d0 + h0 - hpOf(progress.fortress.parts[0])).toFixed(2), $('flash').textContent]; })()""")
+        check(f"{layout}: beside you it rams: 6% less a quarter for each Armor plating level (1.5%, on the board's one cell, the cannon), RAMMED, then pulls ahead",
               got == ["pass", 1.5, "RAMMED"], got)
         got = js("""(() => { const c = target, hp = c.hp; ram({ car: c, kmh: 100, side: false }); const scratch = hp - c.hp;
             const s0 = run.scrap; hurtCar(c, 5000); return [Math.round(scratch), c.wreck, run.scrap - s0]; })()""")

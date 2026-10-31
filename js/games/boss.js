@@ -42,7 +42,7 @@ function tankDrive(c, dt) {
   if (c.shell > 0 || gap < 0 || gap > TANK.reach || run.phase !== 'run') return;
   c.shell = TANK.reload;
   tracers.push([c, 'you', performance.now()]);
-  addDamage(TANK.hit * (1 - armorCut())); // damage.js; armor (fortress.js)
+  strike(TANK.hit, c.x, c.z); // fortress.js: on the war rig, the front row
   flash('HIT', '#f55', false);
   crashSound();
   shake = 0.5;

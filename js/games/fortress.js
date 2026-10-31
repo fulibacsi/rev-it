@@ -17,15 +17,15 @@ Object.assign(UPGRADES, {
                `cannon for its board, ${SHELLS.tank} shells and a firing pedal` },
   // the board longer, a row a level (the owner: the grid grows longer and wider; wider comes with the rig taking more
   // lanes), and the hold's slots (the owner: one, upgraded to three). Prices Claude's first guesses, for act5.py: about
-  // 1,000-1,300 scrap and 400 points come in a race
-  lengthen: { name: 'Lengthen', tab: 'fortress', max: 4, base: 400, growth: 2, needs: ['rebuild'],
-              info: l => `the fortress ${1 + l} car${l ? 's' : ''} long: room for ${1 + l} row${l ? 's' : ''} of parts, and ` +
-                'every row weighs and drags' },
+  // 1,000-1,300 scrap and 400 points come in a race. The new row is the bow (growBoard)
+  lengthen: { name: 'Lengthen', tab: 'fortress', max: 4, base: 400, growth: 2, needs: ['rebuild'], bought: () => growBoard(0, 1),
+              info: l => `the fortress ${1 + l} car${l ? 's' : ''} long: room for ${1 + l} row${l ? 's' : ''} of parts, the ` +
+                'new one in front, and every row weighs and drags' },
   inventory: { name: 'Inventory', tab: 'fortress', max: 2, base: 600, growth: 2, wallet: 'points', needs: ['rebuild'],
                info: l => `${1 + l} slot${l ? 's' : ''} in the hold for the parts you pick up` },
   // the board a lane wider a level, to the road's four (the owner: its width is lanes), and the rig with it: from two
   // lanes wide a truck's wheel shifts it a lane at a time, the robot brakes for no one, and it rams (the owner, 30 Oct)
-  widen: { name: 'Widen', tab: 'fortress', max: 3, base: 800, growth: 2.5, needs: ['rebuild'],
+  widen: { name: 'Widen', tab: 'fortress', max: 3, base: 800, growth: 2.5, needs: ['rebuild'], bought: () => growBoard(1, 0),
            info: l => l ? `the fortress ${1 + l} lanes wide: a truck's wheel shifts it a lane at a time, it brakes for no ` +
              'one and rams, head-on too; every lane drags' : 'a lane wide' },
 });
@@ -37,6 +37,10 @@ const rigDrives = id => rigged() && RIG_AIDS.includes(id);
 const ONE = [[0, 0]]; // a part's cells, across (lanes) and along (ahead up): a single block
 const holdSize = () => 1 + lvl('inventory'); // the hold's slots (the owner: one, upgraded to three)
 const boardW = () => 1 + lvl('widen'), boardH = () => 1 + lvl('lengthen'); // lanes, car lengths
+// the board grows as the rig does (Claude's): a row at its front, the bow, and a lane on its left (on the road the rig
+// widens over the double yellow), the parts on it moving back and right with the old deck. So the tank's cannon,
+// mounted on the first single cell, doesn't stay on the front row, where the hits come (the shield, below)
+const growBoard = (dx, dy) => { for (const p of progress.fortress.parts) { p.x += dx; p.y += dy; } };
 
 // ---- the board: the fortress's plan, progress.fortress ({ parts placed, hold }) ----
 const ICONS = { // a part from above, ahead up, on its first block: the tank's turret and its gun; twin guns; a riveted
@@ -59,12 +63,13 @@ const extent = (cells, i) => 1 + Math.max(...cells.map(c => c[i]));
 const partHtml = (p, more = '', cell) => `<div class="part ${p.kind}" ${more} style="--w: ${extent(p.cells, 0)}; --h: ` +
   `${extent(p.cells, 1)};${p.x !== undefined ? ` --x: ${p.x}; --y: ${p.y};` : ''}${cell ? ` --cell: ${cell}px` : ''}">` +
   p.cells.map(([x, y], i) => `<i style="--cx: ${x}; --cy: ${y}">${i ? '' : ICONS[p.kind]}</i>`).join('') + '</div>';
-const taken = (f, x, y) => f.parts.some(p => p.cells.some(([cx, cy]) => p.x + cx === x && p.y + cy === y));
+const partAt = (f, x, y) => f.parts.findIndex(p => p.cells.some(([cx, cy]) => p.x + cx === x && p.y + cy === y));
+const taken = (f, x, y) => partAt(f, x, y) >= 0;
 const fitsAt = (f, cells, x, y) => cells.every(([cx, cy]) => x + cx >= 0 && y + cy >= 0 && x + cx < boardW() && y + cy < boardH() &&
   !taken(f, x + cx, y + cy));
 let shownBoard = ''; // what the board shows: redrawn only when that changes
 function renderBoard() {
-  const f = progress.fortress, n = holdSize(), w = boardW(), h = boardH(), key = JSON.stringify(f) + [n, w, h, innerWidth, innerHeight];
+  const f = progress.fortress, n = holdSize(), w = boardW(), h = boardH(), key = JSON.stringify(f) + [n, w, h, innerWidth, innerHeight, fallen.length];
   if (key === shownBoard) return;
   shownBoard = key;
   // the cells as big as the plate allows, the hold beside the plan: inside its padding (6 px), past the label (16 px),
@@ -73,7 +78,8 @@ function renderBoard() {
   const cell = Math.floor(Math.min(72, (inW - 8 - 4) / (w + 1), (inH - 2) / h, (inH - 6 * n) / n));
   $('board').style.setProperty('--cell', `${cell}px`);
   Object.assign($('fort-grid').style, { width: `${cell * w}px`, height: `${cell * h}px` });
-  $('fort-grid').innerHTML = f.parts.map((p, i) => partHtml(p, `data-part="${i}"`)).join('') + '<i id="fort-ghost"></i>';
+  $('fort-grid').innerHTML = f.parts.map((p, i) => partHtml(p, `data-part="${i}" data-wear="${wear(p)}"`)).join('') +
+    fallen.map(({ p }) => partHtml(p, `data-fall data-wear="2"`)).join('') + '<i id="fort-ghost"></i><i id="fort-hit"></i>';
   $('fort-hold').innerHTML = Array.from({ length: n }, (_, i) => `<div class="slot" data-slot="${i}">` +
     `${f.hold[i] ? partHtml(f.hold[i], '', cell / Math.max(extent(f.hold[i].cells, 0), extent(f.hold[i].cells, 1))) : ''}</div>`).join('');
   for (const el of $('fort-hold').querySelectorAll('.part')) drag(el, (e, first) => dragPart(e, first, +el.parentNode.dataset.slot), dropPart);
@@ -255,14 +261,14 @@ function rigDrive(c, dt) { // road.js updateTraffic
   if (c.stage !== 'ram') c.x += clamp(MY_LANES[c.lane] - c.x, -2 * dt, 2 * dt);
   c.z += c.v * dt;
 }
-function rigRam(c) { // its side into yours: damage (Armor plating takes some), a shove and a jolt; then it pulls ahead
+function rigRam(c) { // its side into yours: a hit on that side, a shove and a jolt; then it pulls ahead
   c.stage = 'pass';
   slide += 4 * Math.sign(carX - c.x); // car.js: knocked across, and steered back
   speed *= 0.9;
   shake = Math.max(shake, 0.5);
   crashSound();
   flash('RAMMED', '#f55', false);
-  addDamage(RIG.hit * (1 - armorCut())); // damage.js
+  strike(RIG.hit, c.x, c.z); // on the side it comes from
   if (wrecked()) finishRun('wrecked');
 }
 
@@ -271,10 +277,10 @@ function rigRam(c) { // its side into yours: damage (Armor plating takes some), 
 // pick it up into the hold (with the hold full it stays on the road); then the board's drag puts it on. Each part does
 // what it came from does, its size its strength (the owner: "each one functional, depending on the source"), and every
 // block weighs. Claude's first draft of the tables and every number, to explore (design notes: Drop tables)
-const PARTS = { // a block's kg, and the sizes (blocks) it comes in
-  cannon: { name: 'CANNON', kg: 900, sizes: [1, 2] }, gun: { name: 'GUN', kg: 250, sizes: [1, 2] },
-  armor: { name: 'ARMOR', kg: 500, sizes: [1, 2, 3] }, spikes: { name: 'SPIKES', kg: 300, sizes: [1, 2, 3] },
-  engine: { name: 'ENGINE', kg: 700, sizes: [1, 2] },
+const PARTS = { // a block's kg, its health (the shield, below) and the sizes (blocks) it comes in
+  cannon: { name: 'CANNON', kg: 900, hp: 100, sizes: [1, 2] }, gun: { name: 'GUN', kg: 250, hp: 8, sizes: [1, 2] },
+  armor: { name: 'ARMOR', kg: 500, hp: 20, sizes: [1, 2, 3] }, spikes: { name: 'SPIKES', kg: 300, hp: 15, sizes: [1, 2, 3] },
+  engine: { name: 'ENGINE', kg: 700, hp: 10, sizes: [1, 2] },
 };
 // the nine shapes (the owner: one to three blocks, each turn its own drop, never turned): one; two stacked, two side by
 // side; three in a line along and across, and the bent three in its four turns
@@ -331,7 +337,52 @@ const rigWeight = () => !rigged() ? 0 : boardW() * boardH() * DECK +
 const rigDrag = () => rigged() ? boardW() + 0.1 * (boardH() - 1) : 1; // its width is frontal area: a lane's more each; its
                                                                        // length a little
 const rigPower = () => rigged() ? progress.fortress.parts.reduce((k, p) => k + (p.kind === 'engine' ? ENGINE_POWER[p.from] * p.cells.length : 0), 0) : 0;
-const armorCut = () => Math.min(0.9, 0.25 * lvl('armour') + 0.05 * blocks('armor')); // Armor plating, and armor plates
+const armorCut = () => 0.25 * lvl('armour'); // Armor plating (gang.js); the war rig's armor parts are its shield, below
+
+// ---- the shield (layer 7; the owner, 29 Oct: "parts fall off"): a hit on the war rig lands on the board's cell by where
+// it comes from, ahead up as on the sonar (Claude's): what is ahead of you on the front row and what is behind on the
+// back row, in the column it meets; what comes from beside you on that side's column, a row at random. A part there
+// takes the whole hit, an empty cell lets it through to the rig, both less Armor plating's share. A part's health is
+// its blocks' (the owner: "growing with its size"), and it is kept from race to race: repairs mend the rig only (the
+// owner); worn, a part shows cracked. With none left the whole part falls off, gone for good, blinking as it goes and
+// leaving a hole its shape. A block's health by what it is, Claude's numbers from act5.py: the tank's cannon, a turret,
+// by far the toughest (on the first board, a single cell, it takes every hit of the first race: 30-40), the rest
+// expendable, armor the most of them
+const LANE_W = 3.5; // m between the lanes' centers
+const FALL = 1200;  // ms a part blinks as it falls off
+const fullHp = p => PARTS[p.kind].hp * p.cells.length;
+const hpOf = p => p.hp ?? fullHp(p); // never hit, it is whole
+const wear = p => { const left = hpOf(p) / fullHp(p); return left > 2 / 3 ? 0 : left > 1 / 3 ? 1 : 2; }; // the cracks it shows
+let fallen = [], struck = null; // the parts falling off, { p, t }; the cell hit last, { x, y, part, t }
+// the cell a hit from a car (or a gun) at x, z meets (z its rear, as the traffic's): it came in through the face the
+// two overlap least on, as a collision does: across, from beside you; along, from ahead or behind, the one its middle is
+// on. A shooter far up the road is far more apart along than across: from ahead
+function cellAt(x, z) {
+  const w = boardW(), h = boardH(), half = CAR_W / 2 + 1.75 * (rigW - 1); // road.js, car.js
+  const across = Math.min(carX + half, x + CAR_W / 2) - Math.max(carX - half, x - CAR_W / 2); // m of overlap (a gap below 0)
+  const along = Math.min(odo + MY_FRONT, z + CAR_LEN) - Math.max(odo - MY_REAR, z);
+  if (across < along) return [x < carX ? 0 : w - 1, Math.floor(rand() * h)];
+  return [clamp(Math.round((x - carX) / LANE_W + (w - 1) / 2), 0, w - 1), z + CAR_LEN / 2 > odo + (MY_FRONT - MY_REAR) / 2 ? 0 : h - 1];
+}
+function strike(pct, x, z) { // damage.js hurt, boss.js, rigRam: pct the hit's damage before Armor plating, from x, z
+  const d = pct * (1 - armorCut());
+  if (!rigged()) return addDamage(d); // damage.js
+  const f = progress.fortress, [cx, cy] = cellAt(x, z), i = partAt(f, cx, cy);
+  struck = { x: cx, y: cy, part: i >= 0, t: performance.now() };
+  if (i < 0) return addDamage(d); // through to the rig
+  const p = f.parts[i];
+  p.hp = Math.max(0, +(hpOf(p) - d).toFixed(2));
+  if (p.hp <= 0) fallOff(i);
+  if (!progress.toured.includes('shield')) openTour('shield', true);
+}
+function fallOff(i) { // and what it did goes with it: its weight, its pull, its voice, its strength
+  const [p] = progress.fortress.parts.splice(i, 1);
+  fallen.push({ p, t: performance.now() });
+  letGo(); // a part held to throw off: the board's numbers have moved
+  applyUpgrades(); // distance.js
+  save();
+  flash(`${PARTS[p.kind].name} ${p.cells.length} LOST`, '#f55', false);
+}
 
 // an engine heard (the owner, 30 Oct: "a new engine sound added on top of the existing one"): a voice for each kind of
 // engine on the board, louder the more blocks of it (engine.js setVoices); the heavy ones' file loaded the first time
@@ -352,10 +403,10 @@ function engineVoices() { // renderRig, every frame: set again only when it chan
 }
 function quietRig() { heard = ''; setVoices({}); } // distance.js stop: leaving Distance
 
-// a fortress's rams (car.js bump and headOn, distance.js onCollision): a car crushed hurts the rig by the weight it
-// carries against a car's; head-on, it rams through for HEADON% (the owner, 30 Oct: "about 20%"), less its armor
+// a fortress's rams (car.js bump and headOn, damage.js hurt): a car crushed hurts the rig by the weight it carries
+// against a car's; head-on, it rams through for HEADON% (the owner, 30 Oct: "about 20%"), before Armor plating
 const HEADON = 20;
-const plowDamage = i => (i.headOn ? HEADON : clamp(i.kmh * 0.25, 2, 25) * CAR_KG / engine.mass) * (1 - armorCut());
+const plowHit = i => i.headOn ? HEADON : clamp(i.kmh * 0.25, 2, 25) * CAR_KG / engine.mass;
 
 let pedalDown = false;
 $('cannon-pedal').onpointerdown = e => { e.preventDefault(); pedalDown = true; fireCannon(); };
@@ -368,7 +419,12 @@ function renderRig() {
   document.body.classList.toggle('rig', on);
   document.body.classList.toggle('wide', on && rigW > 1); // a truck's wheel
   if (!on) return;
+  fallen = fallen.filter(x => now - x.t < FALL);
   renderBoard();
+  const ago = struck ? now - struck.t : Infinity, hit = $('fort-hit'); // the cell hit: amber on a part, red through to the rig
+  hit.className = ago < 400 ? (struck.part ? 'part' : 'rig') : '';
+  if (ago < 400) Object.assign(hit.style, { left: `${struck.x * 100 / boardW()}%`, top: `${struck.y * 100 / boardH()}%`,
+                                            opacity: (1 - ago / 400).toFixed(2) });
   $('fort-drag').classList.toggle('armed', armed());
   if (throwing) {
     const held = (now - throwing.from) / THROW;
@@ -436,6 +492,15 @@ TUTORIALS.push( // the war rig's, once rebuilt (the owner's: the controls change
     { title: 'PARTS', at: '#board',
       both: 'Drag it from the hold onto the board. A cannon adds to every shell, a gun to the guns, armor takes the ' +
         'hits, spikes hurt in a ram, an engine pulls. The bigger, the stronger, and every block weighs.' },
+  ] },
+  // on the road, the first hit on a part (strike); listed once seen
+  { id: 'shield', name: 'The shield', open: () => rigged() && progress.toured.includes('shield'), pages: [
+    { title: 'THE SHIELD', at: '#board',
+      both: 'A hit lands on the board where it comes from: shells and head-ons on the front row, a ram on its side. A ' +
+        'part there takes it; an empty cell lets it through to the rig.' },
+    { title: 'WORN OUT', at: '#board',
+      both: "The bigger a part, the more it takes, the tank's cannon most of all. Worn, it cracks, and repairs mend only " +
+        'the rig: worn out, it falls off, gone for good.' },
   ] },
   // on the road, the first time a police SUV is in the reticle (renderRig); listed once seen
   { id: 'pursuit', name: 'Police SUVs', open: () => rigged() && progress.toured.includes('pursuit'), pages: [

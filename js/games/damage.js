@@ -15,8 +15,9 @@ let heat = 0;   // engine temperature with an ECU tune, 0 cold .. 1 the top of t
 const HOT = 0.8; // the red zone: from here on the heat damages the engine
 const tuned = () => lvl('ecuRev') + lvl('ecuPower') > 0;
 
-// armor plating (gang.js) takes a quarter off a level, the war rig's armor plates more (fortress.js armorCut)
-function hurt(kmh, headOn) { addDamage((headOn ? 50 : clamp(kmh * 0.25, 2, 25)) * (1 - armorCut())); }
+// a collision's hit (distance.js onCollision), less Armor plating's quarter a level (gang.js): on the war rig on the
+// board's cell it meets (fortress.js strike, and plowHit for a fortress's rams)
+function hurt(i) { strike(i.plow ? plowHit(i) : i.headOn ? 50 : clamp(i.kmh * 0.25, 2, 25), i.car.x, i.car.z); }
 function addDamage(pct) {
   const before = progress.damage;
   progress.damage = Math.min(100, before + pct);

@@ -328,9 +328,8 @@ function onCollision(i) {
   if (arOn()) ram(i); // gang.js: the car you hit takes it too
   if (i.mad && !i.plow) total(i.car, false, 'HEAD-ON!'); // gang.js
   if (!damageOn()) return;
-  if (i.plow) { addDamage(plowDamage(i)); if (wrecked() && !run.limp) finishRun('wrecked'); return; } // a fortress rams on (fortress.js)
-  hurt(i.kmh, i.headOn);
-  if (i.mad) { if (wrecked() && !run.limp) finishRun('wrecked'); return; }
+  hurt(i); // damage.js
+  if (i.mad || i.plow) { if (wrecked() && !run.limp) finishRun('wrecked'); return; } // a fortress rams on (fortress.js)
   if (i.headOn) finishRun('head-on'); else if (wrecked() && !run.limp) finishRun('wrecked');
 }
 
