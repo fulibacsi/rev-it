@@ -118,7 +118,7 @@ with sync_playwright() as p:
         while (!c.wreck && n < 10) { ram({ car: c, kmh: 100, side: false, headOn: false }); n++; } return n; })""")
     check("hits to total, full bull bar: traffic 1, a racer 2, police 2", got == [1, 2, 2], got)
     # 9. armour: a quarter off your damage a level
-    got = js("[0, 2].map(l => { progress.levels.armour = l; progress.damage = 0; hurt(100, false); return +progress.damage.toFixed(2); })")
+    got = js("[0, 2].map(l => { progress.levels.armour = l; progress.damage = 0; hurt({ kmh: 100, car: {} }); return +progress.damage.toFixed(2); })")
     check("armour 2: a 100 km/h bump does half the damage", got == [25, 12.5], got)
     js("progress.damage = 0; progress.levels.armour = 0")
     # 10. spiked hubs: a side-swipe while moving over costs no speed and counts one more hit
