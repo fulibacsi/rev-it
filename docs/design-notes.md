@@ -1348,6 +1348,36 @@ race, the loot lost to a full inventory, and the parts lost a race.
      and changes, and, to fit a phone, counts the eight CC0 ones instead of naming them (CREDITS.md does). `loot_test`
      checks the voices: the file not loaded before, a rig's engine heard as the truck geared to your revs, an SUV's V8
      a second voice, one thrown off gone, none in Free drive.
+   - Widen (built 31 Oct), the owner's answers of 30 Oct: a truck's wheel shifts the rig a lane at a time ("Shift
+     across", over "Stay on its side" and "Shift, lock at four"); a wide fortress rams head-ons through ("It rams
+     through", over "Still a DNF" and "Only with the Grinder"); all four lanes now ("All four now", over two now and
+     the rest with the Grinder).
+     - The card: 3 levels, 800 scrap growing 2.5 times (800, 2,000, 5,000); the board a lane wider a level, to four.
+     - On the road the rig covers its lanes (`car.js` rigW: lane the rightmost, carX their middle; the sonar's mark as
+       wide). Touching, room and the loot go by its width. The wheel (or ← →) shifts it a lane at a time, as far as
+       the road goes (over the double yellow with Reckless driving), slower by the square root of its lanes; four wide
+       it fills the road and goes nowhere. From two lanes the wheel is a truck's: a thicker rim, a red spinner knob.
+     - From two lanes wide the robot brakes for no one and leaves the lanes to you: Autocruise, Lane assist, Hunter and
+       Reckless auto-drive keep their hands off (their plates say "no brakes: the rig rams"). A car of the traffic's
+       run into is crushed (CRUSHED, its scrap), the rig keeping the momentum the two shared (a car 1,300 kg against
+       the rig's weight), and the rig hurt by that ratio. A notable enemy is bumped as ever. Head-on, the fortress rams
+       through (RAMMED THROUGH): the car scrap, the rig 20% less its armor, the run goes on; an oncoming car in its way
+       swerves to the far lane if it is free. A lane wide, a head-on is still a DNF.
+     - The enemies come past in the lane beside the rig on your side (your other lane a lane wide, the one to the
+       right of a fortress over the double yellow). With none (a fortress filling your side) the gang's cars aren't
+       sent, the police come head-on, an SUV that has braked leaves, and a rival rig waits up the road in the reticle
+       instead of ramming.
+     - Its width is frontal area: the drag times its lanes (and a tenth more a row past the first).
+     - The tutorial A wide fortress (a truck's wheel; no brakes) pops up as it is bought. Claude's numbers, first guesses.
+     - The board's cells now fit inside the plate's padding and borders (the hold fell below a two-lane plan on a
+       desktop).
+     - `act5.py` (seeds 1 and 2, 12 races; the bot buys Widen as it can, shifts the fortress over a crate's lane and back
+       home): two lanes wide by race 3-5, three by race 8-9 (four not by race 12: 5,000 scrap); a run's meters two
+       lanes wide as before or more (3,000-3,900, no braking), three lanes 2,200-2,800 (three times the drag, 12 t); 0-1
+       cars crushed a race, 1-12 head-ons rammed through (mostly the bot's shifts for crates, and three lanes always
+       cover an oncoming one); 4-50% damage a race (40-80% a lane wide: the gang can no longer pass to brake-check);
+       P1 every race (no lane for the gang to come past in); the scrap spent to under 1,400.
+     - `widen_test` checks it on both layouts.
 7. Damage by where it comes from, parts falling off, hits on empty cells reaching the rig.
 8. Four lanes: the Grinder, mines and the mine roller.
 9. The act's automation.

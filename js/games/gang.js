@@ -121,6 +121,7 @@ function fireGuns(dt) {
 const HIT = 34, NUDGE = 30, OHKO = 200;
 function ram(i) {
   const c = i.car;
+  if (i.plow && c && !c.wreck && !c.fleet) return total(c, false, i.headOn ? 'RAMMED THROUGH' : 'CRUSHED'); // a fortress (car.js)
   if (!c || c.wreck || c.fleet || i.headOn || !i.side && i.kmh < NUDGE) return;
   if (i.kmh > OHKO && !notable(c)) return total(c, false, 'OHKO!');
   if (c.cut > 0) return total(c, false, 'HAD IT COMING!'); // Fuel madness: it cut in on you, it's totaled (road.js c.cut)

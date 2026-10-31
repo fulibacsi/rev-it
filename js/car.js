@@ -21,45 +21,62 @@ let spinning = false;
 // into a car this step, impact: how ({ kmh, headOn, car }); brokenGears: gears that won't go in (Distance's damage)
 let lane = 0, fromLane = 0, carX = 0, slide = 0, crashed = false, impact = null, openLanes = 2, brokenGears = [];
 let steering = 1; // how quickly the car moves over (Distance's steering upgrade)
+// lanes the car covers: Distance's war rig, widened (fortress.js); lane is the rightmost of them, carX their middle
+let rigW = 1;
+const laneX = (l = lane) => (ROAD_LANES[l] + ROAD_LANES[l + rigW - 1]) / 2;
+// a fortress's rams (rigW 2 or more): a car of the traffic's weight against the rig's, momentum shared
+const CAR_KG = 1300;
+const plowed = v => (engine.mass * speed + CAR_KG * v) / (engine.mass + CAR_KG);
+const heavy = c => c.tank || c.rig || c.suv; // Distance's notable enemies: as heavy as the rig, never crushed
 let bullBar = 0, spikes = false; // Distance's War Rig: a bump costs you less speed; a side-swipe costs you none
 
 // the car as it left the factory (only the Distance garage tunes it)
 const STOCK_GRIP = CAR.grip, STOCK_DRAG = CAR.drag;
 function stockCar() {
   for (const e of ENGINES) Object.assign(e, e.stock);
-  CAR.grip = STOCK_GRIP; CAR.drag = STOCK_DRAG; openLanes = 2; brokenGears = []; steering = 1; bullBar = 0; spikes = false;
+  CAR.grip = STOCK_GRIP; CAR.drag = STOCK_DRAG; openLanes = 2; brokenGears = []; steering = 1; bullBar = 0; spikes = false; rigW = 1;
 }
 function resetCar() { // standing in the right lane, in neutral, feet off the pedals
   speed = odo = 0; gear = 0; locked = spinning = false;
   clutchPedal = brakePedal = gasPedal = 0;
-  lane = fromLane = 0; carX = ROAD_LANES[0]; slide = 0;
+  lane = fromLane = 0; carX = laneX(0); slide = 0;
 }
 
 // lane changes: dir -1 to the left, +1 to the right. You stay on your side of the double yellow unless the oncoming
-// lanes are open (reckless driving), and the car only moves over while it rolls, quicker the faster it goes.
+// lanes are open (reckless driving), and the car only moves over while it rolls, quicker the faster it goes. A rig
+// lanes wide shifts a lane at a time, as far as the road goes, the wider the slower (a truck's wheel: the owner, 30 Oct)
 function changeLane(dir) {
-  const to = clamp(lane - dir, 0, openLanes - 1);
+  const to = clamp(lane - dir, 0, Math.max(0, openLanes - rigW));
   if (to !== lane) { fromLane = lane; lane = to; }
 }
 function stepLane(dt) {
-  const most = Math.min(3.5, speed * 0.15) * steering, want = clamp((ROAD_LANES[lane] - carX) * 2 * steering, -most, most);
-  slide += clamp(want - slide, -6 * steering * dt, 6 * steering * dt); // steering in and out: an S-curve, not a jump
+  const turn = steering / Math.sqrt(rigW), most = Math.min(3.5, speed * 0.15) * turn;
+  const want = clamp((laneX() - carX) * 2 * turn, -most, most);
+  slide += clamp(want - slide, -6 * turn * dt, 6 * turn * dt); // steering in and out: an S-curve, not a jump
   carX += slide * dt;
 }
 // ran into car c: you lose most of your speed, down to well under its speed so it pulls away instead of being hit
 // again, and a half-done lane change swerves back to where it came from. A bull bar keeps more: at 3 levels you
-// carry on at its speed. With spiked hubs a side-swipe (into it while moving over) costs you no speed
+// carry on at its speed. With spiked hubs a side-swipe (into it while moving over) costs you no speed. A fortress
+// (rigW 2 or more) plows on: a car of the traffic's is crushed, and costs it only the momentum it had
 function bump(c) {
-  const side = Math.abs(ROAD_LANES[lane] - carX) > 0.5; // was pulling over into it
+  if (rigW > 1 && !heavy(c)) {
+    impact = { kmh: Math.abs(speed - c.v) * 3.6, headOn: false, car: c, plow: true };
+    speed = Math.max(0, plowed(c.v));
+    crashed = true;
+    return;
+  }
+  const side = Math.abs(laneX() - carX) > 0.5; // was pulling over into it
   impact = { kmh: Math.abs(speed - c.v) * 3.6, headOn: false, car: c, side };
   if (!(side && spikes)) speed = Math.min(speed * (0.35 + 0.15 * bullBar), c.v * (0.4 + 0.2 * bullBar));
   if (side) [lane, fromLane] = [fromLane, lane]; // back where it came from
   crashed = true;
 }
-// ran head-on into an oncoming car: both speeds add up, and the car stops dead
+// ran head-on into an oncoming car: both speeds add up, and the car stops dead. A fortress rams through (the owner,
+// 30 Oct), losing the momentum the car brought
 function headOn(c) {
-  impact = { kmh: (speed + c.v) * 3.6, headOn: true, car: c };
-  speed = 0;
+  impact = { kmh: (speed + c.v) * 3.6, headOn: true, car: c, plow: rigW > 1 };
+  speed = rigW > 1 ? Math.max(0, plowed(-c.v)) : 0;
   crashed = true;
 }
 

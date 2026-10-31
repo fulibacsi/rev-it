@@ -232,6 +232,8 @@ Each upgrade and what it needs, one line each: the list to edit.
 - Lengthen ← Rebuild (4 levels, 400 scrap doubling: the board a row longer a level, to five; every row weighs and
   drags)
 - Inventory ← Rebuild (2 levels, 600 points doubling: the hold a slot more a level, to three)
+- Widen ← Rebuild (3 levels, 800 scrap growing 2.5 times: the board and the rig a lane wider a level, to four; from
+  two lanes a truck's wheel, no brakes, rams and head-ons rammed through)
 - Its page keeps a work sign, under construction, while the rest is built. The other cards are planned (below).
 
 ## The Crew page (26 Oct)
@@ -259,7 +261,7 @@ the tabs already are.
 
 ```mermaid
 flowchart TD
-  subgraph X["Fortress · the tab, the Rebuild, Lengthen and Inventory built, the rest planned"]
+  subgraph X["Fortress · the tab, the Rebuild, Lengthen, Inventory and Widen built, the rest planned"]
     fortressTab(["Fortress tab"])
     rebuild["Rebuild"]
     lengthen["Lengthen"]
@@ -280,7 +282,7 @@ flowchart TD
 - Rebuild ← Fortress tab (the tank's parts: the car rebuilt into a war rig, the cockpit with it, the 1×1 grid and the
   tank's cannon to place, with 10 shells)
 - Lengthen ← Rebuild (a row a level; built 30 Oct)
-- Widen ← Rebuild (a lane a level, to four)
+- Widen ← Rebuild (a lane a level, to four; built 31 Oct)
 - Inventory ← Rebuild (one slot to three; built 30 Oct)
 - Grinder ← Rebuild (eats what it reaches; at four lanes, the oncoming traffic too)
 - Mine roller ← Widen 2+ (mines do no damage; by three lanes there is little room left to steer round one)

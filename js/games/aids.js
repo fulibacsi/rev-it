@@ -99,7 +99,8 @@ const moveOver = () => changeLane(lane ? 1 : -1); // to the other lane
 // lane assist: at the last moment (under 1.8 s from hitting a slower car) it swerves into the other lane if that is
 // clear. It doesn't brake: boxed in, you still have to.
 function laneAssist() {
-  if (wheel.held || lane > 1 || !settled()) return; // on the wrong side of the road you are on your own
+  // on the wrong side of the road you are on your own; a fortress (fortress.js) swerves for no one: it rams
+  if (wheel.held || lane > 1 || !settled() || rigW > 1) return;
   const a = carAhead(MY_LANES[lane], takeRam);
   if (a && a.closing > 0 && a.gap / a.closing < 1.8 && laneClear(MY_LANES[1 - lane], a.gap + 20)) moveOver();
 }
@@ -117,7 +118,9 @@ let cruiseBrake = false; // the car it has its foot on the brake for, or false (
 // auto-drive took the oncoming lane into three times the head-ons
 const CRUISE_BRAKE = 5.5, CRUISE_HOLD = 3.7;
 function autocruise() {
-  if (wheel.held || lane > 1) return; // it keeps to its side of the road; over there you are on your own
+  // it keeps to its side of the road; over there you are on your own. Two lanes wide and more the war rig brakes for no
+  // one and rams (the owner, 30 Oct: "we are an unstoppable fortress"): the gas stays down, the lanes are yours
+  if (wheel.held || lane > 1 || rigW > 1) return;
   const reach = a => a && a.closing > 0 ? a.gap / a.closing : Infinity; // s until you'd hit it
   const mine = carAhead(MY_LANES[lane], takeRam), theirs = carAhead(MY_LANES[1 - lane], takeRam);
   const roomBeside = laneClear(MY_LANES[1 - lane], MY_FRONT + 6) && reach(theirs) > 2.5; // can move over now, safely
@@ -151,7 +154,7 @@ function autocruise() {
 
 function hunt() { // into the hunted car's lane, on your side of the road; your hand on the wheel overrides it
   const c = crewTarget();
-  if (wheel.held || lane > 1 || !settled() || !hunted(c)) return;
+  if (wheel.held || lane > 1 || !settled() || !hunted(c) || rigW > 1) return; // a fortress rams whatever is ahead anyway
   const to = MY_LANES.findIndex(x => sameLane(x, c.x));
   if (to >= 0 && to !== lane) changeLane(lane < to ? -1 : 1);
 }
@@ -186,6 +189,7 @@ const meets = x => { // s until the first oncoming car in lane x meets you
 };
 function recklessLanes() {
   if (lane > 1 && cruiseBrake) { brakePedal = 0; cruiseBrake = false; } // autocruise doesn't drive over there
+  if (rigW > 1) return; // a fortress's lanes are the wheel's (car.js changeLane)
   if (wheel.held || Math.abs(carX - ROAD_LANES[lane]) > 0.3) return; // your hand on the wheel, or already moving over
   const reach = a => a && a.closing > 0 ? a.gap / a.closing : Infinity, brave = chicken && run.flashes > 0;
   const tank = run.tank && !run.tank.wreck; // boss.js: it can't be passed, so no going round it into the traffic
