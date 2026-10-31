@@ -13,7 +13,9 @@ filled at once). Widened, it shifts
 the fortress over a crate's lane and back to its side of the road; it counts the cars crushed and the head-ons rammed
 through. The shield (layer 7): the hits the board's parts took and those that reached the rig, the parts that fell off,
 and the health the board's parts have left after the race (worn parts aren't repaired). The police's helicopters
-(layer 7): come, shot down, and their bursts (strafing runs; the bot never dodges one). The act's own targets (10-15 races to the final fight) wait for its later layers.
+(layer 7): come, shot down, and their bursts (strafing runs; the bot never dodges one). Under each race, the ledger of
+the currencies: what the race brought in (meters from the run and the crew's racing, less the nitro refill; points;
+refined fuel; scrap) and what went out between races (repairs, meters to fuel, the cards bought), and what is left. The act's own targets (10-15 races to the final fight) wait for its later layers.
 Usage: act5.py [races] [seed] [overrides], the overrides JavaScript run first to try other numbers ("CANNON.damage = 300")."""
 import json, sys
 from playwright.sync_api import sync_playwright
@@ -91,8 +93,10 @@ with sync_playwright() as p:
     js("const f = progress.fortress; f.parts.push({ ...f.hold.shift(), x: 0, y: 0 }); 0")  # the cannon on the board
     print("the Fortress tab and the Rebuild bought:", bought, "| the cannon mounted:", js("cannonOn()"), "| points left", js("progress.points"))
     tanks0 = js("progress.tanks")
+    WALLET = "({ bank: progress.bank, points: progress.points, fuel: progress.fuel, scrap: progress.scrap, crude: progress.crude })"
     for race in range(1, RACES + 1):
         boss = js("bossRace()")
+        w0 = js(WALLET)
         r = js(f"""(() => {{ {f"rng = {SEED * 1000 + race};" if SEED is not None else ""} window.nextPress = 0; reloading = 0;
                   Object.assign(window, {{ shells: 0, hits: 0, rigs: 0, rigsDown: 0, rams: 0, gangDown: 0, checks: 0, suvs: 0, suvsDown: 0, made: 0, picked: 0, crushed: 0, through: 0, onParts: 0, onRig: 0, fell: [], helis: 0, helisDown: 0, bursts: 0 }});
                   simRun({{ ...progress.levels }}, 2, 1, {{}}, true);
@@ -100,10 +104,13 @@ with sync_playwright() as p:
                   dmg: Math.round(progress.damage), shells, hits, got: run.shells, left: progress.shells, rigs, rigsDown, rams, gangDown, checks, suvs, suvsDown,
                   beat: run.beatTank, tank: run.tank ? Math.round(Math.max(0, run.tank.hp ?? tankHealth())) : null, made, picked, m: run.gain, crushed, through, w: rigW, onParts, onRig, fell, helis, helisDown, bursts,
                   worn: Math.round(100 * progress.fortress.parts.reduce((k, p) => k + hpOf(p), 0) / Math.max(1, progress.fortress.parts.reduce((k, p) => k + fullHp(p), 0))) }}; }})()""")
+        w1 = js(WALLET)  # the race's takings: meters (the run's, the crew's racing, less the nitro), points, refined fuel, scrap
         wheel = js("wheel.held = false")
         js("while (repair() && progress.damage > 0);")
         fixed = js("[Math.round(progress.damage), progress.bank]")
+        w2 = js(WALLET)
         js(f"convert(Math.max(0, Math.floor((progress.bank - {RESERVE}) / pumpPrice())))")
+        w3 = js(WALLET)
         js("""(() => { const m = Math.max(30, progress.pace) * runTime(), spots = nextSpots().filter(s => s.z < m), big = biggest(), n = fleetSize();
             const room = spots.reduce((k, s) => k + cap(s), 0) * reach() / m, want = Math.min(n, Math.round(room / 1.3));
             const share = progress.crude > 0.6 * tankSize() ? 0.5 : progress.crude < 0.2 * tankSize() ? 0.25 : 0.35;
@@ -120,6 +127,11 @@ with sync_playwright() as p:
             applyUpgrades();
             const by = {}; for (const p of f.parts) by[p.kind] = (by[p.kind] ?? 0) + p.cells.length;
             return [Object.entries(by).map(([k, n]) => `${k} ${n}`).join(' '), f.hold.length, Math.round(rigWeight())]; })()""")
+        w4 = js(WALLET)
+        ledger = (f"meters +{w1['bank'] - w0['bank']:,} repairs -{w1['bank'] - w2['bank']:,} to fuel -{w2['bank'] - w3['bank']:,} "
+                  f"cards -{w3['bank'] - w4['bank']:,} left {w4['bank']:,} | points +{w1['points'] - w0['points']:,} cards -{w3['points'] - w4['points']:,} "
+                  f"left {w4['points']:,} | fuel +{w1['fuel'] - w0['fuel']:.1f} refined +{w3['fuel'] - w2['fuel']:.0f} bought cards -{w3['fuel'] - w4['fuel']:.1f} "
+                  f"left {w4['fuel']:.1f} | scrap +{w1['scrap'] - w0['scrap']:,} cards -{w3['scrap'] - w4['scrap']:,} left {w4['scrap']:,}")
         res = ("P" + str(r["p"])) if r["p"] else r["dnf"]
         print(f"race {race:2}: {res:10} totals {r['totals']:2} (gang {r['gangDown']:2}) +{r['scrap']:4} scrap  shells {r['shells']:2} hit {r['hits']:2} "
               f"+{r['got']:2} left {r['left']:3}  rigs {r['rigs']} down {r['rigsDown']} rams {r['rams']:2}  suvs {r['suvs']} down {r['suvsDown']}  helis {r['helis']} down {r['helisDown']} bursts {r['bursts']}  checks {r['checks']:2}  heat {r['heat']:3}%  "
@@ -127,5 +139,6 @@ with sync_playwright() as p:
               f"hold {board[1]}  {board[2]:,} kg  {r['m']:,} m  {r['w']} wide, crushed {r['crushed']} through {r['through']}  "
               f"hits on parts {r['onParts']:2} on the rig {r['onRig']:2}, lost [{', '.join(r['fell'])}], health left {r['worn']}%"
               + (f"  TANK {'beaten' if r['beat'] else str(r['tank']) + ' left'}" if boss else "") + f"  bought {' '.join(got)}")
+        print("          " + ledger)
     print(f"tanks beaten in {RACES} races: {js('progress.tanks') - tanks0} | scrap {js('progress.scrap')} | points {js('progress.points')} | crew {js('fleetSize()')}")
     b.close(); print("ERRORS:", errs or "none")

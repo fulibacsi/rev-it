@@ -1031,6 +1031,90 @@ notes went over to US spelling and US names with it (the owner, 28 and 30 Oct; s
 fortress on wheels from what the army and the rival gang leave behind, until it fills the road. Mortal Engines'
 predator cities with Dredge's hull grid, and Fury Road's War Rig shedding parts all chase long.
 
+**The feel** (settled with the owner on 31 Oct, in rounds, after layer 7; where it differs from the answers below, it
+wins, and the layers ahead follow it):
+- Not hunted but hungry for battle (the owner). The enemies still come at you: the rival gang rams you, cuts in and
+  brakes, and comes past to lay a mine in your lane; the police still try to stop you. The difference is in the
+  player's head: "come at me, and see who's better". Every fight is loot coming to you, and the loot is how you grow
+  to take on more, as Katamari Damacy's ball needs bigger and bigger things (the owner). The nearest game in our
+  setting is Mad Max (2015), its convoys hunted for car parts (Claude's).
+- The board is the build, Backpack Hero's backpack (the owner): parts come in fast and the board never quite fits, so
+  you play Tetris with it as you drive, deciding quickly what to mount, what to throw off and what to leave on the
+  road, while dodging, collecting and attacking on the road.
+  - Packing only in the run, never in the garage (the owner). The hold carries over from race to race.
+  - A swap in one move (Claude's, agreed): a part dropped onto mounted ones throws those off, the ghost amber over
+    what it would replace.
+  - The pace (the owner): a swap or a loss about every 5 s, some ten in a 50 s run, so the board is in your hands all
+    race. Claude's first guess, one a minute, would have meant a swap every other race.
+  - If packing at speed proves too much on the phone, time slowing while a part is held is the fallback (Claude's).
+    The first thing to try on the owner's phone.
+  - Adjacency (parts that boost or need their neighbors, Backpack Hero's depth): not at first (the owner); revisited if
+    the packing proves shallow.
+- Pressure, so that leaving the loot on the road is never the easy way (the owner: "we need something that destroys
+  the parts all the time"):
+  - Wear with use (Claude's, agreed): the cannon loses health with every shell, a gun with every burst, spikes with
+    every ram, an engine while it pulls hard; armor only from hits, its job. Fighting both uses up the board and fills
+    it.
+  - Salvage condition (Claude's, agreed): a crate's part comes worn, about 40-100%, so a fresher one is worth a swap
+    even on a full board.
+  - More enemies at you as the fortress grows (below), and every drop below 100% (the owner: ten SUVs totaled
+    shouldn't be ten crates).
+- Ambushes (Claude's word, the owner's liking): heat retires once the car is a war rig, and the scanner, which is the
+  heat meter, goes with the Rebuild (the owner). Each race's ambushes are drawn ahead, semi-random as act 3's spots
+  are: clusters and gaps, five draws and the middle one kept (the owner: "a bit of randomization, like in act 3").
+  Their budget is how built-out the fortress is (the owner: a 3x4 with two cannons and armor sees far more than a 2x3
+  with one): its size, its firepower and its parts' health left, so a battered fortress draws fewer. Bigger means more
+  of them and tougher versions (the owner: two tanks, say), the budget growing slower than the fortress so that
+  building still pays (Claude's caution: Oblivion's level scaling made leveling up pointless). An ambush mixes its
+  members: the gang's cars, police cars and SUVs, helicopters, rival rigs, tanks. The tank is an ambush like the rest
+  and no longer ends the run (the owner). The sonar still shows each one coming, as it shows the loot.
+- The rival gang (the owner): the racers are the gang, and totaling one pays the points of its rank, its grid number.
+  Claude's reading: #k pays 101 - k, the race's own scale (100 for #1); the race's pay for where you finish (10 at
+  P1) goes in act 5.
+- Dodging (agreed): the searchlight's lane, the mines; from four lanes wide there is nowhere to go, and the mine
+  roller and the Grinder take over.
+- The act takes 10-15 races to the final fight (the owner), now against the build-out.
+- The order of the work (agreed): packing in the run and the one-move swap first, to try on the owner's phone; then
+  the pressure (wear, salvage condition) and the ambushes (heat and the scanner gone, the tank an ambush, drops below
+  100%); the gang's points by rank and the points' new sinks; mines.
+
+**The currencies in act 5** (the owner, 31 Oct: where each comes from and where it goes). Measured first, with a ledger
+added to `act5.py` (seeds 1 and 2, 12 races from the tank, as built on 31 Oct):
+
+| Currency | Comes from | Goes to | A race in act 5 today |
+|---|---|---|---|
+| Meters | the run's distance (about 3k); the crew's racing (Racing's dues: the rest) | repairs (40 m a percent); the pump, into fuel (22,500 m a liter at a full crew); the Workshop and Autopilot, long bought out | +60-78k; repairs 0-2k; the rest pumped into 2-4 L of fuel, only because the bot does |
+| Points | your crew's places (Team places); your own place (10 at P1) | the Rebuild (1,500, once); Inventory (600, 1,200); the Black market, bought out | +345-466; nothing to buy after race 2: 4,250-4,300 unspent by race 12 |
+| Fuel | the refineries (crude from the oil spots); the pump | the Crew page: paying off racers, Racing, Crew tuning, the oil cards | +20-43 L refined; all of it spent, mostly on racers |
+| Crude | the oil spots | the refineries | (inside the crew's work) |
+| Scrap | totals: a car 22, a racer 55, an SUV 110, a rig 150, a helicopter 160, a tank 300 | the War Rig page (Guns); the Fortress page (Lengthen, Widen) | +760-1,450; spent as it comes, 0-3k left |
+| Shells | the Rebuild (10); 2 for each gang car totaled | the cannon | they run out by race 5-6 (below) |
+| Parts | the drop tables (a tank, rig or helicopter always; an SUV half the time; a gang car 5%) | hits; throwing off; a crate left on the road | they outrun the losses: the hold full, crates left behind |
+
+What it shows:
+- The rival gang runs dry. Fuel pays off racers, and every racer paid off leaves the gang: the crew is at 98 of the 99
+  by race 12, and the gang's totals drop to none from race 4 (so do the shells it brings). The gang the act is about
+  has to stop shrinking.
+- Points pile up with nothing to buy. Meters have no sink of their own: only the pump, at a poor rate. Fuel's only
+  sink is the Crew page, which runs out once the crew is full.
+
+Planned (agreed with the owner unless marked as Claude's, to pick):
+- Points: in from the gang's ranks (above), with Team places as now; out on shells (a crate of 10 before a race, the
+  cannon's ammunition, as much as you fight), the dealer (below) and the crew's upgrades (the act's automation, the
+  crew picking up loot for you, say).
+- The dealer (agreed): before each race 2-3 random parts in random condition, one of them yours for a price, into the
+  hold; Backpack Battles' shop, kept small so it doesn't stand in for the hunt.
+- Claude's, to pick: the racers stop selling once the car is a war rig (the pay-off card closes with the Rebuild:
+  they are at war with you), so the gang keeps the 18-26 racers it has at the tank (`act4.py`: 74-82 in the crew), the top of the field, back in
+  every race to be hunted again.
+- Claude's, to pick: with the crew no longer for sale, fuel needs its sink. Either the dealer trades in fuel (the
+  wasteland's currency) and points keep shells and the crew's upgrades; or the fortress's engines burn fuel, a race's
+  worth by its weight before each race (a cost of growing; the owner wants buying, not a tax, so Claude prefers the
+  dealer).
+- Claude's, to pick: meters keep their two sinks, repairs (more with parts wearing and holes letting hits through) and
+  the pump into fuel, which then buys from the dealer: meters into fuel into parts.
+- Scrap and crude as they are. Shells: the gang's and the crate. Parts: drops below 100%, salvage condition and wear.
+
 **The doorway** (the owner): the tank's ending goes, and beating the tank opens act 5. TANK DOWN, then ACT V's card
 and the Fortress tab; the WARLORD screen moves to act 5's end. A save past the tank (`tanks` above 0) gets ACT V's card
 at its next garage.
@@ -1191,10 +1275,12 @@ camera rises and falls back, and the fortress, four lanes wide, crosses the wast
 following. Then the WARLORD screen. The act takes 10–15 races (the owner), so the game about 70–95 races, 1.5–2
 hours.
 
-**Still open:** how places are counted (layer 5, below: Claude's reading built, the other waiting on the owner); the
-drop tables and the parts (above: a first draft); the wheel at two lanes and more; what each source drops and does; the bridge or the cab (to try); the placing gesture (on
-a phone); where the rest of the points go; the foreshadowing; the final fight's form; whether placing is automated;
-what comes after the ending (playing on, or a new game plus).
+**Still open:** the currencies' picks (The currencies in act 5, above: whether the racers stop selling, fuel's sink,
+meters'); the drop tables' numbers (below 100% now: the feel, above); the bridge or the cab (to try); the placing
+gesture on a phone, and whether packing at speed needs time slowed (the feel); the foreshadowing; the final fight's
+form; whether placing is automated; what comes after the ending (playing on, or a new game plus). Settled since: how
+places are counted (the gang's ranks pay points: the feel), where the points go (the currencies), the wheel at two
+lanes (layer 6).
 
 **How we make sure:** `act5.py`, from the tank to the final fight: the races (10–15), how full the grid stays race by
 race, the loot lost to a full inventory, and the parts lost a race.
