@@ -40,7 +40,8 @@ const teamPoints = () => Math.round(racers().filter(c => c.fleet && !c.wreck)
 const SONAR = 250; // m each way
 const BLIPS = ['car', 'rival', 'ally', 'red', 'blue', 'rig', 'tank']; // their order on the screen: the police, a rival rig
                                                                       // (fortress.js) and the tank on top; the notable
-                                                                      // ones (fortress.js) squares, a police SUV too
+                                                                      // ones (fortress.js) squares, a police SUV too; a
+                                                                      // police helicopter a triangle
 let sonarAt = 0; // when it was last drawn
 function renderSonar() {
   const on = run.phase !== 'garage' && fleetSize() > 0, now = performance.now();
@@ -48,10 +49,11 @@ function renderSonar() {
   if (!on || now - sonarAt < 66) return;
   sonarAt = now;
   const X = x => (66 + 4.4 * x).toFixed(1), Y = z => (43 - 34 * (z - odo) / SONAR).toFixed(1);
-  const kind = c => c.tank ? 'tank' : c.rig ? 'rig' : c.police ? (now % 500 < 250 ? 'red' : 'blue') : c.fleet ? 'ally' : c.racer ? 'rival' : 'car';
+  const kind = c => c.tank ? 'tank' : c.rig ? 'rig' : c.police || c.heli ? (now % 500 < 250 ? 'red' : 'blue') : c.fleet ? 'ally' : c.racer ? 'rival' : 'car';
   $('sonar-blips').innerHTML = traffic.filter(c => !c.wreck && Math.abs(c.z - odo) < SONAR).map(c => [kind(c), c])
     .sort((a, b) => BLIPS.indexOf(a[0]) - BLIPS.indexOf(b[0])).map(([k, c]) => k === 'tank' || k === 'rig' || c.suv
       ? `<rect class="${k}" x="-3.5" y="-3.5" width="7" height="7" transform="translate(${X(c.x)},${Y(c.z)})"/>`
+      : c.heli ? `<path class="${k}" d="M0-4.5 4.5 3.5h-9Z" transform="translate(${X(c.x)},${Y(c.z)})"/>` // police.js: a triangle
       : `<circle class="${k}" cx="${X(c.x)}" cy="${Y(c.z)}" r="2.4"/>`).join('');
   $('sonar-blips').innerHTML += (run.loot ?? []).filter(l => Math.abs(l.z - odo) < SONAR) // act 5's loot (fortress.js): gold
     .map(l => `<rect class="loot" x="-2" y="-2" width="4" height="4" transform="translate(${X(l.x)},${Y(l.z)}) rotate(45)"/>`).join(''); // diamonds

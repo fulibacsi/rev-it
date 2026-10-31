@@ -54,8 +54,8 @@ const GUN = 6, RANGE = 200; // damage a shot a level; m your guns reach (a raide
 const MADNESS = 0.25, MAD_TOP = 0.9;
 const madShare = l => Math.min(MAD_TOP, MADNESS * l);
 const GANG = FIELD / 2 + 1; // fleet cars that make a gang
-const health = c => c.tank ? tankHealth() : c.rig ? RIG.hp : c.suv ? SUV.hp : c.police ? 200 : c.racer ? 150 : 100; // full
-                                                         // health (the tank: boss.js; a rig: fortress.js; an SUV: police.js)
+const health = c => c.tank ? tankHealth() : c.rig ? RIG.hp : c.suv ? SUV.hp : c.heli ? HELI.hp : c.police ? 200 : c.racer ? 150 : 100;
+                     // full health (the tank: boss.js; a rig: fortress.js; an SUV and a helicopter: police.js)
 // scrap from a totaled car: 2.2 times the first guesses (with the heat), so act 4 takes about 15 races (act4.py)
 const SCRAP = { car: 22, racer: 55 };
 const arOn = () => progress.racing && (progress.gang || progress.totals > 0); // the AR layer: from the gang's moment
@@ -78,7 +78,7 @@ function gangMoment() {
 let target = null, quarry = null;
 function nextTarget(fits = c => !rigged() || notable(c)) {
   let t = null;
-  for (const c of traffic) if (c.dir > 0 && !c.fleet && !c.wreck && c.z > odo && c.z - odo < 300 && fits(c) && (!t || c.z < t.z)) t = c;
+  for (const c of traffic) if ((c.dir > 0 || c.heli) && !c.fleet && !c.wreck && c.z > odo && c.z - odo < 300 && fits(c) && (!t || c.z < t.z)) t = c;
   return t;
 }
 const nextQuarry = () => rigged() ? nextTarget(c => c.racer) ?? nextTarget(c => !notable(c)) : null; // the rival gang first
@@ -134,10 +134,11 @@ function hurtCar(c, hp, gang) {
 }
 function total(c, gang, how) { // the scrap is yours, whoever did it; the heat too (police.js); how: the HUD's word for it
   if (c.tank) return tankDown(c); // boss.js
-  // a mad driver's stolen fuel (Fuel madness), double; a rival rig's (fortress.js), a police SUV's (police.js); a rival
-  // gang car's shells
-  const scrap = c.rig ? RIG.scrap : c.suv ? SUV.scrap : (c.racer ? SCRAP.racer : SCRAP.car) * (mad(c) ? 2 : 1), shells = gangShells(c);
-  raiseHeat(gang ? WANTED.gang : c.police ? WANTED.police : c.racer || c.rig ? WANTED.racer : WANTED.car);
+  // a mad driver's stolen fuel (Fuel madness), double; a rival rig's (fortress.js), a police SUV's and helicopter's
+  // (police.js); a rival gang car's shells
+  const scrap = c.rig ? RIG.scrap : c.suv ? SUV.scrap : c.heli ? HELI.scrap : (c.racer ? SCRAP.racer : SCRAP.car) * (mad(c) ? 2 : 1);
+  const shells = gangShells(c);
+  raiseHeat(gang ? WANTED.gang : c.police || c.heli ? WANTED.police : c.racer || c.rig ? WANTED.racer : WANTED.car);
   Object.assign(c, { wreck: true, hp: 0 });
   dropLoot(c); // fortress.js: a part, maybe
   if (c === target) target = nextTarget(); // the reticle moves on at once: for a frame Hunter had nothing to hunt, and

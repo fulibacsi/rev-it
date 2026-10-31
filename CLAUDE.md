@@ -59,7 +59,7 @@ talking about upgrades. Keep it up to date with every change to an upgrade, a ta
   upgrades, runs, save, the act cards), `race.js` (the hidden race, the Black market's upgrades, scoring), `fleet.js` (the Crew:
   paid-off racers and their teamwork), `oil.js` (the crew's roles, the oil spots and refineries, the tracker, crude and
   fuel, the Foreman, act 3's foreshadowing), `gang.js` (War Rig: the AR target, totals, parts, guns), `police.js` (police
-  heat, the scanner, police cars and act 5's SUVs), `boss.js` (the tank), `fortress.js` (act 5, being built: the
+  heat, the scanner, police cars and act 5's SUVs and helicopters), `boss.js` (the tank), `fortress.js` (act 5, being built: the
   Rebuild, the war rig's cockpit, the fortress's board, the cannon and its shells, the rival gang and its war rigs, the
   loot, the rig widened, the shield: hits by where they land, parts worn out and falling off), `damage.js` (damage,
   heat, nitro), `aids.js` (Distance's driver aids: robot feet and hands working the same pedals and lever as the

@@ -1342,7 +1342,7 @@ race, the loot lost to a full inventory, and the parts lost a race.
      car's (idle to redline onto its lowest loop to its highest), through the same throttle and muffling, at a level of
      its own. A voice for each kind of engine on the board, louder the more blocks of it (0.4 a block's, 0.6 two, at
      most 1): a rival car's boxer, an SUV's V8 (the game's own), a rig's truck diesel, a tank's V12 diesel (the new
-     recordings); the turbine waits for the helicopters. The heavy ones' file (`assets/rig-sounds.js`, 1.29 MB) loads
+     recordings); a helicopter's gas turbine since layer 7's helicopters. The heavy ones' file (`assets/rig-sounds.js`, 1.29 MB) loads
      the first time one is mounted, so the page weighs what it did; leaving Distance silences them. The credits screen
      names the CC BY recordings now heard (the Leopard's idle, the tank on sand) with their titles, authors, licenses
      and changes, and, to fit a phone, counts the eight CC0 ones instead of naming them (CREDITS.md does). `loot_test`
@@ -1423,6 +1423,34 @@ race, the loot lost to a full inventory, and the parts lost a race.
      still outruns the losses (1-5 parts dropped a race, the hold often full and crates left on the road): the
      helicopters, strafing a lane, are next.
    - `shield_test` checks it on both layouts.
+
+   The police's helicopters, the second PR (built 31 Oct; `police.js`), Claude's design on the owner's "the police's
+   buffed-up SUV pursuers and helicopters":
+   - On the war rig, from half heat, one at a time, never in the tank's race: the first 20 s into a race, the next 30 s
+     after one is shot down (HELICOPTER!). It takes over a car out of sight up the road, as the police and the rigs do,
+     and flies in from 400 m out, coming down to hover 60 m ahead of you and 7 m up, however fast you go. It flies over
+     the traffic: no car brakes behind it or goes round it, and you can't run into it (`dir` 0, as no car has).
+   - Drawn as the tank, the rig and the SUV are, side on as it hovers across the road: the police's black and white,
+     POLICE along the tail boom, a gun pod under the nose, a searchlight, skids, the light bar flashing red and blue in
+     turn with the rotor's blur; its shadow on the road under it; a triangle on the sonar in the police's colors.
+   - Notable: in the reticle (HELI · 100% · 4 SHOTS · 60 m), the cannon's and the guns'. 800 health, 160 scrap, a
+     police car's heat. Its tutorial, Police helicopters (the helicopter; its searchlight), pops up as the first one shows
+     in the reticle.
+   - Its strafing run, the owner's "strafing a lane": its searchlight on one of the lanes the fortress covers (a cone
+     down from it, a pool of light on the lane) for 1.5 s, a beat to get off it; then a burst walks down that lane at
+     you in 0.8 s (dust and tracers), and its 6 rounds hit the board's column over the lane, front to back, 5% each less
+     Armor plating (`fortress.js` strafe): a part takes its share, an empty cell lets it through to the rig. With no
+     column over the lane any more they all miss (DODGED), else STRAFED. Then 4 s and it aims again, until shot down.
+   - Shot down it falls onto the road, a wreck, and drops its part by the drop table: its gun (60%) or its turbine (40%),
+     an engine 20% more pull a block, heard as the gas turbine (`assets/rig-sounds.js`).
+   - Its sound: none of its own yet (the HELICOPTER! warning only); a rotor's would want a recording.
+   - `act5.py` (seeds 1 and 2, 12 races; the bot fires at whatever the reticle holds and never dodges a burst): a
+     helicopter in the races the heat is past half (6 of the 12, each seed), one a race; most shot down by the guns
+     (the shells run out by race 5-6) after 0-3 bursts, one now and then still up at the finish. In a helicopter's race
+     11-25 hits on parts (0-14 without); 0-2 parts lost a race (5 and 7 in the 12 races), the board's parts at 33-86% of
+     their health after a race; the tank's cannon lasting 8-10 races; 0-53% damage a race; P1 or P2 every race. First
+     guesses, the threat modest: one a race at most, and only at the top half of the heat.
+   - `heli_test` checks it on both layouts.
 8. Four lanes: the Grinder, mines and the mine roller.
 9. The act's automation.
 10. The foreshadowing, the final fight and the ending.
