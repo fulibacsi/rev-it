@@ -1,10 +1,10 @@
 """Act 5's Rebuild (docs/design-notes.md, Act 5): the Fortress page's first card makes the car a war rig. The gear
 shifter and all three pedals go (the owner, 30 Oct: "we brake for no-one"), a firing pedal in their place; the aids that
 drive it bolted on, their cards under a metal plate; in the shifter's place the fortress's board, 1x1, and the hold
-with the tank's cannon. A part dragged from the hold goes on only once it has rested on green (a flick goes back);
-pressed and held, a part is thrown off for good. The cannon fires a shell a press (Space, or the pedal) at the car in
-the reticle, then reloads. The keys and the help follow; Free drive keeps its pedals. Phone (touch, the notch) and
-desktop."""
+with the tank's cannon. On the road only (in the garage the board only shows), a part dragged from the hold goes on
+only once it has rested (a flick goes back), and dropped onto a mounted part it replaces it; pressed and held, a part
+is thrown off for good. The cannon fires a shell a press (Space, or the pedal) at the car in the reticle, then
+reloads. The keys and the help follow; Free drive keeps its pedals. Phone (touch, the notch) and desktop."""
 import json
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -33,18 +33,18 @@ with sync_playwright() as p:
         def touch(kind, x, y, id=1): cdp.send("Input.dispatchTouchEvent", {"type": kind, "touchPoints": [{"x": x, "y": y, "id": id}]})
         def center(sel): return js(f"(() => {{ const r = document.querySelector('{sel}').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }})()")
         def box(sel): return js(f"(() => {{ const r = document.querySelector('{sel}').getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; }})()")
-        def drag_to_board(rest_ms):  # from the hold's part, off to the left, then across onto the board's cell (where it
+        def drag_to_board(rest_ms, peek=None):  # from the hold's part, off to the left, then across onto the board's cell (where it
             s, cell = center("#fort-hold .part"), js("parseFloat($('board').style.getPropertyValue('--cell'))")  # floats over
             g = box("#fort-grid"); tx, ty = (g[0] + g[2]) / 2, g[3] + cell * 0.6  # it: above the finger), a cell a step, then a rest
             path = [(tx - 4 * cell + k * cell, ty) for k in range(5)]
             if phone:
                 touch("touchStart", *s)
                 for x, y in path: touch("touchMove", x, y)
-                pg.wait_for_timeout(rest_ms); touch("touchEnd", tx, ty)
+                pg.wait_for_timeout(rest_ms); peek and peek(); touch("touchEnd", tx, ty)
             else:
                 pg.mouse.move(*s); pg.mouse.down()
                 for x, y in path: pg.mouse.move(x, y)
-                pg.wait_for_timeout(rest_ms); pg.mouse.up()
+                pg.wait_for_timeout(rest_ms); peek and peek(); pg.mouse.up()
             pg.wait_for_timeout(100)
         def hold_part(ms, slide=0):
             c = center("#fort-grid .part")
@@ -75,6 +75,9 @@ with sync_playwright() as p:
         check(f"{layout}: bought: 500 points left, the tank's cannon in the hold, the rig's tutorial pops up",
               got == [500, '{"parts":[],"hold":[{"kind":"cannon","cells":[[0,0]]}]}', "tour", "rig"], got)
         while js("menuOpen"): js("turnTour(1)"); pg.wait_for_timeout(50)
+        drag_to_board(350)
+        got = js("[progress.fortress.parts.length, progress.fortress.hold.length, getComputedStyle($('board')).display]")
+        check(f"{layout}: in the garage the board only shows: a drag there mounts nothing", got == [0, 1, "flex"], got)
         js("garageTab = 'autopilot'; renderGarage()"); pg.wait_for_timeout(100)
         got = js("[...document.querySelectorAll('#cards .card')].map(c => [c.querySelector('b').textContent, !!c.querySelector('.plate'), !!c.querySelector('button')])")
         plated = sorted(n for n, pl, _ in got if pl)
@@ -114,6 +117,17 @@ with sync_playwright() as p:
         got = js("[JSON.stringify(progress.fortress.parts), progress.fortress.hold.length, cannonOn(), $('fort-drag').hidden]")
         check(f"{layout}: rested on green, let go: the cannon on the board, the hold empty", got == ['[{"kind":"cannon","cells":[[0,0]],"x":0,"y":0}]', 0, True, True], got)
         pg.screenshot(path=f"{OUT}/fortress_{layout}_mounted.png")
+        # a part dropped onto mounted ones replaces them, in one move: the ghost amber, what it would throw off marked
+        js("progress.fortress.hold.push({ kind: 'armor', from: 'rig', cells: [[0, 0]] })"); pg.wait_for_timeout(100)
+        seen = {}
+        def peek():
+            seen.update(js("({ ghost: $('fort-ghost').className, doomed: [...document.querySelectorAll('#fort-grid .doomed')].map(e => e.classList[1]), drag: [...$('fort-drag').classList].sort().join() })"))
+            pg.screenshot(path=f"{OUT}/fortress_{layout}_swap.png")
+        drag_to_board(350, peek)
+        got = js("[progress.fortress.parts.map(p => p.kind).join(), progress.fortress.hold.length, cannonOn()]")
+        check(f"{layout}: dropped onto the cannon: the ghost amber over it, the cannon marked, the part glowing amber; let go, the armor on and the cannon thrown off",
+              seen == {"ghost": "swap", "doomed": ["cannon"], "drag": "armed,swap"} and got == ["armor", 0, False], [seen, got])
+        js("progress.fortress.parts = [{ kind: 'cannon', cells: [[0, 0]], x: 0, y: 0 }]; applyUpgrades()")  # the cannon back, for its shells
 
         # 5. the cannon: a shell a press at the reticle's car, then a reload; heavy
         shot = """(kind) => { const c = traffic.find(c => c.dir > 0 && !c.racer && !c.wreck && !c.police && !c.tank);

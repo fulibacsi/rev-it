@@ -61,9 +61,9 @@ const partHtml = (p, more = '', cell) => `<div class="part ${p.kind}" ${more} st
   `${extent(p.cells, 1)};${p.x !== undefined ? ` --x: ${p.x}; --y: ${p.y};` : ''}${cell ? ` --cell: ${cell}px` : ''}">` +
   p.cells.map(([x, y], i) => `<i style="--cx: ${x}; --cy: ${y}">${i ? '' : ICONS[p.kind]}</i>`).join('') + '</div>';
 const partAt = (f, x, y) => f.parts.findIndex(p => p.cells.some(([cx, cy]) => p.x + cx === x && p.y + cy === y));
-const taken = (f, x, y) => partAt(f, x, y) >= 0;
-const fitsAt = (f, cells, x, y) => cells.every(([cx, cy]) => x + cx >= 0 && y + cy >= 0 && x + cx < boardW() && y + cy < boardH() &&
-  !taken(f, x + cx, y + cy));
+const onBoard = (cells, x, y) => cells.every(([cx, cy]) => x + cx >= 0 && y + cy >= 0 && x + cx < boardW() && y + cy < boardH());
+const under = (f, cells, x, y) => [...new Set(cells.map(([cx, cy]) => partAt(f, x + cx, y + cy)).filter(i => i >= 0))]; // the parts there
+const fitsAt = (f, cells, x, y) => onBoard(cells, x, y) && !under(f, cells, x, y).length;
 let shownBoard = ''; // what the board shows: redrawn only when that changes
 function renderBoard() {
   const f = progress.fortress, n = holdSize(), w = boardW(), h = boardH(), key = JSON.stringify(f) + [n, w, h, innerWidth, innerHeight, fallen.length];
@@ -84,14 +84,19 @@ function renderBoard() {
 }
 
 // a part dragged from the hold floats a cell above the finger (the thumb would hide it), a ghost on the board's cells
-// under it, green where it fits; let go once the ghost has rested on green for a beat and it goes on, else it goes back
-// to the hold (the owner, 29 Oct: a drop that is clear, and still quick). Resting is the finger still: a slow flick
-// across the board passed over a cell long enough to arm it. Pressed and held, a part on the board is thrown off, gone
-// for good. Claude's numbers, to try on a phone
+// under it: green where it fits, amber where it would replace mounted parts (marked, the whole of each), red off the
+// board. Let go once the ghost has rested for a beat and it goes on, whatever it replaces thrown off for good; else it
+// goes back to the hold (the owner, 29 Oct: a drop that is clear, and still quick; 31 Oct: a swap in one move). Resting
+// is the finger still: a slow flick across the board passed over a cell long enough to arm it. Pressed and held, a part
+// on the board is thrown off, gone for good. Packing is the run's (the owner, 31 Oct): in the garage the board only
+// shows. Claude's numbers, to try on a phone
 const REST = 200, THROW = 500, STILL = 6; // ms, ms, px a resting finger may wander
-let dragging = null, throwing = null; // { slot, part, at: [x, y], fits, since, x, y }; { i, from, x, y }
+let dragging = null, throwing = null; // { slot, part, at: [x, y], ok, swaps, since, x, y }; { i, from, x, y }
+const packing = () => run.phase !== 'garage';
 function dragPart(e, first, slot) {
   const f = progress.fortress, cell = parseFloat($('board').style.getPropertyValue('--cell'));
+  if (first && !packing()) return;
+  if (!first && !dragging) return;
   if (first) {
     dragging = { slot, part: f.hold[slot], at: null, fits: false, since: 0, x: e.clientX, y: e.clientY };
     $('fort-hold').querySelector(`[data-slot="${slot}"]`).classList.add('lifted');
@@ -104,29 +109,35 @@ function dragPart(e, first, slot) {
   Object.assign($('fort-drag').style, { left: `${left}px`, top: `${top}px` });
   const at = [Math.round((left - g.left) / cell), Math.round((top - g.top) / cell)];
   const over = left + w > g.left && left < g.right && top + h > g.top && top < g.bottom; // over the board at all
-  if (!over) { dragging.at = null; $('fort-ghost').className = ''; return; }
+  if (!over) { dragging.at = null; doom([]); $('fort-ghost').className = ''; return; }
   const moved = Math.hypot(e.clientX - dragging.x, e.clientY - dragging.y) > STILL;
   if (moved || String(at) !== String(dragging.at)) // not resting: the beat starts again
-    Object.assign(dragging, { at, since: performance.now(), fits: fitsAt(f, dragging.part.cells, ...at), x: e.clientX, y: e.clientY });
+    Object.assign(dragging, { at, since: performance.now(), ok: onBoard(dragging.part.cells, ...at), swaps: under(f, dragging.part.cells, ...at),
+                              x: e.clientX, y: e.clientY });
   Object.assign($('fort-ghost').style, { left: `${at[0] * cell}px`, top: `${at[1] * cell}px`, width: `${w}px`, height: `${h}px` });
-  $('fort-ghost').className = dragging.fits ? 'fit' : 'no';
+  $('fort-ghost').className = !dragging.ok ? 'no' : dragging.swaps.length ? 'swap' : 'fit';
+  doom(dragging.ok ? dragging.swaps : []);
 }
-const armed = () => !!dragging?.at && dragging.fits && performance.now() - dragging.since >= REST;
+const doom = list => { for (const el of $('fort-grid').querySelectorAll('[data-part]')) el.classList.toggle('doomed', list.includes(+el.dataset.part)); };
+const armed = () => !!dragging?.at && dragging.ok && performance.now() - dragging.since >= REST;
 function dropPart() {
-  const f = progress.fortress;
-  if (armed()) {
-    f.parts.push({ ...dragging.part, x: dragging.at[0], y: dragging.at[1] });
-    f.hold.splice(dragging.slot, 1);
-    applyUpgrades(); // distance.js: an engine pulls from now on
-    save();
-    beep(660, 0.08);
-  }
+  if (armed()) mount(dragging.slot, ...dragging.at);
   dragging = null;
   $('fort-drag').hidden = true;
   shownBoard = '';
 }
+function mount(slot, x, y) { // the hold's part onto the board at x, y, throwing off whatever is there (act5.py's bot too)
+  const f = progress.fortress, part = f.hold[slot], swaps = under(f, part.cells, x, y);
+  for (const i of swaps.sort((a, b) => b - a)) f.parts.splice(i, 1);
+  f.parts.push({ ...part, x, y });
+  f.hold.splice(slot, 1);
+  applyUpgrades(); // distance.js: an engine pulls from now on, and what was thrown off goes with it
+  save();
+  beep(660, 0.08);
+  if (swaps.length) crashSound();
+}
 function holdPart(e, first, i) {
-  if (first) throwing = { i, from: performance.now(), x: e.clientX, y: e.clientY };
+  if (first && packing()) throwing = { i, from: performance.now(), x: e.clientX, y: e.clientY };
   else if (throwing && Math.hypot(e.clientX - throwing.x, e.clientY - throwing.y) > 12) letGo(); // a slide isn't a hold
 }
 function letGo() {
@@ -436,6 +447,7 @@ function renderRig() {
   if (ago < 400) Object.assign(hit.style, { left: `${struck.x * 100 / boardW()}%`, top: `${struck.y * 100 / boardH()}%`,
                                             opacity: (1 - ago / 400).toFixed(2) });
   $('fort-drag').classList.toggle('armed', armed());
+  $('fort-drag').classList.toggle('swap', !!dragging?.swaps?.length);
   if (throwing) {
     const held = (now - throwing.from) / THROW;
     if (held >= 1) throwOff(throwing.i);
@@ -461,10 +473,10 @@ TUTORIALS.push( // the war rig's, once rebuilt (the owner's: the controls change
       both: 'Your fortress from above, ahead up: one lane wide and one car long for now. Beside it, the hold: the parts ' +
         "you carry, the tank's cannon first." },
     { title: 'MOUNT A PART', at: '#board',
-      touch: 'Drag a part from the hold onto the board: it floats above your finger. Hold it still over green until ' +
-        'it turns solid, then let go. Red: it does not fit there. Parts go on as they come, never turned.',
-      desk: 'Drag a part from the hold onto the board with the mouse. Hold it still over green until it turns solid, ' +
-        'then let go. Red: it does not fit there. Parts go on as they come, never turned.' },
+      touch: 'On the road, drag a part from the hold onto the board: it floats above your finger. Hold it still until ' +
+        'it turns solid, then let go. Amber: what it covers is thrown off. Red: off the board. Parts never turn.',
+      desk: 'On the road, drag a part from the hold onto the board with the mouse. Hold it still until it turns solid, ' +
+        'then let go. Amber: what it covers is thrown off. Red: off the board. Parts never turn.' },
     { title: 'THROW IT OFF', at: '#board',
       both: 'Press and hold a part on the board until its ring closes: it is thrown off, gone for good.' },
     { title: 'THE CANNON', at: '.cannon-box',

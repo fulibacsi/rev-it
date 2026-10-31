@@ -1537,9 +1537,31 @@ race, the loot lost to a full inventory, and the parts lost a race.
      their health after a race; the tank's cannon lasting 8-10 races; 0-53% damage a race; P1 or P2 every race. First
      guesses, the threat modest: one a race at most, and only at the top half of the heat.
    - `heli_test` checks it on both layouts.
-8. Four lanes: the Grinder, mines and the mine roller.
-9. The act's automation.
-10. The foreshadowing, the final fight and the ending.
+   From here the layers follow the feel (settled 31 Oct, above), in the order agreed with the owner:
+8. Packing in the run, and a swap in one move (built 31 Oct), the first step, to try on the owner's phone.
+   - The board only shows in the garage (dimmed, no drag): mounting, throwing off and swapping are the road's, from the
+     start of a run to its end (the owner: "keep backpack-tetris to the run and not in the garage"). The hold carries
+     over from race to race. Shown rather than hidden, so you see what you built while buying Lengthen or Widen, and the
+     Rebuild's tutorial, which pops up in the garage, can still point at it.
+   - The swap: a part dragged over mounted ones shows its ghost amber (green where it fits, red off the board), the
+     parts it would throw off dashed and faded, the whole of each, and the part glows amber once it has rested; let go
+     and they are thrown off for good, the new one on, in one move (`fortress.js` mount). The rig tutorial's MOUNT A
+     PART page says so.
+   - `act5.py`: the bot packs as it drives, a part from the hold every half second (the first that fits, armor and
+     spikes on the end rows and the rest in the middle; with no room, the first that swaps in where it throws off the
+     least health, if less than its own), and counts how often the board changes. Seeds 1 and 2, 12 races: once the
+     board has room (none in the first race or two, on the single cell), the board changes every 8-50 s, 1-6 times a
+     race (mostly swaps), against the owner's 5 s: the pressure (the next layer) is what brings it there. Packing as it
+     drives empties the hold, so the bot now picks up nearly every crate it steers for (2-5 a race, where the hold used
+     to sit full); damage 0-53% a race, P1 or P2, as before.
+   - `fortress_test` checks it (a drag in the garage mounts nothing; dropped onto the cannon, the armor replaces it, the
+     ghost amber, the cannon marked) on both layouts.
+9. The pressure (wear with use, salvage condition) and the ambushes (heat and the scanner retired, the tank an ambush,
+   drops below 100%), for a swap or a loss about every 5 s.
+10. The gang's ranks paying points; the points' sinks (shells, the dealer, the crew's upgrades); the currencies' picks.
+11. Mines laid by the gang; four lanes: the mine roller and the Grinder.
+12. The act's automation.
+13. The foreshadowing, the final fight and the ending.
 
 ### Balance targets and results
 

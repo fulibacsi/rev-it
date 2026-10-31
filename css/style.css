@@ -461,10 +461,14 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
 #fort-ghost { position: absolute; display: none; border-radius: 3px; pointer-events: none; }
 #fort-ghost.fit { display: block; background: #33ff6633; outline: 2px solid #5f5; }
 #fort-ghost.no { display: block; background: #ff333333; outline: 2px solid #f55; }
+#fort-ghost.swap { display: block; background: #ffb02e33; outline: 2px solid #fb3; } /* it replaces what is there */
+#fort-grid .part.doomed > i { opacity: 0.45; outline: 2px dashed #fb3; outline-offset: -3px; } /* thrown off if it goes on */
+.garage #board { pointer-events: none; opacity: 0.8; } /* packing is the run's (fortress.js): in the garage it only shows */
 #fort-drag { position: fixed; z-index: 30; pointer-events: none; opacity: 0.55; }
 #fort-drag[hidden] { display: none; }
 #fort-drag .part { position: relative; left: 0; top: 0; }
 #fort-drag.armed { opacity: 1; filter: drop-shadow(0 0 6px #5f5); } /* rested on green: let go and it goes on */
+#fort-drag.armed.swap { filter: drop-shadow(0 0 6px #fb3); } /* ... in place of what it covers */
 .cannon-box .pedal { width: 9vh; }
 .touch .cannon-box .pedal { width: 14vw; }
 #cannon-pedal.pressed { transform: perspective(300px) rotateX(30deg); }
