@@ -66,6 +66,8 @@ const under = (f, cells, x, y) => [...new Set(cells.map(([cx, cy]) => partAt(f, 
 const fitsAt = (f, cells, x, y) => onBoard(cells, x, y) && !under(f, cells, x, y).length;
 let shownBoard = ''; // what the board shows: redrawn only when that changes
 function renderBoard() {
+  if (dragging || throwing) return; // never under a finger: the drag would go with the element it holds (a hit on a part
+                                    // redrew the board, and a drag on the road failed most times); it redraws after
   const f = progress.fortress, n = holdSize(), w = boardW(), h = boardH(), key = JSON.stringify(f) + [n, w, h, innerWidth, innerHeight, fallen.length];
   if (key === shownBoard) return;
   shownBoard = key;
@@ -79,26 +81,28 @@ function renderBoard() {
     fallen.map(({ p }) => partHtml(p, `data-fall data-wear="2"`)).join('') + '<i id="fort-ghost"></i><i id="fort-hit"></i>';
   $('fort-hold').innerHTML = Array.from({ length: n }, (_, i) => `<div class="slot" data-slot="${i}">` +
     `${f.hold[i] ? partHtml(f.hold[i], '', cell / Math.max(extent(f.hold[i].cells, 0), extent(f.hold[i].cells, 1))) : ''}</div>`).join('');
-  for (const el of $('fort-hold').querySelectorAll('.part')) drag(el, (e, first) => dragPart(e, first, +el.parentNode.dataset.slot), dropPart);
+  for (const el of $('fort-hold').querySelectorAll('.slot')) // the whole slot is its handle: a part shrunk to fit one is small
+    if (f.hold[+el.dataset.slot]) drag(el, (e, first) => dragPart(e, first, +el.dataset.slot), dropPart);
   for (const el of $('fort-grid').querySelectorAll('.part')) drag(el, (e, first) => holdPart(e, first, +el.dataset.part), letGo);
 }
 
 // a part dragged from the hold floats a cell above the finger (the thumb would hide it), a ghost on the board's cells
 // under it: green where it fits, amber where it would replace mounted parts (marked, the whole of each), red off the
-// board. Let go once the ghost has rested for a beat and it goes on, whatever it replaces thrown off for good; else it
-// goes back to the hold (the owner, 29 Oct: a drop that is clear, and still quick; 31 Oct: a swap in one move). Resting
-// is the finger still: a slow flick across the board passed over a cell long enough to arm it. Pressed and held, a part
-// on the board is thrown off, gone for good. Packing is the run's (the owner, 31 Oct): in the garage the board only
-// shows. Claude's numbers, to try on a phone
-const REST = 200, THROW = 500, STILL = 6; // ms, ms, px a resting finger may wander
-let dragging = null, throwing = null; // { slot, part, at: [x, y], ok, swaps, since, x, y }; { i, from, x, y }
+// board. Let go once the ghost has rested on its cells for a beat and it goes on, whatever it replaces thrown off for
+// good; else it goes back to the hold (the owner, 29 Oct: a drop that is clear, and still quick; 31 Oct: a swap in one
+// move). The beat starts again only when the ghost moves to other cells, and it moves only once the part is well past
+// the edge (STICK of a cell), so a thumb's wobble doesn't reset it: it did when the finger had to keep within 6 px, and on
+// the owner's phone (1 Nov) a drop took two tries or more. Pressed and held, a part on the board is thrown off, gone for
+// good. Packing is the run's (the owner, 31 Oct): in the garage the board only shows. Claude's numbers, to try on a phone
+const REST = 150, THROW = 500, STICK = 0.3; // ms, ms, a cell's share past the edge before the ghost moves on
+let dragging = null, throwing = null; // { slot, part, at: [x, y], ok, swaps, since }; { i, from, x, y }
 const packing = () => run.phase !== 'garage';
 function dragPart(e, first, slot) {
   const f = progress.fortress, cell = parseFloat($('board').style.getPropertyValue('--cell'));
   if (first && !packing()) return;
   if (!first && !dragging) return;
   if (first) {
-    dragging = { slot, part: f.hold[slot], at: null, fits: false, since: 0, x: e.clientX, y: e.clientY };
+    dragging = { slot, part: f.hold[slot], at: null, ok: false, swaps: [], since: 0 };
     $('fort-hold').querySelector(`[data-slot="${slot}"]`).classList.add('lifted');
     $('fort-drag').innerHTML = partHtml(dragging.part);
     $('fort-drag').style.setProperty('--cell', `${cell}px`);
@@ -107,13 +111,12 @@ function dragPart(e, first, slot) {
   const w = extent(dragging.part.cells, 0) * cell, h = extent(dragging.part.cells, 1) * cell;
   const left = e.clientX - w / 2, top = e.clientY - h - cell * 0.6, g = $('fort-grid').getBoundingClientRect();
   Object.assign($('fort-drag').style, { left: `${left}px`, top: `${top}px` });
-  const at = [Math.round((left - g.left) / cell), Math.round((top - g.top) / cell)];
+  const fx = (left - g.left) / cell, fy = (top - g.top) / cell, was = dragging.at; // cells, fractions of one
+  const at = was && Math.abs(fx - was[0]) < 0.5 + STICK && Math.abs(fy - was[1]) < 0.5 + STICK ? was : [Math.round(fx), Math.round(fy)];
   const over = left + w > g.left && left < g.right && top + h > g.top && top < g.bottom; // over the board at all
   if (!over) { dragging.at = null; doom([]); $('fort-ghost').className = ''; return; }
-  const moved = Math.hypot(e.clientX - dragging.x, e.clientY - dragging.y) > STILL;
-  if (moved || String(at) !== String(dragging.at)) // not resting: the beat starts again
-    Object.assign(dragging, { at, since: performance.now(), ok: onBoard(dragging.part.cells, ...at), swaps: under(f, dragging.part.cells, ...at),
-                              x: e.clientX, y: e.clientY });
+  if (at !== was) // other cells: the beat starts again
+    Object.assign(dragging, { at, since: performance.now(), ok: onBoard(dragging.part.cells, ...at), swaps: under(f, dragging.part.cells, ...at) });
   Object.assign($('fort-ghost').style, { left: `${at[0] * cell}px`, top: `${at[1] * cell}px`, width: `${w}px`, height: `${h}px` });
   $('fort-ghost').className = !dragging.ok ? 'no' : dragging.swaps.length ? 'swap' : 'fit';
   doom(dragging.ok ? dragging.swaps : []);
@@ -138,7 +141,8 @@ function mount(slot, x, y) { // the hold's part onto the board at x, y, throwing
 }
 function holdPart(e, first, i) {
   if (first && packing()) throwing = { i, from: performance.now(), x: e.clientX, y: e.clientY };
-  else if (throwing && Math.hypot(e.clientX - throwing.x, e.clientY - throwing.y) > 12) letGo(); // a slide isn't a hold
+  else if (throwing && Math.hypot(e.clientX - throwing.x, e.clientY - throwing.y) > 0.5 * parseFloat($('board').style.getPropertyValue('--cell')))
+    letGo(); // a slide isn't a hold; a thumb's wobble (within half a cell) is
 }
 function letGo() {
   if (throwing) $('fort-grid').querySelector(`[data-part="${throwing.i}"]`)?.style.setProperty('--held', 0);
