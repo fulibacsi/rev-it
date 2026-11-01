@@ -264,7 +264,7 @@ function startRun() { // back to the start line, engine running, in neutral, hel
   Object.assign(run, { phase: 'starting', count: COUNTDOWN, left: runTime(), best: progress.best, gain: 0, newBest: false,
                        slot: progress.racing ? startSlot() : null, race: null, revealed: false, won: false, scrap: 0, totals: 0, shells: 0,
                        firstTotal: false, boss: bossRace(), tank: null, beatTank: false, limp: wrecked(),
-                       flashes: lvl('flash'), recharge: 0, loot: [] });
+                       flashes: rigged() ? 0 : lvl('flash'), recharge: 0, loot: [] }); // the war rig has no flash (fortress.js)
   resetScene();
   brakePedal = 1;
   coolDown();
@@ -317,7 +317,7 @@ function updateRun(dt) {
 
 // flash recharge: a used flash comes back after a while, up to the run's full count
 function rechargeFlash(dt) {
-  if (!lvl('flashRecharge') || run.flashes >= lvl('flash')) { run.recharge = 0; return; }
+  if (rigged() || !lvl('flashRecharge') || run.flashes >= lvl('flash')) { run.recharge = 0; return; }
   if ((run.recharge += dt) >= rechargeTime()) { run.recharge = 0; run.flashes++; }
 }
 
@@ -520,6 +520,8 @@ function renderGarage(bought) {
     // the aids the war rig drives with, bolted on (fortress.js): their cards stay, under a metal plate (the owner, 30 Oct)
     if (rigDrives(id)) return `<div class="card plated"><b>${u.name}</b><i class="plate">BOLTED ON<small>` + (rigW > 1 &&
       ['cruise', 'steer'].includes(id) ? 'no brakes: the rig rams' : 'the war rig drives itself') + '</small></i></div>';
+    if (rigTook(id)) return `<div class="card plated"><b>${u.name}</b><i class="plate">TAKEN OFF<small>the war rig has no ` +
+      'headlight flash</small></i></div>';
     if (isLocked(id)) return `<div class="card locked"><b>${u.name}</b><small>${whyNot(id)}</small></div>`;
     const l = lvl(id), why = whyNot(id), max = maxOf(u), steps = typeof u.max === 'function' ? 0 : max;
     const pips = steps > 1 ? `<i>${'■'.repeat(l)}${'□'.repeat(steps - l)}</i>` : '';
@@ -622,7 +624,7 @@ function renderRun() {
   $('timer-fill').style.width = `${97 * run.left / runTime()}%`;
   $('timer-left').textContent = run.left.toFixed(1);
   document.body.classList.toggle('low', run.phase === 'run' && run.left < 5);
-  document.body.classList.toggle('has-flash', lvl('flash') > 0 && !progress.off.flash);
+  document.body.classList.toggle('has-flash', lvl('flash') > 0 && !progress.off.flash && !rigged()); // gone with the Rebuild
   $('hud-flashes').textContent = run.phase === 'garage' ? lvl('flash') : run.flashes;
   $('hud-beam').classList.toggle('empty', run.phase !== 'garage' && !run.flashes);
   $('hud-beam').style.setProperty('--charge', run.phase === 'run' ? run.recharge / rechargeTime() : 0); // the refill
@@ -678,7 +680,7 @@ const DISTANCE = {
   crash: i => onCollision(i),
   marks: roadMarks,
   useFlash() { // a charge from this run's flashes
-    if (run.phase !== 'run' || progress.off.flash || !run.flashes) return false;
+    if (run.phase !== 'run' || progress.off.flash || !run.flashes || rigged()) return false;
     run.flashes--;
     return true;
   },

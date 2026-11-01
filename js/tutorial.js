@@ -41,7 +41,7 @@ const TUTORIALS = [
       touch: 'The middle pedal.', desk: 'Hold B: the middle pedal.',
       both: 'Boxed in behind a slower car, brake rather than crash.' },
   ] },
-  { id: 'flash', name: 'Headlight flash', for: ['flash', 'flashRecharge', 'autoflash'], open: () => lvl('flash') > 0, pages: [
+  { id: 'flash', name: 'Headlight flash', for: ['flash', 'flashRecharge', 'autoflash'], open: () => lvl('flash') > 0 && !rigged(), pages: [
     { title: 'FLASH', at: '#stalk',
       touch: 'Pull the stalk, left of the wheel.', desk: 'Press F, or pull the stalk left of the wheel.',
       both: 'A slower car ahead in your lane moves over to your other lane, if there is room. A run has a few flashes: ' +
