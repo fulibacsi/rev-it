@@ -1558,6 +1558,14 @@ race, the loot lost to a full inventory, and the parts lost a race.
      to sit full); damage 0-53% a race, P1 or P2, as before.
    - `fortress_test` checks it (a drag in the garage mounts nothing; dropped onto the cannon, the armor replaces it, the
      ghost amber, the cannon marked) on both layouts.
+   - Fixed after the owner's playtest (1 Nov: a drop took two tries or more on the phone; the playtest log): the board is
+     never redrawn under a finger (a hit on a part redrew it, and the drag went with the element it held; it redraws
+     once you let go); the beat before a drop starts again only when the ghost moves to other cells, which it does only
+     once the part is 0.3 of a cell past the edge (a thumb's wobble of 6 px reset it before), and the beat is 150 ms
+     (200); the whole slot in the hold is the part's handle (a two- or three-block part is shrunk in it); a press to
+     throw a part off survives a wobble within half a cell (12 px before). In a touch test with the old code, 0 of 5
+     drops went on with a wobble of 6 px or with a hit as it rested; 5 of 5 now, with a wobble of 10 px too.
+     `fortress_test` checks the wobble, the hit and the slot's corner.
 9. The pressure (wear with use, salvage condition) and the ambushes (heat and the scanner retired, the tank an ambush,
    drops below 100%), for a swap or a loss about every 5 s.
 10. The gang's ranks paying points; the points' sinks (shells, the dealer, the crew's upgrades); the currencies' picks.
@@ -1766,6 +1774,13 @@ All dates are 2026.
   what they add to the download). Not now: a perfect-shift reward (see each act's fantasy, under Distance), a
   tutorial beyond the first runs (the surprises are the point), a port to an engine such as Godot (the web build
   stays; Steam and the app stores take a wrapped web game, consoles would need an engine).
+- **1 Nov, the owner on act 5's packing (iPhone):**
+  - Dragging a part from the hold onto the board was unresponsive: a drop took two tries or more. The number one
+    priority. Found (a touch test, the phone layout): a thumb's wobble of 6 px or more kept the beat before the drop from
+    ever arming (0 of 5 drops), a hit on a part redrew the board from under the finger and ended the drag (0 of 5), and
+    only a part's blocks took a touch, not its slot. Fixed the same day (layer 8, below).
+  - The flash should go with the Rebuild too, as the pedals did.
+  - In debug mode, with everything bought: no shells, and nowhere to buy them.
 
 ## Open questions
 
