@@ -226,7 +226,8 @@ Each upgrade and what it needs, one line each: the list to edit.
 ### Fortress (1 scrap; needs the War Rig, and the tank beaten; act 5, built from 30 Oct)
 
 - Rebuild ← Fortress (1,500 points: the car rebuilt as a war rig, no shifter or pedals, the aids it drives with
-  bolted on; the tank's cannon in the hold and its 10 shells, the 1×1 board, the firing pedal). From then on the
+  bolted on, no headlight flash (Headlight flash, Flash recharge and Auto flash plated: the owner, 1 Nov); the tank's
+  cannon in the hold and its 10 shells, the 1×1 board, the firing pedal). From then on the
   reticle takes only the rival rigs, the police's SUVs and the tank, the rival gang comes at you, Hunter hunts the
   raiders' car, and the notable enemies drop loot (not a card: the road changes with the Rebuild)
 - Lengthen ← Rebuild (4 levels, 400 scrap doubling: the board a row longer a level, to five, the new row behind;

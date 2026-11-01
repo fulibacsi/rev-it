@@ -1136,6 +1136,8 @@ rig, and the cockpit changes with it:
   lanes, when there is no lane left to change to;
 - with no shifter and no gas pedal the rig drives itself: Auto shift and Autocruise stay on (the owner, 30 Oct), said
   in words, and their cards stay in the garage, disabled, not removed, perhaps under a metal plate bolted over them;
+- the headlight flash goes too (the owner, 1 Nov, from a playtest): no stalk, no F, no charges on the windshield, its
+  tutorial off HOW TO DRIVE's list; Headlight flash, Flash recharge and Auto flash under a plate, TAKEN OFF;
 - where you sit is an experiment (the owner): a cab at the front, the fortress behind you and seen only on the board,
   like Fury Road's War Rig pulling its tanker; or a bridge at the stern, looking out over the deck you built (the eye
   raised: above);
