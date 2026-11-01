@@ -33,18 +33,22 @@ with sync_playwright() as p:
         def touch(kind, x, y, id=1): cdp.send("Input.dispatchTouchEvent", {"type": kind, "touchPoints": [{"x": x, "y": y, "id": id}]})
         def center(sel): return js(f"(() => {{ const r = document.querySelector('{sel}').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }})()")
         def box(sel): return js(f"(() => {{ const r = document.querySelector('{sel}').getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; }})()")
-        def drag_to_board(rest_ms, peek=None):  # from the hold's part, off to the left, then across onto the board's cell (where it
-            s, cell = center("#fort-hold .part"), js("parseFloat($('board').style.getPropertyValue('--cell'))")  # floats over
-            g = box("#fort-grid"); tx, ty = (g[0] + g[2]) / 2, g[3] + cell * 0.6  # it: above the finger), a cell a step, then a rest
+        def drag_to_board(rest_ms, peek=None, jitter=0, during=None, corner=False):  # from the hold's part (or its slot's
+            # corner), off to the left, then across onto the board's last row (where it floats over it: above the finger),
+            # a cell a step, then a rest, the finger still or wobbling (jitter px), something happening as it rests (during)
+            s, cell = center("#fort-hold .part"), js("parseFloat($('board').style.getPropertyValue('--cell'))")
+            if corner: sl = box("#fort-hold .slot"); s = [sl[0] + 3, sl[3] - 3]
+            g = box("#fort-grid"); tx, ty = (g[0] + g[2]) / 2, g[3] + cell * 0.6
             path = [(tx - 4 * cell + k * cell, ty) for k in range(5)]
-            if phone:
-                touch("touchStart", *s)
-                for x, y in path: touch("touchMove", x, y)
-                pg.wait_for_timeout(rest_ms); peek and peek(); touch("touchEnd", tx, ty)
-            else:
-                pg.mouse.move(*s); pg.mouse.down()
-                for x, y in path: pg.mouse.move(x, y)
-                pg.wait_for_timeout(rest_ms); peek and peek(); pg.mouse.up()
+            press, move, lift = ((lambda x, y: touch("touchStart", x, y)), (lambda x, y: touch("touchMove", x, y)), (lambda x, y: touch("touchEnd", x, y))) \
+                if phone else ((lambda x, y: (pg.mouse.move(x, y), pg.mouse.down())), pg.mouse.move, (lambda x, y: pg.mouse.up()))
+            press(*s)
+            for x, y in path: move(x, y)
+            during and during()
+            for k in range(rest_ms // 30):
+                if jitter: move(tx + jitter * (1 if k % 2 else -1), ty + jitter * (1 if k % 3 else -1))
+                pg.wait_for_timeout(30)
+            peek and peek(); lift(tx, ty)
             pg.wait_for_timeout(100)
         def hold_part(ms, slide=0):
             c = center("#fort-grid .part")
@@ -133,6 +137,16 @@ with sync_playwright() as p:
         check(f"{layout}: dropped onto the cannon: the ghost amber over it, the cannon marked, the part glowing amber; let go, the armor on and the cannon thrown off",
               seen == {"ghost": "swap", "doomed": ["cannon"], "drag": "armed,swap"} and got == ["armor", 0, False], [seen, got])
         js("progress.fortress.parts = [{ kind: 'cannon', cells: [[0, 0]], x: 0, y: 0 }]; applyUpgrades()")  # the cannon back, for its shells
+        # on the owner's phone (1 Nov) a drop took two tries or more: a thumb's wobble kept the beat from arming, a hit on a
+        # part redrew the board from under the finger, and only a part's blocks took a touch, not its slot
+        js("progress.levels.lengthen = 1; applyUpgrades()"); pg.wait_for_timeout(100)  # two rows: room behind the cannon
+        got = []
+        for kw in [dict(jitter=8), dict(during=lambda: js("strike(4, carX, odo + 5)")), dict(corner=True)]:
+            js("progress.fortress.hold = [{ kind: 'armor', from: 'rig', cells: [[0, 0]] }]"); pg.wait_for_timeout(100)
+            drag_to_board(330, **kw)
+            got.append(js("progress.fortress.parts.length")); js("progress.fortress.parts = progress.fortress.parts.slice(0, 1)")
+        check(f"{layout}: it goes on with the thumb wobbling 8 px, with a part hit as it rests, and taken by its slot's corner", got == [2, 2, 2], got)
+        js("progress.levels.lengthen = 0; progress.fortress.parts = [{ kind: 'cannon', cells: [[0, 0]], x: 0, y: 0 }]; applyUpgrades()")
 
         # 5. the cannon: a shell a press at the reticle's car, then a reload; heavy
         shot = """(kind) => { const c = traffic.find(c => c.dir > 0 && !c.racer && !c.wreck && !c.police && !c.tank);
@@ -154,7 +168,7 @@ with sync_playwright() as p:
 
         # 6. thrown off: a tap or a slide doesn't; held until the ring closes, gone for good
         hold_part(200); check(f"{layout}: a short press: still on", js("progress.fortress.parts.length") == 1, js("progress.fortress.parts.length"))
-        hold_part(700, slide=30); check(f"{layout}: a slide: still on", js("progress.fortress.parts.length") == 1, js("progress.fortress.parts.length"))
+        hold_part(700, slide=js("parseFloat($('board').style.getPropertyValue('--cell'))")); check(f"{layout}: a slide (a cell): still on", js("progress.fortress.parts.length") == 1, js("progress.fortress.parts.length"))
         hold_part(700)
         got = js("[progress.fortress.parts.length, progress.fortress.hold.length, cannonOn(), fireCannon()]")
         check(f"{layout}: held: thrown off, gone for good; the pedal fires nothing", got == [0, 0, False, False], got)
