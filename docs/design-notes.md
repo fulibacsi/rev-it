@@ -1786,8 +1786,10 @@ All dates are 2026.
     priority. Found (a touch test, the phone layout): a thumb's wobble of 6 px or more kept the beat before the drop from
     ever arming (0 of 5 drops), a hit on a part redrew the board from under the finger and ended the drag (0 of 5), and
     only a part's blocks took a touch, not its slot. Fixed the same day (layer 8, below).
-  - The flash should go with the Rebuild too, as the pedals did.
-  - In debug mode, with everything bought: no shells, and nowhere to buy them.
+  - The flash should go with the Rebuild too, as the pedals did. Done the same day (the Rebuild, above).
+  - In debug mode, with everything bought: no shells, and nowhere to buy them. The crate of shells for points (agreed
+    for act 5's points on 31 Oct) brought forward the same day, and debug mode's shells made bottomless (the
+    currencies, above).
 
 ## Open questions
 
