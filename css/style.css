@@ -438,6 +438,7 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
 #fort-hold .slot { position: relative; width: var(--cell); height: var(--cell); border: 1px dashed #667; border-radius: 4px;
                    background: #1c1c22; }
 #fort-hold .slot.lifted .part { opacity: 0.3; } /* on its way to the board */
+#fort-hold .slot:has(.part) { cursor: grab; } /* the whole slot is the part's handle (fortress.js renderBoard) */
 .part { position: absolute; left: calc(var(--cell) * var(--x, 0)); top: calc(var(--cell) * var(--y, 0)); cursor: grab;
         width: calc(var(--cell) * var(--w)); height: calc(var(--cell) * var(--h)); touch-action: none; pointer-events: none;
         --tone: #555; }
