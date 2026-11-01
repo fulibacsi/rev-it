@@ -166,8 +166,23 @@ function throwOff(i) {
 // car in one; the next tank (1,500) in six. Act IV's guns stay on the rig. First guesses, for act5.py. It needs shells
 // (the owner, 30 Oct): the tank's with the Rebuild, then two from every rival gang car totaled; the count is on its pedal
 const CANNON = { damage: 250, reload: 2, reach: 300, heat: 10 }; // reach m, reload s, heat: a gun shot's times ten
-const SHELLS = { tank: 10, gang: 2 };
+const SHELLS = { tank: 10, gang: 2, crate: 10, price: 100 }; // the crate: shells, points (Claude's first guess, for act5.py)
 const gangShells = c => rigged() && c.racer && !c.fleet ? SHELLS.gang : 0; // a car totaled (gang.js total): its shells
+// a crate of shells for points (the owner, 31 Oct: points need something to buy; 1 Nov: no shells and nowhere to buy
+// them), on the Fortress page once rebuilt, as often as you like: the cannon's ammunition, spent as you fight
+function shellCard() { // distance.js renderGarage
+  if (garageTab !== 'fortress' || !rigged()) return '';
+  return `<div class="card shells"><b>Shells</b><small>${SHELLS.crate} for ${fmt(SHELLS.price)} points · ` +
+    `${bottomless() ? '∞' : fmt(progress.shells)} in the rig</small><button data-shells${progress.points >= SHELLS.price ? '' : ' disabled'}>` +
+    `Buy ${SHELLS.crate} · ${fmt(SHELLS.price)} pts</button></div>`;
+}
+function buyShells() { // distance.js, a tap on the card's button
+  if (progress.points < SHELLS.price) return false;
+  progress.points -= SHELLS.price;
+  progress.shells += SHELLS.crate;
+  save();
+  return true;
+}
 const cannonOn = () => rigged() && progress.fortress.parts.some(p => p.kind === 'cannon');
 let reloading = 0, firedAt = -Infinity;
 function fireCannon() {
@@ -465,7 +480,7 @@ function renderRig() {
   $('cannon-pedal').parentNode.classList.toggle('mounted', cannonOn());
   $('cannon-pedal').parentNode.classList.toggle('empty', progress.shells < 1);
   $('cannon-pedal').parentNode.style.setProperty('--reload', (1 - reloading / CANNON.reload).toFixed(2));
-  text('shell-count', String(progress.shells));
+  text('shell-count', bottomless() ? '∞' : String(progress.shells)); // debug mode: bottomless (distance.js save)
   const first = id => target?.seen && run.phase === 'run' && !progress.toured.includes(id); // the first one in sight
   if (target?.rig && first('rivals')) openTour('rivals', true);
   else if (target?.suv && first('pursuit')) openTour('pursuit', true);

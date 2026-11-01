@@ -110,7 +110,8 @@ function load() { // a save from before fuel (26 Oct) has miles: they are liters
   return s;
 }
 function save() {
-  if (bottomless()) progress.bank = progress.points = progress.fuel = progress.scrap = FUNDS; // spent or earned, back to full
+  if (bottomless()) progress.bank = progress.points = progress.fuel = progress.scrap = progress.shells = FUNDS; // spent or earned,
+                                                                                                              // back to full
   try { localStorage.setItem(saveKey(), JSON.stringify(progress)); } catch { /* not saved */ }
 }
 const forgetRun = () => Object.assign(run, { gain: null, race: null, revealed: false, won: false, dues: 0, team: 0, scrap: 0, totals: 0, shells: 0, repaired: 0,
@@ -134,7 +135,7 @@ const money = n => bottomless() ? '∞' : fmt(n); // a debug wallet shows as bot
 function debugMoney(on) { // the switch: on, the wallets fill; off, they empty (start at an act for its own)
   settings.debugMoney = on;
   saveSettings();
-  Object.assign(progress, on ? {} : { bank: 0, points: 0, fuel: 0, scrap: 0 });
+  Object.assign(progress, on ? {} : { bank: 0, points: 0, fuel: 0, scrap: 0, shells: 0 });
   save();
 }
 
@@ -172,7 +173,7 @@ function debugAct(act) {
                             seen: Object.keys(UPGRADES).filter(shows) });
   markTours(); // tutorial.js: what is open before the moment
   moment?.();
-  if (!bottomless()) Object.assign(progress, { bank: 0, points: 0, fuel: 0, scrap: 0 }, wallets);
+  if (!bottomless()) Object.assign(progress, { bank: 0, points: 0, fuel: 0, scrap: 0, shells: 0 }, wallets);
   save();
   forgetRun();
 }
@@ -515,7 +516,7 @@ function renderGarage(bought) {
   const building = garageTab === 'fortress' && pageOpen('fortress') ? `<div class="card building"><b>UNDER CONSTRUCTION</b>` +
     `<small>Act V is being built a piece at a time, more with each update. Until then the tanks keep coming, each one ` +
     `tougher.</small></div>` : '';
-  $('cards').innerHTML = first + repairCard + building + (garageTab === 'fleet' && pageOpen('fleet') ? exchangeCard() + roleCard() : '') +
+  $('cards').innerHTML = first + repairCard + building + shellCard() + (garageTab === 'fleet' && pageOpen('fleet') ? exchangeCard() + roleCard() : '') +
     Object.entries(UPGRADES).filter(onTab).map(([id, u]) => {
     // the aids the war rig drives with, bolted on (fortress.js): their cards stay, under a metal plate (the owner, 30 Oct)
     if (rigDrives(id)) return `<div class="card plated"><b>${u.name}</b><i class="plate">BOLTED ON<small>` + (rigW > 1 &&
@@ -552,6 +553,7 @@ $('garage').onclick = e => {
   if (tab) garageTab = tab;
   if ('repair' in b.dataset && repair()) { beep(1320, 0.1); refreshCar(); }
   if ('autorepair' in b.dataset) { progress.autoRepair = !progress.autoRepair; save(); }
+  if ('shells' in b.dataset && buyShells()) beep(1760, 0.08); // fortress.js
   if (('exchange' in b.dataset || 'exchangeAll' in b.dataset) && convert('exchange' in b.dataset ? exchange : Infinity)) beep(1760, 0.08);
   if (i) { progress.engine = +i; save(); refreshCar(); }
   if (toggle) { progress.off[toggle] = !progress.off[toggle]; save(); }

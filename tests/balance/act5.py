@@ -10,7 +10,8 @@ a player's would be), the board's blocks and the hold, the rig's weight and the 
 the race's, never the garage's) it puts what the hold carries on the board, armor and spikes on the end rows first
 (the shield: hits come from ahead and behind) and the rest on the middle rows first, or swaps it in where it throws off
 the least health; it counts the parts mounted and swapped, and how often the board changes (the owner's aim: about
-every 5 s). Between races it buys Lengthen, Inventory and Widen as they come. Widened, it shifts
+every 5 s). Between races it buys Lengthen, Inventory and Widen as they come, and crates of shells for points while it has fewer
+than 20. Widened, it shifts
 the fortress over a crate's lane and back to its side of the road; it counts the cars crushed and the head-ons rammed
 through. The shield (layer 7): the hits the board's parts took and those that reached the rig, the parts that fell off,
 and the health the board's parts have left after the race (worn parts aren't repaired). The police's helicopters
@@ -139,7 +140,9 @@ with sync_playwright() as p:
             progress.roles = { harvester: harv, brewer: brew, raider: Math.min(n - brew - harv, 6) }; plan = null; })()""")
         got = js(f"""(() => {{ const b = [], buyAll = (ids, cheapest) => {{ for (;;) {{ const ok = ids.filter(id => !whyNot(id));
             if (!ok.length) return; const id = cheapest ? ok.sort((a, c) => cost(a) - cost(c))[0] : ok[0]; buy(id); b.push(id + lvl(id)); }} }};
-            buyAll({json.dumps(WARRIG)}, true); buyAll(["lengthen", "inventory", "widen"], true); buyAll({json.dumps(FLEET)}, false); return b.filter(x => !x.startsWith('fleet') || x.startsWith('fleetP')); }})()""")
+            buyAll({json.dumps(WARRIG)}, true); buyAll(["lengthen", "inventory", "widen"], true); buyAll({json.dumps(FLEET)}, false);
+            let crates = 0; while (progress.shells < 20 && buyShells()) crates++; // the cannon's: 20 for a race
+            return [...b.filter(x => !x.startsWith('fleet') || x.startsWith('fleetP')), ...crates ? [`shells+${{10 * crates}}`] : []]; }})()""")
         board = js("""(() => { const f = progress.fortress, by = {}; // the board after the race (packing is the race's)
             for (const p of f.parts) by[p.kind] = (by[p.kind] ?? 0) + p.cells.length;
             return [Object.entries(by).map(([k, n]) => `${k} ${n}`).join(' '), f.hold.length, Math.round(rigWeight())]; })()""")

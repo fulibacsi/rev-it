@@ -28,6 +28,9 @@ with sync_playwright() as p:
     for _ in range(3): pg.tap('[data-buy="power"]'); pg.wait_for_timeout(100)
     s = state()
     check("buying: the levels go up, the wallet stays full", s["power"] == 5 and s["bank"] == 1e9, s)
+    got = js("(() => { progress.levels.rebuild = 1; progress.shells = 3; save(); const r = [progress.shells]; renderRig(); r.push($('shell-count').textContent); "
+             "progress.levels.rebuild = 0; renderRig(); return r; })()")
+    check("the cannon's shells bottomless too (the owner, 1 Nov: none, and nowhere to buy them): ∞ on the pedal", got == [1e9, "∞"], got)
     check("the real save is untouched", real() == REAL, real())
     got = js("(() => { progress.racing = true; progress.levels.fleet = 51; progress.gang = true; const w = progress.wanted; raiseHeat(0.02); const d = progress.wanted - w; progress.wanted = w; progress.levels.fleet = 0; progress.gang = false; return [maxOf(UPGRADES.grid), +d.toFixed(3)]; })()")
     check("shortcuts: every grid slot for sale, heat ten times quicker", got == [100, 0.2], got)

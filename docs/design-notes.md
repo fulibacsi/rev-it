@@ -1088,7 +1088,7 @@ added to `act5.py` (seeds 1 and 2, 12 races from the tank, as built on 31 Oct):
 | Fuel | the refineries (crude from the oil spots); the pump | the Crew page: paying off racers, Racing, Crew tuning, the oil cards | +20-43 L refined; all of it spent, mostly on racers |
 | Crude | the oil spots | the refineries | (inside the crew's work) |
 | Scrap | totals: a car 22, a racer 55, an SUV 110, a rig 150, a helicopter 160, a tank 300 | the War Rig page (Guns); the Fortress page (Lengthen, Widen) | +760-1,450; spent as it comes, 0-3k left |
-| Shells | the Rebuild (10); 2 for each gang car totaled | the cannon | they run out by race 5-6 (below) |
+| Shells | the Rebuild (10); 2 for each gang car totaled; since 1 Nov, crates for points (below) | the cannon | they ran out by race 5-6 (below), before the crates |
 | Parts | the drop tables (a tank, rig or helicopter always; an SUV half the time; a gang car 5%) | hits; throwing off; a crate left on the road | they outrun the losses: the hold full, crates left behind |
 
 What it shows:
@@ -1102,6 +1102,13 @@ Planned (agreed with the owner unless marked as Claude's, to pick):
 - Points: in from the gang's ranks (above), with Team places as now; out on shells (a crate of 10 before a race, the
   cannon's ammunition, as much as you fight), the dealer (below) and the crew's upgrades (the act's automation, the
   crew picking up loot for you, say).
+- Shells for points, built 1 Nov (brought forward by the owner's playtest: in debug mode, "no shells, no market to buy
+  them from"): a card on the Fortress page once rebuilt, Shells, a crate of 10 for 100 points as often as you like
+  (Claude's price, a first guess), the shells in the rig on it. `act5.py` (seeds 1 and 2, 12 races; the bot keeps 20
+  for a race): the cannon fires 4-17 shells a race to the end (it ran dry by race 5-6), a crate most races, 100 points
+  of the 345-466 a race; the points still pile up, 3,300-3,400 by race 12 (4,300 before): the dealer and the crew's
+  upgrades are for the rest. In debug mode the shells are bottomless as the wallets are (∞ on the pedal); with its
+  money as in play, they empty with them.
 - The dealer (agreed): before each race 2-3 random parts in random condition, one of them yours for a price, into the
   hold; Backpack Battles' shop, kept small so it doesn't stand in for the hunt.
 - Claude's, to pick: the racers stop selling once the car is a war rig (the pay-off card closes with the Rebuild:
@@ -1779,8 +1786,10 @@ All dates are 2026.
     priority. Found (a touch test, the phone layout): a thumb's wobble of 6 px or more kept the beat before the drop from
     ever arming (0 of 5 drops), a hit on a part redrew the board from under the finger and ended the drag (0 of 5), and
     only a part's blocks took a touch, not its slot. Fixed the same day (layer 8, below).
-  - The flash should go with the Rebuild too, as the pedals did.
-  - In debug mode, with everything bought: no shells, and nowhere to buy them.
+  - The flash should go with the Rebuild too, as the pedals did. Done the same day (the Rebuild, above).
+  - In debug mode, with everything bought: no shells, and nowhere to buy them. The crate of shells for points (agreed
+    for act 5's points on 31 Oct) brought forward the same day, and debug mode's shells made bottomless (the
+    currencies, above).
 
 ## Open questions
 
