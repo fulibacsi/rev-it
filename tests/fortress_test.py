@@ -75,6 +75,11 @@ with sync_playwright() as p:
         check(f"{layout}: bought: 500 points left, the tank's cannon in the hold, the rig's tutorial pops up",
               got == [500, '{"parts":[],"hold":[{"kind":"cannon","cells":[[0,0]]}]}', "tour", "rig"], got)
         while js("menuOpen"): js("turnTour(1)"); pg.wait_for_timeout(50)
+        js("garageTab = 'fortress'; renderGarage()"); pg.wait_for_timeout(100)
+        before = js("[progress.shells, progress.points]"); tap("[data-shells]"); pg.wait_for_timeout(150)
+        got = js("[progress.shells, progress.points, $('cards').querySelector('.shells small').textContent]")
+        check(f"{layout}: a crate of shells on the Fortress page: 10 for 100 points, as often as you like", before == [10, 500]
+              and got == [20, 400, "10 for 100 points · 20 in the rig"], [before, got])
         drag_to_board(350)
         got = js("[progress.fortress.parts.length, progress.fortress.hold.length, getComputedStyle($('board')).display]")
         check(f"{layout}: in the garage the board only shows: a drag there mounts nothing", got == [0, 1, "flex"], got)
