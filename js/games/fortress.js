@@ -35,6 +35,10 @@ const rigged = () => lvl('rebuild') > 0;
 // garage cards under a metal plate (distance.js renderGarage), whatever their switches said
 const RIG_AIDS = ['clutch', 'gas', 'shift', 'steer', 'cruise'];
 const rigDrives = id => rigged() && RIG_AIDS.includes(id);
+// and the headlight flash goes with the Rebuild, as the pedals do (the owner, 1 Nov): no stalk, no F, no charges; its
+// cards under a plate too (distance.js renderGarage)
+const RIG_GONE = ['flash', 'flashRecharge', 'autoflash'];
+const rigTook = id => rigged() && RIG_GONE.includes(id);
 const ONE = [[0, 0]]; // a part's cells, across (lanes) and along (ahead up): a single block
 const holdSize = () => 1 + lvl('inventory'); // the hold's slots (the owner: one, upgraded to three)
 const boardW = () => 1 + lvl('widen'), boardH = () => 1 + lvl('lengthen'); // lanes, car lengths
@@ -186,7 +190,7 @@ function rigTick(dt) { reloading = Math.max(0, reloading - dt); } // distance.js
 function rigKey(k, repeat) {
   if (!rigged()) return false;
   if (k === ' ') { if (!repeat) fireCannon(); return true; }
-  return ['Shift', 'b', 'B', 'ArrowUp', 'ArrowDown', 'n', 'N'].includes(k);
+  return ['Shift', 'b', 'B', 'ArrowUp', 'ArrowDown', 'n', 'N', 'f', 'F'].includes(k);
 }
 // ---- the road (the owner, 30 Oct): the reticle takes only the notable enemies, the army's tanks, the rival gang's war
 // rigs and the police's pursuit SUVs (police.js; helicopters to come); the rest are the raiders' (gang.js crewTarget),

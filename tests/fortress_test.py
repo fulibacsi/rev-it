@@ -4,7 +4,8 @@ drive it bolted on, their cards under a metal plate; in the shifter's place the 
 with the tank's cannon. On the road only (in the garage the board only shows), a part dragged from the hold goes on
 only once it has rested (a flick goes back), and dropped onto a mounted part it replaces it; pressed and held, a part
 is thrown off for good. The cannon fires a shell a press (Space, or the pedal) at the car in the reticle, then
-reloads. The keys and the help follow; Free drive keeps its pedals. Phone (touch, the notch) and desktop."""
+reloads. The keys and the help follow; the headlight flash goes too (its stalk, F, its cards plated); Free drive keeps
+its pedals. Phone (touch, the notch) and desktop."""
 import json
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -83,15 +84,16 @@ with sync_playwright() as p:
         got = js("[progress.fortress.parts.length, progress.fortress.hold.length, getComputedStyle($('board')).display]")
         check(f"{layout}: in the garage the board only shows: a drag there mounts nothing", got == [0, 1, "flex"], got)
         js("garageTab = 'autopilot'; renderGarage()"); pg.wait_for_timeout(100)
-        got = js("[...document.querySelectorAll('#cards .card')].map(c => [c.querySelector('b').textContent, !!c.querySelector('.plate'), !!c.querySelector('button')])")
-        plated = sorted(n for n, pl, _ in got if pl)
-        check(f"{layout}: the aids it drives with, under a plate, no switch; Auto flash as it was",
-              plated == ["Auto clutch", "Auto gas", "Auto shift", "Autocruise", "Lane assist"] and all(not bt for _, pl, bt in got if pl)
-              and any(n == "Auto flash" and not pl and bt for n, pl, bt in got), got)
+        got = js("[...document.querySelectorAll('#cards .card')].map(c => [c.querySelector('b').textContent, c.querySelector('.plate')?.firstChild.textContent ?? '', !!c.querySelector('button')])")
+        plated = sorted((n, pl) for n, pl, _ in got if pl)
+        check(f"{layout}: the aids it drives with, bolted on, under a plate, no switch; Auto flash taken off with the flash (the owner, 1 Nov)",
+              plated == [("Auto clutch", "BOLTED ON"), ("Auto flash", "TAKEN OFF"), ("Auto gas", "BOLTED ON"), ("Auto shift", "BOLTED ON"),
+                         ("Autocruise", "BOLTED ON"), ("Lane assist", "BOLTED ON")] and all(not bt for _, pl, bt in got if pl), got)
         pg.screenshot(path=f"{OUT}/fortress_{layout}_plates.png")
         js("openMenu('help')"); help = js("document.querySelector('[data-screen=help] .' + (touchLayout() ? 'touch-only' : 'desk-only')).innerText"); js("closeMenu()")
-        check(f"{layout}: the help: the cannon and the board, no pedals or gears",
-              ("Cannon" in help and "Fortress" in help and "Pedals" not in help) if phone else ("Space fire the cannon" in help and "Space gas" not in help and "N nitro" not in help), help[:200])
+        check(f"{layout}: the help: the cannon and the board, no pedals, gears or flash",
+              ("Cannon" in help and "Fortress" in help and "Pedals" not in help and "Lights" not in help) if phone
+              else ("Space fire the cannon" in help and "Space gas" not in help and "N nitro" not in help and "F flash" not in help), help[:200])
 
         # 3. on the road: no shifter, no pedals, the firing pedal; the aids drive, whatever their switches say
         js("progress.off.cruise = progress.off.gas = true"); pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=20000)
@@ -101,6 +103,11 @@ with sync_playwright() as p:
                  "['clutch', 'gas', 'shift', 'steer', 'cruise'].map(aid).every(Boolean), Math.round(speed * 3.6) > 60]")
         check(f"{layout}: the rig: no shifter, no pedals, the board and the firing pedal; it drives itself, switched off or not",
               got == [True, "none", "none", "none", "flex", "flex", True, True], got)
+        js("flashedAt = -Infinity"); pg.keyboard.press("f"); pg.wait_for_timeout(100)
+        got = js("[run.flashes, getComputedStyle($('stalk')).display, getComputedStyle($('hud-beam')).display, document.body.classList.contains('flashing'), "
+                 "game.useFlash(), TUTORIALS.find(t => t.id === 'flash').open()]")
+        check(f"{layout}: no headlight flash on the rig: no charges, no stalk, none on the windshield, F does nothing, its tutorial off the list",
+              got == [0, "none", "none", False, False, False], got)
         pg.keyboard.down("Shift"); pg.keyboard.down("b"); pg.wait_for_timeout(100)
         got = js("[PEDALS.clutch.hold, PEDALS.brake.hold]"); pg.keyboard.up("Shift"); pg.keyboard.up("b")
         check(f"{layout}: Shift and B press no pedal", got == [None, None], got)
