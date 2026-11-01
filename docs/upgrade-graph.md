@@ -234,6 +234,8 @@ Each upgrade and what it needs, one line each: the list to edit.
 - Inventory ← Rebuild (2 levels, 600 points doubling: the hold a slot more a level, to three)
 - Widen ← Rebuild (3 levels, 800 scrap growing 2.5 times: the board and the rig a lane wider a level, to four, the
   board's new column on the right; from two lanes a truck's wheel, no brakes, rams and head-ons rammed through)
+- Shells, not an upgrade (1 Nov): once rebuilt, a card on the page sells the cannon's shells, a crate of 10 for 100
+  points, as often as you like.
 - Its page keeps a work sign, under construction, while the rest is built. The other cards are planned (below).
 
 ## The Crew page (26 Oct)
