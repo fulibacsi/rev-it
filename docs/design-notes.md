@@ -1070,7 +1070,8 @@ wins, and the layers ahead follow it):
   and no longer ends the run (the owner). The sonar still shows each one coming, as it shows the loot.
 - The rival gang (the owner): the racers are the gang, and totaling one pays the points of its rank, its grid number.
   Claude's reading: #k pays 101 - k, the race's own scale (100 for #1); the race's pay for where you finish (10 at
-  P1) goes in act 5.
+  P1) goes in act 5. The gang is unlimited (the owner, 2 Nov): your crew stays at its 99, and the gang's cars come
+  randomly numbered, one now and then and more in its ambushes (The factions, below).
 - Dodging (agreed): the searchlight's lane, the mines; from four lanes wide there is nowhere to go, and the mine
   roller and the Grinder take over.
 - The act takes 10-15 races to the final fight (the owner), now against the build-out.
@@ -1111,16 +1112,46 @@ Planned (agreed with the owner unless marked as Claude's, to pick):
   money as in play, they empty with them.
 - The dealer (agreed): before each race 2-3 random parts in random condition, one of them yours for a price, into the
   hold; Backpack Battles' shop, kept small so it doesn't stand in for the hunt.
-- Claude's, to pick: the racers stop selling once the car is a war rig (the pay-off card closes with the Rebuild:
-  they are at war with you), so the gang keeps the 18-26 racers it has at the tank (`act4.py`: 74-82 in the crew), the top of the field, back in
-  every race to be hunted again.
-- Claude's, to pick: with the crew no longer for sale, fuel needs its sink. Either the dealer trades in fuel (the
-  wasteland's currency) and points keep shells and the crew's upgrades; or the fortress's engines burn fuel, a race's
-  worth by its weight before each race (a cost of growing; the owner wants buying, not a tax, so Claude prefers the
-  dealer).
-- Claude's, to pick: meters keep their two sinks, repairs (more with parts wearing and holes letting hits through) and
-  the pump into fuel, which then buys from the dealer: meters into fuel into parts.
-- Scrap and crude as they are. Shells: the gang's and the crate. Parts: drops below 100%, salvage condition and wear.
+- Turned down (2 Nov): Claude's racers that stop selling with the Rebuild (the gang is unlimited instead: The
+  factions, below), and the fortress's engines burning a race's fuel by its weight (a tax).
+
+**The map** (the owner, 2 Nov: "it is crucial to make all resources useful in a diegetic way"; Claude's table on it,
+agreed): each currency pays its own kind of people, as the garage's pages already do in acts 1-4 (the Workshop and
+Autopilot in meters, the Black market in points, the Crew in fuel, the War Rig in scrap); act 5's Fortress page broke
+it, paid in scrap and points. Shells and loot are mechanics, with no buying power.
+
+| Currency | Pays | Buys in act 5 |
+|---|---|---|
+| Meters | the decent people: engineers | building the fortress bigger (Lengthen, Widen, Inventory), priced for the 60-78k a race (Lengthen from about 50k doubling, Widen about 100k growing 2.5 times, Claude's guesses); repairs, as now |
+| Points | the shady people: illegal dealers | the dealer's crates of random parts between runs (the owner's loot box); the shells (built); tuning the fortress's parts |
+| Fuel | loyalty, the wasteland's money | the crew's act 5 jobs: scavengers picking up the loot, gunners, the Foreman's efficiency |
+| Scrap | war: a monster built from your car | offense: the cannon's reload and damage, rams, the Grinder, the mine roller |
+| Crude | (a resource) | the refineries, into fuel |
+
+- What makes a sink a purchase and not a tax (Claude's): it is a choice, it buys something you feel, and it keeps going
+  as incremental games keep theirs, with prices that grow (as the Crew's Pay off a racer, 3.5% dearer each). Shells
+  bought as you choose are purchases.
+- The owner's ideas, weighed: cards in two currencies for the big pieces only (the Grinder, what the final fight
+  needs), so every currency counts in the climax; factories only where what they make is used up (an ammunition press
+  built for meters, turning out shells each race), as a factory making money only adds to the flood; the crew repaired
+  for meters only if it gets hurt fighting (the raiders), else a tax; fuel burned by the engines on the board, if any
+  upkeep at all (an engine burning fuel pays back in speed; upkeep on every part punishes growing).
+- With size in meters, scrap loses its main sink, Lengthen and Widen: the offensive cards are a layer of their own.
+
+**The factions** (the owner, 2 Nov; each a verb of its own, so each feels different on the road and lands on the
+board its own way: "military shoots, rival gang does dirty things, police rams you directly"). A tier each: fodder
+for the raiders and your rams, midline and notable in the reticle, for the cannon and the guns. Drops by tier: fodder
+rarely, midline sometimes, notables often, none at 100%.
+
+| | Fodder | Midline | Notable |
+|---|---|---|---|
+| Police: ram you | police cars ram you from behind or the side (a PIT), where they cut in and braked | pursuit SUVs come head-on from the oncoming lane, kamikaze (the owner: Need for Speed: Most Wanted's); a wide fortress rams through one, for a big hit on its front row | the helicopter's searchlight lights one of your lanes, then it drops a spike strip there (the owner: calling SUVs in was too quiet to notice): get off the lane, or the front part of that column is hit and the rig slowed for a few seconds |
+| Rival gang: dirty tricks | gang cars, unlimited, each randomly numbered (its rank pays its points, 101 - k), one attacking now and then and a random number in the gang's ambushes: they cut in and brake, and lay mines | the harpoon truck: comes past and holds the road ahead in a lane beside you, so you see it (the owner: from the radar alone a part gone would look like a ram or a bug), winds up, fires: the line drawn from it to a part of yours, the part dragged across the road to it; totaled before it gets clear, the part drops as a crate | the war rig, its War Boys throwing grenades that knock out powered parts (the cannon, guns, engines; armor and spikes shrug it off, so placement counts): the grenade arcs back from the rig, a blue flash on its cell, static and a lightning mark on the parts knocked out, JAMMED; a tap restarts a part (it restarts on its own after about 10 s), and a part knocked out can't be thrown off. No more side rams (that is the police's verb now) |
+| Army: shoots you | jeeps with a weak gun, peppering you as they pass, on the side they are on | the rocket car (the SUV's body in olive, a launcher on the roof): holds the road ahead, a rocket every few seconds, a marker on the cell it will land on, dodged by changing lanes | the tank: its shells on the front row, as now, an ambush like the rest (the owner: it no longer ends the run) |
+
+- Ambushes are one faction each, and they overlap in time (the owner): a police ambush can come while you are still
+  in a gang one.
+- Reskins are fine for the fodder (the owner): the jeeps the police car's body in olive drab with a white star.
 
 **The doorway** (the owner): the tank's ending goes, and beating the tank opens act 5. TANK DOWN, then ACT V's card
 and the Fortress tab; the WARLORD screen moves to act 5's end. A save past the tank (`tanks` above 0) gets ACT V's card
@@ -1284,9 +1315,9 @@ camera rises and falls back, and the fortress, four lanes wide, crosses the wast
 following. Then the WARLORD screen. The act takes 10–15 races (the owner), so the game about 70–95 races, 1.5–2
 hours.
 
-**Still open:** the currencies' picks (The currencies in act 5, above: whether the racers stop selling, fuel's sink,
-meters'); the drop tables' numbers (below 100% now: the feel, above); the bridge or the cab (to try); the placing
-gesture on a phone, and whether packing at speed needs time slowed (the feel); the foreshadowing; the final fight's
+**Still open:** the prices on the map (The currencies in act 5, above); the drop tables' numbers (below 100% now:
+the feel, above); the bridge or the cab (to try); the placing gesture on a phone, and whether packing at speed needs
+time slowed (the feel); the foreshadowing; the final fight's
 form; whether placing is automated; what comes after the ending (playing on, or a new game plus). Settled since: how
 places are counted (the gang's ranks pay points: the feel), where the points go (the currencies), the wheel at two
 lanes (layer 6).
@@ -1573,12 +1604,15 @@ race, the loot lost to a full inventory, and the parts lost a race.
      throw a part off survives a wobble within half a cell (12 px before). In a touch test with the old code, 0 of 5
      drops went on with a wobble of 6 px or with a hit as it rested; 5 of 5 now, with a wobble of 10 px too.
      `fortress_test` checks the wobble, the hit and the slot's corner.
-9. The pressure (wear with use, salvage condition) and the ambushes (heat and the scanner retired, the tank an ambush,
-   drops below 100%), for a swap or a loss about every 5 s.
-10. The gang's ranks paying points; the points' sinks (shells, the dealer, the crew's upgrades); the currencies' picks.
-11. Mines laid by the gang; four lanes: the mine roller and the Grinder.
-12. The act's automation.
-13. The foreshadowing, the final fight and the ending.
+9. The pressure (wear with use, salvage condition, drops below 100%) and the ambushes' frame with the enemies there are
+   (heat and the scanner retired, the tank an ambush), for a swap or a loss about every 5 s.
+10. The police (The factions, above): cars ram, SUVs kamikaze head-on, the helicopter's spike strip.
+11. The gang: unlimited and numbered, its ranks paying points; mines; the harpoon truck; the war rig's War Boys.
+12. The army: jeeps with a gun, the rocket car.
+13. The currencies to the map (above): sizes in meters, the dealer, then the scrap's offensive cards and the fuel's
+    crew jobs. Four lanes: the mine roller and the Grinder.
+14. The act's automation.
+15. The foreshadowing, the final fight and the ending.
 
 ### Balance targets and results
 
