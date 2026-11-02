@@ -125,6 +125,10 @@ with sync_playwright() as p:
         if phone:
             ctl = box("#crew-ctl")
             check("phone: the board clear of ‹ SEND › above it", bd[1] >= ctl[3] - 1, [bd, ctl])
+            metrics = lambda h: cdp.send("Emulation.setDeviceMetricsOverride", {"width": W, "height": h, "deviceScaleFactor": 2, "mobile": True})
+            metrics(340); pg.wait_for_timeout(300)  # a shorter screen: Safari's bars showing (a mobile context can't be resized)
+            bd2, ctl2 = box("#board"), box("#crew-ctl"); metrics(H); pg.wait_for_timeout(300)
+            check("phone: on a screen 340 px tall too (it covered SEND below 393: the owner, 2 Nov)", bd2[1] >= ctl2[3] - 1 and bd2[3] <= 340, [bd2, ctl2])
         pg.screenshot(path=f"{OUT}/fortress_{layout}_hold.png")
 
         # 4. a part on: a flick goes back to the hold; rested on green, it goes on
