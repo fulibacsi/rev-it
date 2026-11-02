@@ -1724,6 +1724,13 @@ race, the loot lost to a full inventory, and the parts lost a race.
      and the act card show the ranks' points.
    - Still a lane beside you to come past in: with none (a fortress filling your side, from two lanes wide) no gang car
      comes, as in layer 6. How the gang comes at a fortress that fills your side is the next PR's, with its mines.
+   - `act5.py` (seeds 1 and 2, 12 races): a lane wide (races 1-4) 7-11 gang cars totaled a race, their ranks paying
+     446-670 points a race, more than the crew's racing (460-470); the points pile up, 6,100-6,200 unspent by race 12
+     (3,500-3,800 before), until the dealer and the points' cards (layer 13). From two lanes wide (race 5) none: no lane
+     to come past in.
+   - `rivals_test` checks it (a gang car sent with a number from 1 to 100, from 260 m back, your place and the field as
+     they were; past you, into your lane, braking; totaled, #37's 64 points and 2 shells; left behind, back into the
+     traffic) on both layouts.
 12. The army: jeeps with a gun, the rocket car.
 13. The currencies to the map (above): sizes in meters, the dealer, then the scrap's offensive cards and the fuel's
     crew jobs. Four lanes: the mine roller and the Grinder.
