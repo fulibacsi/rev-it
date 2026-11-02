@@ -1778,6 +1778,10 @@ race, the loot lost to a full inventory, and the parts lost a race.
      aim), pops up as the first one shows in the reticle.
    - Placement counts: what is on the board's edges and front is what it takes, so heavy parts there spare the light
      ones behind them.
+   - `act5.py` (seeds 1 and 2, 12 races; the bot fires at the reticle's whenever it can): 0-3 trucks a race, most shot
+     down while taking aim; 3 parts taken in the 24 races (1 got back from its crate), the tank's cannon never; no race
+     wrecked (two were with no winch limit), P1 every race; damage 0-91% a race (91% in a race with 29 mines); the
+     board changed every 4-12 s from race 7.
    - `rivals_test` checks it (sent from behind up your other lane, holding 30 m ahead, its tag; taking aim, the reticle
      on it and a gun blinking; the gun harpooned off the board; totaled while reeling, the gun in a crate on the road;
      reeled in, gone; the tank's cannon alone on the board, too heavy: it leaves) on both layouts.
