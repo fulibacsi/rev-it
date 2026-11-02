@@ -1748,6 +1748,11 @@ race, the loot lost to a full inventory, and the parts lost a race.
      road's right lane) up the right shoulder, the crew's line, then past you and into your right lane ahead, braking.
      A fortress two lanes wide or more brakes for no one: it crushes the car (its rank paid) and takes the hit on its
      front row.
+   - `act5.py` (seeds 1 and 2, 12 races; the bot never dodges a mine): 1-11 gang cars from behind a race, every one up
+     the shoulder once the rig is two lanes wide; 0-12 mine-layers a race, mines laid in 11 of the 24 races (0-25 a
+     race, most when an ambush brings several), nearly all run over; damage 0-78% a race (63-78% in the races with
+     14-25 mines); the board changed every 5-8 s from race 5-7. The ranks paid 57-961 points a race, 8,700-9,100
+     unspent by race 12.
    - `rivals_test` checks the mines (three dropped in your lane, each run over 3.75 off the cannon; in the other lane,
      missed), `widen_test` the shoulder (no lane beside you: up the shoulder from 260 m back, past you, into your right
      lane, braking), on both layouts.
