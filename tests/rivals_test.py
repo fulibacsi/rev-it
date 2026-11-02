@@ -12,7 +12,8 @@ car on the rig rams you, from behind or a PIT from the side, three times, then i
 (layer 11) holds the road beside you, the reticle on it once it takes aim, harpoons a part off the board (the tank's
 cannon too, slower to reel in) and reels it in; totaled first, the part drops in a crate. The army's (layer 12): a
 jeep comes past you and back, peppering the side of the board it is on, the raiders' and a ram's; a rocket car holds
-the road ahead in the reticle, its rocket's mark on the cell it will land on, a lane changed and it misses. Over a notable one the reticle's tag: what it is, its health, the shells it would take, how far. Before the rig, act 4's reticle as it was. Phone and desktop."""
+the road ahead in the reticle, its rocket's mark on the cell it will land on, a lane changed and it misses. The
+Foreman's Work rate (layer 13): the crew's jobs quicker. Over a notable one the reticle's tag: what it is, its health, the shells it would take, how far. Before the rig, act 4's reticle as it was. Phone and desktop."""
 import json, re
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -317,6 +318,20 @@ with sync_playwright() as p:
         pg.wait_for_timeout(300)
         pg.screenshot(path=f"{OUT}/rivals_{layout}_rocket.png")
         js("traffic.forEach(c => { if (c.rocket) spawnCar(c, 1500); }); rockets = []; progress.fortress.parts[0].hp = 100")
+
+        # 6c. the Foreman's Work rate (layer 13, for fuel): out of sight before the Rebuild; needs the Foreman; 20% quicker
+        # a level at every job: crude pumped at a spot, a raider at its car again after a ram
+        got = js("""(() => { progress.levels.rebuild = 0; const before = shows('workRate'); progress.levels.rebuild = 1;
+            const after = shows('workRate'); progress.levels.foreman = 1; const withForeman = shows('workRate');
+            progress.levels.workRate = 2; progress.off.foreman = true;
+            const s = { kind: 'oil', count: 1, crew: 1, rate: 0.5, reserve: 100, z: odo + 500, coming: [], done: false, got: 0, shown: 0 }, spots = run.spots;
+            run.spots = [s]; progress.crude = 0; crewTick(1); const pumped = +progress.crude.toFixed(3); run.spots = spots;
+            const c = { rammed: 0, turn: 0 }; raidRam(c, { hp: 1e6 }); const knock = +c.rammed.toFixed(3);
+            Object.assign(progress.levels, { foreman: 0, workRate: 0 }); progress.off.foreman = false; progress.crude = 0;
+            return [before, after, withForeman, pumped === +(0.5 * harvest() * 1.4).toFixed(3), knock, UPGRADES.workRate.info(2)]; })()""")
+        check(f"{layout}: Work rate: out of sight before the Rebuild, and after it until the Foreman is bought; at level 2 a spot "
+              f"pumps 40% more, a raider is back at its car in 0.57 s, not 0.8", got[:4] == [False, False, True, True] and got[4] == 0.571
+              and got[5].startswith("the Foreman drives your crew: every job 40% quicker"), got)
 
         # 7. before the Rebuild, act 4's reticle as it was: the nearest car, the raiders' too
         js(CLEAR)

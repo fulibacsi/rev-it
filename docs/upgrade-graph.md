@@ -73,6 +73,7 @@ flowchart TD
     wells["Deep wells"]
     double["Double up"]
     foreman["Foreman"]
+    workRate["Work rate"]
   end
   subgraph R["War Rig · 1 scrap"]
     warrig(["War Rig tab"])
@@ -127,6 +128,7 @@ flowchart TD
   harvesting & brewing --> overfill
   overfill --> double
   double --> foreman
+  foreman -- "the Rebuild" --> workRate
 
   fleetTab -- "totaled a car" --> warrig
   warrig --> bullbar & armor & spikes & radio & hunter
@@ -210,6 +212,8 @@ Each upgrade and what it needs, one line each: the list to edit.
 - Overfill ← Harvesting, Brewing
 - Double up ← Overfill
 - Foreman ← Double up (Scouting max and Sonar range max too until 27 Oct)
+- Work rate ← Foreman, the Rebuild (a story condition: act 5's; layer 13: 5 levels, 30 L growing 1.6 times: the
+  Foreman drives the crew 20% quicker a level at every job: crude pumped, fuel brewed, a raider at its car again)
 
 ### War Rig (1 scrap; needs the Crew, and a car totaled)
 

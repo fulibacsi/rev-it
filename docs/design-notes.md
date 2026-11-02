@@ -1914,6 +1914,20 @@ race, the loot lost to a full inventory, and the parts lost a race.
      race (33-66%).
    - `fortress_test` checks them (bought for scrap: a 1.7 s reload, 313 a shell; two cannon blocks 626; the tag counts
      both), on both layouts.
+   The Foreman's Work rate, the fourth PR (built 2 Nov; `oil.js`, `gang.js`), fuel's first act 5 job (the owner, 2 Nov:
+   fuel pays for man-powered upgrades, "foreman efficiency" first; he said before that the Foreman "should deal with
+   most" of the cars in the fortress's way). Claude's reading and numbers:
+   - Work rate, on the Crew page: the Foreman drives your crew harder, every job 20% quicker a level: crude pumped at an
+     oil spot, fuel brewed at a refinery, a raider back at its car after a ram (knocked back 0.8 s, 0.57 s at level 2).
+     5 levels, 30 L growing 1.6 times. Out of sight until the Rebuild, and then until the Foreman is bought (its
+     parent).
+   - `act5.py` (seeds 1-4, 12 races; the act 4 bot's car never bought the Foreman, so the bot buys a level of Overfill,
+     Double up and the Foreman, then Work rate, before paying off racers): the Foreman by race 5-10, Work rate 2-3 by race
+     12; fuel brought in over the 12 races 488-573 L (415-432 without), the crew 93-99 by race 12 (99) as fuel went to
+     the Foreman first. The raiders' totals no different to tell (a raider's rams quicker, six raiders). P1 or P2 every
+     race, damage up to 30-61% a race (19-50%).
+   - `rivals_test` checks it (out of sight before the Rebuild, and until the Foreman; at level 2 a spot pumps 40% more,
+     a raider back at its car in 0.57 s), on both layouts.
 14. The act's automation.
 15. The foreshadowing, the final fight and the ending.
 

@@ -30,6 +30,12 @@ Object.assign(UPGRADES, {
   // maxed, and with them about 430 L, out of the act's reach)
   foreman: { name: 'Foreman', tab: 'fleet', max: 1, base: 60, needs: ['doubleUp'],
              info: () => 'sends your crew for you, where you would; your own SEND still works' },
+  // the Foreman's efficiency (layer 13; the owner, 2 Nov: fuel pays for man-powered upgrades, "foreman efficiency"
+  // first): he drives the crew harder, every job quicker: crude pumped, fuel brewed, a raider back at its car after a
+  // ram. On the war rig only, where fuel had nothing left to buy once the crew was full. Claude's numbers, for act5.py
+  workRate: { name: 'Work rate', tab: 'fleet', max: 5, base: 30, growth: 1.6, needs: ['foreman'], story: () => rigged(),
+              info: l => l ? `the Foreman drives your crew: every job ${Math.round(100 * (workRate(l) - 1))}% quicker (pumping, ` +
+                'brewing, a raider at its car again after a ram)' : 'the crew works at its own pace' },
 });
 const fmtL = n => (Math.round(n * 10) / 10).toString();
 const fmtKm = m => m < 1000 ? `${m} m` : `${m / 1000} km`;
@@ -45,6 +51,7 @@ const cap = s => Math.floor(s.count * (1 + 0.25 * lvl('overfill'))); // cars a s
 const harvest = () => 1 + 0.2 * lvl('harvesting');
 const twice = () => lvl('doubleUp') > 0 && !progress.off.doubleUp; // a switch, as every one-level card is
 const foremanOn = () => lvl('foreman') > 0 && !progress.off.foreman;
+const workRate = (l = lvl('workRate')) => 1 + 0.2 * l; // Work rate: how much quicker the crew works
 
 // ---- the roles: racers race in their slots; harvesters and brewers ride with you. They are the crew's first paid off
 // (the slowest, #100 down), so the racers on the grid are its quickest, and in act IV they are the gang. The oil runs on
@@ -176,10 +183,10 @@ function crewTick(dt) {
     if (s.crew < s.count) continue;
     run.worked += s.crew * dt; // the simulation's measure: crew-seconds at work
     if (s.kind === 'oil') {
-      const got = Math.min(s.rate * s.crew * harvest() * dt, s.reserve, tankSize() - progress.crude);
+      const got = Math.min(s.rate * s.crew * harvest() * workRate() * dt, s.reserve, tankSize() - progress.crude);
       s.reserve -= got; s.got += got; progress.crude += got; run.crude += got;
     } else {
-      const used = Math.min(s.rate * s.crew * dt, progress.crude), fuel = used / brewRatio();
+      const used = Math.min(s.rate * s.crew * workRate() * dt, progress.crude), fuel = used / brewRatio();
       progress.crude -= used; s.got += fuel; progress.fuel += fuel; run.fuel += fuel;
       if (s.scripted && s.got > 0 && progress.crude < 0.005) spotDone(s); // the script's refinery: the crude all brewed
     }

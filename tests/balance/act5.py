@@ -4,7 +4,8 @@ board and races on: act4.py's bot (Hunter, the guns, the crew as the Foreman sen
 the cannon fired whenever it is loaded, has a shell and the reticle's car is in reach. Between races it repairs, turns
 the meters it doesn't need into fuel once it has bought Lengthen, Inventory and Widen as they come (in meters, the
 cheapest first; it saves up for the next of them), buys the War Rig's guns, the cannon's Autoloader and Heavy shells
-(layer 13, the cheapest first) and Racing, tuning and cars, crates of shells for points while it has fewer than 20,
+(layer 13, the cheapest first), the Foreman (a level of Overfill, Double up) and his Work rate (layer 13) before
+Racing, tuning and cars, crates of shells for points while it has fewer than 20,
 and, with room in the hold, the dealer's offer worth most to it (its packing's worth) that leaves a crate's points
 (layer 13).
 
@@ -180,7 +181,9 @@ with sync_playwright() as p:
             progress.roles = { harvester: harv, brewer: brew, raider: Math.min(n - brew - harv, 6) }; plan = null; })()""")
         got = js(f"""(() => {{ const b = [], buyAll = (ids, cheapest) => {{ for (;;) {{ const ok = ids.filter(id => !whyNot(id));
             if (!ok.length) return; const id = cheapest ? ok.sort((a, c) => cost(a) - cost(c))[0] : ok[0]; buy(id); b.push(id + lvl(id)); }} }};
-            buyAll({json.dumps(WARRIG)}, true); buyAll(["autoloader", "heavyShells"], true); buyAll({json.dumps(FLEET)}, false);
+            buyAll({json.dumps(WARRIG)}, true); buyAll(["autoloader", "heavyShells"], true);
+            if (!lvl('overfill') && !whyNot('overfill')) {{ buy('overfill'); b.push('overfill1'); }} // the Foreman's way to Work rate (layer 13)
+            buyAll(["doubleUp", "foreman", "workRate"], false); buyAll({json.dumps(FLEET)}, false);
             let crates = 0; while (progress.shells < 20 && buyShells()) crates++; // the cannon's: 20 for a race
             // the dealer (layer 13): with room in the hold, the offer worth most to it (as it packs: a cannon five times
             // armor) that leaves a crate of shells' points
