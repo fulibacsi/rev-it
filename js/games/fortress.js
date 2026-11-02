@@ -380,8 +380,11 @@ let hooked = null; // the part a truck aims at
 // the truck taking aim or reeling a part in: the reticle goes to it at once (gang.js updateGang), the most urgent
 const harpooning = () => traffic.find(c => c.harpoon && !c.wreck && (c.stage === 'wind' || c.stage === 'reel'));
 const aimedAt = () => traffic.some(c => c.harpoon && !c.wreck && c.stage === 'wind') ? hooked : null; // renderBoard blinks it
-function sendHarpoon() { // the ambushes: one at a time; false if not now
-  if (traffic.some(c => c.harpoon && !c.wreck && c.stage !== 'leave')) return false;
+// the ambushes: one at a time, and only once the board holds two parts or more (act5.py: on the first board, the tank's
+// cannon alone, it took the cannon in the first race on both seeds, and no shell could bring the truck down in time to
+// get it back: no cannon for three or four races); false if not now
+function sendHarpoon() {
+  if (traffic.some(c => c.harpoon && !c.wreck && c.stage !== 'leave') || progress.fortress.parts.length < 2) return false;
   const c = traffic.find(c => takeable(c) && c.z - odo > 600);
   if (!c || harpoonX() == null) return false;
   Object.assign(c, { harpoon: true, dir: 1, look: { rear: HARPOON_SPRITE }, w: HARPOON.w, h: HARPOON.h, hp: null, wreck: false, swerve: null,

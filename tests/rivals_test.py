@@ -135,17 +135,18 @@ with sync_playwright() as p:
         # side off the board and reels it in; totaled while reeling, the part is on the road in a crate; else it is gone
         js(CLEAR)
         harpoon = """(kill, kind = 'gun') => { lane = fromLane = 0; carX = MY_LANES[0]; Object.assign(traffic.find(c => takeable(c) && !c.wreck), { z: odo + 800 });
-            const f = progress.fortress; f.parts = [{ kind, cells: [[0, 0]], x: 0, y: 0 }]; applyUpgrades(); run.loot = []; target = null;
+            progress.levels.lengthen = 1; const f = progress.fortress; f.parts = [{ kind, cells: [[0, 0]], x: 0, y: 0 }, { kind: 'armor', cells: [[0, 0]], x: 0, y: 1 }];
+            applyUpgrades(); run.loot = []; target = null; // two rows, two parts: what it waits for (sendHarpoon); the front one it takes
             const seen = [], was = window.flash; window.flash = (t, ...a) => { seen.push(t); return was(t, ...a); };
             const ok = sendHarpoon(), c = traffic.find(c => c.harpoon && !c.wreck);
             const out = [ok, c.x === MY_LANES[1], Math.round(c.z - odo), notableTag(c).startsWith('HARPOON · 100% · ')] // no cannon on the board: no shots in it;
             const step = until => { for (let i = 0; i < 1200 && !until(); i++) { odo += speed / 60; harpoonDrive(c, 1 / 60); } };
             step(() => c.stage === 'wind' || c.stage === 'leave'); if (c.stage === 'leave') return [...out, 'left', f.parts.length];
             updateGang(0); out.push(Math.round(c.z - odo), target === c); renderBoard(); out.push(!!$('fort-grid').querySelector('[data-hooked]'));
-            step(() => c.stage === 'reel'); out.push(f.parts.length, c.prize?.kind);
+            step(() => c.stage === 'reel'); out.push(f.parts.length - 1, c.prize?.kind);
             // totaled: its own drop table off, so the crate on the road is the part it took
             if (kill) { const d = DROPS.harpoon[0]; DROPS.harpoon[0] = 0; hurtCar(c, 1e4); DROPS.harpoon[0] = d; out.push(run.loot.length, run.loot[0]?.part.kind); }
-            else { step(() => c.stage === 'leave'); out.push(f.parts.length, c.prize); }
+            else { step(() => c.stage === 'leave'); out.push(f.parts.length - 1, c.prize); }
             window.flash = was; out.push(seen.filter(t => /HARPOON|GONE/.test(t)).join()); return out; }"""
         got = js(f"({harpoon})(true)")
         check(f"{layout}: a harpoon truck (HARPOON · 100%) from 60 m behind up your other lane holds the road 30 m ahead, takes "
@@ -162,7 +163,10 @@ with sync_playwright() as p:
         got = js(f"({harpoon})(true, 'cannon')")
         check(f"{layout}: the tank's cannon harpooned too; totaled while it reels, the cannon in a crate", got[5:] == [True, True, 0, "cannon", 1, "cannon",
               "HARPOON TRUCK!,HARPOON!,CANNON 1 HARPOONED"], got)
-        js("traffic.forEach(c => { if (c.harpoon) spawnCar(c, 1500); }); progress.fortress.parts = [{ kind: 'cannon', cells: [[0, 0]], x: 0, y: 0 }]; applyUpgrades(); run.loot = []")
+        got = js("(() => { progress.fortress.parts = [{ kind: 'cannon', cells: [[0, 0]], x: 0, y: 0 }]; Object.assign(traffic.find(c => takeable(c) && !c.wreck), { z: odo + 800 }); "
+                 "traffic.forEach(c => { if (c.harpoon) spawnCar(c, 1500); }); return sendHarpoon(); })()")
+        check(f"{layout}: on a board of one part, none comes", got is False, got)
+        js("traffic.forEach(c => { if (c.harpoon) spawnCar(c, 1500); }); progress.levels.lengthen = 0; progress.fortress.parts = [{ kind: 'cannon', cells: [[0, 0]], x: 0, y: 0 }]; applyUpgrades(); run.loot = []")
 
         # 5. the gang's ambushes send rigs: two at a time at most
         js(CLEAR)
