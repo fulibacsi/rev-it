@@ -270,7 +270,8 @@ function gangDrive(c, dt) { // road.js updateTraffic: true while it is at you; e
 // beside you and swings into your side, and pulls ahead again; until it is totaled. Rams barely scratch it, as the
 // tank. First guesses, for act5.py: six shells, or four and the guns
 const RIG = { hp: 1500, ahead: 45, hold: 3, hit: 6, scrap: 150, w: 2.8, h: 3.4 }; // m, s, % a ram
-const rigRun = () => { gangClock = GANG_CAR.every; ambushes = drawAmbushes(); }; // distance.js startRun: the gang, the ambushes
+// distance.js startRun: the gang, the ambushes, the police's spike strips (police.js)
+const rigRun = () => { gangClock = GANG_CAR.every; ambushes = drawAmbushes(); strips = []; torn = 0; };
 function sendRig() { // the ambushes: two at a time at most; false if not now (no car to take, no room)
   if (traffic.filter(c => c.rig && !c.wreck).length >= 2) return false;
   const c = traffic.find(c => !c.racer && !c.police && !c.tank && !c.rig && !c.heli && !c.fleet && c !== target && c !== quarry && c.z - odo > 600);
@@ -478,11 +479,11 @@ function strike(pct, x, z) { // damage.js hurt, boss.js, rigRam: pct the hit's d
   if (!rigged()) return addDamage(d); // damage.js
   hitCell(d, ...cellAt(x, z));
 }
-// a helicopter's round (police.js strafeRun) on the road's lane at x: on the column over it, at row; with none, a miss
-function strafe(pct, x, row) {
+// a spike strip (police.js stripTick) across the road's lane at x: the front cell of the column over it; with none, a miss
+function runOver(pct, x) {
   const w = boardW(), cx = Math.round((x - carX) / LANE_W + (w - 1) / 2);
   if (cx < 0 || cx >= w) return false;
-  hitCell(pct * (1 - armorCut()), cx, row);
+  hitCell(pct * (1 - armorCut()), cx, 0);
   return true;
 }
 function hitCell(d, cx, cy) { // d: the hit's damage after Armor plating
@@ -644,16 +645,16 @@ TUTORIALS.push( // the war rig's, once rebuilt (the owner's: the controls change
   // on the road, the first time a police helicopter is in the reticle (renderRig); listed once seen
   { id: 'heli', name: 'Police helicopters', open: () => rigged() && progress.toured.includes('heli'), pages: [
     { title: 'A HELICOPTER', at: '#ar',
-      both: "The police's helicopter, in the reticle: the cannon's and the guns'. It hovers ahead and strafes the " +
-        'fortress, again and again, until you bring it down.' },
+      both: "The police's helicopter, in the reticle: the cannon's and the guns'. It hovers ahead and drops spike " +
+        'strips in your way, again and again, until you bring it down.' },
     { title: 'ITS SEARCHLIGHT', at: '#board',
-      both: 'Its light on a lane: a beat later its rounds walk down it and hit that column of the board, front to back. ' +
-        'Get off the lane in time and they miss.' },
+      both: 'Its light on a lane: a beat later a spike strip lies across it. Get off the lane in time, or the front of ' +
+        "that column takes it and the rig slows, its tires torn." },
   ] },
   // on the road, the first time a police SUV is in the reticle (renderRig); listed once seen
   { id: 'pursuit', name: 'Police SUVs', open: () => rigged() && progress.toured.includes('pursuit'), pages: [
     { title: 'A POLICE SUV', at: '#ar',
-      both: "The police's pursuit SUV, armored: in the reticle, and rams barely scratch it. It cuts in and brakes, drops " +
-        'back and comes again, until you bring it down.' },
+      both: "The police's pursuit SUV, armored: in the reticle, and rams barely scratch it. It comes at you head-on, " +
+        'flat out: shoot it, or get out of its way. Missed, it turns and comes again.' },
   ] },
 );

@@ -5,8 +5,9 @@ come from behind, cut into your lane and brake, in the gang's welded-up look; ea
 shells. The cannon needs shells: the count on its pedal, none left and it fires nothing. A rival rig (the gang's
 ambushes send them, two at a time at most) comes up from behind, holds the road ahead in the reticle, then rams you
 from the side; totaled, its scrap; its tutorial pops up as the first one shows. The police's pursuit SUV (the police's
-ambushes send them; the heat sends none on the rig): armored, it comes again until totaled; its tutorial as it first
-shows. Over a notable one the reticle's tag: what it
+ambushes send them; the heat sends none on the rig): armored, it comes head-on, kamikaze, slamming your front and
+wrecking itself, and one that missed comes again; its tutorial as it first shows; in the reticle head-on too. A police
+car on the rig rams you, from behind or a PIT from the side, three times, then it is gone. Over a notable one the reticle's tag: what it
 is, its health, the shells it would take, how far. Before the rig, act 4's reticle as it was. Phone and desktop."""
 import json, re
 from playwright.sync_api import sync_playwright
@@ -110,30 +111,53 @@ with sync_playwright() as p:
         check(f"{layout}: rigs sent: two at a time at most", got == [True, True, False, 2], got)
         js("traffic.forEach(c => { if (c.rig) spawnCar(c, 1500); })")  # gone: cars of the traffic again, their looks too
 
-        # 6. the police's pursuit SUV: the police's ambushes send SUVs and police cars; on the war rig the heat sends none
+        # 6. the police on the rig: the ambushes send SUVs and police cars (the heat none); a police car comes up from behind
+        # to ram you, an SUV head-on from far up the road (layer 10)
         js(CLEAR)
-        send = """(suv) => { lane = fromLane = 0; carX = MY_LANES[0]; // on your side of the road: from behind
+        send = """(suv) => { lane = fromLane = 0; carX = MY_LANES[0]; // on your side of the road: a lane beside you
             for (const c of racers()) c.z = odo - 3000; // your crew's racers too: room to come past you
             Object.assign(traffic.find(c => !c.racer && !c.fleet && !c.police), { z: odo + 800 });
             const had = new Set(traffic.filter(c => c.police)); sendCop(suv); return traffic.find(c => c.police && !had.has(c)); }"""
-        got = js(f"""(() => {{ const a = ({send})(true), first = [a.suv, notable(a), health(a), a.w], b = ({send})(false), second = b.suv;
+        got = js(f"""(() => {{ const a = ({send})(true), first = [a.suv, notable(a), health(a), a.w, a.dir, Math.round(a.z - odo), a.x === ROAD_LANES[2]];
+            const b = ({send})(false), second = [b.suv, b.dir, b.stage, Math.round(b.z - odo), b.rams];
             Object.assign(traffic.find(c => !c.racer && !c.fleet && !c.police), {{ z: odo + 800 }});
             const n = traffic.filter(c => c.police).length; progress.wanted = 1; copClock = 0; updatePolice(0.01); copClock = 1e9;
-            return [...first, second, traffic.filter(c => c.police).length === n]; }})()""")
-        check(f"{layout}: an SUV sent (notable, 600 health, 2.1 m wide), a police car sent; the heat sends none on the rig",
-              got == [True, True, 600, 2.1, False, True], got)
-        got = js("""(() => { const c = traffic.find(c => c.suv && !c.wreck), out = [];
-            const p = traffic.find(o => !o.racer && !o.fleet && !o.police && o !== c);
-            Object.assign(p, { police: true, dir: 1, stage: 'brake', t: 0.001, z: odo + 30 }); policeDrive(p, 0.01); out.push(p.stage);
-            Object.assign(c, { dir: 1, stage: 'brake', t: 0.001, z: odo + 30, lane }); policeDrive(c, 0.01); out.push(c.stage);
-            c.z = odo - 31; policeDrive(c, 0.01); out.push(c.lane === 1 - lane, c.stage); return out; })()""")
-        check(f"{layout}: braked, a police car leaves; the SUV drops back in your other lane, and 30 m behind comes past again",
-              got == ["leave", "back", True, "pass"], got)
+            return [...first, ...second, traffic.filter(c => c.police).length === n]; }})()""")
+        check(f"{layout}: an SUV sent head-on (notable, 600 health, 2.1 m wide) 900 m up the oncoming lane; a police car from 60 m "
+              f"behind, to ram; the heat sends none on the rig", got == [True, True, 600, 2.1, -1, 900, True, False, 1, "chase", -60, 0, True], got)
+
+        # a police car's rams, run frame by frame with the road moving under them (odo): straight into your back, then
+        # after dropping back 25 m a PIT from the lane beside you, then a third, and it falls behind for good
+        got = js("""(() => { const b = traffic.find(c => c.police && !c.suv && !c.wreck), cannon = progress.fortress.parts[0], out = [];
+            const run = (until, n = 900) => { for (let i = 0; i < n && !until(); i++) { odo += speed / 60; rammerDrive(b, 1 / 60); } };
+            cannon.hp = 100; Object.assign(b, { pit: false, stage: 'chase', at: carX, x: carX, z: odo - MY_REAR - CAR_LEN - 3, rams: 0, hp: null });
+            const v0 = speed; run(() => b.stage === 'back');
+            out.push($('flash').textContent, +hpOf(cannon).toFixed(2), Math.round(health(b) - b.hp), speed > v0);
+            run(() => b.stage === 'chase'); out.push(Math.round(b.z - odo));
+            Object.assign(b, { pit: true, at: MY_LANES[1], x: MY_LANES[1], hp: 1e4 }); const s0 = slide; run(() => b.stage === 'back'); // 1e4: the
+            out.push($('flash').textContent, +hpOf(cannon).toFixed(2), Math.sign(slide - s0) === Math.sign(carX - b.x)); // bull bar would total it
+            run(() => b.stage === 'chase'); b.pit = false; run(() => b.stage === 'back'); run(() => b.stage === 'gone' || b.stage === 'chase');
+            out.push(b.rams, b.stage); return out; })()""")
+        check(f"{layout}: a police car rams your back (RAMMED: 4% less Armor plating, 1 off the cannon, the bull bar's 102 off it, "
+              f"you shoved on), drops back 25 m and comes again; a PIT from beside you (PIT!: 5%, 1.25, knocked away from it); "
+              f"after its third, gone", got[:4] == ["RAMMED", 99, 102, True] and -27 <= got[4] <= -24 and got[5:] == ["PIT!", 97.75, True, 3, "gone"], got)
+
+        # an SUV head-on: into you it slams the front of your column and wrecks itself, no DNF even a lane wide, no scrap,
+        # no crate; one that missed turns and comes again
+        got = js("""(() => { const a = traffic.find(c => c.suv && !c.wreck), cannon = progress.fortress.parts[0], s0 = run.scrap, l0 = run.loot.length;
+            cannon.hp = 100; Object.assign(a, { dir: -1, x: carX, z: odo + 1, v: 40, hit: -Infinity }); updateTraffic(0, 1e6);
+            const r = [a.wreck, $('flash').textContent, run.phase, +hpOf(cannon).toFixed(2), run.scrap - s0, run.loot.length - l0];
+            const b = traffic.find(c => !c.racer && !c.fleet && !c.police && c !== a); Object.assign(b, { police: true, suv: true, dir: -1, x: MY_LANES[1], z: odo - 31, v: 40, want: 40, hp: null, wreck: false });
+            policeDrive(b, 0.01); return [...r, b.dir, Math.round(b.z - odo), b.x === ROAD_LANES[2]]; })()""")
+        check(f"{layout}: an SUV into you: SLAMMED, wrecked, the race goes on (a lane wide), 30% less Armor plating off the front "
+              f"cell (7.5), no scrap or crate; one that missed comes again from 900 m up the oncoming lane",
+              got == [True, "SLAMMED", "run", 92.5, 0, 0, -1, 900, True], got)
+        js("traffic.forEach(c => { if (c.suv && c.wreck) Object.assign(c, { suv: false, police: false, wreck: false, dir: -1, z: odo + 1500 }); })")
         got = js("""(() => { progress.toured = progress.toured.filter(id => id !== 'pursuit');
             traffic.forEach(c => { if (c.police && !c.suv) Object.assign(c, { police: false, dir: -1, z: odo + 1500 }); });
-            const c = traffic.find(c => c.suv && !c.wreck); Object.assign(c, { stage: 'leave', want: speed, v: speed, z: odo + 60, x: MY_LANES[1 - lane], lane: 1 - lane });
+            const c = traffic.find(c => c.suv && !c.wreck); Object.assign(c, { dir: -1, want: 0, v: 0, z: odo + 150, x: MY_LANES[1 - lane] });
             c.hp = null; target = null; updateGang(0); return [target === c, notableTag(c)]; })()""")  # whole (a gun's round may have hit it)
-        check(f"{layout}: in the reticle, its tag: SUV, 100%, 3 shots", got[0] and got[1].startswith("SUV · 100% · 3 SHOTS · "), got)
+        check(f"{layout}: head-on, in the reticle, its tag: SUV, its health, 3 shots", got[0] and re.match(r"SUV · (100|99)% · 3 SHOTS · ", got[1]), got)  # 99: the auto gun's first round
         pg.wait_for_timeout(400)
         got = js("[menuOpen && screen, tour.id, $('ar-label').textContent.slice(0, 4)]")
         check(f"{layout}: the first SUV in sight: its tutorial pops up", got == ["tour", "pursuit", "SUV "], got)

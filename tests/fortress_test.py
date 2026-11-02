@@ -104,6 +104,7 @@ with sync_playwright() as p:
 
         # 3. on the road: no shifter, no pedals, the firing pedal; the aids drive, whatever their switches say
         js("progress.off.cruise = progress.off.gas = true"); pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=20000)
+        js("ambushes = []")  # the race's ambushes held off: a police car ramming the cannon (layer 10) wore it mid-check
         js("traffic.forEach(c => { if (!c.racer) c.z = odo + 3000; })"); pg.wait_for_timeout(1500)
         got = js("[document.body.classList.contains('rig'), getComputedStyle($('shifter')).display, getComputedStyle($('gas').parentNode).display, "
                  "getComputedStyle($('brake').parentNode).display, getComputedStyle($('board')).display, getComputedStyle($('cannon-pedal').parentNode).display, "
@@ -171,14 +172,16 @@ with sync_playwright() as p:
         check(f"{layout}: Space or the pedal: one shell totals a car (+22 scrap), the reticle moves on", got == [True, True, 22, True], got)
         got = js(f"({shot})('car')")
         check(f"{layout}: at once again: reloading, no shell", got[0] is False, got)
-        pg.wait_for_timeout(2100); pg.keyboard.press(" "); pg.wait_for_timeout(50)
-        check(f"{layout}: reloaded, Space fires", js("reloading > 1.5"), js("reloading"))
+        pg.wait_for_function("reloading === 0", timeout=5000); pg.keyboard.press(" "); pg.wait_for_timeout(50)  # reloaded, in the
+        check(f"{layout}: reloaded, Space fires", js("reloading > 1.5"), js("reloading"))                     # game's time
         js("reloading = 0"); got = js(f"({shot})('police')")
         check(f"{layout}: a police car (200) in one too", got[:2] == [True, True], got)
-        js("reloading = 0"); x, y = center("#cannon-pedal")
+        js("reloading = 0"); x, y = center("#cannon-pedal"); s0 = js("progress.shells")
         if phone: touch("touchStart", x, y, id=3); pg.wait_for_timeout(600); touch("touchEnd", x, y, id=3)
         else: pg.mouse.move(x, y); pg.mouse.down(); pg.wait_for_timeout(600); pg.mouse.up()
-        check(f"{layout}: the pedal held: one shell, no more", 1.3 < js("reloading") < 1.5, js("reloading"))
+        got = js(f"[{s0} - progress.shells, reloading]")  # fired as it went down, not as it came up: 0.3 s or more of the
+        check(f"{layout}: the pedal held: one shell, no more", got[0] == 1 and 0 < got[1] < 1.7, got)  # 2 s reload gone (a loaded
+                                                                                                       # machine runs fewer frames)
         pg.screenshot(path=f"{OUT}/fortress_{layout}_shot.png")
 
         # 6. thrown off: a tap or a slide doesn't; held until the ring closes, gone for good
