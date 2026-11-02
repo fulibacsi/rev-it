@@ -1,5 +1,5 @@
-"""Act 5's police helicopters (docs/design-notes.md, Act 5, layer 7): on the war rig, from half heat, one at a time and
-never in the tank's race, a helicopter flies in from up the road and hovers ahead, over the traffic (no car brakes
+"""Act 5's police helicopters (docs/design-notes.md, Act 5, layer 7): on the war rig, sent by the police's ambushes, one
+at a time, a helicopter flies in from up the road and hovers ahead, over the traffic (no car brakes
 behind it). It is notable: in the reticle with its tag, its tutorial popping up. Its searchlight picks one of the
 fortress's lanes; a beat later a burst walks down it, dust and tracers, and its rounds hit the board's column over
 that lane front to back (STRAFED), a part taking its share and an empty cell letting it through to the rig; off the
@@ -21,7 +21,7 @@ def check(name, ok, got=""):
 # the road cleared but for what a check puts there: the traffic oncoming far off, the racers far behind, the clocks held
 CLEAR = "traffic.forEach((c, i) => { if (!c.racer && !c.fleet) Object.assign(c, { dir: -1, x: LANES.oncoming[i % 2], z: odo + 1500 + 40 * i, " \
         "rig: false, police: false, suv: false, heli: false, alt: undefined, hp: null, wreck: false, swerve: null }); else if (c.racer) c.z = odo - 3000; }); " \
-        "target = quarry = null; rigClock = gangClock = copClock = heliClock = 1e9; run.loot = []"
+        "target = quarry = null; gangClock = copClock = 1e9; ambushes = []; run.loot = []"
 HELI = "traffic.find(c => c.heli && !c.wreck)"
 # a burst, frame by frame within one call (the page's own loop can't step in between): from the searchlight on
 BURST = "(x => { const c = " + HELI + "; Object.assign(c, { stage: 'aim', t: 0.01, aim: x }); for (let i = 0; i < 120; i++) heliDrive(c, 1 / 60); return c; })"
@@ -35,7 +35,7 @@ with sync_playwright() as p:
         pg = ctx.new_page(); js = pg.evaluate; pg.on("pageerror", lambda e: errors.append(str(e))); pg.on("dialog", lambda d: d.accept())
         pg.goto(URL); js("localStorage.clear()")
         js(f"Object.assign(progress, {{ racing: true, finish: 1, gang: true, totals: 60, tanks: 1, oil: 2, runs: 80, races: 60, bank: 9000, "
-           f"points: 5000, scrap: 2000, shells: 10, damage: 0, wanted: 0.4, fortress: {json.dumps(BOARD)}, "
+           f"points: 5000, scrap: 2000, shells: 10, damage: 0, fortress: {json.dumps(BOARD)}, "
            f"roles: {{ harvester: 17, brewer: 9, raider: 6 }}, levels: {json.dumps(LEVELS)}, "
            f"toured: TUTORIALS.map(t => t.id).filter(id => id !== 'heli') }}); save()")
         if phone: js("settings.layout = 'touch'; applyLayout()")
@@ -43,13 +43,11 @@ with sync_playwright() as p:
         pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=20000)
         js(CLEAR); pg.wait_for_timeout(200)
 
-        # 1. when one comes: from half heat, one at a time, not in the tank's race
-        got = js("""(() => { const at = []; heliClock = 0; updateHeli(0.01); at.push(traffic.some(c => c.heli));
-            progress.wanted = 0.6; run.boss = true; heliClock = 0; updateHeli(0.01); at.push(traffic.some(c => c.heli)); run.boss = false;
-            heliClock = 0; updateHeli(0.01); const c = """ + HELI + """; at.push(!!c, c && [c.dir, Math.round(c.z - odo), c.alt > 10], $('flash').textContent);
-            heliClock = 0; updateHeli(0.01); at.push(traffic.filter(c => c.heli).length); heliClock = 1e9; return at; })()""")
-        check(f"{layout}: none at 40% heat, nor in the tank's race; at 60% one flies in (over the traffic, 400 m ahead, high up), "
-              "HELICOPTER!; one at a time", got == [False, False, True, [0, 400, True], "HELICOPTER!", 1], got)
+        # 1. a police ambush sends one: it flies in, one at a time
+        got = js("""(() => { const at = [sendHeli()]; const c = """ + HELI + """; at.push(c && [c.dir, Math.round(c.z - odo), c.alt > 10], $('flash').textContent);
+            at.push(sendHeli(), traffic.filter(c => c.heli).length); return at; })()""")
+        check(f"{layout}: one flies in (over the traffic, 400 m ahead, high up), HELICOPTER!; one at a time",
+              got == [True, [0, 400, True], "HELICOPTER!", False, 1], got)
 
         # 2. notable: once in reach, in the reticle with its tag; its tutorial pops up
         pg.wait_for_function("menuOpen", timeout=15000)
@@ -95,7 +93,7 @@ with sync_playwright() as p:
         pg.wait_for_timeout(120); pg.screenshot(path=f"{OUT}/heli_{layout}_strafe.png")
 
         # 7. shot down: it falls onto the road, its scrap, its gun or turbine on the road
-        got = js("""(() => { const c = """ + HELI + """, s0 = progress.scrap; run.loot = []; hurtCar(c, 5000);
+        got = js("""(() => { const c = """ + HELI + """, s0 = progress.scrap; run.loot = []; DROPS.heli[0] = 1; hurtCar(c, 5000); DROPS.heli[0] = 0.8;
             return [c.wreck, progress.scrap - s0, run.loot.length, run.loot[0] && ['gun', 'engine'].includes(run.loot[0].part.kind), run.loot[0]?.part.from]; })()""")
         check(f"{layout}: shot down: 160 scrap, a crate of its gun or its turbine", got == [True, 160, 1, True, "heli"], got)
         pg.wait_for_timeout(1200)

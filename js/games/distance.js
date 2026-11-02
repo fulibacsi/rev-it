@@ -270,7 +270,7 @@ function startRun() { // back to the start line, engine running, in neutral, hel
   brakePedal = 1;
   coolDown();
   copClock = copEvery(); // police.js: the first police car after a while
-  rigRun(); // fortress.js: the rival gang and its rigs too
+  rigRun(); // fortress.js: the rival gang, the ambushes
   run.refill = run.limp ? 0 : refillNitro(); // limping: keep the meters for the repair
   crewRun(); // oil.js: this run's spots
   if (run.boss) sendTank(); // boss.js: up the road, waiting
@@ -311,7 +311,7 @@ function updateRun(dt) {
   else if (run.phase === 'finish' && (run.count -= dt) <= 0) run.phase = 'garage';
   run.still = run.phase === 'run' && speed < 1 ? (run.still ?? 0) + dt : 0; // s standing still in the run (stuck?)
   if (run.phase === 'run' && raceTick()) run.revealed = true;
-  if (run.phase === 'run') { rechargeFlash(dt); updateGang(dt); updatePolice(dt); updateHeli(dt); updateGangCars(dt); updateRigs(dt); updateBoss(); crewTick(dt); rigTick(dt); lootTick(dt); }
+  if (run.phase === 'run') { rechargeFlash(dt); updateGang(dt); updatePolice(dt); ambushTick(); updateGangCars(dt); updateBoss(); crewTick(dt); rigTick(dt); lootTick(dt); }
   if (run.phase === 'run' && damageOn()) damageTick(dt);
   if (run.phase === 'run' && run.limp && odo >= LIMP) finishRun('limped'); // as far as a wreck gets
 }
@@ -410,8 +410,9 @@ TUTORIALS.unshift(
   { id: 'act5', act: 'V', name: 'FORTRESS', open: () => progress.tanks > 0,
     text: () => 'The tank is scrap, and its parts are yours. A war rig is not enough out here any more: build a fortress ' +
       'on wheels from what the army leaves behind. The Fortress tab is for sale, paid in scrap. ' + UNDER_CONSTRUCTION,
-    now: () => bossRace() ? 'The army has sent another tank: it waits up the road.'
-      : `Police heat ${heatPct()}: at 100% the army sends another tank, tougher.` },
+    now: () => rigged() ? 'No more heat: the road fights back as your fortress grows. Ambushes ahead, the police, the ' +
+      'gang and the army, more and tougher the bigger you build. Every one is loot.'
+      : bossRace() ? 'The army has sent another tank: it waits up the road.' : `Police heat ${heatPct()}: at 100% the army sends another tank, tougher.` },
 );
 const UNDER_CONSTRUCTION = 'Under construction: act V is being built a piece at a time, more with each update.';
 const heatPct = () => `${Math.round(progress.wanted * 100)}%`;
@@ -436,7 +437,7 @@ function runLine() {
     run.crude >= 0.05 && `crude +${fmtL(run.crude)} L`, run.fuel >= 0.05 && `fuel +${fmtL(run.fuel)} L`,
     run.refill && `nitro refill −${fmt(run.refill)} m`, run.repaired && `repairs −${fmt(run.repaired)} m`,
     run.totals && `totaled ${run.totals}, +${fmt(run.scrap)} scrap`, run.shells && `+${run.shells} shells`, run.beatTank && `the tank scrapped, +${TANK.scrap} scrap`,
-    arOn() && `police heat ${heatPct()}`, hint() && `<i>stuck? ${hint()}</i>`]
+    arOn() && !rigged() && `police heat ${heatPct()}`, hint() && `<i>stuck? ${hint()}</i>`]
     .filter(Boolean).join(' · ');
 }
 // ... and in full, on the act card: the run (in the garage: mid-run, the pause menu's, there is none), then where you
@@ -457,7 +458,7 @@ function runRows() {
     if (run.beatTank) rows.push(['The tank', `scrapped, +${TANK.scrap} scrap`]);
   }
   if (progress.runs) rows.push(['Best run', `${fmt(progress.best)} m`]);
-  if (arOn()) rows.push(['Police heat', heatPct()]);
+  if (arOn() && !rigged()) rows.push(['Police heat', heatPct()]); // retired on the war rig (fortress.js ambushes)
   return rows;
 }
 let card = null; // the act card up (main.js shows it)

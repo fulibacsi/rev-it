@@ -2,13 +2,14 @@
 // have to push for it; it stays between races and can't be bribed down. The police scanner on the right A-pillar shows
 // it. The hotter, the more police: they never come at you from behind (there is no rear view), they overtake you, cut
 // in and brake; while you drive in the oncoming lanes they floor it at you head-on. Past the top the tank comes
-// (boss.js). Once the car is a war rig (fortress.js) they send their pursuit SUVs too, the notable enemy among them.
+// (boss.js). Once the car is a war rig (fortress.js) the heat and its scanner retire: the police come in their
+// ambushes, with their pursuit SUVs and helicopters.
 
 // heat a total (by kind) or a shot: 2.2 times half the first guesses, in step with the scrap, so 100% comes about as
 // the guns can be afforded and act 4 takes about 15 races (act4.py); a shot's is unchanged
 const WANTED = { car: 0.022, racer: 0.033, police: 0.088, gang: 0.011, shot: 0.00025 };
-function raiseHeat(by) { // debug mode: ten times quicker, to get to the tank
-  if (arOn()) progress.wanted = Math.min(1, progress.wanted + by * (debugSave ? 10 : 1));
+function raiseHeat(by) { // debug mode: ten times quicker, to get to the tank. On the war rig heat retires (fortress.js
+  if (arOn() && !rigged()) progress.wanted = Math.min(1, progress.wanted + by * (debugSave ? 10 : 1)); // ambushes)
 }
 
 // a police car every 30 s when barely wanted, every 6 s at the top (the first one too: copClock starts a run at that);
@@ -16,27 +17,30 @@ function raiseHeat(by) { // debug mode: ten times quicker, to get to the tank
 // waits
 const copEvery = () => 30 - 24 * progress.wanted;
 let copClock = 0;
-// a pursuit SUV (Claude's, 30 Oct; the owner's: "police's buffed up SUV pursuers" for act 5's reticle): on the war rig
-// a police car sent is one, the hotter the likelier (at 100%, always), one at a time. Armored, so it is the cannon's and
-// the guns' (rams barely scratch it, as the tank), and it doesn't leave: braked, it drops back past you and comes
-// again, until it is totaled. Health (three shells), scrap, size (m). First guesses, for act5.py
+// a pursuit SUV (Claude's, 30 Oct; the owner's: "police's buffed up SUV pursuers" for act 5's reticle): armored, so it
+// is the cannon's and the guns' (rams barely scratch it, as the tank), and it doesn't leave: braked, it drops back past
+// you and comes again, until it is totaled. On the war rig the police come only in their ambushes (fortress.js), SUVs
+// among them. Health (three shells), scrap, size (m). First guesses, for act5.py
 const SUV = { hp: 600, scrap: 110, w: 2.1, h: 1.9 };
-const suvChance = () => rigged() && !traffic.some(c => c.suv && !c.wreck) ? progress.wanted : 0;
-function updatePolice(dt) {
-  if (!arOn() || !progress.wanted) return;
+function updatePolice(dt) { // act 4: the heat sends them (on the war rig, the ambushes do)
+  if (!arOn() || !progress.wanted || rigged()) return;
   copClock -= dt;
   if (copClock > 0 || traffic.filter(c => c.police && !c.wreck).length >= 2) return;
-  // from behind in the lane beside you (fortress.js sideLane); with none (the oncoming lanes, or a fortress filling your
-  // side) head-on, in the oncoming lane nearest you
-  const c = traffic.find(c => !c.racer && !c.police && !c.tank && !c.rig && c !== target && c !== quarry && c.z - odo > 600), other = sideLane();
-  if (!c || other != null && !laneClear(MY_LANES[other], 10)) return;
-  copClock = copEvery();
-  const chance = suvChance(), suv = chance > 0 && rand() < chance; // the traffic's dice only on the war rig
+  if (sendCop(false)) copClock = copEvery();
+}
+// a police car (or an SUV) takes over a car out of sight up the road: from behind in the lane beside you (fortress.js
+// sideLane); with none (the oncoming lanes, or a fortress filling your side) head-on, in the oncoming lane nearest you.
+// False if there is no car to take, or no room to come past you
+function sendCop(suv) {
+  const c = traffic.find(c => !c.racer && !c.police && !c.tank && !c.rig && !c.heli && !c.fleet && c !== target && c !== quarry && c.z - odo > 600);
+  const other = sideLane();
+  if (!c || other != null && !laneClear(MY_LANES[other], 10)) return false;
   const reset = { police: true, suv, w: suv ? SUV.w : undefined, h: suv ? SUV.h : undefined, hp: null, wreck: false, swerve: null,
                   warned: false, beams: 0, d: NaN, hit: -Infinity };
   if (other == null) Object.assign(c, reset, { dir: -1, lane: Math.max(2, lane), x: ROAD_LANES[Math.max(2, lane)], z: odo + 450, v: 25, want: 70 });
   else Object.assign(c, reset, { dir: 1, lane: other, x: MY_LANES[other], z: odo - 60, v: speed + 20, stage: 'pass',
                                  passing: true }); // from behind, in your other lane
+  return true;
 }
 
 // how a police car drives (road.js updateTraffic), its lights flashing. Head-on: flat out at you, steering for you
@@ -69,24 +73,24 @@ function policeDrive(c, dt) {
 }
 
 // the police's helicopter (the owner, 30 Oct: "the police's buffed-up SUV pursuers and helicopters", for act 5's
-// reticle; Claude's design, 31 Oct): on the war rig, from half heat, one at a time, never in the tank's race. It flies in
+// reticle; Claude's design, 31 Oct): on the war rig, one at a time, in the police's ambushes (fortress.js). It flies in
 // from up the road and hovers ahead of you over one of the fortress's lanes, its searchlight on it: a beat to get off
 // it. Then it strafes it: a burst walking down the lane at you, and the rounds that reach you hit the board's column over
 // that lane, front to back (fortress.js strafe), or nothing if no column is over it any more. Notable: the reticle's,
 // the cannon's and the guns'. Shot down it falls onto the road and drops its gun or its turbine. It flies over the
 // traffic (dir 0: no car brakes behind it or goes round it). First guesses, for act5.py
-const HELI = { hp: 800, scrap: 160, heat: 0.5, first: 20, every: 30, ahead: 60, alt: 7, aim: 1.5, walk: 0.8, rounds: 6, gap: 0.07,
-               hit: 5, again: 4, w: 9, h: 4 }; // from half heat; s; m ahead and up; s of searchlight, of the burst walking at
-                                                // you, between its rounds on you; % a round; s before it aims again; m
-let heliClock = 0, puffs = []; // s to the next one; its rounds' dust on the road, { x, z, t }
-function updateHeli(dt) { // distance.js updateRun
-  if (!rigged() || run.boss || progress.wanted < HELI.heat || traffic.some(c => c.heli && !c.wreck) || (heliClock -= dt) > 0) return;
-  const c = traffic.find(c => !c.racer && !c.police && !c.tank && !c.rig && !c.fleet && c !== target && c !== quarry && c.z - odo > 600);
-  if (!c) return;
-  heliClock = HELI.every;
+const HELI = { hp: 800, scrap: 160, ahead: 60, alt: 7, aim: 1.5, walk: 0.8, rounds: 6, gap: 0.07, hit: 5, again: 4, w: 9, h: 4 };
+// m ahead and up; s of searchlight, of the burst walking at you, between its rounds on you; % a round; s before it aims
+// again; m
+let puffs = []; // its rounds' dust on the road, { x, z, t }
+function sendHeli() { // fortress.js ambushes: one at a time; false if there is one, or no car to take over
+  if (traffic.some(c => c.heli && !c.wreck)) return false;
+  const c = traffic.find(c => !c.racer && !c.police && !c.tank && !c.rig && !c.heli && !c.fleet && c !== target && c !== quarry && c.z - odo > 600);
+  if (!c) return false;
   Object.assign(c, { heli: true, dir: 0, look: HELI_LOOKS[0], w: HELI.w, h: HELI.h, hp: null, wreck: false, swerve: null, warned: false,
                      beams: 0, d: NaN, hit: -Infinity, x: carX, z: odo + 400, v: speed, alt: 3 * HELI.alt, stage: 'come' });
   flash('HELICOPTER!', '#f55', false);
+  return true;
 }
 function heliDrive(c, dt) { // road.js updateTraffic: ahead of you however fast you go, coming down to its height
   c.look = HELI_LOOKS[Math.floor(performance.now() / 90) % 2]; // its rotor turning, its lights flashing
@@ -129,8 +133,8 @@ const heliMarks = () => { // distance.js roadMarks: the searchlight, a little be
 };
 
 // the scanner: ten lights for the heat, a readout, and red and blue while the police are on the road
-function renderPolice() {
-  const on = run.phase !== 'garage' && arOn();
+function renderPolice() { // gone with the Rebuild, as the heat is (the owner, 2 Nov: it is the heat meter)
+  const on = run.phase !== 'garage' && arOn() && !rigged();
   document.body.classList.toggle('has-heat', on);
   if (!on) return;
   const lit = Math.round(progress.wanted * 10), cops = traffic.some(c => c.police && !c.wreck), now = performance.now();

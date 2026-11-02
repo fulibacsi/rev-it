@@ -236,13 +236,15 @@ function notableTag(t) {
 const GANG_CAR = { every: 8, from: 260, closing: 30 }; // s, m behind you, m/s quicker than you
 const CHECK = { near: 25, far: 60, cut: 3, stop: 2, again: 8 }; // m ahead; s to get across, braking, between goes
 let gangClock = 0;
-function updateGangCars(dt) { // distance.js updateRun
-  const side = sideLane(); // no lane to come past in: none sent
-  if (!rigged() || (gangClock -= dt) > 0 || side == null) return;
-  const c = rivals().filter(c => !c.wreck && !c.stage && c.z < odo - GANG_CAR.from).sort((a, b) => b.z - a.z)[0];
-  if (!c) return;
-  gangClock = GANG_CAR.every;
+function updateGangCars(dt) { // distance.js updateRun: one now and then, besides the gang's ambushes (below)
+  if (!rigged() || (gangClock -= dt) > 0) return;
+  if (sendGangCar()) gangClock = GANG_CAR.every;
+}
+function sendGangCar() { // the nearest one still behind you, up the lane beside you; false with none, or no lane to come past in
+  const side = sideLane(), c = side != null && rivals().filter(c => !c.wreck && !c.stage && c.z < odo - GANG_CAR.from).sort((a, b) => b.z - a.z)[0];
+  if (!c) return false;
   Object.assign(c, { stage: 'chase', z: odo - GANG_CAR.from, lane: side, x: MY_LANES[side], v: speed + GANG_CAR.closing });
+  return true;
 }
 function gangDrive(c, dt) { // road.js updateTraffic: true while it is at you; else it races as any racer does
   if (!rigged() || c.fleet || c.wreck) return false;
@@ -262,27 +264,24 @@ function gangDrive(c, dt) { // road.js updateTraffic: true while it is at you; e
   return !!c.stage;
 }
 
-// the rival gang's war rigs (Claude's, 30 Oct), the notable enemy of a race without the tank: a tanker welded up for
-// war (road.js RIG_SPRITE). One at a time, the first a while into the race: it takes over a car out of sight up the
-// road, as the police do, and comes up from behind you in your other lane; it holds the road ahead of you for a few
-// seconds, in the reticle; then drops back beside you and swings into your side, and pulls ahead again; until it is
-// totaled. Rams barely scratch it, as the tank. First guesses, for act5.py: six shells, or four and the guns
-const RIG = { hp: 1500, first: 10, every: 12, ahead: 45, hold: 3, hit: 6, scrap: 150, w: 2.8, h: 3.4 }; // s, m, s, % a ram
-let rigClock = 0;
-const rigRun = () => { rigClock = RIG.first; gangClock = GANG_CAR.every; heliClock = HELI.first; }; // distance.js startRun: the
-                                                                                                     // rigs, the gang, the
-                                                                                                     // police's helicopters
-function updateRigs(dt) { // distance.js updateRun
-  if (!rigged() || run.boss || traffic.some(c => c.rig && !c.wreck) || (rigClock -= dt) > 0) return;
-  const c = traffic.find(c => !c.racer && !c.police && !c.tank && !c.rig && !c.fleet && c !== target && c !== quarry && c.z - odo > 600);
+// the rival gang's war rigs (Claude's, 30 Oct), its notable enemy: a tanker welded up for war (road.js RIG_SPRITE),
+// in the gang's ambushes (below). It takes over a car out of sight up the road, as the police do, and comes up from
+// behind you in your other lane; it holds the road ahead of you for a few seconds, in the reticle; then drops back
+// beside you and swings into your side, and pulls ahead again; until it is totaled. Rams barely scratch it, as the
+// tank. First guesses, for act5.py: six shells, or four and the guns
+const RIG = { hp: 1500, ahead: 45, hold: 3, hit: 6, scrap: 150, w: 2.8, h: 3.4 }; // m, s, % a ram
+const rigRun = () => { gangClock = GANG_CAR.every; ambushes = drawAmbushes(); }; // distance.js startRun: the gang, the ambushes
+function sendRig() { // the ambushes: two at a time at most; false if not now (no car to take, no room)
+  if (traffic.filter(c => c.rig && !c.wreck).length >= 2) return false;
+  const c = traffic.find(c => !c.racer && !c.police && !c.tank && !c.rig && !c.heli && !c.fleet && c !== target && c !== quarry && c.z - odo > 600);
   const side = sideLane(), wide = side == null && rigW > 1 && lane <= 1; // a fortress filling your side: it waits up the road
-  if (!c || !wide && (side == null || !laneClear(MY_LANES[side], 10))) return;
-  rigClock = RIG.every;
+  if (!c || !wide && (side == null || !laneClear(MY_LANES[side], 10))) return false;
   Object.assign(c, { rig: true, dir: 1, look: { rear: RIG_SPRITE }, w: RIG.w, h: RIG.h, hp: null, wreck: false, swerve: null, warned: false,
                      beams: 0, d: NaN, hit: -Infinity }, wide ? { lane, x: MY_LANES[lane], z: odo + 300, v: speed, stage: 'hold', t: RIG.hold }
                      : { lane: side, x: MY_LANES[side], z: odo - 60, v: speed + 15, stage: 'pass' });
   flash('RIVAL RIG!', '#f55', false);
   horn();
+  return true;
 }
 function rigDrive(c, dt) { // road.js updateTraffic
   // a lane beside you to come at you in, in the race; with none (a fortress filling your side) it holds the road ahead
@@ -310,6 +309,68 @@ function rigRam(c) { // its side into yours: a hit on that side, a shove and a j
   if (wrecked()) finishRun('wrecked');
 }
 
+// ---- ambushes (layer 9; the feel and the factions, 31 Oct-2 Nov): on the war rig the heat retires, and the road
+// fights back by how built-out the fortress is. Each race's ambushes are drawn before it on dice of their own, as act
+// 3's spots are (the owner: "a bit of randomization, like in act 3"; the traffic stays the same), in clusters and gaps
+// along the race, five draws and the middle one kept. Each is one faction's (the police, the gang, the army), and they
+// overlap. Their budget comes from the fortress's strength, its size and what is on it as worn as it is: bigger, more
+// of them, the budget growing slower than the fortress so that building pays (the owner: a 3x4 with two cannons sees
+// far more than a 2x3 with one). Claude's numbers, for act5.py
+const AMBUSH = { first: [300, 600], near: [200, 400], far: [600, 1000], cluster: 0.55, lead: 450, draws: 5, // m; s
+                 base: 8, scale: 4, power: 0.85 }; // the budget: base + scale x strength ^ power
+const COST = { cop: 1, suv: 3, heli: 6, gang: 1, rig: 6, tank: 10 }; // of the budget, a member
+const FACTIONS = { // their members by tier (the factions: fodder, midline, notable), a share of the ambushes each
+  police: { share: 0.4, tiers: [['heli'], ['suv'], ['cop']] }, gang: { share: 0.4, tiers: [['rig'], [], ['gang']] },
+  army: { share: 0.2, tiers: [['tank'], [], []] },
+};
+const SEND = { cop: () => sendCop(false), suv: () => sendCop(true), heli: () => sendHeli(), gang: () => sendGangCar(), rig: () => sendRig(),
+               tank: () => sendTank() }; // police.js, here, boss.js: each false if not now (none to take over, no room, too many)
+const WORTH = { cannon: 3, gun: 2, engine: 1, armor: 1, spikes: 1 }; // a block's share of the strength, as worn as it is
+const strength = () => boardW() * boardH() + progress.fortress.parts.reduce((k, p) => k + WORTH[p.kind] * p.cells.length * hpOf(p) / fullHp(p), 0);
+const budget = () => AMBUSH.base + AMBUSH.scale * strength() ** AMBUSH.power;
+let ambushes = [], ambushDice = 1; // this race's: { at: m into it, faction, members: [kind], sent }
+const ambushRoll = () => ((ambushDice = (ambushDice * 48271) % 2147483647) - 1) / 2147483646;
+const within = ([lo, hi]) => lo + (hi - lo) * ambushRoll();
+const costOf = list => list.reduce((k, a) => k + a.members.reduce((m, kind) => m + COST[kind], 0), 0);
+function drawAmbushes() { // rigRun, as a race starts
+  if (!rigged()) return [];
+  ambushDice = 1 + (progress.runs * 104729) % 2147483646;
+  const length = Math.max(30, progress.pace) * runTime(), money = budget(); // oil.js: a race's meters, as the spots' are
+  const draws = Array.from({ length: AMBUSH.draws }, () => drawOnce(length, money)).sort((a, b) => costOf(a) - costOf(b));
+  return draws[AMBUSH.draws >> 1];
+}
+function drawOnce(length, money) {
+  const list = [];
+  for (let at = within(AMBUSH.first), left = money * within([0.8, 1.2]); at < length - 200 && left >= 1;
+       at += ambushRoll() < AMBUSH.cluster ? within(AMBUSH.near) : within(AMBUSH.far)) {
+    const faction = pickFaction(left), share = money * within([0.3, 0.7]); // a third to two thirds of the race's, the army's
+    const members = buyMembers(faction, Math.min(left, faction === 'army' ? Math.max(share, COST.tank) : share)); // a tank at least
+    if (!members.length) continue;
+    list.push({ at, faction, members, sent: 0 });
+    left -= members.reduce((m, kind) => m + COST[kind], 0);
+  }
+  return list;
+}
+function pickFaction(left) { // the army only once a tank is affordable
+  const open = Object.keys(FACTIONS).filter(f => f !== 'army' || left >= COST.tank);
+  let r = ambushRoll() * open.reduce((k, f) => k + FACTIONS[f].share, 0);
+  return open.find(f => (r -= FACTIONS[f].share) < 0) ?? open.at(-1);
+}
+function buyMembers(faction, money) { // notables first when affordable (more than one, from a big budget), the midline, then fodder
+  const [notables, mids, fodder] = FACTIONS[faction].tiers, m = [];
+  for (const k of notables) while (money >= COST[k] && (m.length === 0 || ambushRoll() < 0.4)) { m.push(k); money -= COST[k]; }
+  for (const k of mids) while (money >= COST[k] && ambushRoll() < 0.6) { m.push(k); money -= COST[k]; }
+  for (const k of fodder) while (money >= COST[k] && m.length < 7) { m.push(k); money -= COST[k]; }
+  return m;
+}
+function ambushTick() { // distance.js updateRun: one that is near sends its members as they can come, one a frame
+  for (const a of ambushes) {
+    if (a.sent >= a.members.length || odo < a.at - AMBUSH.lead) continue;
+    if (!a.told) { a.told = true; flash(`${a.faction.toUpperCase()} AMBUSH!`, '#f55', false); }
+    if (SEND[a.members[a.sent]]()) a.sent++;
+  }
+}
+
 // ---- the loot (layer 6; the owner, 29-30 Oct): the notable enemies and, rarely, the rival gang's cars drop parts as they
 // are totaled, each enemy by its drop table; a crate skids along the road from where it fell, and you steer over it to
 // pick it up into the hold (with the hold full it stays on the road); then the board's drag puts it on. Each part does
@@ -324,12 +385,14 @@ const PARTS = { // a block's kg, its health (the shield, below) and the sizes (b
 // side; three in a line along and across, and the bent three in its four turns
 const SHAPES = { 1: [ONE], 2: [[[0, 0], [0, 1]], [[0, 0], [1, 0]]], 3: [[[0, 0], [0, 1], [0, 2]], [[0, 0], [1, 0], [2, 0]],
   [[0, 0], [0, 1], [1, 1]], [[0, 0], [1, 0], [0, 1]], [[0, 0], [1, 0], [1, 1]], [[1, 0], [0, 1], [1, 1]]] };
-const DROPS = { // an enemy's chance of a part, and which (the owner's examples: a rival car rarely; a tank always, its
-  gang: [0.05, { armor: 0.4, spikes: 0.4, engine: 0.2 }], // turret mostly)
-  rig: [1, { armor: 0.4, spikes: 0.3, engine: 0.3 }],
-  suv: [0.5, { armor: 0.5, engine: 0.3, gun: 0.2 }],
-  tank: [1, { cannon: 0.7, armor: 0.2, engine: 0.1 }],
-  heli: [1, { gun: 0.6, engine: 0.4 }], // the police's helicopter (police.js): its gun or its turbine
+// an enemy's chance of a part, and which (the owner's examples: a rival car rarely; a tank its turret mostly). By tier
+// (the factions, 2 Nov): fodder rarely, the midline sometimes, the notables often, none always (the owner: "drop chance
+// shouldn't be 100%", and ten SUVs shouldn't be ten crates)
+const DROPS = {
+  gang: [0.12, { armor: 0.4, spikes: 0.4, engine: 0.2 }], cop: [0.1, { armor: 0.6, spikes: 0.4 }],
+  suv: [0.45, { armor: 0.5, engine: 0.3, gun: 0.2 }],
+  rig: [0.8, { armor: 0.4, spikes: 0.3, engine: 0.3 }], heli: [0.8, { gun: 0.6, engine: 0.4 }], // its gun or its turbine
+  tank: [0.85, { cannon: 0.7, armor: 0.2, engine: 0.1 }],
 };
 const ENGINE_POWER = { gang: 0.06, suv: 0.1, rig: 0.15, tank: 0.25, heli: 0.2 }; // more pull a block, by the engine it came from
 // m/s² a crate skids to a stop at; m either way it is picked up within; m ahead of you a crate lands at least, so you
@@ -337,7 +400,7 @@ const ENGINE_POWER = { gang: 0.06, suv: 0.1, rig: 0.15, tank: 0.25, heli: 0.2 };
 // were never seen at all)
 const LOOT = { slow: 8, reach: 3, ahead: 25 };
 const pick = table => { let r = rand(); const ks = Object.keys(table); return ks.find(k => (r -= table[k]) < 0) ?? ks.at(-1); };
-const sourceOf = c => c.tank ? 'tank' : c.rig ? 'rig' : c.suv ? 'suv' : c.heli ? 'heli' : c.racer && !c.fleet ? 'gang' : null;
+const sourceOf = c => c.tank ? 'tank' : c.rig ? 'rig' : c.suv ? 'suv' : c.heli ? 'heli' : c.police ? 'cop' : c.racer && !c.fleet ? 'gang' : null;
 // a size it comes in, then a shape of it no wider than the board (one wider never fits), in salvage condition (the
 // feel, 31 Oct): worn, SALVAGE of its health at random, so a fresher one is worth a swap even on a full board
 const SALVAGE = [0.4, 1];
@@ -347,12 +410,11 @@ function makePart(kind, from) {
   return Object.assign(part, { hp: Math.round(fullHp(part) * (SALVAGE[0] + (SALVAGE[1] - SALVAGE[0]) * rand())) });
 }
 const condition = p => `${Math.round(100 * hpOf(p) / fullHp(p))}%`;
-function dropLoot(c) { // gang.js total, boss.js tankDown: its drop, if any; on the road, or the tank's into the hold
+function dropLoot(c) { // gang.js total, boss.js tankDown: its drop, if any, on the road
   const from = rigged() && sourceOf(c);
   if (!from || rand() >= DROPS[from][0]) return;
   const part = makePart(pick(DROPS[from][1]), from);
-  if (from === 'tank') stow(part); // the run is over: the tank's parts are yours
-  else run.loot.push({ part, z: Math.max(c.z, odo + LOOT.ahead), x: c.x, v: c.v }); // thrown clear, up the road
+  run.loot.push({ part, z: Math.max(c.z, odo + LOOT.ahead), x: c.x, v: c.v }); // thrown clear, up the road
   if (!progress.toured.includes('loot')) openTour('loot', true);
 }
 function stow(part) { // into the hold, if it has room

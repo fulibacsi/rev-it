@@ -1,23 +1,24 @@
 """The fifth act, simulated (docs/design-notes.md, Act 5), as far as it is built: from the tank beaten (act4.py's car,
 crew and wallets at the tank, seed 1), the bot buys the Fortress tab and the Rebuild, mounts the tank's cannon on the
 board and races on: act4.py's bot (Hunter, the guns, the crew as the Foreman sends it, roles by the road's room) with
-the cannon fired whenever it is loaded, has a shell and the reticle's car (a rival rig or the tank) is in reach. Between
-races it repairs, turns the meters it doesn't need into fuel, buys the War Rig's guns and Racing, tuning and cars. Each
-race: the place, totals (the rival gang's among them), scrap, shells (fired, hits, gained, left), the rival rigs (come,
-totaled, their rams), the police SUVs (come, totaled), the gang's brake checks, heat, damage, tanks beaten; the loot
-(parts dropped, picked up: the bot steers over a crate within 150 m on your side of the road, its hand on the wheel as
-a player's would be), the board's blocks and the hold, the rig's weight and the run's meters. As it drives (packing is
-the race's, never the garage's) it puts what the hold carries on the board, armor and spikes on the end rows first
-(the shield: hits come from ahead and behind) and the rest on the middle rows first, or swaps it in where it throws off
-the least health; it counts the parts mounted and swapped, and how often the board changes (the owner's aim: about
-every 5 s). Between races it buys Lengthen, Inventory and Widen as they come, and crates of shells for points while it has fewer
-than 20. Widened, it shifts
-the fortress over a crate's lane and back to its side of the road; it counts the cars crushed and the head-ons rammed
-through. The shield (layer 7): the hits the board's parts took and those that reached the rig, the parts that fell off,
-and the health the board's parts have left after the race (worn parts aren't repaired). The police's helicopters
-(layer 7): come, shot down, and their bursts (strafing runs; the bot never dodges one). Under each race, the ledger of
-the currencies: what the race brought in (meters from the run and the crew's racing, less the nitro refill; points;
-refined fuel; scrap) and what went out between races (repairs, meters to fuel, the cards bought), and what is left. The act's own targets (10-15 races to the final fight) wait for its later layers.
+the cannon fired whenever it is loaded, has a shell and the reticle's car is in reach. Between races it repairs, turns
+the meters it doesn't need into fuel, buys the War Rig's guns and Racing, tuning and cars, Lengthen, Inventory and
+Widen as they come, and crates of shells for points while it has fewer than 20.
+
+As it drives (packing is the race's, never the garage's) it puts what the hold carries on the board, armor and spikes
+on the end rows first (hits come from ahead and behind) and the rest on the middle rows first, or swaps one in where
+it throws off the least worth; it steers over a crate within 150 m on your side of the road (widened, it shifts over a
+crate's lane and back), its hand on the wheel as a player's would be. It never dodges a helicopter's burst.
+
+Each race: the place, totals (the gang's among them), scrap; shells (fired, hits, gained, left); what the ambushes
+sent (rival rigs, their rams; police cars, SUVs, helicopters and their bursts; tanks) and how many went down; the
+gang's brake checks; damage; the loot (dropped, picked up), the board's blocks and the hold, the rig's weight, the
+run's meters, the cars crushed and the head-ons rammed through; the shield (the hits on parts and on the rig, the
+parts shot off and worn out, the health the board has left: worn parts aren't repaired); how often the board changed
+(the owner's aim: about every 5 s); the fortress's strength and the ambushes' budget, and the race's ambushes (a
+faction's letter and its members, the ones never sent in brackets). Under each race, the ledger of the currencies:
+what the race brought in and what went out between races, and what is left. The act's own targets (10-15 races to the
+final fight) wait for its later layers.
 Usage: act5.py [races] [seed] [overrides], the overrides JavaScript run first to try other numbers ("CANNON.damage = 300")."""
 import json, sys
 from playwright.sync_api import sync_playwright
@@ -88,10 +89,11 @@ const pack = () => {
 const habits = window.afterAids; window.afterAids = () => { habits(); seekLoot(); pack(); };
 // counted for the table: the rigs that come and are totaled, their rams, the gang's totals and its brake checks
 const count = (name, f) => { const was = window[name]; window[name] = function (...a) { return f(was, ...a); }; };
-count('updateRigs', (f, dt) => { const had = traffic.some(c => c.rig && !c.wreck); f(dt); if (!had && traffic.some(c => c.rig && !c.wreck)) rigs++; });
+count('sendRig', f => { const ok = f(); if (ok) rigs++; return ok; }); // the ambushes' (fortress.js), as they come
 count('total', (f, c, ...a) => { if (c.rig) rigsDown++; if (c.suv) suvsDown++; if (c.heli) helisDown++; if (c.racer && !c.fleet) gangDown++;
   if (a[1] === 'CRUSHED') crushed++; if (a[1] === 'RAMMED THROUGH') through++; return f(c, ...a); });
-count('updatePolice', (f, dt) => { const had = traffic.some(c => c.suv && !c.wreck); f(dt); if (!had && traffic.some(c => c.suv && !c.wreck)) suvs++; });
+count('sendCop', (f, suv) => { const ok = f(suv); if (ok && suv) suvs++; if (ok && !suv) cops++; return ok; });
+count('sendTank', f => { const ok = f(); if (ok) tanks++; return ok; }); count('tankDown', (f, c) => { tanksDown++; return f(c); });
 count('rigRam', (f, c) => { rams++; f(c); });
 count('makePart', (f, ...a) => { made++; return f(...a); });
 count('stow', (f, p) => { const ok = f(p); if (ok) picked++; return ok; });
@@ -99,7 +101,7 @@ count('gangDrive', (f, c, dt) => { const was = c.stage; const on = f(c, dt); if 
 // the shield: the hits a part took, those that reached the rig, the parts that fell off
 count('hitCell', (f, ...a) => { f(...a); struck.part ? onParts++ : onRig++; });
 // the police's helicopters: come, shot down, their bursts
-count('updateHeli', (f, dt) => { const had = traffic.some(c => c.heli && !c.wreck); f(dt); if (!had && traffic.some(c => c.heli && !c.wreck)) helis++; });
+count('sendHeli', f => { const ok = f(); if (ok) helis++; return ok; });
 count('aimHeli', (f, c) => { bursts++; return f(c); });
 count('fallOff', (f, i, how) => { const p = progress.fortress.parts[i]; (how === 'WORN OUT' ? wornOut : fell).push(p.kind + ' ' + p.cells.length); f(i, how); }); 0"""
 with sync_playwright() as p:
@@ -119,14 +121,14 @@ with sync_playwright() as p:
     tanks0 = js("progress.tanks")
     WALLET = "({ bank: progress.bank, points: progress.points, fuel: progress.fuel, scrap: progress.scrap, crude: progress.crude })"
     for race in range(1, RACES + 1):
-        boss = js("bossRace()")
+        amb = js("[+strength().toFixed(1), +budget().toFixed(1)]")  # what the race's ambushes are drawn from
         w0 = js(WALLET)
         r = js(f"""(() => {{ {f"rng = {SEED * 1000 + race};" if SEED is not None else ""} window.nextPress = 0; reloading = 0;
-                  Object.assign(window, {{ shells: 0, hits: 0, rigs: 0, rigsDown: 0, rams: 0, gangDown: 0, checks: 0, suvs: 0, suvsDown: 0, made: 0, picked: 0, crushed: 0, through: 0, onParts: 0, onRig: 0, fell: [], helis: 0, helisDown: 0, bursts: 0, mounts: 0, swaps: 0, packAt: 0, wornOut: [] }});
+                  Object.assign(window, {{ shells: 0, hits: 0, rigs: 0, rigsDown: 0, rams: 0, gangDown: 0, checks: 0, suvs: 0, suvsDown: 0, made: 0, picked: 0, crushed: 0, through: 0, onParts: 0, onRig: 0, fell: [], helis: 0, helisDown: 0, bursts: 0, mounts: 0, swaps: 0, packAt: 0, wornOut: [], tanks: 0, tanksDown: 0, cops: 0 }});
                   simRun({{ ...progress.levels }}, 2, 1, {{}}, true);
-                  return {{ p: run.race && run.race.p, dnf: run.race && run.race.dnf, totals: run.totals, scrap: run.scrap, heat: Math.round(progress.wanted * 100),
+                  return {{ p: run.race && run.race.p, dnf: run.race && run.race.dnf, totals: run.totals, scrap: run.scrap, ambushes: ambushes.map(a => a.faction[0] + a.members.length + (a.sent < a.members.length ? '(' + a.sent + ')' : '')).join(' '),
                   dmg: Math.round(progress.damage), shells, hits, got: run.shells, left: progress.shells, rigs, rigsDown, rams, gangDown, checks, suvs, suvsDown,
-                  beat: run.beatTank, tank: run.tank ? Math.round(Math.max(0, run.tank.hp ?? tankHealth())) : null, made, picked, m: run.gain, crushed, through, w: rigW, onParts, onRig, fell, wornOut, helis, helisDown, bursts, mounts, swaps, secs: runTime(),
+                  tanks, tanksDown, cops, made, picked, m: run.gain, crushed, through, w: rigW, onParts, onRig, fell, wornOut, helis, helisDown, bursts, mounts, swaps, secs: runTime(),
                   worn: Math.round(100 * progress.fortress.parts.reduce((k, p) => k + hpOf(p), 0) / Math.max(1, progress.fortress.parts.reduce((k, p) => k + fullHp(p), 0))) }}; }})()""")
         w1 = js(WALLET)  # the race's takings: meters (the run's, the crew's racing, less the nitro), points, refined fuel, scrap
         wheel = js("wheel.held = false")
@@ -156,12 +158,12 @@ with sync_playwright() as p:
                   f"left {w4['fuel']:.1f} | scrap +{w1['scrap'] - w0['scrap']:,} cards -{w3['scrap'] - w4['scrap']:,} left {w4['scrap']:,}")
         res = ("P" + str(r["p"])) if r["p"] else r["dnf"]
         print(f"race {race:2}: {res:10} totals {r['totals']:2} (gang {r['gangDown']:2}) +{r['scrap']:4} scrap  shells {r['shells']:2} hit {r['hits']:2} "
-              f"+{r['got']:2} left {r['left']:3}  rigs {r['rigs']} down {r['rigsDown']} rams {r['rams']:2}  suvs {r['suvs']} down {r['suvsDown']}  helis {r['helis']} down {r['helisDown']} bursts {r['bursts']}  checks {r['checks']:2}  heat {r['heat']:3}%  "
+              f"+{r['got']:2} left {r['left']:3}  rigs {r['rigs']} down {r['rigsDown']} rams {r['rams']:2}  suvs {r['suvs']} down {r['suvsDown']}  helis {r['helis']} down {r['helisDown']} bursts {r['bursts']}  tanks {r['tanks']} down {r['tanksDown']}  cops {r['cops']}  checks {r['checks']:2}  "
               f"dmg {r['dmg']:3}% ({fixed[0]}% after repairs, {fixed[1]:,} m left)  loot +{r['made']} got {r['picked']}  board [{board[0]}] "
               f"hold {board[1]}  {board[2]:,} kg  {r['m']:,} m  {r['w']} wide, crushed {r['crushed']} through {r['through']}  "
               f"hits on parts {r['onParts']:2} on the rig {r['onRig']:2}, lost [{', '.join(r['fell'])}] worn out [{', '.join(r['wornOut'])}], health left {r['worn']}%  "
               f"packed: {r['mounts']} on, {r['swaps']} swapped" + (f" (the board changed every {r['secs'] / moves:.0f} s)" if moves else "")
-              + (f"  TANK {'beaten' if r['beat'] else str(r['tank']) + ' left'}" if boss else "") + f"  bought {' '.join(got)}")
+              + f"  strength {amb[0]} budget {amb[1]}: ambushes [{r['ambushes']}]  bought {' '.join(got)}")
         print("          " + ledger)
     print(f"tanks beaten in {RACES} races: {js('progress.tanks') - tanks0} | scrap {js('progress.scrap')} | points {js('progress.points')} | crew {js('fleetSize()')}")
     b.close(); print("ERRORS:", errs or "none")
