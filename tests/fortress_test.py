@@ -158,7 +158,9 @@ with sync_playwright() as p:
         js("progress.levels.lengthen = 0; progress.fortress.parts = [{ kind: 'cannon', cells: [[0, 0]], x: 0, y: 0 }]; applyUpgrades()")
 
         # 5. the cannon: a shell a press at the reticle's car, then a reload; heavy
-        shot = """(kind) => { const c = traffic.find(c => c.dir > 0 && !c.racer && !c.wreck && !c.police && !c.tank);
+        # a car of the traffic's (not a rival rig, which comes 10 s into a race: one picked once the test grew longer
+        # took the police car's place and six shells)
+        shot = """(kind) => { const c = traffic.find(c => c.dir > 0 && !c.racer && !c.wreck && !c.police && !c.tank && !c.rig && !c.suv && !c.heli);
             Object.assign(c, { z: odo + 80, x: carX, lane, hp: null, police: kind === 'police' }); target = c; c.seen = [0, 0, 1, 1];
             const s0 = run.scrap, fired = fireCannon(); return [fired, c.wreck, run.scrap - s0, target !== c]; }"""
         got = js(f"({shot})('car')")
