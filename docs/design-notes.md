@@ -1768,10 +1768,20 @@ race, the loot lost to a full inventory, and the parts lost a race.
      most urgent. Then it fires: the part is torn off the board (ARMOR 1 HARPOONED), its hole blinking, and dragged
      across the road on the cable to the truck, which reels for 4 s. Totaled by then, the part falls on the road in a
      crate, as it was; reeled in, it is gone (ARMOR 1 GONE), and the truck leaves.
-   - A pickup's winch pulls no more than 850 kg: the tank's cannon (900 kg a block) and the bigger parts (armor of two
-     blocks, an engine of two) are too heavy for it. With nothing it can pull it leaves without a shot. Claude's call,
-     from `act5.py`: with no limit it took the tank's cannon, the first board's only part, in the first race on both
-     seeds, and the bare rig was wrecked in the next.
+   - It takes anything on the board, the tank's cannon too (the owner, 2 Nov: "we can cheat with the harpoon truck, and
+     it should also grab the cannon to make it more dangerous"), and a heavier part is slower to reel in: 4 s and a
+     second more for each 450 kg (a gun 4.6 s, the tank's cannon 6 s, three blocks of armor 7.3 s), so a stolen cannon
+     is a race to bring the truck down and drive over its crate. The owner's other idea, several trucks needed to drag
+     the cannon off and killing one dropping it, was set aside as more work for the same moment. Built first with a
+     winch limit (850 kg: no cannon) on Claude's reading of the first simulation, where the truck took the first
+     board's only part, the cannon, in the first race on both seeds and the bare rig was wrecked in the next; the
+     reticle then went to a truck taking aim, which it didn't in that simulation.
+   - It comes only once the board holds two parts or more: simulated with the cannon stealable, on the first board (the
+     tank's cannon alone) the truck took it in the first race on both seeds, and with the cannon gone nothing brought
+     the truck down in time to get it back: no cannon for three or four races, a bare board for three. With the gate
+     (`act5.py`, seeds 1 and 2, 12 races): the cannon kept through the first races; trucks from race 4-6, 0-3 a race,
+     every one shot down; 6 parts taken in the 24 races and 5 got back from their crates; no race wrecked, P1 every
+     race; damage 0-72% a race.
    - Drawn as the rig and the SUV are: a pickup in the gang's rust and red stripe from behind, the cab's window barred,
      a harpoon gun on a post in its bed aimed back at you, its barb, the cable coiled beside it, the bumper spiked. Its
      drop table: 45%, armor, spikes or a gun, besides the part it took. Its tutorial, Harpoon trucks (the truck; its
@@ -1784,7 +1794,7 @@ race, the loot lost to a full inventory, and the parts lost a race.
      board changed every 4-12 s from race 7.
    - `rivals_test` checks it (sent from behind up your other lane, holding 30 m ahead, its tag; taking aim, the reticle
      on it and a gun blinking; the gun harpooned off the board; totaled while reeling, the gun in a crate on the road;
-     reeled in, gone; the tank's cannon alone on the board, too heavy: it leaves) on both layouts.
+     reeled in, gone; the tank's cannon harpooned too, slower to reel in) on both layouts.
 12. The army: jeeps with a gun, the rocket car.
 13. The currencies to the map (above): sizes in meters, the dealer, then the scrap's offensive cards and the fuel's
     crew jobs. Four lanes: the mine roller and the Grinder.

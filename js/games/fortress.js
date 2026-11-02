@@ -370,17 +370,21 @@ function rigDrive(c, dt) { // road.js updateTraffic
 // radar alone a part gone would look like a ram or a bug); in the reticle, it winds up, the part it aims at blinking
 // on the board; fires, and the part nearest its side (the front one first) is torn off the board on its cable and
 // dragged across the road to it. Totaled before it gets clear, the part falls on the road in a crate; reeled in, it
-// is gone. A pickup's winch: it drags no more than `pull` kg, so the tank's cannon (900 kg a block) and the bigger
-// parts are too heavy for it (act5.py: with no limit it took the tank's cannon, the first board's only part, in the
-// first race on both seeds, and the bare rig was wrecked in the next). Claude's numbers, for act5.py: health (two
-// shells), scrap; m ahead it holds; s it holds, winds up, reels; kg
-const HARPOON = { hp: 500, scrap: 100, w: 2.3, h: 2.2, ahead: 30, hold: 1, wind: 2, reel: 4, pull: 850 };
+// is gone. Anything on the board, the tank's cannon too (the owner, 2 Nov: "it should also grab the cannon to make it
+// more dangerous"); a heavier part is slower to reel in, so a stolen cannon is a race to bring the truck down and get
+// it back. Claude's numbers, for act5.py: health (two shells), scrap; m ahead it holds; s it holds, winds up, reels a
+// light part; kg a second more to reel in (the cannon's 900: 6 s)
+const HARPOON = { hp: 500, scrap: 100, w: 2.3, h: 2.2, ahead: 30, hold: 1, wind: 2, reel: 4, heavy: 450 };
+const reelTime = p => HARPOON.reel + PARTS[p.kind].kg * p.cells.length / HARPOON.heavy;
 let hooked = null; // the part a truck aims at
 // the truck taking aim or reeling a part in: the reticle goes to it at once (gang.js updateGang), the most urgent
 const harpooning = () => traffic.find(c => c.harpoon && !c.wreck && (c.stage === 'wind' || c.stage === 'reel'));
 const aimedAt = () => traffic.some(c => c.harpoon && !c.wreck && c.stage === 'wind') ? hooked : null; // renderBoard blinks it
-function sendHarpoon() { // the ambushes: one at a time; false if not now
-  if (traffic.some(c => c.harpoon && !c.wreck && c.stage !== 'leave')) return false;
+// the ambushes: one at a time, and only once the board holds two parts or more (act5.py: on the first board, the tank's
+// cannon alone, it took the cannon in the first race on both seeds, and no shell could bring the truck down in time to
+// get it back: no cannon for three or four races); false if not now
+function sendHarpoon() {
+  if (traffic.some(c => c.harpoon && !c.wreck && c.stage !== 'leave') || progress.fortress.parts.length < 2) return false;
   const c = traffic.find(c => takeable(c) && c.z - odo > 600);
   if (!c || harpoonX() == null) return false;
   Object.assign(c, { harpoon: true, dir: 1, look: { rear: HARPOON_SPRITE }, w: HARPOON.w, h: HARPOON.h, hp: null, wreck: false, swerve: null,
@@ -405,10 +409,10 @@ function harpoonDrive(c, dt) { // road.js updateTraffic
     Object.assign(c, { stage: 'leave', prize: null });
   }
 }
-function aimHarpoon(c) { // the part nearest its side it can pull, the front one first; with none, it leaves
+function aimHarpoon(c) { // the part nearest its side, the front one first; with the board bare, it leaves
   const f = progress.fortress, col = c.x < carX ? 0 : boardW() - 1;
   const dist = p => Math.min(...p.cells.map(([x, y]) => Math.abs(p.x + x - col) * 10 + p.y + y));
-  hooked = f.parts.filter(p => PARTS[p.kind].kg * p.cells.length <= HARPOON.pull).sort((a, b) => dist(a) - dist(b))[0] ?? null;
+  hooked = [...f.parts].sort((a, b) => dist(a) - dist(b))[0] ?? null;
   if (!hooked) return Object.assign(c, { stage: 'leave' });
   if (c.stage !== 'wind') flash('HARPOON!', '#f55', false);
   Object.assign(c, { stage: 'wind', t: HARPOON.wind });
@@ -425,7 +429,7 @@ function fireHarpoon(c) { // the part torn off the board, dragged across the roa
   shake = Math.max(shake, 0.4); // main.js
   crashSound();
   flash(`${PARTS[p.kind].name} ${p.cells.length} HARPOONED`, '#f55', false);
-  Object.assign(c, { stage: 'reel', t: HARPOON.reel, prize: p, fired: performance.now() });
+  Object.assign(c, { stage: 'reel', t: reelTime(p), prize: p, fired: performance.now() });
 }
 // the cable (gang.js renderGang), from the truck to your side of the hood: aimed, a thin red line blinking; fired, the
 // cable taut, the part on it dragged across to the truck in its first second, then hanging behind it
