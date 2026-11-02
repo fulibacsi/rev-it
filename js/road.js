@@ -485,6 +485,7 @@ function spawnCar(car, d) {
     swerve: null, // an oncoming car flashed out of your way (a game of chicken): the lane it is moving to
     wreck: false, hp: null, // totaled (Distance's War Rig), and its health when hurt (null: unhurt)
     police: false, stage: null, passing: false, // a police car (Distance's War Rig, police.js), how far into its move
+    racer: 0, gang: false, // a gang car of act 5's (fortress.js), its number
     tank: false, rig: false, suv: false, w: undefined, h: undefined, // the final boss (boss.js), a rival war rig
                                                                      // (fortress.js), a police SUV (police.js); its size, m
     heli: false, alt: undefined, // the police's helicopter (police.js), and how high it flies, m
@@ -634,9 +635,10 @@ function updateTraffic(dt, clock) {
     const d = c.z - odo;
     if (c.d > 0 && d <= 0) whoosh(Math.abs(speed - c.dir * c.v) * 3.6, c.x < carX ? -0.7 : 0.7); // went past the driver
     c.d = d;
-    if (c.racer || c.passing || c.tank || (c.rig || c.heli) && !c.wreck || c.runner || c.raider) { /* racers stay where
-      they are, however far: their places are the race; a police car comes up from behind; the tank holds the road, a
-      rig comes and goes round you, a helicopter flies in; a car of your crew goes on to its spot, or after its car */ }
+    if (c.racer && (!c.gang || c.stage && !c.wreck) || c.passing || c.tank || (c.rig || c.heli) && !c.wreck || c.runner || c.raider) { /* racers
+      stay where they are, however far: their places are the race; a gang car while it is at you; a police car comes up
+      from behind; the tank holds the road, a rig comes and goes round you, a helicopter flies in; a car of your crew goes
+      on to its spot, or after its car */ }
     else if (d < -40 || c.dir > 0 && d < -8 && c.v < speed - 1) spawnAhead(c); // left behind: back to the horizon
     else if (d > ROAD.draw * ROAD.segment + 100) { // pulled away: comes up from behind instead, in a lane you're not in
       spawnCar(c, -30);

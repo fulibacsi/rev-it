@@ -140,6 +140,10 @@ function total(c, gang, how) { // the scrap is yours, whoever did it; the heat t
   // (police.js); a rival gang car's shells
   const scrap = c.rig ? RIG.scrap : c.suv ? SUV.scrap : c.heli ? HELI.scrap : (c.racer ? SCRAP.racer : SCRAP.car) * (mad(c) ? 2 : 1);
   const shells = gangShells(c);
+  // on the war rig a gang member pays its rank (the owner, 31 Oct): #k the points of the place k, 101 - k (race.js)
+  const rank = rigged() && c.racer && !c.fleet ? FIELD + 1 - c.racer : 0;
+  progress.points += rank;
+  run.ranks += rank;
   raiseHeat(gang ? WANTED.gang : c.police || c.heli ? WANTED.police : c.racer || c.rig ? WANTED.racer : WANTED.car);
   Object.assign(c, { wreck: true, hp: 0 });
   dropLoot(c); // fortress.js: a part, maybe
@@ -153,7 +157,7 @@ function total(c, gang, how) { // the scrap is yours, whoever did it; the heat t
   run.totals++;
   if (progress.totals === 1) { run.firstTotal = true; run.left = Math.min(run.left, 3); } // the first job done: 3 s more
   const who = c.racer ? `#${c.racer}` : c.suv ? 'A POLICE SUV' : c.police ? 'A POLICE CAR' : c.rig ? 'A RIG' : 'A CAR'; // raiders ram anything
-  flash(`${gang ? `THE GANG TOTALED ${who}` : how ?? 'TOTALED'} +${scrap} SCRAP${shells ? ` +${shells} SHELLS` : ''}`, '#ff6a4a', true);
+  flash(`${gang ? `THE GANG TOTALED ${who}` : how ?? 'TOTALED'} +${scrap} SCRAP${shells ? ` +${shells} SHELLS` : ''}${rank ? ` +${rank} PTS` : ''}`, '#ff6a4a', true);
 }
 
 // ---- raiders (the owner, 27 Oct: the Hunting pack as a role, riding with you as harvesters and brewers do): the car in
