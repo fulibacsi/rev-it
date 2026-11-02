@@ -1086,7 +1086,7 @@ added to `act5.py` (seeds 1 and 2, 12 races from the tank, as built on 31 Oct):
 | Currency | Comes from | Goes to | A race in act 5 today |
 |---|---|---|---|
 | Meters | the run's distance (about 3k); the crew's racing (Racing's dues: the rest) | repairs (40 m a percent); the pump, into fuel (22,500 m a liter at a full crew); the Workshop and Autopilot, long bought out | +60-78k; repairs 0-2k; the rest pumped into 2-4 L of fuel, only because the bot does |
-| Points | your crew's places (Team places); your own place (10 at P1) | the Rebuild (1,500, once); Inventory (600, 1,200); the Black market, bought out | +345-466; nothing to buy after race 2: 4,250-4,300 unspent by race 12 |
+| Points | your crew's places (Team places); your own place (10 at P1; since layer 11 the gang's ranks instead, #k 101 - k) | the Rebuild (1,500, once); Inventory (600, 1,200); the Black market, bought out | +345-466; nothing to buy after race 2: 4,250-4,300 unspent by race 12 |
 | Fuel | the refineries (crude from the oil spots); the pump | the Crew page: paying off racers, Racing, Crew tuning, the oil cards | +20-43 L refined; all of it spent, mostly on racers |
 | Crude | the oil spots | the refineries | (inside the crew's work) |
 | Scrap | totals: a car 22, a racer 55, an SUV 110, a rig 150, a helicopter 160, a tank 300 | the War Rig page (Guns); the Fortress page (Lengthen, Widen) | +760-1,450; spent as it comes, 0-3k left |
@@ -1709,7 +1709,21 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - `rivals_test` checks the police cars' rams and the SUVs, `heli_test` the strips, on both layouts. `fortress_test`
      now holds the race's ambushes off (a police car ramming the cannon wore it mid-check), and its two cannon timings
      go by the game's time, not the clock (they failed now and then on a loaded machine, on main too).
-11. The gang: unlimited and numbered, its ranks paying points; mines; the harpoon truck; the war rig's War Boys.
+11. The gang: unlimited and numbered, its ranks paying points; mines; the harpoon truck; the war rig's War Boys. In PRs:
+    the unlimited gang and its ranks first (built 2 Nov; `fortress.js`, `gang.js`, `race.js`), then the rest.
+   - The gang unlimited (the owner, 2 Nov: "a randomly numbered enemy gang car attacks regularly"): the racers you paid
+     off left the race's own gang thin (none by race 4, the ledger above). On the war rig each gang car the gang sends,
+     every 8 s and in its ambushes, is a car of the traffic's taken over out of sight up the road, in the gang's look
+     with a number at random from 1 to 100, sent from 260 m behind up the lane beside you as before (past you, into
+     your lane, a hard stop). It is outside the race: your place, the field and the heads-up display's racers are the
+     race's own (race.js racers). Its attack over, it races on and goes back into the traffic once out of sight. The
+     race's own rivals still race, and still cut in and brake.
+   - Its rank pays (the owner, 31 Oct; Claude's reading, #k pays 101 - k, the race's own scale): totaled, by anyone,
+     gang member #k pays the points of the place k (#1 100, #100 1), its shells as before (TOTALED +55 SCRAP +2 SHELLS
+     +64 PTS); the race's own rivals too. On the rig the race pays nothing for where you finish. The garage's run line
+     and the act card show the ranks' points.
+   - Still a lane beside you to come past in: with none (a fortress filling your side, from two lanes wide) no gang car
+     comes, as in layer 6. How the gang comes at a fortress that fills your side is the next PR's, with its mines.
 12. The army: jeeps with a gun, the rocket car.
 13. The currencies to the map (above): sizes in meters, the dealer, then the scrap's offensive cards and the fuel's
     crew jobs. Four lanes: the mine roller and the Grinder.
