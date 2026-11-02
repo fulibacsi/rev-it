@@ -36,6 +36,15 @@ Object.assign(UPGRADES, {
   workRate: { name: 'Work rate', tab: 'fleet', max: 5, base: 30, growth: 1.6, needs: ['foreman'], story: () => rigged(),
               info: l => l ? `the Foreman drives your crew: every job ${Math.round(100 * (workRate(l) - 1))}% quicker (pumping, ` +
                 'brewing, a raider at its car again after a ram)' : 'the crew works at its own pace' },
+  // the crew's other act 5 jobs (the map: fuel pays for the man-powered ones; the owner, 2 Nov: the Foreman first, "then
+  // the rest"), the Foreman sending them: scavengers fetch the crates you would drive past, gunners on the deck shoot the
+  // small fry the reticle leaves to the raiders (crewJobs, below). Claude's numbers, for act5.py
+  scavengers: { name: 'Scavengers', tab: 'fleet', max: 3, base: 40, growth: 2, needs: ['foreman'], story: () => rigged(),
+                info: l => l ? `${l} car${l > 1 ? 's' : ''} of your crew fetch${l > 1 ? '' : 'es'} a crate lying in a lane the ` +
+                  'fortress misses, into the hold' : 'the crates are yours to steer over' },
+  gunners: { name: 'Gunners', tab: 'fleet', max: 3, base: 50, growth: 2, needs: ['foreman'], story: () => rigged(),
+             info: l => l ? `${l} gunner${l > 1 ? 's' : ''} on the deck shoot${l > 1 ? '' : 's'} the gang's cars, police cars and ` +
+               `jeeps within ${GUNNERS.reach} m: ${GUNNERS.damage * l} damage a second` : 'nobody on the deck' },
 });
 const fmtL = n => (Math.round(n * 10) / 10).toString();
 const fmtKm = m => m < 1000 ? `${m} m` : `${m / 1000} km`;
@@ -52,6 +61,7 @@ const harvest = () => 1 + 0.2 * lvl('harvesting');
 const twice = () => lvl('doubleUp') > 0 && !progress.off.doubleUp; // a switch, as every one-level card is
 const foremanOn = () => lvl('foreman') > 0 && !progress.off.foreman;
 const workRate = (l = lvl('workRate')) => 1 + 0.2 * l; // Work rate: how much quicker the crew works
+const GUNNERS = { reach: 60, every: 0.5, damage: 15 }; // m either way; s between shots; damage a second a gunner
 
 // ---- the roles: racers race in their slots; harvesters and brewers ride with you. They are the crew's first paid off
 // (the slowest, #100 down), so the racers on the grid are its quickest, and in act IV they are the gang. The oil runs on
@@ -165,6 +175,7 @@ function crewTick(dt) {
   for (let i = traffic.length; i--;) if (traffic[i].gone) traffic.splice(i, 1); // runners there, or out of sight
   if (!crewOn()) return;
   run.t += dt;
+  crewJobs(dt); // the war rig's (below), spots or none
   if (scripted() && !run.told && run.t > 5) { // about 5 s in: the puddle's tutorial, or the refinery still to come
     run.told = true;
     if (progress.oil > 0) firstRefinery();
@@ -197,6 +208,36 @@ function crewTick(dt) {
     const s = bestSpot();
     if (s) { send(s, true); run.foreman = run.t + 0.25; }
   }
+}
+// ---- the crew's act 5 jobs (Scavengers, Gunners: above). A scavenger goes for a crate up the road in a lane the
+// fortress doesn't cover (you would drive past it) while the hold has room for it, up the right shoulder as a runner
+// goes, and brings it in; gunners fire at the nearest of the gang's cars, the police's cars and the army's jeeps within
+// reach, either way, its tracer drawn while it is in sight (gang.js drawTracers)
+function crewJobs(dt) {
+  if (!rigged() || run.phase !== 'run') return;
+  const out = traffic.filter(c => c.scav && !c.gone).length, room = holdSize() - progress.fortress.hold.length - out;
+  const l = run.loot.find(l => !l.tried && !l.fetched && l.z > odo + 5 && !onCar(l.x)); // fortress.js
+  if (l && out < lvl('scavengers') && room > 0) {
+    l.fetched = true;
+    const n = FIELD - (run.sent++ % Math.max(1, riders())); // one of the riders, as a runner (above)
+    traffic.push({ scav: l, fleet: true, dir: 1, x: SHOULDER - 0.6, z: odo - 20, v: speed + 15, look: racerSprite(n, true, true),
+                   d: NaN, hit: -Infinity, seen: null });
+  }
+  if (!lvl('gunners') || (run.gunners = (run.gunners ?? 0) - dt) > 0) return;
+  const t = traffic.filter(c => !c.wreck && !c.fleet && c.dir > 0 && Math.abs(c.z - odo) < GUNNERS.reach && (c.racer || c.police && !c.suv || c.jeep))
+    .sort((a, b) => Math.abs(a.z - odo) - Math.abs(b.z - odo))[0];
+  if (!t) return;
+  run.gunners = GUNNERS.every;
+  if (t.seen) tracers.push(['deck', t, performance.now()]); // gang.js
+  hurtCar(t, GUNNERS.damage * lvl('gunners') * GUNNERS.every, true); // the crew's: the gang totaled it
+}
+function scavDrive(c, dt) { // road.js updateTraffic: off the shoulder into the crate's lane and up to it; there, into the hold
+  const l = c.scav;
+  if (l.tried || !run.loot.includes(l) || c.z - odo > 900) { c.gone = true; return; }
+  c.v = Math.min(c.v + 30 * dt, speed + 60);
+  c.z += c.v * dt;
+  c.x += clamp(l.x - c.x, -4 * dt, 4 * dt);
+  if (c.z >= l.z - 1 && Math.abs(c.x - l.x) < 1) { l.tried = true; l.got = stow(l.part); c.gone = true; } // fortress.js
 }
 function spotDone(s, end) { // passed, dry, or (end) the run over
   s.done = true; s.coming = []; // its crew is yours again (busy counts only what isn't done)

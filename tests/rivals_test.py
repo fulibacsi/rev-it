@@ -14,7 +14,8 @@ cannon too, slower to reel in) and reels it in; totaled first, the part drops in
 jeep comes past you and back, peppering the side of the board it is on, the raiders' and a ram's; a rocket car holds
 the road ahead in the reticle, its rocket's mark on the cell it will land on, a lane changed and it misses. The
 Foreman's Work rate (layer 13): the crew's jobs quicker. The Mine picker: mines picked up for shells; the Grinder:
-crashes at the front cost nothing; Ram plates: rams on the sides and back hurt less, the police car thrown back. Over a notable one the reticle's tag: what it is, its health, the shells it would take, how far. Before the rig, act 4's reticle as it was. Phone and desktop."""
+crashes at the front cost nothing; Ram plates: rams on the sides and back hurt less, the police car thrown back. The
+crew's Scavengers fetch the crates you would pass; its Gunners shoot the small fry near you. Over a notable one the reticle's tag: what it is, its health, the shells it would take, how far. Before the rig, act 4's reticle as it was. Phone and desktop."""
 import json, re
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -360,6 +361,28 @@ with sync_playwright() as p:
         check(f"{layout}: Work rate: out of sight before the Rebuild, and after it until the Foreman is bought; at level 2 a spot "
               f"pumps 40% more, a raider is back at its car in 0.57 s, not 0.8", got[:4] == [False, False, True, True] and got[4] == 0.571
               and got[5].startswith("the Foreman drives your crew: every job 40% quicker"), got)
+
+        # 6d. the crew's other jobs (layer 13, for fuel): a scavenger fetches a crate lying in a lane the fortress misses, while
+        # the hold has room, run frame by frame; gunners on the deck shoot the nearest of the gang's cars within 60 m
+        js(CLEAR)
+        got = js("""(() => { lane = fromLane = 0; carX = MY_LANES[0]; Object.assign(progress.levels, { foreman: 1, scavengers: 1, gunners: 2 });
+            progress.off.foreman = true; const f = progress.fortress; f.hold = []; run.gunners = 1e9; // the gunners held, for now
+            const l = { part: makePart('armor', 'gang'), z: odo + 60, x: MY_LANES[1], v: 0 }; run.loot = [l];
+            crewJobs(0.01); const c = traffic.find(c => c.scav === l), sent = !!c;
+            for (let i = 0; i < 600 && c && !c.gone; i++) { odo += speed / 60; scavDrive(c, 1 / 60); }
+            const fetched = [sent, l.tried && l.got, f.hold.length, $('flash').textContent.includes('INTO THE HOLD')];
+            f.hold = [makePart('gun', 'gang')]; progress.levels.inventory = 0; const k = { part: makePart('armor', 'gang'), z: odo + 60, x: MY_LANES[1], v: 0 };
+            run.loot = [k]; crewJobs(0.01); const full = !traffic.some(c => c.scav === k && !c.gone); f.hold = []; run.loot = [];
+            const g = traffic.find(c => !c.racer && !c.fleet && !c.police && !c.wreck);
+            Object.assign(g, { racer: 7, gang: true, dir: 1, x: MY_LANES[1], z: odo + 30, v: speed, hp: null, stage: null });
+            const far = traffic.find(c => !c.racer && !c.fleet && !c.police && !c.wreck && c !== g); Object.assign(far, { racer: 9, gang: true, dir: 1, x: MY_LANES[1], z: odo + 80, v: speed, hp: null });
+            run.gunners = 0; crewJobs(0.01); const shot = [health(g) - (g.hp ?? health(g)), far.hp];
+            Object.assign(progress.levels, { foreman: 0, scavengers: 0, gunners: 0 }); progress.off.foreman = false;
+            for (const c of [g, far]) Object.assign(c, { racer: 0, gang: false, dir: -1, z: odo + 1500, hp: null });
+            return [...fetched, full, ...shot]; })()""")
+        check(f"{layout}: a scavenger fetches the crate in your other lane into the hold (+ARMOR INTO THE HOLD); with the hold full none goes; "
+              f"two gunners hit the gang car 30 m off for 15 (a shot every 0.5 s, 15 a second each), not the one 80 m off",
+              got == [True, True, 1, True, True, 15, None], got)
 
         # 7. before the Rebuild, act 4's reticle as it was: the nearest car, the raiders' too
         js(CLEAR)

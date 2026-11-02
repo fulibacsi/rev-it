@@ -1950,6 +1950,21 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - `rivals_test` checks them (with the picker, three mines picked up, no blast, 6 shells; with the Grinder, a head-on
      rammed through and the back of a car run into cost nothing, a side-swipe still hurts, an SUV's slam takes nothing
      off the board; with Ram plates 2, a police car's ram 2%, thrown 16.5 m back), on both layouts.
+   The crew's other jobs, the sixth PR (built 2 Nov; `oil.js`, `road.js`, `gang.js`), fuel's (the map: scavengers
+   picking up the loot, gunners; the owner: the Foreman first, "then the rest"). Claude's numbers, first guesses; both on
+   the Crew page once rebuilt, after the Foreman, as Work rate:
+   - Scavengers (3 levels, 40 L doubling): a car of the crew a level goes for a crate up the road lying in a lane the
+     fortress doesn't cover (one you would drive past), while the hold has room for it: up the right shoulder as a
+     runner goes, into the crate's lane and onto it, and the crate goes into the hold (+ARMOR 2 · 64% INTO THE HOLD).
+   - Gunners (3 levels, 50 L doubling): a gunner a level on the deck, firing at the nearest of the gang's cars, the
+     police's cars and the army's jeeps within 60 m either way (the small fry the reticle leaves to the raiders): 15
+     damage a second each, a shot every 0.5 s, its tracer from the deck while the car is in sight. A total is the crew's.
+   - `act5.py` (seeds 1-4, 12 races; the bot buys them with Work rate, the cheapest first): Scavengers by race 7-9,
+     Gunners by race 9-11; 0-2 crates fetched (the bot steers onto most crates itself, and its hold is often full),
+     91-235 gunners' shots; the crates picked up in the 12 races 35-53 (33-42 without). P1 or P2 every race, damage up to
+     22-53% a race (30-43%).
+   - `rivals_test` checks them (a scavenger fetches the crate in your other lane into the hold; with the hold full none
+     goes; two gunners hit the gang car 30 m off for 15 a shot, not the one 80 m off), on both layouts.
 14. The act's automation.
 15. The foreshadowing, the final fight and the ending.
 

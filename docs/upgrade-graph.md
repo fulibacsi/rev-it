@@ -74,6 +74,8 @@ flowchart TD
     double["Double up"]
     foreman["Foreman"]
     workRate["Work rate"]
+    scavengers["Scavengers"]
+    gunners["Gunners"]
   end
   subgraph R["War Rig · 1 scrap"]
     warrig(["War Rig tab"])
@@ -128,7 +130,7 @@ flowchart TD
   harvesting & brewing --> overfill
   overfill --> double
   double --> foreman
-  foreman -- "the Rebuild" --> workRate
+  foreman -- "the Rebuild" --> workRate & scavengers & gunners
 
   fleetTab -- "totaled a car" --> warrig
   warrig --> bullbar & armor & spikes & radio & hunter
@@ -214,6 +216,10 @@ Each upgrade and what it needs, one line each: the list to edit.
 - Foreman ← Double up (Scouting max and Sonar range max too until 27 Oct)
 - Work rate ← Foreman, the Rebuild (a story condition: act 5's; layer 13: 5 levels, 30 L growing 1.6 times: the
   Foreman drives the crew 20% quicker a level at every job: crude pumped, fuel brewed, a raider at its car again)
+- Scavengers ← Foreman, the Rebuild (layer 13: 3 levels, 40 L doubling: a car of the crew a level fetches a crate lying
+  in a lane the fortress misses, into the hold, while it has room)
+- Gunners ← Foreman, the Rebuild (layer 13: 3 levels, 50 L doubling: a gunner a level on the deck shoots the nearest of
+  the gang's cars, police cars and jeeps within 60 m, 15 damage a second each)
 
 ### War Rig (1 scrap; needs the Crew, and a car totaled)
 

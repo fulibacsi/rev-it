@@ -261,7 +261,7 @@ function drawTracers() {
   while (tracers.length && now - tracers[0][2] > 100) tracers.shift();
   for (const [from, to, when] of tracers) {
     const side = Math.round(when / 250) % 2 ? 1 : -1; // twin guns on the hood, in turn
-    const shell = from === 'cannon', [x1, y1] = shell ? [w / 2, h * 0.6] // the rig's cannon (fortress.js): a shell
+    const shell = from === 'cannon', [x1, y1] = shell ? [w / 2, h * 0.6] : from === 'deck' ? [w * 0.5, h * 0.62] // a shell; a gunner's
       : from ? from.seen && middle(from.seen) || [] : [w * MUZZLES[side][0], h * MUZZLES[side][1]];
     const [x2, y2] = to === 'you' ? [w / 2, h * 0.66] : to?.seen ? middle(to.seen) // the tank at you; a miss: off
       : [x1 + side * w * 0.02, h * 0.42];                                          // into the distance
