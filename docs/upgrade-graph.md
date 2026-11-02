@@ -255,6 +255,8 @@ Each upgrade and what it needs, one line each: the list to edit.
   the back of one run into, an SUV's slam)
 - Ram plates ← Rebuild (layer 13: 3 levels, 1,500 scrap doubling: a ram on the rig's sides and back 25% less a level,
   the police car that rammed you thrown 8 m further back a level)
+- Auto cannon ← Rebuild, Auto gun (layer 14: 3,000 points, a switch: fires the cannon for you whenever it is loaded and
+  the car in the reticle is in reach; the pedal reads AUTO)
 - Shells, not an upgrade (1 Nov): once rebuilt, a card on the page sells the cannon's shells, a crate of 10 for 100
   points, as often as you like.
 - The dealer, not an upgrade (layer 13): once rebuilt, a card on the page offers three parts of the enemies' before
@@ -286,7 +288,7 @@ the tabs already are.
 
 ```mermaid
 flowchart TD
-  subgraph X["Fortress · the tab, the Rebuild, Lengthen, Inventory, Widen, Autoloader, Heavy shells, Mine picker, Grinder and Ram plates built, the rest planned"]
+  subgraph X["Fortress · the tab, the Rebuild, Lengthen, Inventory, Widen, Autoloader, Heavy shells, Mine picker, Grinder, Ram plates and Auto cannon built"]
     fortressTab(["Fortress tab"])
     rebuild["Rebuild"]
     lengthen["Lengthen"]
@@ -319,7 +321,8 @@ flowchart TD
   in place of a mine roller from two lanes wide)
 - Grinder ← Mine picker (layer 13: no damage from a crash at the front; the owner: "on top of it")
 - Ram plates ← Rebuild (layer 13: rams on the sides and back hurt less, the rammer thrown back)
-- Auto cannon ← Rebuild, Auto gun (fires the cannon for you, as Auto gun does the guns)
+- Auto cannon ← Rebuild, Auto gun (fires the cannon for you, as Auto gun does the guns; built in layer 14: 3,000
+  points, a switch, the pedal reads AUTO)
 
 The loot isn't on the page: the notable enemies drop it on the road. The automation of the loot (picking it up;
 placing it) is open.

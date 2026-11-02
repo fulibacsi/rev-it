@@ -1,13 +1,14 @@
 """The fifth act, simulated (docs/design-notes.md, Act 5), as far as it is built: from the tank beaten (act4.py's car,
 crew and wallets at the tank, seed 1), the bot buys the Fortress tab and the Rebuild, mounts the tank's cannon on the
 board and races on: act4.py's bot (Hunter, the guns, the crew as the Foreman sends it, roles by the road's room) with
-the cannon fired whenever it is loaded, has a shell and the reticle's car is in reach. Between races it repairs, turns
-the meters it doesn't need into fuel once it has bought Lengthen, Inventory and Widen as they come (in meters, the
-cheapest first; it saves up for the next of them), buys the War Rig's guns, the cannon's Autoloader and Heavy shells,
-the Mine picker, the Grinder and Ram plates (layer 13, the cheapest first), the Foreman (a level of Overfill, Double up)
-and his Work rate, Scavengers and Gunners (layer 13, the cheapest first) before Racing, tuning and cars, crates of
-shells for points while it has fewer than 20, and, with room in the hold, the dealer's offer worth most to it (its
-packing's worth) that leaves a crate's points (layer 13).
+the cannon fired whenever it is loaded, has a shell and the reticle's car is in reach (by the Auto cannon once it has
+it, layer 14: bought for points when 300 are left for shells). Between races it repairs, turns the meters it doesn't
+need into fuel once it has bought Lengthen, Inventory and Widen as they come (in meters, the cheapest first; it saves up
+for the next of them), buys the War Rig's guns, the cannon's Autoloader and Heavy shells, the Mine picker, the Grinder
+and Ram plates (layer 13, the cheapest first), the Foreman (a level of Overfill, Double up) and his Work rate,
+Scavengers and Gunners (layer 13, the cheapest first) before Racing, tuning and cars, crates of shells for points while
+it has fewer than 20, and, with room in the hold, the dealer's offer worth most to it (its packing's worth) that leaves
+a crate's points (layer 13).
 
 As it drives (packing is the race's, never the garage's) it puts what the hold carries on the board, armor and spikes
 on the end rows first (hits come from ahead and behind) and the rest on the middle rows first, or swaps one in where
@@ -42,6 +43,7 @@ START = dict(power=10, rev=4, gears=3, tyres=4, time=6, clutch=1, gas=1, shift=1
              hunter=1, spikes=1, pack=1, guns=1, autogun=1)
 WALLETS = dict(bank=8000, points=2800, fuel=7, scrap=300)  # act4.py at the tank, its 300 scrap in
 RESERVE = 3000   # meters kept back for the nitro refill and repairs
+SHELLS_KEEP = 300  # points kept back for crates of shells when buying the Auto cannon (layer 14)
 FLEET = ["dues", "fleetPace", "fleet"]
 WARRIG = ["guns", "autogun", "baddrivers"]
 RACES = int(sys.argv[1]) if len(sys.argv) > 1 else 10
@@ -54,7 +56,8 @@ HABITS = """window.afterAids = () => { // act4.py's bot, and the cannon
   if (run.phase !== 'run' || !target || target.wreck) return;
   firing = lvl('guns') > 0 && target.z - odo < RANGE;
   const t = target; // a shell that totals it moves the reticle on
-  if (!reloading && progress.shells > 0 && t.seen && t.z - odo < CANNON.reach && fireCannon()) { shells++; if (t.wreck || t.hp != null) hits++; }
+  if (!autoCannon() && !reloading && progress.shells > 0 && t.seen && t.z - odo < CANNON.reach) fireCannon(); // the Auto cannon
+                                                                                                                // (layer 14) fires itself
 };
 // the loot: steering for the nearest crate within 150 m on your side of the road, the hand on the wheel until it is
 // picked up or passed (autocruise would take the lane back)
@@ -101,6 +104,7 @@ const habits = window.afterAids; window.afterAids = () => { habits(); seekLoot()
 // counted for the table: the rigs that come and are totaled, their grenades, the gang's totals and its brake checks
 const count = (name, f) => { const was = window[name]; window[name] = function (...a) { return f(was, ...a); }; };
 count('sendRig', f => { const ok = f(); if (ok) rigs++; return ok; }); // the ambushes' (fortress.js), as they come
+count('fireCannon', f => { const t = target, ok = f(); if (ok) { shells++; if (t && (t.wreck || t.hp != null)) hits++; } return ok; }); // the bot's or the Auto cannon's
 count('total', (f, c, ...a) => { if (c.rig) rigsDown++; if (c.suv) suvsDown++; if (c.heli) helisDown++; if (c.racer && !c.fleet) gangDown++;
   if (c.harpoon) { harpoonsDown++; if (c.prize) recovered++; } if (c.jeep) jeepsDown++; if (c.rocket) rocketCarsDown++;
   if (a[1] === 'CRUSHED') crushed++; if (a[1] === 'RAMMED THROUGH') through++; return f(c, ...a); });
@@ -188,6 +192,7 @@ with sync_playwright() as p:
         got = js(f"""(() => {{ const b = [], buyAll = (ids, cheapest) => {{ for (;;) {{ const ok = ids.filter(id => !whyNot(id));
             if (!ok.length) return; const id = cheapest ? ok.sort((a, c) => cost(a) - cost(c))[0] : ok[0]; buy(id); b.push(id + lvl(id)); }} }};
             buyAll({json.dumps(WARRIG)}, true); buyAll(["autoloader", "heavyShells", "minePicker", "grinder", "ramPlates"], true);
+            if (!whyNot('autocannon') && progress.points - cost('autocannon') >= {SHELLS_KEEP}) {{ buy('autocannon'); b.push('autocannon1'); }} // layer 14
             if (!lvl('overfill') && !whyNot('overfill')) {{ buy('overfill'); b.push('overfill1'); }} // the Foreman's way to Work rate (layer 13)
             buyAll(["doubleUp", "foreman", "workRate", "scavengers", "gunners"], true); buyAll({json.dumps(FLEET)}, false);
             let crates = 0; while (progress.shells < 20 && buyShells()) crates++; // the cannon's: 20 for a race

@@ -1965,7 +1965,20 @@ race, the loot lost to a full inventory, and the parts lost a race.
      22-53% a race (30-43%).
    - `rivals_test` checks them (a scavenger fetches the crate in your other lane into the hold; with the hold full none
      goes; two gunners hit the gang car 30 m off for 15 a shot, not the one 80 m off), on both layouts.
-14. The act's automation.
+14. The act's automation. In PRs:
+   The Auto cannon, the first (built 2 Nov; `fortress.js`), the upgrade graph's, planned since 29 Oct ("fires the cannon
+   for you, as Auto gun does the guns"). Paid in points: Claude's answer to the owner's "we have to find an alternative
+   sink" for them (2 Nov; the currencies' plan above had points paying for the crew's upgrades, the act's automation),
+   the act's automation the shady people's to sell. 3,000 points, after the Rebuild and Auto gun; a switch, as every
+   one-level card is. Switched on, it fires the cannon whenever it is loaded and the car in the reticle is in reach and
+   in sight (not while every cannon is knocked out), and the pedal reads AUTO, as the guns' trigger does.
+   - `act5.py` (seeds 1-4, 12 races; the bot fired the cannon as soon as it could anyway, so the card changes only what
+     the points buy; it buys it while 300 are left for shells): bought by race 4-9; the points left by race 12 400-2,000
+     (3,200-4,600 without). Bought by race 4 (seed 1), the points then ran short of the shells' crates: 88 shells
+     fired in the 12 races (116), 3 tanks beaten (6), damage up to 61% a race (24%). The rest P1 or P2 every race.
+   - `fortress_test` checks it (bought for 3,000 points; loaded, with a car in reach, it fires a shell itself, AUTO on
+     the pedal; switched off, it doesn't, FIRE), on both layouts; and keeps the crates off the road while it throws a
+     part off (a crate a car of the raiders' dropped went into the hold, three times on 2 Nov).
 15. The foreshadowing, the final fight and the ending.
 
 ### Balance targets and results
