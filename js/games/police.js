@@ -44,7 +44,7 @@ function updatePolice(dt) { // act 4: the heat sends them (on the war rig, the a
 // police car from behind, to ram you; an SUV head-on, kamikaze (above). False if there is no car to take, or no room
 // to come past you
 function sendCop(suv) {
-  const c = traffic.find(c => !c.racer && !c.police && !c.tank && !c.rig && !c.heli && !c.fleet && c !== target && c !== quarry && c.z - odo > 600);
+  const c = traffic.find(c => takeable(c) && c.z - odo > 600);
   if (!c) return false;
   const reset = { police: true, suv, w: suv ? SUV.w : undefined, h: suv ? SUV.h : undefined, hp: null, wreck: false, swerve: null,
                   warned: false, beams: 0, d: NaN, hit: -Infinity };
@@ -159,7 +159,7 @@ const SPIKE = { hit: 12, slow: 3, keep: 0.6 }; // % on the front cell before Arm
 let strips = [], torn = 0, tornTo = 0; // the strips on the road { x, z, over }; s still slowed, m/s at most till then
 function sendHeli() { // fortress.js ambushes: one at a time; false if there is one, or no car to take over
   if (traffic.some(c => c.heli && !c.wreck)) return false;
-  const c = traffic.find(c => !c.racer && !c.police && !c.tank && !c.rig && !c.heli && !c.fleet && c !== target && c !== quarry && c.z - odo > 600);
+  const c = traffic.find(c => takeable(c) && c.z - odo > 600);
   if (!c) return false;
   Object.assign(c, { heli: true, dir: 0, look: HELI_LOOKS[0], w: HELI.w, h: HELI.h, hp: null, wreck: false, swerve: null, warned: false,
                      beams: 0, d: NaN, hit: -Infinity, x: carX, z: odo + 400, v: speed, alt: 3 * HELI.alt, stage: 'come' });

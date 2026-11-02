@@ -1756,6 +1756,35 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - `rivals_test` checks the mines (three dropped in your lane, each run over 3.75 off the cannon; in the other lane,
      missed), `widen_test` the shoulder (no lane beside you: up the shoulder from 260 m back, past you, into your right
      lane, braking), on both layouts.
+
+   The harpoon truck, the third PR (built 2 Nov; `fortress.js`), the gang's midline in its ambushes (cost 3, as an
+   SUV), on the owner's design (The factions, above). Claude's numbers, first guesses:
+   - It takes over a car out of sight up the road (HARPOON TRUCK!) and comes from 60 m behind up the lane beside you, or
+     with none up the right shoulder (as the gang's cars), and holds the road 30 m ahead there, in view (the owner:
+     from the radar alone a part gone would look like a ram or a bug). Notable: in the reticle (HARPOON · 100% · 2
+     SHOTS), 500 health, 100 scrap, the cannon's and the guns'. One at a time.
+   - After a second it takes aim for 2 s (HARPOON!): the part nearest its side of the board it can pull, the front one
+     first, blinks red there, and a red line blinks from the truck to your hood; the reticle goes to it at once, the
+     most urgent. Then it fires: the part is torn off the board (ARMOR 1 HARPOONED), its hole blinking, and dragged
+     across the road on the cable to the truck, which reels for 4 s. Totaled by then, the part falls on the road in a
+     crate, as it was; reeled in, it is gone (ARMOR 1 GONE), and the truck leaves.
+   - A pickup's winch pulls no more than 850 kg: the tank's cannon (900 kg a block) and the bigger parts (armor of two
+     blocks, an engine of two) are too heavy for it. With nothing it can pull it leaves without a shot. Claude's call,
+     from `act5.py`: with no limit it took the tank's cannon, the first board's only part, in the first race on both
+     seeds, and the bare rig was wrecked in the next.
+   - Drawn as the rig and the SUV are: a pickup in the gang's rust and red stripe from behind, the cab's window barred,
+     a harpoon gun on a post in its bed aimed back at you, its barb, the cable coiled beside it, the bumper spiked. Its
+     drop table: 45%, armor, spikes or a gun, besides the part it took. Its tutorial, Harpoon trucks (the truck; its
+     aim), pops up as the first one shows in the reticle.
+   - Placement counts: what is on the board's edges and front is what it takes, so heavy parts there spare the light
+     ones behind them.
+   - `act5.py` (seeds 1 and 2, 12 races; the bot fires at the reticle's whenever it can): 0-3 trucks a race, most shot
+     down while taking aim; 3 parts taken in the 24 races (1 got back from its crate), the tank's cannon never; no race
+     wrecked (two were with no winch limit), P1 every race; damage 0-91% a race (91% in a race with 29 mines); the
+     board changed every 4-12 s from race 7.
+   - `rivals_test` checks it (sent from behind up your other lane, holding 30 m ahead, its tag; taking aim, the reticle
+     on it and a gun blinking; the gun harpooned off the board; totaled while reeling, the gun in a crate on the road;
+     reeled in, gone; the tank's cannon alone on the board, too heavy: it leaves) on both layouts.
 12. The army: jeeps with a gun, the rocket car.
 13. The currencies to the map (above): sizes in meters, the dealer, then the scrap's offensive cards and the fuel's
     crew jobs. Four lanes: the mine roller and the Grinder.

@@ -11,7 +11,8 @@ it throws off the least worth; it steers over a crate within 150 m on your side 
 crate's lane and back), its hand on the wheel as a player's would be. It never dodges a spike strip, a mine or an SUV head-on.
 
 Each race: the place, totals (the gang's among them, and the points their ranks paid; the gang's cars that came up
-behind you, those up the shoulder, its mine-layers, their mines and those run over), scrap; shells (fired, hits, gained, left); what the ambushes
+behind you, those up the shoulder, its mine-layers, their mines and those run over; its harpoon trucks, those
+totaled, the parts they took and those got back), scrap; shells (fired, hits, gained, left); what the ambushes
 sent (rival rigs, their rams; police cars, their rams and PITs; SUVs, their slams; helicopters, their spike strips
 and those run over; tanks) and how many went down; the
 gang's brake checks; damage; the loot (dropped, picked up), the board's blocks and the hold, the rig's weight, the
@@ -93,6 +94,7 @@ const habits = window.afterAids; window.afterAids = () => { habits(); seekLoot()
 const count = (name, f) => { const was = window[name]; window[name] = function (...a) { return f(was, ...a); }; };
 count('sendRig', f => { const ok = f(); if (ok) rigs++; return ok; }); // the ambushes' (fortress.js), as they come
 count('total', (f, c, ...a) => { if (c.rig) rigsDown++; if (c.suv) suvsDown++; if (c.heli) helisDown++; if (c.racer && !c.fleet) gangDown++;
+  if (c.harpoon) { harpoonsDown++; if (c.prize) recovered++; }
   if (a[1] === 'CRUSHED') crushed++; if (a[1] === 'RAMMED THROUGH') through++; return f(c, ...a); });
 count('sendCop', (f, suv) => { const ok = f(suv); if (ok && suv) suvs++; if (ok && !suv) cops++; return ok; });
 count('sendTank', f => { const ok = f(); if (ok) tanks++; return ok; }); count('tankDown', (f, c) => { tanksDown++; return f(c); });
@@ -111,6 +113,8 @@ count('mineTick', f => { mining = true; const r = f(); mining = false; return r;
 count('runOver', (f, ...a) => { const ok = f(...a); if (ok) mining ? minesHit++ : ranOver++; return ok; });
 count('minerDrive', (f, c, dt) => { const d = c.dropped; const r = f(c, dt); laid += c.dropped - d; return r; });
 count('sendMiner', f => { const ok = f(); if (ok) miners++; return ok; });
+count('sendHarpoon', f => { const ok = f(); if (ok) harpoons++; return ok; });
+count('fireHarpoon', (f, c) => { const n = progress.fortress.parts.length; f(c); if (progress.fortress.parts.length < n) stolen++; });
 count('sendChaser', f => { const up = sideLane() == null; const ok = f(); if (ok) { chasers++; if (up) shoulders++; } return ok; });
 count('copRam', (f, c, pit) => { pit ? pits++ : copRams++; f(c, pit); });
 count('slam', (f, c) => { slams++; f(c); });
@@ -135,11 +139,11 @@ with sync_playwright() as p:
         amb = js("[+strength().toFixed(1), +budget().toFixed(1)]")  # what the race's ambushes are drawn from
         w0 = js(WALLET)
         r = js(f"""(() => {{ {f"rng = {SEED * 1000 + race};" if SEED is not None else ""} window.nextPress = 0; reloading = 0;
-                  Object.assign(window, {{ shells: 0, hits: 0, rigs: 0, rigsDown: 0, rams: 0, gangDown: 0, checks: 0, suvs: 0, suvsDown: 0, made: 0, picked: 0, crushed: 0, through: 0, onParts: 0, onRig: 0, fell: [], helis: 0, helisDown: 0, dropped: 0, ranOver: 0, copRams: 0, pits: 0, slams: 0, miners: 0, laid: 0, minesHit: 0, chasers: 0, shoulders: 0, mounts: 0, swaps: 0, packAt: 0, wornOut: [], tanks: 0, tanksDown: 0, cops: 0 }});
+                  Object.assign(window, {{ shells: 0, hits: 0, rigs: 0, rigsDown: 0, rams: 0, gangDown: 0, checks: 0, suvs: 0, suvsDown: 0, made: 0, picked: 0, crushed: 0, through: 0, onParts: 0, onRig: 0, fell: [], helis: 0, helisDown: 0, dropped: 0, ranOver: 0, copRams: 0, pits: 0, slams: 0, miners: 0, laid: 0, minesHit: 0, chasers: 0, shoulders: 0, harpoons: 0, harpoonsDown: 0, stolen: 0, recovered: 0, mounts: 0, swaps: 0, packAt: 0, wornOut: [], tanks: 0, tanksDown: 0, cops: 0 }});
                   simRun({{ ...progress.levels }}, 2, 1, {{}}, true);
                   return {{ p: run.race && run.race.p, dnf: run.race && run.race.dnf, totals: run.totals, scrap: run.scrap, ranks: run.ranks, ambushes: ambushes.map(a => a.faction[0] + a.members.length + (a.sent < a.members.length ? '(' + a.sent + ')' : '')).join(' '),
                   dmg: Math.round(progress.damage), shells, hits, got: run.shells, left: progress.shells, rigs, rigsDown, rams, gangDown, checks, suvs, suvsDown,
-                  tanks, tanksDown, cops, made, picked, m: run.gain, crushed, through, w: rigW, onParts, onRig, fell, wornOut, helis, helisDown, dropped, ranOver, copRams, pits, slams, miners, laid, minesHit, chasers, shoulders, mounts, swaps, secs: runTime(),
+                  tanks, tanksDown, cops, made, picked, m: run.gain, crushed, through, w: rigW, onParts, onRig, fell, wornOut, helis, helisDown, dropped, ranOver, copRams, pits, slams, miners, laid, minesHit, chasers, shoulders, harpoons, harpoonsDown, stolen, recovered, mounts, swaps, secs: runTime(),
                   worn: Math.round(100 * progress.fortress.parts.reduce((k, p) => k + hpOf(p), 0) / Math.max(1, progress.fortress.parts.reduce((k, p) => k + fullHp(p), 0))) }}; }})()""")
         w1 = js(WALLET)  # the race's takings: meters (the run's, the crew's racing, less the nitro), points, refined fuel, scrap
         wheel = js("wheel.held = false")
@@ -168,7 +172,7 @@ with sync_playwright() as p:
                   f"left {w4['points']:,} | fuel +{w1['fuel'] - w0['fuel']:.1f} refined +{w3['fuel'] - w2['fuel']:.0f} bought cards -{w3['fuel'] - w4['fuel']:.1f} "
                   f"left {w4['fuel']:.1f} | scrap +{w1['scrap'] - w0['scrap']:,} cards -{w3['scrap'] - w4['scrap']:,} left {w4['scrap']:,}")
         res = ("P" + str(r["p"])) if r["p"] else r["dnf"]
-        print(f"race {race:2}: {res:10} totals {r['totals']:2} (gang {r['gangDown']:2}, ranks +{r['ranks']:4} pts; gang cars {r['chasers']} ({r['shoulders']} up the shoulder), mine-layers {r['miners']}, mines {r['laid']} hit {r['minesHit']}) +{r['scrap']:4} scrap  shells {r['shells']:2} hit {r['hits']:2} "
+        print(f"race {race:2}: {res:10} totals {r['totals']:2} (gang {r['gangDown']:2}, ranks +{r['ranks']:4} pts; gang cars {r['chasers']} ({r['shoulders']} up the shoulder), mine-layers {r['miners']}, mines {r['laid']} hit {r['minesHit']}; harpoons {r['harpoons']} down {r['harpoonsDown']}, parts taken {r['stolen']} back {r['recovered']}) +{r['scrap']:4} scrap  shells {r['shells']:2} hit {r['hits']:2} "
               f"+{r['got']:2} left {r['left']:3}  rigs {r['rigs']} down {r['rigsDown']} rams {r['rams']:2}  suvs {r['suvs']} down {r['suvsDown']} slams {r['slams']}  helis {r['helis']} down {r['helisDown']} strips {r['dropped']} run over {r['ranOver']}  tanks {r['tanks']} down {r['tanksDown']}  cops {r['cops']} rams {r['copRams']} PITs {r['pits']}  checks {r['checks']:2}  "
               f"dmg {r['dmg']:3}% ({fixed[0]}% after repairs, {fixed[1]:,} m left)  loot +{r['made']} got {r['picked']}  board [{board[0]}] "
               f"hold {board[1]}  {board[2]:,} kg  {r['m']:,} m  {r['w']} wide, crushed {r['crushed']} through {r['through']}  "

@@ -286,6 +286,26 @@ const RIG_SPRITE = sprite(280, 340, (g, w, h) => {
   for (let i = 0; i < 7; i++) { const x = w * (0.22 + i * 0.093); g.beginPath(); g.moveTo(x - 6, h * 0.81); g.lineTo(x, h * 0.9); g.lineTo(x + 6, h * 0.81); g.fill(); }
   steel(w * 0.2, h * 0.8, w * 0.6, h * 0.03);
 });
+// the rival gang's harpoon truck (Distance's act 5, fortress.js): a pickup in the gang's rust and red stripe, from
+// behind, a harpoon gun on a post in its bed, aimed back at you, its barbed head and the coiled cable beside it
+const HARPOON_SPRITE = sprite(240, 220, (g, w, h) => {
+  const box = (c, x, y, bw, bh, r = 0) => { g.fillStyle = c; g.beginPath(); g.roundRect(w * x, h * y, w * bw, h * bh, r); g.fill(); };
+  for (const x of [0.04, 0.78]) box('#121214', x, 0.8, 0.18, 0.2, 6); // the tires
+  box('#6b3a22', 0.03, 0.52, 0.94, 0.34, 8); // the bed's tailgate, rust
+  box('#8e2a1e', 0.03, 0.6, 0.94, 0.06); // the gang's stripe
+  box('#9a6a44', 0.14, 0.34, 0.72, 0.22, 10); // the cab's back, its window barred
+  box('#26303c', 0.2, 0.37, 0.6, 0.12, 4);
+  for (const x of [0.32, 0.46, 0.6]) box('#3c3c42', x, 0.37, 0.025, 0.12);
+  for (const x of [0.05, 0.85]) box('#c0201a', x, 0.55, 0.1, 0.06, 2); // the tail lights
+  box('#3c3c42', 0.47, 0.18, 0.06, 0.36); // the gun's post, and the gun aimed back at you: its muzzle, its barb
+  g.fillStyle = '#2b2b30'; g.beginPath(); g.arc(w / 2, h * 0.2, w * 0.1, 0, 2 * Math.PI); g.fill();
+  g.fillStyle = '#121214'; g.beginPath(); g.arc(w / 2, h * 0.2, w * 0.06, 0, 2 * Math.PI); g.fill();
+  g.fillStyle = '#e2e2ea'; g.beginPath(); g.moveTo(w * 0.44, h * 0.2); g.lineTo(w / 2, h * 0.08); g.lineTo(w * 0.56, h * 0.2); g.fill();
+  g.strokeStyle = '#2b2b30'; g.lineWidth = 3; // the cable, coiled on the bed
+  for (const r of [0.07, 0.1]) { g.beginPath(); g.ellipse(w * 0.76, h * 0.5, w * r, h * r * 0.4, 0, 0, 2 * Math.PI); g.stroke(); }
+  box('#3c3c42', 0.02, 0.84, 0.96, 0.05); g.fillStyle = '#e2e2ea'; // the bumper, spiked
+  for (let i = 0; i < 6; i++) { const x = w * (0.12 + i * 0.152); g.beginPath(); g.moveTo(x - 4, h * 0.84); g.lineTo(x, h * 0.78); g.lineTo(x + 4, h * 0.84); g.fill(); }
+});
 // the police's helicopter (Distance's act 5, police.js), side on as it hovers across the road, nose to the left: the
 // police's black and white, POLICE along the tail boom, a gun pod under the nose, a searchlight, skids, the light bar
 // on top lit red (0) or blue (1) in turn with the rotor's blur, long or short, so the rotor turns as the lights flash
@@ -494,7 +514,7 @@ function spawnCar(car, d) {
     swerve: null, // an oncoming car flashed out of your way (a game of chicken): the lane it is moving to
     wreck: false, hp: null, // totaled (Distance's War Rig), and its health when hurt (null: unhurt)
     police: false, stage: null, passing: false, // a police car (Distance's War Rig, police.js), how far into its move
-    racer: 0, gang: false, // a gang car of act 5's (fortress.js), its number
+    racer: 0, gang: false, harpoon: false, prize: null, // a gang car of act 5's (fortress.js), its number; its harpoon truck
     tank: false, rig: false, suv: false, w: undefined, h: undefined, // the final boss (boss.js), a rival war rig
                                                                      // (fortress.js), a police SUV (police.js); its size, m
     heli: false, alt: undefined, // the police's helicopter (police.js), and how high it flies, m
@@ -538,10 +558,10 @@ const PASS = 10 / 3.6, MIRROR = 4, SIGNAL = 1;
 // Fuel madness (the game's madness(), Distance's War Rig: the share of drivers gone mad, 0 to 1): which ordinary cars
 // are mad, going your way or coming at you (the owner, 18 Oct: the oncoming traffic had none). Picked by serial in golden-ratio steps: an even spread, and no draw on the traffic's seeded
 // dice, so the road is the same as before for everyone else
-const mad = c => !c.racer && !c.fleet && !c.police && !c.tank && !c.rig &&
+const mad = c => !c.racer && !c.fleet && !c.police && !c.tank && !c.rig && !c.harpoon &&
   c.serial * 0.6180339887 % 1 < (game.madness?.() ?? 0);
 // the first rusty cars (the game's rust(): the share of ordinary cars gone to rust, 0 to 1; Distance's act 3, oil.js)
-const rusty = c => !c.racer && !c.fleet && !c.police && !c.tank && !c.rig && c.serial * 0.3819660113 % 1 < (game.rust?.() ?? 0);
+const rusty = c => !c.racer && !c.fleet && !c.police && !c.tank && !c.rig && !c.harpoon && c.serial * 0.3819660113 % 1 < (game.rust?.() ?? 0);
 function driveCar(c, dt) { // follow at a safe distance, or pull out and pass
   const lead = leader(c), gap = lead ? lead.z - c.z - CAR_LEN : Infinity, safe = 8 + 1.2 * c.v;
   let aim = c.want;
@@ -588,7 +608,7 @@ function indicator(c) {
 // flashed: an ordinary car ahead of you in your lane (within 250 m) moves over to your other lane if there is room.
 // Racers don't care.
 // yields: whether car c would move over into lane `to` for a flash now (racers never do)
-const yields = (c, to) => !c.racer && !c.police && !c.tank && !c.rig && !c.yielding && c.dir > 0 && c.z > odo && c.z - odo <= 250 && roomAt(c, MY_LANES[to], 12, 25);
+const yields = (c, to) => !c.racer && !c.police && !c.tank && !c.rig && !c.harpoon && !c.yielding && c.dir > 0 && c.z > odo && c.z - odo <= 250 && roomAt(c, MY_LANES[to], 12, 25);
 // Playing chicken (Distance's upgrade), an oncoming car in your lane within 250 m swerves into its other lane, if
 // nobody is there within 25 m of it
 let chicken = false;
@@ -632,6 +652,7 @@ function updateTraffic(dt, clock) {
     else if (c.police) policeDrive(c, dt); // police.js
     else if (c.tank) tankDrive(c, dt); // boss.js
     else if (c.rig) rigDrive(c, dt); // a rival war rig (fortress.js)
+    else if (c.harpoon) harpoonDrive(c, dt); // the gang's harpoon truck (fortress.js)
     else if (c.runner) runnerDrive(c, dt); // a car of your crew on its way to a spot (oil.js)
     else if (c.raider) raiderDrive(c, dt); // a raider of your crew after its car (gang.js)
     else if (c.dir > 0) { if (!(c.racer && gangDrive(c, dt))) driveCar(c, dt); } // the rival gang's moves (fortress.js)
@@ -644,10 +665,10 @@ function updateTraffic(dt, clock) {
     const d = c.z - odo;
     if (c.d > 0 && d <= 0) whoosh(Math.abs(speed - c.dir * c.v) * 3.6, c.x < carX ? -0.7 : 0.7); // went past the driver
     c.d = d;
-    if (c.racer && (!c.gang || c.stage && !c.wreck) || c.passing || c.tank || (c.rig || c.heli) && !c.wreck || c.runner || c.raider) { /* racers
-      stay where they are, however far: their places are the race; a gang car while it is at you; a police car comes up
-      from behind; the tank holds the road, a rig comes and goes round you, a helicopter flies in; a car of your crew goes
-      on to its spot, or after its car */ }
+    if (c.racer && (!c.gang || c.stage && !c.wreck) || c.passing || c.tank || (c.rig || c.heli || c.harpoon && c.stage !== 'leave') && !c.wreck ||
+        c.runner || c.raider) { /* racers stay where they are, however far: their places are the race; a gang car while it is
+      at you; a police car comes up from behind; the tank holds the road, a rig comes and goes round you, a helicopter flies
+      in, a harpoon truck comes past and holds the road; a car of your crew goes on to its spot, or after its car */ }
     else if (d < -40 || c.dir > 0 && d < -8 && c.v < speed - 1) spawnAhead(c); // left behind: back to the horizon
     else if (d > ROAD.draw * ROAD.segment + 100) { // pulled away: comes up from behind instead, in a lane you're not in
       spawnCar(c, -30);
