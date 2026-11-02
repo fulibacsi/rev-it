@@ -1914,20 +1914,23 @@ race, the loot lost to a full inventory, and the parts lost a race.
      race (33-66%).
    - `fortress_test` checks them (bought for scrap: a 1.7 s reload, 313 a shell; two cannon blocks 626; the tag counts
      both), on both layouts.
-   The Foreman's Work rate, the fourth PR (built 2 Nov; `oil.js`, `gang.js`), fuel's first act 5 job (the owner, 2 Nov:
-   fuel pays for man-powered upgrades, "foreman efficiency" first; he said before that the Foreman "should deal with
-   most" of the cars in the fortress's way). Claude's reading and numbers:
-   - Work rate, on the Crew page: the Foreman drives your crew harder, every job 20% quicker a level: crude pumped at an
-     oil spot, fuel brewed at a refinery, a raider back at its car after a ram (knocked back 0.8 s, 0.57 s at level 2).
-     5 levels, 30 L growing 1.6 times. Out of sight until the Rebuild, and then until the Foreman is bought (its
-     parent).
-   - `act5.py` (seeds 1-4, 12 races; the act 4 bot's car never bought the Foreman, so the bot buys a level of Overfill,
-     Double up and the Foreman, then Work rate, before paying off racers): the Foreman by race 5-10, Work rate 2-3 by race
-     12; fuel brought in over the 12 races 488-573 L (415-432 without), the crew 93-99 by race 12 (99) as fuel went to
-     the Foreman first. The raiders' totals no different to tell (a raider's rams quicker, six raiders). P1 or P2 every
-     race, damage up to 30-61% a race (19-50%).
-   - `rivals_test` checks it (out of sight before the Rebuild, and until the Foreman; at level 2 a spot pumps 40% more,
-     a raider back at its car in 0.57 s), on both layouts.
+   The Foreman's Dispatch, the fourth PR reworked (built 2 Nov; `oil.js`), fuel's first act 5 job (the owner, 2 Nov:
+   fuel pays for man-powered upgrades, "foreman efficiency" first; then, as built first, "Foreman efficiency for me means
+   speed of command. Raiders have a lot to do and they do it quickly. Let's add a cooldown to foreman dispatch and
+   upgrade the speed"). Claude read it first as Work rate, the crew working quicker (pumping, brewing, a raider back at
+   its car sooner): gone, the card's id `workRate` kept so a save keeps its levels.
+   - On the war rig the Foreman sends a car only every 0.75 s (four a second before, as acts 3 and 4 were simulated, and
+     still there): Dispatch, on the Crew page once rebuilt and once the Foreman is bought, cuts it 30% a level, to 0.13 s
+     at level 5. 5 levels, 30 L growing 1.6 times. The raiders come first in what he sends, as before (bestSpot).
+   - The AUTO button (SEND, with the Foreman) fills along its foot as he gets ready to send again.
+   - `act5.py` (seeds 1-4, 12 races; once the bot owns the Foreman it leaves the sending to him, as a player busy with
+     the cannon and the board would, where it pressed SEND four times a second itself): he sends 46-92 cars a race, the
+     raiders 14-42 of them (the bot's own pressing: 44-124, 10-55); the fuel brought in over the 12 races 455-497 L;
+     Dispatch 1-2 bought by race 8-12. P1 or P2 every race, damage up to 24-51% a race. From 2 s he sent 25 cars a race,
+     too few to crew the oil: the fuel halved (200-305 L) and Dispatch was never afforded; from 1 s, 47-79 (capped at
+     49 on a seed), the fuel 290-405 L.
+   - `rivals_test` checks it (out of sight before the Rebuild, the Foreman's four a second there, and until the Foreman;
+     on the rig a car every 0.75 s, 0.37 s at level 2; he sends one, waits, and sends again 0.75 s on), on both layouts.
    The front and the sides, the fifth PR (built 2 Nov; `fortress.js`, `damage.js`, `police.js`), scrap's defense, on the
    owner's answers of 2 Nov ("Mine picker is baseline, negates mines, gives you shells. Grinder on top of it negates
    frontal damage"; rams: "damage mitigation and knockback"; they replace the planned mine roller from two lanes wide
@@ -1952,14 +1955,14 @@ race, the loot lost to a full inventory, and the parts lost a race.
      off the board; with Ram plates 2, a police car's ram 2%, thrown 16.5 m back), on both layouts.
    The crew's other jobs, the sixth PR (built 2 Nov; `oil.js`, `road.js`, `gang.js`), fuel's (the map: scavengers
    picking up the loot, gunners; the owner: the Foreman first, "then the rest"). Claude's numbers, first guesses; both on
-   the Crew page once rebuilt, after the Foreman, as Work rate:
+   the Crew page once rebuilt, after the Foreman, as Dispatch:
    - Scavengers (3 levels, 40 L doubling): a car of the crew a level goes for a crate up the road lying in a lane the
      fortress doesn't cover (one you would drive past), while the hold has room for it: up the right shoulder as a
      runner goes, into the crate's lane and onto it, and the crate goes into the hold (+ARMOR 2 · 64% INTO THE HOLD).
    - Gunners (3 levels, 50 L doubling): a gunner a level on the deck, firing at the nearest of the gang's cars, the
      police's cars and the army's jeeps within 60 m either way (the small fry the reticle leaves to the raiders): 15
      damage a second each, a shot every 0.5 s, its tracer from the deck while the car is in sight. A total is the crew's.
-   - `act5.py` (seeds 1-4, 12 races; the bot buys them with Work rate, the cheapest first): Scavengers by race 7-9,
+   - `act5.py` (seeds 1-4, 12 races; the bot buys them with Dispatch, the cheapest first): Scavengers by race 7-9,
      Gunners by race 9-11; 0-2 crates fetched (the bot steers onto most crates itself, and its hold is often full),
      91-235 gunners' shots; the crates picked up in the 12 races 35-53 (33-42 without). P1 or P2 every race, damage up to
      22-53% a race (30-43%).

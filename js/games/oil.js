@@ -30,12 +30,13 @@ Object.assign(UPGRADES, {
   // maxed, and with them about 430 L, out of the act's reach)
   foreman: { name: 'Foreman', tab: 'fleet', max: 1, base: 60, needs: ['doubleUp'],
              info: () => 'sends your crew for you, where you would; your own SEND still works' },
-  // the Foreman's efficiency (layer 13; the owner, 2 Nov: fuel pays for man-powered upgrades, "foreman efficiency"
-  // first): he drives the crew harder, every job quicker: crude pumped, fuel brewed, a raider back at its car after a
-  // ram. On the war rig only, where fuel had nothing left to buy once the crew was full. Claude's numbers, for act5.py
-  workRate: { name: 'Work rate', tab: 'fleet', max: 5, base: 30, growth: 1.6, needs: ['foreman'], story: () => rigged(),
-              info: l => l ? `the Foreman drives your crew: every job ${Math.round(100 * (workRate(l) - 1))}% quicker (pumping, ` +
-                'brewing, a raider at its car again after a ram)' : 'the crew works at its own pace' },
+  // the Foreman's efficiency, his speed of command (layer 13; the owner, 2 Nov: "Foreman efficiency for me means speed
+  // of command. Raiders have a lot to do and they do it quickly. Let's add a cooldown to foreman dispatch and upgrade
+  // the speed"; Claude's first reading, Work rate, had the crew work quicker: the id kept, so a save keeps its levels).
+  // On the war rig only, where fuel had nothing left to buy once the crew was full: acts 3 and 4 were balanced with
+  // the Foreman's four presses a second. Claude's numbers, for act5.py
+  workRate: { name: 'Dispatch', tab: 'fleet', max: 5, base: 30, growth: 1.6, needs: ['foreman'], story: () => rigged(),
+              info: l => `the Foreman sends a car every ${fmtL(dispatchEvery(l))} s` },
   // the crew's other act 5 jobs (the map: fuel pays for the man-powered ones; the owner, 2 Nov: the Foreman first, "then
   // the rest"), the Foreman sending them: scavengers fetch the crates you would drive past, gunners on the deck shoot the
   // small fry the reticle leaves to the raiders (crewJobs, below). Claude's numbers, for act5.py
@@ -60,7 +61,12 @@ const cap = s => Math.floor(s.count * (1 + 0.25 * lvl('overfill'))); // cars a s
 const harvest = () => 1 + 0.2 * lvl('harvesting');
 const twice = () => lvl('doubleUp') > 0 && !progress.off.doubleUp; // a switch, as every one-level card is
 const foremanOn = () => lvl('foreman') > 0 && !progress.off.foreman;
-const workRate = (l = lvl('workRate')) => 1 + 0.2 * l; // Work rate: how much quicker the crew works
+// s between the Foreman's sends: on the war rig a cooldown (the owner, above), 30% shorter a level of Dispatch (0.75 s
+// down to 0.13 s); before it, four presses a second, as acts 3 and 4 were simulated. act5.py: from 2 s he sent 25 cars
+// a race, too few to crew the oil (the fuel halved, and Dispatch was never afforded); from 0.75 s, 46-92, about as many
+// as the bot pressing SEND itself
+const DISPATCH = { every: 0.75, faster: 0.7, before: 0.25 };
+const dispatchEvery = (l = lvl('workRate')) => rigged() ? DISPATCH.every * DISPATCH.faster ** l : DISPATCH.before;
 const GUNNERS = { reach: 60, every: 0.5, damage: 15 }; // m either way; s between shots; damage a second a gunner
 
 // ---- the roles: racers race in their slots; harvesters and brewers ride with you. They are the crew's first paid off
@@ -194,19 +200,19 @@ function crewTick(dt) {
     if (s.crew < s.count) continue;
     run.worked += s.crew * dt; // the simulation's measure: crew-seconds at work
     if (s.kind === 'oil') {
-      const got = Math.min(s.rate * s.crew * harvest() * workRate() * dt, s.reserve, tankSize() - progress.crude);
+      const got = Math.min(s.rate * s.crew * harvest() * dt, s.reserve, tankSize() - progress.crude);
       s.reserve -= got; s.got += got; progress.crude += got; run.crude += got;
     } else {
-      const used = Math.min(s.rate * s.crew * workRate() * dt, progress.crude), fuel = used / brewRatio();
+      const used = Math.min(s.rate * s.crew * dt, progress.crude), fuel = used / brewRatio();
       progress.crude -= used; s.got += fuel; progress.fuel += fuel; run.fuel += fuel;
       if (s.scripted && s.got > 0 && progress.crude < 0.005) spotDone(s); // the script's refinery: the crude all brewed
     }
   }
   if (!run.pick || run.pick.done || !trackAhead().includes(run.pick)) // a raid picked stays on raids as the target changes
     run.pick = (run.pick?.kind === 'raid' ? raidAhead() : null) ?? spotsAhead().find(s => s.crew + s.coming.length < s.count) ?? trackAhead()[0] ?? null;
-  if (foremanOn() && run.t >= run.foreman) { // the Foreman: four presses a second, where you would send them
+  if (foremanOn() && run.t >= run.foreman) { // the Foreman: where you would send them, a car each time he can (Dispatch)
     const s = bestSpot();
-    if (s) { send(s, true); run.foreman = run.t + 0.25; }
+    if (s) { send(s, true); run.foreman = run.t + dispatchEvery(); }
   }
 }
 // ---- the crew's act 5 jobs (Scavengers, Gunners: above). A scavenger goes for a crate up the road in a lane the
@@ -382,6 +388,8 @@ function renderCrew() {
   text('crew-free', `${free('oil')}H${role('brewer') ? ` ${free('refinery')}B` : ''}${role('raider') ? ` ${free('raid')}R` : ''}`);
   const word = foremanOn() ? 'AUTO' : 'SEND'; // the Foreman sends for you, as AUTO on the trigger fires for you (gang.js)
   if ($('crew-send').firstChild.nodeValue !== word) $('crew-send').firstChild.nodeValue = word;
+  const ready = foremanOn() && rigged() ? clamp(1 - (run.foreman - run.t) / dispatchEvery(), 0, 1) : 1; // his cooldown filling
+  $('crew-send').style.setProperty('--ready', ready.toFixed(2));
 }
 
 // ---- the garage: who does what (from the oil on), and what Scouting has seen of the next run. A wide card: the crew's

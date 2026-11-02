@@ -217,7 +217,7 @@ function raiderDrive(c, dt) {
 }
 function raidRam(c, o) { // a hit, as yours are, and it is knocked back (raiderDrive) to the back of the line
   if (c.rammed) return;
-  c.rammed = KNOCK / workRate(); // oil.js: the Foreman's Work rate
+  c.rammed = KNOCK;
   c.turn = run.t;
   hurtCar(o, HIT * (1 + 2 / 3 * lvl('bullbar')) * (notable(o) ? 0.2 : 1), true);
 }
