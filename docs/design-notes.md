@@ -1736,9 +1736,10 @@ race, the loot lost to a full inventory, and the parts lost a race.
    fortress that fills your side (Claude's three: mines from ahead, past you over the double yellow, or head-on and then
    mines), the owner: "Both mines from ahead, and also past from the right side (the same way my crew bolts to the
    resources, next to the road)". Claude's numbers, first guesses:
-   - Half the gang's cars, every 8 s and in its ambushes, lay mines: one appears 300 m up the road in one of the rig's
-     lanes, 15 m/s slower than you; 50 m off it drops three mines in its lane, one every 0.4 s (MINES!), and pulls off
-     onto the right shoulder and races on. A mine lies still on the road: a dark plate with a hazard-yellow rim and a
+   - Half the gang's cars, every 8 s and in its ambushes, lay mines: one appears 200 m up the road in one of the rig's
+     lanes, 15 m/s slower than you; 120 m off it drops three mines in its lane, one every 0.4 s (MINES!), and pulls off
+     onto the right shoulder and races on. First built from 300 m and dropping at 50 m: your raiders, who go for the
+     gang first, stopped most of them before they dropped (0 mines in most races). A mine lies still on the road: a dark plate with a hazard-yellow rim and a
      red light blinking (smaller ones didn't read on a phone). Run over, it hits the front cell of the column over its
      lane, 15% before Armor plating (a spike strip's 12), MINE!; off its lane it misses. A lane wide it can be dodged
      by changing lanes, as can a two- or three-lane fortress that shifts off its lane; four lanes wide there is no

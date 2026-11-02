@@ -287,8 +287,9 @@ function gangDrive(c, dt) { // road.js updateTraffic: true while it is at you; e
 // once you are close it drops mines in its lane, then pulls off onto the right shoulder and races on. A mine run over
 // hits the front cell of the column over it (runOver, as a spike strip's); off its lane it misses. Four lanes wide
 // there is no dodging them: the mine roller's (layer 13). Claude's numbers, for act5.py: m up the road, m/s slower, m
-// from you when it drops, s between mines, mines, % a mine before Armor plating (a spike strip's 12)
-const MINE = { ahead: 300, slower: 15, near: 50, every: 0.4, drop: 3, hit: 15 };
+// from you when it drops, s between mines, mines, % a mine before Armor plating (a spike strip's 12). Dropping at 50 m
+// from 300 m up the road, most were stopped by your raiders first (they go for the gang first): few mines were laid
+const MINE = { ahead: 200, slower: 15, near: 120, every: 0.4, drop: 3, hit: 15 };
 let mines = []; // on the road: { x, z, over }
 function sendMiner() {
   const c = gangCar();

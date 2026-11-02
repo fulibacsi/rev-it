@@ -113,7 +113,7 @@ with sync_playwright() as p:
         check(f"{layout}: left behind, back into the traffic: no longer the gang's", got == [False, 0], got)
 
         # the gang's mines (layer 11), run frame by frame with the road moving under them: a gang car up the road in your
-        # lane, slower; 50 m off it drops three in its lane and pulls onto the shoulder; each run over hits the board's front
+        # lane, slower; 120 m off it drops three in its lane and pulls onto the shoulder; each run over hits the board's front
         # cell (15 less 75%: 3.75); dropped in your other lane, they miss
         js(CLEAR)
         mines = """(other) => { lane = fromLane = 0; carX = MY_LANES[0]; // settled in a lane (the robot may be changing lanes)
@@ -123,8 +123,8 @@ with sync_playwright() as p:
             for (let i = 0; i < 4000 && (m.miner || !mines.length || mines.some(x => !x.over)); i++) { odo += speed / 60; gangDrive(m, 1 / 60); mineTick(); }
             window.flash = was; return [...at, m.dropped, seen.filter(t => t.startsWith('MINE')).join(), +hpOf(cannon).toFixed(2), Math.abs(m.x - (SHOULDER - 0.6)) < 0.3]; }"""
         got = js(f"({mines})(false)")
-        check(f"{layout}: a gang car 300 m up your lane drops three mines (MINES!) and pulls onto the shoulder; run over, MINE! three "
-              f"times, 3.75 off the cannon each", got == [300, True, 3, "MINES!,MINE!,MINE!,MINE!", 88.75, True], got)
+        check(f"{layout}: a gang car 200 m up your lane drops three mines 120 m off (MINES!) and pulls onto the shoulder; run over, "
+              f"MINE! three times, 3.75 off the cannon each", got == [200, True, 3, "MINES!,MINE!,MINE!,MINE!", 88.75, True], got)
         got = js(f"({mines})(true)")
         check(f"{layout}: dropped in your other lane: missed, nothing hit", got[3:5] == ["MINES!", 100], got)
         pg.screenshot(path=f"{OUT}/rivals_{layout}_mines.png")
