@@ -370,9 +370,14 @@ function rigDrive(c, dt) { // road.js updateTraffic
 // radar alone a part gone would look like a ram or a bug); in the reticle, it winds up, the part it aims at blinking
 // on the board; fires, and the part nearest its side (the front one first) is torn off the board on its cable and
 // dragged across the road to it. Totaled before it gets clear, the part falls on the road in a crate; reeled in, it
-// is gone. Claude's numbers, for act5.py: health (two shells), scrap; m ahead it holds; s it holds, winds up, reels
-const HARPOON = { hp: 500, scrap: 100, w: 2.3, h: 2.2, ahead: 30, hold: 1, wind: 2, reel: 4 };
+// is gone. A pickup's winch: it drags no more than `pull` kg, so the tank's cannon (900 kg a block) and the bigger
+// parts are too heavy for it (act5.py: with no limit it took the tank's cannon, the first board's only part, in the
+// first race on both seeds, and the bare rig was wrecked in the next). Claude's numbers, for act5.py: health (two
+// shells), scrap; m ahead it holds; s it holds, winds up, reels; kg
+const HARPOON = { hp: 500, scrap: 100, w: 2.3, h: 2.2, ahead: 30, hold: 1, wind: 2, reel: 4, pull: 850 };
 let hooked = null; // the part a truck aims at
+// the truck taking aim or reeling a part in: the reticle goes to it at once (gang.js updateGang), the most urgent
+const harpooning = () => traffic.find(c => c.harpoon && !c.wreck && (c.stage === 'wind' || c.stage === 'reel'));
 const aimedAt = () => traffic.some(c => c.harpoon && !c.wreck && c.stage === 'wind') ? hooked : null; // renderBoard blinks it
 function sendHarpoon() { // the ambushes: one at a time; false if not now
   if (traffic.some(c => c.harpoon && !c.wreck && c.stage !== 'leave')) return false;
@@ -400,10 +405,10 @@ function harpoonDrive(c, dt) { // road.js updateTraffic
     Object.assign(c, { stage: 'leave', prize: null });
   }
 }
-function aimHarpoon(c) { // the part nearest its side, the front one first; with the board bare, it leaves
+function aimHarpoon(c) { // the part nearest its side it can pull, the front one first; with none, it leaves
   const f = progress.fortress, col = c.x < carX ? 0 : boardW() - 1;
   const dist = p => Math.min(...p.cells.map(([x, y]) => Math.abs(p.x + x - col) * 10 + p.y + y));
-  hooked = [...f.parts].sort((a, b) => dist(a) - dist(b))[0] ?? null;
+  hooked = f.parts.filter(p => PARTS[p.kind].kg * p.cells.length <= HARPOON.pull).sort((a, b) => dist(a) - dist(b))[0] ?? null;
   if (!hooked) return Object.assign(c, { stage: 'leave' });
   if (c.stage !== 'wind') flash('HARPOON!', '#f55', false);
   Object.assign(c, { stage: 'wind', t: HARPOON.wind });

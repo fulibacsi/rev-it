@@ -90,7 +90,8 @@ function updateGang(dt) { // every frame of a run
   gangMoment();
   if (!arOn()) { target = quarry = null; return; }
   if (run.tank && !run.tank.wreck) target = run.tank; // boss.js: the tank, while it lasts
-  else if (lost(target)) target = nextTarget();
+  else if (rigged() && harpooning() && !lost(harpooning())) target = harpooning(); // fortress.js: a harpoon truck taking
+  else if (lost(target)) target = nextTarget();                                     // aim or reeling in, at once
   if (lost(quarry) || rigged() && !quarry.racer && nextTarget(c => c.racer)) quarry = nextQuarry();
   fireGuns(dt);
 }

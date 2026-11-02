@@ -8,8 +8,8 @@ from the side; totaled, its scrap; its tutorial pops up as the first one shows. 
 ambushes send them; the heat sends none on the rig): armored, it comes head-on, kamikaze, slamming your front and
 wrecking itself, and one that missed comes again; its tutorial as it first shows; in the reticle head-on too. A police
 car on the rig rams you, from behind or a PIT from the side, three times, then it is gone. The gang's harpoon truck
-(layer 11) holds the road beside you, harpoons a part off the board and reels it in; totaled first, the part drops in
-a crate. Over a notable one the reticle's tag: what it is, its health, the shells it would take, how far. Before the rig, act 4's reticle as it was. Phone and desktop."""
+(layer 11) holds the road beside you, the reticle on it once it takes aim, harpoons a part off the board (none heavier
+than its winch pulls: not the tank's cannon) and reels it in; totaled first, the part drops in a crate. Over a notable one the reticle's tag: what it is, its health, the shells it would take, how far. Before the rig, act 4's reticle as it was. Phone and desktop."""
 import json, re
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -134,26 +134,30 @@ with sync_playwright() as p:
         # beside you, it holds the road 30 m ahead, takes aim (the part blinks on the board), harpoons the part nearest its
         # side off the board and reels it in; totaled while reeling, the part is on the road in a crate; else it is gone
         js(CLEAR)
-        harpoon = """(kill) => { lane = fromLane = 0; carX = MY_LANES[0]; Object.assign(traffic.find(c => takeable(c) && !c.wreck), { z: odo + 800 });
-            const f = progress.fortress; f.parts = [{ kind: 'cannon', cells: [[0, 0]], x: 0, y: 0 }]; applyUpgrades(); run.loot = [];
+        harpoon = """(kill, kind = 'gun') => { lane = fromLane = 0; carX = MY_LANES[0]; Object.assign(traffic.find(c => takeable(c) && !c.wreck), { z: odo + 800 });
+            const f = progress.fortress; f.parts = [{ kind, cells: [[0, 0]], x: 0, y: 0 }]; applyUpgrades(); run.loot = []; target = null;
             const seen = [], was = window.flash; window.flash = (t, ...a) => { seen.push(t); return was(t, ...a); };
             const ok = sendHarpoon(), c = traffic.find(c => c.harpoon && !c.wreck);
-            const out = [ok, c.x === MY_LANES[1], Math.round(c.z - odo), notableTag(c).startsWith('HARPOON · 100% · 2 SHOTS')];
+            const out = [ok, c.x === MY_LANES[1], Math.round(c.z - odo), notableTag(c).startsWith('HARPOON · 100% · ')] // no cannon on the board: no shots in it;
             const step = until => { for (let i = 0; i < 1200 && !until(); i++) { odo += speed / 60; harpoonDrive(c, 1 / 60); } };
-            step(() => c.stage === 'wind'); out.push(Math.round(c.z - odo)); renderBoard(); out.push(!!$('fort-grid').querySelector('[data-hooked]'));
+            step(() => c.stage === 'wind' || c.stage === 'leave'); if (c.stage === 'leave') return [...out, 'left', f.parts.length];
+            updateGang(0); out.push(Math.round(c.z - odo), target === c); renderBoard(); out.push(!!$('fort-grid').querySelector('[data-hooked]'));
             step(() => c.stage === 'reel'); out.push(f.parts.length, c.prize?.kind);
             if (kill) { hurtCar(c, 1e4); out.push(run.loot.length, run.loot[0]?.part.kind); }
             else { step(() => c.stage === 'leave'); out.push(f.parts.length, c.prize); }
             window.flash = was; out.push(seen.filter(t => /HARPOON|GONE/.test(t)).join()); return out; }"""
         got = js(f"({harpoon})(true)")
-        check(f"{layout}: a harpoon truck (HARPOON · 100% · 2 SHOTS) from 60 m behind up your other lane holds the road 30 m ahead, takes "
-              f"aim (the cannon blinking), harpoons the cannon off the board; totaled while it reels, the cannon on the road in a crate",
-              got[:4] == [True, True, -60, True] and 28 <= got[4] <= 33 and got[5:] == [True, 0, "cannon", 1, "cannon",
-              "HARPOON TRUCK!,HARPOON!,CANNON 1 HARPOONED"], got)
+        check(f"{layout}: a harpoon truck (HARPOON · 100%) from 60 m behind up your other lane holds the road 30 m ahead, takes "
+              f"aim (the reticle on it at once, the gun blinking), harpoons the gun off the board; totaled while it reels, the gun on "
+              f"the road in a crate", got[:4] == [True, True, -60, True] and 28 <= got[4] <= 33 and got[5:] == [True, True, 0, "gun", 1, "gun",
+              "HARPOON TRUCK!,HARPOON!,GUN 1 HARPOONED"], got)
         pg.screenshot(path=f"{OUT}/rivals_{layout}_harpoon.png")
         got = js(f"({harpoon})(false)")
-        check(f"{layout}: one that reels it in: the cannon gone", got[5:] == [True, 0, "cannon", 0, None,
-              "HARPOON TRUCK!,HARPOON!,CANNON 1 HARPOONED,CANNON 1 GONE"], got)
+        check(f"{layout}: one that reels it in: the gun gone", got[5:] == [True, True, 0, "gun", 0, None,
+              "HARPOON TRUCK!,HARPOON!,GUN 1 HARPOONED,GUN 1 GONE"], got)
+        js("traffic.forEach(c => { if (c.harpoon) spawnCar(c, 1500); })")
+        got = js(f"({harpoon})(false, 'cannon')")
+        check(f"{layout}: the tank's cannon alone on the board, too heavy for its winch (900 kg): it leaves without a shot", got[4:] == ["left", 1], got)
         js("traffic.forEach(c => { if (c.harpoon) spawnCar(c, 1500); }); progress.fortress.parts = [{ kind: 'cannon', cells: [[0, 0]], x: 0, y: 0 }]; applyUpgrades(); run.loot = []")
 
         # 5. the gang's ambushes send rigs: two at a time at most
