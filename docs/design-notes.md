@@ -1901,6 +1901,19 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - `loot_test` checks it (three offers on the card, each its part, condition and price; the same again, the traffic's
      dice untouched; one bought: its price off the points, the part in the hold, the rest gone; a race later three
      more; a full hold, none), on both layouts.
+   The cannon's cards, the third PR (built 2 Nov; `fortress.js`), on the map (above: scrap pays for war, the cannon's
+   reload and damage first; it lost Lengthen and Widen to meters, and piled up). Claude's numbers:
+   - Autoloader: 3 levels, 1,500 scrap doubling, the cannon's reload 15% shorter a level (2 s, 1.7, 1.4, 1.1). Heavy
+     shells: 3 levels, 2,000 scrap doubling, a shell 25% harder a level (250 a cannon block, 313, 375, 438).
+   - The reticle's tag counts every cannon block on the board in the shells it would take, as a shell hits with all
+     of them (it counted one: two blocks of cannon showed twice the shots they needed).
+   - `act5.py` (seeds 1-4, 12 races; the bot buys them as it can, the cheapest first): Autoloader 1 by race 2-4, Heavy
+     shells 1 at race 5, the second levels by race 6-9, Autoloader 3 by race 11-12; Heavy shells 3 (8,000) not by race
+     12. The scrap left by race 12 900-4,500 (17,000-20,000 without them). 95-134 shells fired in the 12 races
+     (110-116 without), tanks beaten 9, 11, 17 and 9 (6, 7, 10 and 12), P1 or P2 every race, damage up to 15-50% a
+     race (33-66%).
+   - `fortress_test` checks them (bought for scrap: a 1.7 s reload, 313 a shell; two cannon blocks 626; the tag counts
+     both), on both layouts.
 14. The act's automation.
 15. The foreshadowing, the final fight and the ending.
 

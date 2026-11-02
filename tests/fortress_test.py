@@ -183,6 +183,19 @@ with sync_playwright() as p:
         got = js(f"[{s0} - progress.shells, reloading]")  # fired as it went down, not as it came up: 0.3 s or more of the
         check(f"{layout}: the pedal held: one shell, no more", got[0] == 1 and 0 < got[1] < 1.7, got)  # 2 s reload gone (a loaded
                                                                                                        # machine runs fewer frames)
+        # the cannon's cards (layer 13, for scrap): Autoloader 15% off the reload a level, Heavy shells 25% on a shell a
+        # level; a shell hits with every cannon block on the board, and the reticle's tag counts them all
+        got = js("""(() => { const s0 = progress.scrap; progress.scrap = 10000;
+            const bought = [buy('autoloader'), buy('heavyShells'), 10000 - progress.scrap]; progress.scrap = s0;
+            const c = traffic.find(c => c.dir > 0 && !c.racer && !c.wreck && !c.police && !c.tank && !c.rig && !c.suv && !c.heli);
+            Object.assign(c, { z: odo + 80, x: carX, lane, hp: 2000 }); c.seen = [0, 0, 1, 1]; target = c; reloading = 0; fireCannon();
+            const one = [+reloading.toFixed(2), 2000 - c.hp];
+            progress.levels.lengthen = 1; progress.fortress.parts.push({ kind: 'cannon', cells: [[0, 0]], x: 0, y: 1 }); applyUpgrades();
+            target = c; reloading = 0; const h = c.hp; fireCannon(); const two = h - c.hp, tag = notableTag({ rig: true, hp: 1300, z: odo + 50 });
+            Object.assign(progress.levels, { autoloader: 0, heavyShells: 0, lengthen: 0 }); progress.fortress.parts = progress.fortress.parts.slice(0, 1);
+            applyUpgrades(); reloading = 0; c.hp = null; return [...bought, ...one, two, tag]; })()""")
+        check(f"{layout}: Autoloader and Heavy shells bought (1,500 and 2,000 scrap): a 1.7 s reload, 313 a shell; two cannon "
+              f"blocks, 626; the tag counts both (a rig at 1,300: 3 shots)", got == [True, True, 3500, 1.7, 313, 626, "RIG · 87% · 3 SHOTS · 50 m"], got)
         pg.screenshot(path=f"{OUT}/fortress_{layout}_shot.png")
 
         # 6. thrown off: a tap or a slide doesn't; held until the ring closes, gone for good

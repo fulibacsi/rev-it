@@ -236,6 +236,9 @@ Each upgrade and what it needs, one line each: the list to edit.
 - Widen ← Rebuild (3 levels, 50,000 m growing 2.5 times (800 scrap until layer 13): the board and the rig a lane wider
   a level, to four, the board's new column on the right; from two lanes a truck's wheel, no brakes, rams and head-ons
   rammed through)
+- Autoloader ← Rebuild (layer 13: 3 levels, 1,500 scrap doubling: the cannon's reload 15% shorter a level, 2 s to 1.1 s)
+- Heavy shells ← Rebuild (layer 13: 3 levels, 2,000 scrap doubling: a shell 25% harder a level, 250 a cannon block to
+  438)
 - Shells, not an upgrade (1 Nov): once rebuilt, a card on the page sells the cannon's shells, a crate of 10 for 100
   points, as often as you like.
 - The dealer, not an upgrade (layer 13): once rebuilt, a card on the page offers three parts of the enemies' before
@@ -267,19 +270,21 @@ the tabs already are.
 
 ```mermaid
 flowchart TD
-  subgraph X["Fortress · the tab, the Rebuild, Lengthen, Inventory and Widen built, the rest planned"]
+  subgraph X["Fortress · the tab, the Rebuild, Lengthen, Inventory, Widen, Autoloader and Heavy shells built, the rest planned"]
     fortressTab(["Fortress tab"])
     rebuild["Rebuild"]
     lengthen["Lengthen"]
     widen["Widen"]
     inventory["Inventory"]
+    autoloader["Autoloader"]
+    heavyShells["Heavy shells"]
     grinder["Grinder"]
     roller["Mine roller"]
     autocannon["Auto cannon"]
   end
   warrig(["War Rig tab"]) -- "the tank beaten" --> fortressTab
   fortressTab --> rebuild
-  rebuild --> lengthen & widen & inventory & grinder & autocannon
+  rebuild --> lengthen & widen & inventory & autoloader & heavyShells & grinder & autocannon
   widen -- "2+" --> roller
   autogun["Auto gun"] --> autocannon
 ```
@@ -291,6 +296,8 @@ flowchart TD
   is the engineers', paid in meters)
 - Widen ← Rebuild (a lane a level, to four; built 31 Oct)
 - Inventory ← Rebuild (one slot to three; built 30 Oct)
+- Autoloader ← Rebuild (the cannon's reload; layer 13, scrap)
+- Heavy shells ← Rebuild (the cannon's damage; layer 13, scrap)
 - Grinder ← Rebuild (eats what it reaches; at four lanes, the oncoming traffic too)
 - Mine roller ← Widen 2+ (mines do no damage; by three lanes there is little room left to steer round one)
 - Auto cannon ← Rebuild, Auto gun (fires the cannon for you, as Auto gun does the guns)
