@@ -110,7 +110,8 @@ function fireGuns(dt) {
   raiseHeat(WANTED.shot);
   const hit = target?.seen && target.z - odo < RANGE ? target : null;
   tracers.push([null, hit, performance.now()]);
-  if (hit) hurtCar(hit, GUN * (lvl('guns') + blocks('gun'))); // the guns on the board too (fortress.js)
+  if (hit) hurtCar(hit, GUN * (lvl('guns') + blocks('gun'))); // the guns on the board too (fortress.js), and each shot
+  wearOut('gun', WEAR.gun);                                     // wears them (fortress.js)
 }
 
 // you hit car c (impact from car.js): a hit, HIT off its health. The owner's numbers (14 Oct): traffic goes down in 3,
@@ -127,6 +128,7 @@ function ram(i) {
   if (c.cut > 0) return total(c, false, 'HAD IT COMING!'); // Fuel madness: it cut in on you, it's totaled (road.js c.cut)
   // the war rig's spiked parts (fortress.js) a third of a hit a block, as a bull bar's level is two thirds
   hurtCar(c, HIT * (1 + 2 / 3 * lvl('bullbar') + (i.side && spikes ? 1 : 0) + blocks('spikes') / 3) * (notable(c) ? 0.2 : 1));
+  wearOut('spikes', WEAR.spikes); // fortress.js: a ram wears the spikes on the board
 }
 function hurtCar(c, hp, gang) {
   c.hp = (c.hp ?? health(c)) - hp;

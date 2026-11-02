@@ -40,7 +40,7 @@ with sync_playwright() as p:
         if phone: js("settings.layout = 'touch'; applyLayout()")
         pg.click('[data-play="distance"]'); pg.wait_for_timeout(300)
         pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=20000)
-        js(CLEAR); pg.wait_for_timeout(300)
+        js(CLEAR); js("WEAR.engine = 0"); pg.wait_for_timeout(300)  # the engine at rest while the hits are checked (it wears flat out)
         got = js(HP)
         check(f"{layout}: health by blocks and kind: two-block armor 40, the cannon 100, an engine 10", got == ["armor 40", "cannon 100", "engine 10"], got)
 
@@ -105,6 +105,32 @@ with sync_playwright() as p:
         check(f"{layout}: the cannon worn out by rams on its side: CANNON 1 LOST, no cannon", got == ["engine", False, "CANNON 1 LOST"], got)
         got = js("(() => { const p0 = engine.drive; progress.fortress.parts[0].hp = 1; strike(8, carX + 1.75, odo - 7.1); return [progress.fortress.parts.length, rigPower(), engine.drive < p0]; })()")
         check(f"{layout}: the engine worn out: its pull goes with it", got == [0, 0, True], got)
+
+        # 7. wear with use (31 Oct): a shell wears the cannon, a shot a gun, a ram the spikes, a second flat out an engine;
+        # worn out, the part goes; and salvage: a crate's part comes worn, 40-100%, and says so
+        js(CLEAR)
+        js("""progress.fortress.parts = [{ kind: 'cannon', from: 'tank', cells: [[0, 0]], x: 0, y: 0 }, { kind: 'gun', from: 'suv', cells: [[0, 0]], x: 1, y: 0 },
+            { kind: 'spikes', from: 'rig', cells: [[0, 0]], x: 0, y: 1 }, { kind: 'engine', from: 'rig', cells: [[0, 0]], x: 1, y: 1 }]; applyUpgrades()""")
+        got = js(f"""(() => {{ WEAR.engine = 0.05; // worn as it drives again, from here (within this call: no frame between)
+            const c = ({CAR})(); Object.assign(c, {{ dir: 1, z: odo + 50, x: carX, hp: null }}); target = c; c.seen = [0, 0, 1, 1];
+            reloading = 0; fireCannon(); firing = true; reload = 0; fireGuns(0.01); firing = false;
+            Object.assign(c, {{ wreck: false, hp: 1e6 }}); ram({{ car: c, kmh: 100, side: false }}); // the shell totaled it
+            throttle = 1; for (let i = 0; i < 60; i++) rigTick(1 / 60); throttle = 0;
+            return progress.fortress.parts.map(p => p.kind + ' ' + +hpOf(p).toFixed(2)); }})()""")
+        check(f"{layout}: a shell wears the cannon 1, a gun shot the gun 0.05, a ram the spikes 1, a second flat out the engine 0.05",
+              got == ["cannon 99", "gun 7.95", "spikes 14", "engine 9.95"], got)
+        got = js("""(() => { renderBoard(); const html = $('fort-grid').innerHTML; throttle = 1; rigTick(0.5); renderBoard(); const same = $('fort-grid').innerHTML === html;
+            progress.fortress.parts.find(p => p.kind === 'engine').hp = 0.01; rigTick(0.5); throttle = 0;
+            return [same, progress.fortress.parts.map(p => p.kind).join(), $('flash').textContent]; })()""")
+        check(f"{layout}: an engine wearing doesn't redraw the board each frame; worn out, ENGINE 1 WORN OUT, gone",
+              got == [True, "cannon,gun,spikes", "ENGINE 1 WORN OUT"], got)
+        got = js("""(() => { const at = []; for (let i = 0; i < 60; i++) { const p = makePart('armor', 'rig'); at.push(hpOf(p) / fullHp(p)); }
+            const p = makePart('engine', 'rig'); progress.fortress.hold = []; stow(p);
+            return [Math.min(...at) >= 0.4, Math.max(...at) <= 1, Math.max(...at) - Math.min(...at) > 0.3, $('flash').textContent.endsWith(`${Math.round(100 * hpOf(p) / fullHp(p))}% INTO THE HOLD`)]; })()""")
+        check(f"{layout}: a crate's part in salvage condition, 40-100% of its health, said as it goes into the hold", got == [True, True, True, True], got)
+        js("progress.fortress.hold = [{ kind: 'armor', from: 'rig', cells: [[0, 0]], hp: 5 }]"); pg.wait_for_timeout(100)
+        check(f"{layout}: a worn part in the hold shows its cracks", js("$('fort-hold').querySelector('.part').dataset.wear") == "2")
+        js("progress.fortress.hold = []; progress.fortress.parts = []")
 
         # 7. the wear is kept: repairs mend the rig only, the save keeps it
         js("progress.fortress.parts.push({ kind: 'armor', from: 'rig', cells: [[0, 0]], x: 1, y: 0, hp: 13 }); progress.damage = 30; repair(); save()")

@@ -1606,7 +1606,26 @@ race, the loot lost to a full inventory, and the parts lost a race.
      drops went on with a wobble of 6 px or with a hit as it rested; 5 of 5 now, with a wobble of 10 px too.
      `fortress_test` checks the wobble, the hit and the slot's corner.
 9. The pressure (wear with use, salvage condition, drops below 100%) and the ambushes' frame with the enemies there are
-   (heat and the scanner retired, the tank an ambush), for a swap or a loss about every 5 s.
+   (heat and the scanner retired, the tank an ambush), for a swap or a loss about every 5 s. In two PRs: the wear and
+   the salvage first (built 2 Nov), then the ambushes and the drops.
+   - Wear with use (the owner, 31 Oct: "we need something that destroys the parts all the time"): a part loses health as
+     it works, a part's worth no more than a block's, so the bigger one lasts longer: a cannon 1 a shell, a gun 0.05 a
+     shot, spikes 1 a ram, an engine 0.05 a second pulling flat out; armor only by hits, its job. So a cannon block
+     lasts 100 shells, a gun block 160 shots, a spike block 15 rams, an engine block 200 s flat out. Worn, it cracks as a
+     hit part does; worn out, it falls off as one does (ENGINE 1 WORN OUT). The board is redrawn when its cracks change,
+     not with every bit of wear. Claude's numbers: the first guesses, twice these and the cannon 4 a shell, wore the
+     tank's cannon out in the second race (only a tank drops another).
+   - Salvage condition: a crate's part comes worn, at 40-100% of its health at random, and says so as it goes into the
+     hold (ENGINE 2 · 63% INTO THE HOLD; HOLD FULL with it too), its cracks shown in the hold; so a fresher part is
+     worth a swap even on a full board. The tank's cannon of the Rebuild comes whole.
+   - `act5.py` (seeds 1 and 2, 12 races; the bot now weighs a part by its health and by what it is, a cannon five
+     times armor or spikes, a gun or an engine twice, before it swaps one out): 2 parts worn out in the 24 races (an
+     engine, spikes), the rest of the losses hits as before (0-2 a race); the tank's cannon, worn and hit, swapped out
+     for armor in race 3 on both seeds and back from the next tank's drop; the board changed every 7-50 s, 0-5 times a
+     race (layer 8: every 8-50 s); damage 0-64% a race, P1 or P2. Wear alone doesn't bring the 5 s: the ambushes, more
+     enemies and so more loot, are for that.
+   - `shield_test` checks it (a shell, a shot, a ram and a second flat out each wear their part; an engine wearing
+     doesn't redraw the board; worn out, gone; a crate's part at 40-100%, said; its cracks in the hold) on both layouts.
 10. The police (The factions, above): cars ram, SUVs kamikaze head-on, the helicopter's spike strip.
 11. The gang: unlimited and numbered, its ranks paying points; mines; the harpoon truck; the war rig's War Boys.
 12. The army: jeeps with a gun, the rocket car.
