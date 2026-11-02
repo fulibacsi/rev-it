@@ -72,7 +72,8 @@ let shownBoard = ''; // what the board shows: redrawn only when that changes
 function renderBoard() {
   if (dragging || throwing) return; // never under a finger: the drag would go with the element it holds (a hit on a part
                                     // redrew the board, and a drag on the road failed most times); it redraws after
-  const f = progress.fortress, n = holdSize(), w = boardW(), h = boardH(), key = JSON.stringify(f) + [n, w, h, innerWidth, innerHeight, fallen.length];
+  const f = progress.fortress, n = holdSize(), w = boardW(), h = boardH(); // redrawn on what shows: its cracks, not its health
+  const key = JSON.stringify([...f.parts, ...f.hold].map(p => [p.kind, p.x, p.y, p.cells, wear(p)])) + [f.parts.length, n, w, h, innerWidth, innerHeight, fallen.length];
   if (key === shownBoard) return;
   shownBoard = key;
   // the cells as big as the plate allows, the hold beside the plan: inside its padding (6 px), past the label (16 px),
@@ -84,7 +85,7 @@ function renderBoard() {
   $('fort-grid').innerHTML = f.parts.map((p, i) => partHtml(p, `data-part="${i}" data-wear="${wear(p)}"`)).join('') +
     fallen.map(({ p }) => partHtml(p, `data-fall data-wear="2"`)).join('') + '<i id="fort-ghost"></i><i id="fort-hit"></i>';
   $('fort-hold').innerHTML = Array.from({ length: n }, (_, i) => `<div class="slot" data-slot="${i}">` +
-    `${f.hold[i] ? partHtml(f.hold[i], '', cell / Math.max(extent(f.hold[i].cells, 0), extent(f.hold[i].cells, 1))) : ''}</div>`).join('');
+    `${f.hold[i] ? partHtml(f.hold[i], `data-wear="${wear(f.hold[i])}"`, cell / Math.max(extent(f.hold[i].cells, 0), extent(f.hold[i].cells, 1))) : ''}</div>`).join('');
   for (const el of $('fort-hold').querySelectorAll('.slot')) // the whole slot is its handle: a part shrunk to fit one is small
     if (f.hold[+el.dataset.slot]) drag(el, (e, first) => dragPart(e, first, +el.dataset.slot), dropPart);
   for (const el of $('fort-grid').querySelectorAll('.part')) drag(el, (e, first) => holdPart(e, first, +el.dataset.part), letGo);
@@ -197,9 +198,13 @@ function fireCannon() {
   shake = Math.max(shake, 0.35); // main.js: the rig jolts
   raiseHeat(WANTED.shot * CANNON.heat); // police.js
   if (hit) hurtCar(hit, CANNON.damage * blocks('cannon')); // every cannon block on the board, one shell
+  wearOut('cannon', WEAR.cannon); // each shell wears every cannon (below)
   return true;
 }
-function rigTick(dt) { reloading = Math.max(0, reloading - dt); } // distance.js updateRun
+function rigTick(dt) { // distance.js updateRun
+  reloading = Math.max(0, reloading - dt);
+  if (throttle > 0.8) wearOut('engine', WEAR.engine * dt); // engine.js: pulling flat out
+}
 // the war rig's keys (distance.js key): Space fires the cannon, a shell a press; the gas, clutch, brake, gears and
 // nitro are the robot's now, so their keys do nothing
 function rigKey(k, repeat) {
@@ -392,10 +397,15 @@ const ENGINE_POWER = { gang: 0.06, suv: 0.1, rig: 0.15, tank: 0.25, heli: 0.2 };
 const LOOT = { slow: 8, reach: 3 }; // m/s² a crate skids to a stop at; m either way it is picked up within
 const pick = table => { let r = rand(); const ks = Object.keys(table); return ks.find(k => (r -= table[k]) < 0) ?? ks.at(-1); };
 const sourceOf = c => c.tank ? 'tank' : c.rig ? 'rig' : c.suv ? 'suv' : c.heli ? 'heli' : c.police ? 'cop' : c.racer && !c.fleet ? 'gang' : null;
-function makePart(kind, from) { // a size it comes in, then a shape of it no wider than the board (one wider never fits)
+// a size it comes in, then a shape of it no wider than the board (one wider never fits), in salvage condition (the
+// feel, 31 Oct): worn, SALVAGE of its health at random, so a fresher one is worth a swap even on a full board
+const SALVAGE = [0.4, 1];
+function makePart(kind, from) {
   const sizes = PARTS[kind].sizes, shapes = SHAPES[sizes[Math.floor(rand() * sizes.length)]].filter(c => extent(c, 0) <= boardW());
-  return { kind, from, cells: shapes[Math.floor(rand() * shapes.length)] };
+  const part = { kind, from, cells: shapes[Math.floor(rand() * shapes.length)] };
+  return Object.assign(part, { hp: Math.round(fullHp(part) * (SALVAGE[0] + (SALVAGE[1] - SALVAGE[0]) * rand())) });
 }
+const condition = p => `${Math.round(100 * hpOf(p) / fullHp(p))}%`;
 function dropLoot(c) { // gang.js total, boss.js tankDown: its drop, if any, on the road
   const from = rigged() && sourceOf(c);
   if (!from || rand() >= DROPS[from][0]) return;
@@ -404,7 +414,7 @@ function dropLoot(c) { // gang.js total, boss.js tankDown: its drop, if any, on 
   if (!progress.toured.includes('loot')) openTour('loot', true);
 }
 function stow(part) { // into the hold, if it has room
-  const f = progress.fortress, name = `${PARTS[part.kind].name} ${part.cells.length}`;
+  const f = progress.fortress, name = `${PARTS[part.kind].name} ${part.cells.length} · ${condition(part)}`;
   if (f.hold.length >= holdSize()) { flash(`HOLD FULL: ${name} LEFT`, '#fb3', false); return false; }
   f.hold.push(part);
   applyUpgrades(); // distance.js: its weight
@@ -480,13 +490,31 @@ function hitCell(d, cx, cy) { // d: the hit's damage after Armor plating
   if (p.hp <= 0) fallOff(i);
   if (!progress.toured.includes('shield')) openTour('shield', true);
 }
-function fallOff(i) { // and what it did goes with it: its weight, its pull, its voice, its strength
+function fallOff(i, how = 'LOST') { // and what it did goes with it: its weight, its pull, its voice, its strength
   const [p] = progress.fortress.parts.splice(i, 1);
   fallen.push({ p, t: performance.now() });
   letGo(); // a part held to throw off: the board's numbers have moved
   applyUpgrades(); // distance.js
   save();
-  flash(`${PARTS[p.kind].name} ${p.cells.length} LOST`, '#f55', false);
+  flash(`${PARTS[p.kind].name} ${p.cells.length} ${how}`, '#f55', false);
+}
+// wear with use (the feel, 31 Oct; the owner: "we need something that destroys the parts all the time"): a part loses
+// health as it works, a size's worth no more than a block's (the bigger, the longer it lasts): the cannon a shell, a gun
+// a shot, spikes a ram, an engine a second of full throttle; armor only by hits, its job. Fighting both uses up the
+// board and fills it. Claude's numbers, for act5.py: a cannon block 100 shells, a gun block 160 shots, spikes 15 rams,
+// an engine block 200 s flat out. Half the first guesses, and a quarter for the cannon (the first guesses wore the
+// tank's cannon out in the second race, half of them by the third, and only a tank drops another): the ambushes, more
+// enemies and more loot, the tanks among them, are for the faster churn the owner wants
+const WEAR = { cannon: 1, gun: 0.05, spikes: 1, engine: 0.05 };
+function wearOut(kind, by) { // fireCannon, gang.js fireGuns and ram, rigTick
+  const f = progress.fortress;
+  if (!rigged()) return;
+  for (let i = f.parts.length - 1; i >= 0; i--) {
+    const p = f.parts[i];
+    if (p.kind !== kind) continue;
+    p.hp = Math.max(0, hpOf(p) - by);
+    if (p.hp <= 0) fallOff(i, 'WORN OUT');
+  }
 }
 
 // an engine heard (the owner, 30 Oct: "a new engine sound added on top of the existing one"): a voice for each kind of
