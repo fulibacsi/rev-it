@@ -76,9 +76,11 @@ with sync_playwright() as p:
               got == [True, True, "block" if not phone else got[2], "none", True, False] and got[2] != "none", got)
         # 2. bought: the cannon in the hold, the cockpit the rig's, the rig's tutorial up
         pg.click('[data-buy="rebuild"]'); pg.wait_for_timeout(300)
-        got = js("[progress.points, JSON.stringify(progress.fortress), menuOpen && screen, tour.id]")
-        check(f"{layout}: bought: 500 points left, the tank's cannon in the hold, the rig's tutorial pops up",
-              got == [500, '{"parts":[],"hold":[{"kind":"cannon","cells":[[0,0]]}]}', "tour", "rig"], got)
+        got = js("[progress.points, JSON.stringify(progress.fortress), menuOpen && screen, tour.id, document.body.classList.contains('rig'), "
+                 "getComputedStyle($('shifter')).display, getComputedStyle($('board')).display]")
+        check(f"{layout}: bought: 500 points left, the tank's cannon in the hold, the rig's tutorial pops up over the rig's cockpit (the board, "
+              "no shifter: it showed the shifter, the owner, 2 Nov)",
+              got == [500, '{"parts":[],"hold":[{"kind":"cannon","cells":[[0,0]]}]}', "tour", "rig", True, "none", "flex"], got)
         while js("menuOpen"): js("turnTour(1)"); pg.wait_for_timeout(50)
         js("garageTab = 'fortress'; renderGarage()"); pg.wait_for_timeout(100)
         before = js("[progress.shells, progress.points]"); tap("[data-shells]"); pg.wait_for_timeout(150)
@@ -123,6 +125,10 @@ with sync_playwright() as p:
         if phone:
             ctl = box("#crew-ctl")
             check("phone: the board clear of ‹ SEND › above it", bd[1] >= ctl[3] - 1, [bd, ctl])
+            metrics = lambda h: cdp.send("Emulation.setDeviceMetricsOverride", {"width": W, "height": h, "deviceScaleFactor": 2, "mobile": True})
+            metrics(340); pg.wait_for_timeout(300)  # a shorter screen: Safari's bars showing (a mobile context can't be resized)
+            bd2, ctl2 = box("#board"), box("#crew-ctl"); metrics(H); pg.wait_for_timeout(300)
+            check("phone: on a screen 340 px tall too (it covered SEND below 393: the owner, 2 Nov)", bd2[1] >= ctl2[3] - 1 and bd2[3] <= 340, [bd2, ctl2])
         pg.screenshot(path=f"{OUT}/fortress_{layout}_hold.png")
 
         # 4. a part on: a flick goes back to the hold; rested on green, it goes on
@@ -156,7 +162,9 @@ with sync_playwright() as p:
         js("progress.levels.lengthen = 0; progress.fortress.parts = [{ kind: 'cannon', cells: [[0, 0]], x: 0, y: 0 }]; applyUpgrades()")
 
         # 5. the cannon: a shell a press at the reticle's car, then a reload; heavy
-        shot = """(kind) => { const c = traffic.find(c => c.dir > 0 && !c.racer && !c.wreck && !c.police && !c.tank);
+        # a car of the traffic's (not a rival rig, which comes 10 s into a race: one picked once the test grew longer
+        # took the police car's place and six shells)
+        shot = """(kind) => { const c = traffic.find(c => c.dir > 0 && !c.racer && !c.wreck && !c.police && !c.tank && !c.rig && !c.suv && !c.heli);
             Object.assign(c, { z: odo + 80, x: carX, lane, hp: null, police: kind === 'police' }); target = c; c.seen = [0, 0, 1, 1];
             const s0 = run.scrap, fired = fireCannon(); return [fired, c.wreck, run.scrap - s0, target !== c]; }"""
         got = js(f"({shot})('car')")

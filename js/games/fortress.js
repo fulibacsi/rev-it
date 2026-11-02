@@ -395,7 +395,10 @@ const DROPS = {
   tank: [0.85, { cannon: 0.7, armor: 0.2, engine: 0.1 }],
 };
 const ENGINE_POWER = { gang: 0.06, suv: 0.1, rig: 0.15, tank: 0.25, heli: 0.2 }; // more pull a block, by the engine it came from
-const LOOT = { slow: 8, reach: 3 }; // m/s² a crate skids to a stop at; m either way it is picked up within
+// m/s² a crate skids to a stop at; m either way it is picked up within; m ahead of you a crate lands at least, so you
+// see it coming and choose (the owner, 2 Nov: drops beside you went straight into the hold unseen, and those behind you
+// were never seen at all)
+const LOOT = { slow: 8, reach: 3, ahead: 25 };
 const pick = table => { let r = rand(); const ks = Object.keys(table); return ks.find(k => (r -= table[k]) < 0) ?? ks.at(-1); };
 const sourceOf = c => c.tank ? 'tank' : c.rig ? 'rig' : c.suv ? 'suv' : c.heli ? 'heli' : c.police ? 'cop' : c.racer && !c.fleet ? 'gang' : null;
 // a size it comes in, then a shape of it no wider than the board (one wider never fits), in salvage condition (the
@@ -411,7 +414,7 @@ function dropLoot(c) { // gang.js total, boss.js tankDown: its drop, if any, on 
   const from = rigged() && sourceOf(c);
   if (!from || rand() >= DROPS[from][0]) return;
   const part = makePart(pick(DROPS[from][1]), from);
-  run.loot.push({ part, z: c.z, x: c.x, v: c.v });
+  run.loot.push({ part, z: Math.max(c.z, odo + LOOT.ahead), x: c.x, v: c.v }); // thrown clear, up the road
   if (!progress.toured.includes('loot')) openTour('loot', true);
 }
 function stow(part) { // into the hold, if it has room

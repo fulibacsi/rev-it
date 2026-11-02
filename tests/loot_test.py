@@ -54,6 +54,9 @@ with sync_playwright() as p:
         got = js(f"""(() => {{ const c = ({RIG})(); DROPS.rig[0] = 1; hurtCar(c, 5000); DROPS.rig[0] = 0.8; const l = run.loot[0]; // a sure drop
             return [run.loot.length, Object.keys(DROPS.rig[1]).includes(l.part.kind), extent(l.part.cells, 0) <= boardW(), l.part.from]; }})()""")
         check(f"{layout}: a rig totaled: a crate of one of its parts on the road, no wider than the board", got == [1, True, True, "rig"], got)
+        got = js(f"""(() => {{ const c = ({RIG})(), was = run.loot.length; c.z = odo - 30; hurtCar(c, 5000);
+            const l = run.loot.at(-1); run.loot = run.loot.slice(0, was); return Math.round(l.z - odo); }})()""")
+        check(f"{layout}: one totaled behind you throws its crate up the road, 25 m ahead, in sight (the owner, 2 Nov)", got == 25, got)
         pg.wait_for_timeout(300)
         check(f"{layout}: the first loot: its tutorial pops up", js("[menuOpen && screen, tour.id]") == ["tour", "loot"], js("[menuOpen && screen, tour.id]"))
         while js("menuOpen"): js("turnTour(1)"); pg.wait_for_timeout(50)

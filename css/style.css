@@ -478,7 +478,11 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
    cannon on the board, or no shells */
 .depth.reload::after { height: calc(var(--reload, 1) * 100%); } /* fills as it reloads */
 .touch #board { left: var(--edge-l); top: auto; bottom: var(--edge-b); width: calc(var(--shifter-h) * 3.2 / 3.5);
-                height: calc(var(--shifter-h) - 14px); } /* clear of ‹ SEND › above it (the gate was drawn inside its box) */
+                /* clear of ‹ SEND › above it (the gate was drawn inside its box): no taller than the room below its row
+                   (122 px down, 34 px tall, 6 px to spare), so on a short screen it shrinks (the owner, 2 Nov: it covered
+                   SEND; under 393 px tall it did, as in Safari with its bars showing) */
+                height: min(calc(var(--shifter-h) - 14px), calc(100vh - var(--edge-b) - max(8px, env(safe-area-inset-top)) - 162px));
+                height: min(calc(var(--shifter-h) - 14px), calc(100dvh - var(--edge-b) - max(8px, env(safe-area-inset-top)) - 162px)); }
 /* the aids the war rig drives with: their cards under a bolted metal plate (the owner, 30 Oct) */
 .card.plated { min-height: 84px; } /* its name above the plate, the rest under it */
 .card .plate { position: absolute; inset: 24px 4px 4px; display: flex; flex-direction: column; align-items: center;
