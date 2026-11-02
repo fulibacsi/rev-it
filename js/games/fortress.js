@@ -715,18 +715,57 @@ const ENGINE_POWER = { gang: 0.06, suv: 0.1, rocket: 0.1, rig: 0.15, tank: 0.25,
 // see it coming and choose (the owner, 2 Nov: drops beside you went straight into the hold unseen, and those behind you
 // were never seen at all)
 const LOOT = { slow: 8, reach: 3, ahead: 25 };
-const pick = table => { let r = rand(); const ks = Object.keys(table); return ks.find(k => (r -= table[k]) < 0) ?? ks.at(-1); };
+const pick = (table, roll = rand) => { let r = roll(); const ks = Object.keys(table); return ks.find(k => (r -= table[k]) < 0) ?? ks.at(-1); };
 const sourceOf = c => c.tank ? 'tank' : c.rig ? 'rig' : c.harpoon ? 'harpoon' : c.rocket ? 'rocket' : c.jeep ? 'jeep' : c.suv ? 'suv' : c.heli ? 'heli' : c.police ? 'cop' :
   c.racer && !c.fleet ? 'gang' : null;
 // a size it comes in, then a shape of it no wider than the board (one wider never fits), in salvage condition (the
 // feel, 31 Oct): worn, SALVAGE of its health at random, so a fresher one is worth a swap even on a full board
 const SALVAGE = [0.4, 1];
-function makePart(kind, from) {
-  const sizes = PARTS[kind].sizes, shapes = SHAPES[sizes[Math.floor(rand() * sizes.length)]].filter(c => extent(c, 0) <= boardW());
-  const part = { kind, from, cells: shapes[Math.floor(rand() * shapes.length)] };
-  return Object.assign(part, { hp: Math.round(fullHp(part) * (SALVAGE[0] + (SALVAGE[1] - SALVAGE[0]) * rand())) });
+function makePart(kind, from, roll = rand) { // roll: the dice (the traffic's, or the dealer's own)
+  const sizes = PARTS[kind].sizes, shapes = SHAPES[sizes[Math.floor(roll() * sizes.length)]].filter(c => extent(c, 0) <= boardW());
+  const part = { kind, from, cells: shapes[Math.floor(roll() * shapes.length)] };
+  return Object.assign(part, { hp: Math.round(fullHp(part) * (SALVAGE[0] + (SALVAGE[1] - SALVAGE[0]) * roll())) });
 }
 const condition = p => `${Math.round(100 * hpOf(p) / fullHp(p))}%`;
+
+// the dealer (layer 13; agreed with the owner: before each race two or three random parts in random condition, one of
+// them yours for a price, into the hold, Backpack Battles' shop kept small so it doesn't stand in for the hunt; the map:
+// points pay the shady people). On the Fortress page once rebuilt: three parts, each one of an enemy's (its drop table,
+// as if it went down), salvage-worn as the loot is; one bought, the rest go until the next race. Drawn on dice of their
+// own (the traffic rolls as it did), the same three until a race is run. Its price by what the part is worth to the
+// fortress, as the ambushes weigh it (WORTH, its blocks, its condition): points a unit of that, Claude's first guess,
+// for act5.py (a fresh cannon of two blocks 1,800; a half-worn block of armor 150)
+const DEAL = { offers: 3, price: 300 };
+const dealPrice = p => Math.max(10, 10 * Math.round(DEAL.price * WORTH[p.kind] * p.cells.length * hpOf(p) / fullHp(p) / 10));
+function dealer() { // this race's offers, drawn the first time they are asked for
+  const f = progress.fortress;
+  if (f.deal?.at !== progress.runs) {
+    let dice = 1 + (progress.runs * 7919) % 2147483646;
+    const roll = () => ((dice = (dice * 48271) % 2147483647) - 1) / 2147483646, from = Object.keys(DROPS);
+    f.deal = { at: progress.runs, sold: false, offers: Array.from({ length: DEAL.offers }, () => {
+      const src = from[Math.floor(roll() * from.length)];
+      return makePart(pick(DROPS[src][1], roll), src, roll);
+    }) };
+  }
+  return f.deal;
+}
+function dealCard() { // distance.js renderGarage: a card, an offer a button (a card each pushed the page off a phone)
+  if (garageTab !== 'fortress' || !rigged()) return '';
+  const d = dealer(), full = progress.fortress.hold.length >= holdSize();
+  return `<div class="card deal"><b>Dealer</b><small>${d.sold ? 'Sold. More after your next race.' : full ? 'Your hold is full.' :
+    'One of these, into the hold:'}</small>` + d.offers.map((p, i) => `<button data-deal="${i}"${full || progress.points < dealPrice(p) ?
+    ' disabled' : ''}>${PARTS[p.kind].name} ${p.cells.length} · ${condition(p)} · ${price(null, dealPrice(p), 'pts')}</button>`).join('') + '</div>';
+}
+function buyDeal(i) { // distance.js, a tap on an offer's button: into the hold
+  const d = dealer(), p = d.offers[i];
+  if (!p || d.sold || progress.points < dealPrice(p) || progress.fortress.hold.length >= holdSize()) return false;
+  progress.points -= dealPrice(p);
+  progress.fortress.hold.push(p);
+  Object.assign(d, { sold: true, offers: [] });
+  applyUpgrades(); // distance.js: its weight
+  save();
+  return true;
+}
 function dropLoot(c) { // gang.js total, boss.js tankDown: its drop, if any, on the road
   const from = rigged() && sourceOf(c);
   if (!from || rand() >= DROPS[from][0]) return;

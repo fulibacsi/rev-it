@@ -230,13 +230,16 @@ Each upgrade and what it needs, one line each: the list to edit.
   cannon in the hold and its 10 shells, the 1×1 board, the firing pedal). From then on the
   reticle takes only the rival rigs, the police's SUVs and the tank, the rival gang comes at you, Hunter hunts the
   raiders' car, and the notable enemies drop loot (not a card: the road changes with the Rebuild)
-- Lengthen ← Rebuild (4 levels, 400 scrap doubling: the board a row longer a level, to five, the new row behind;
-  every row weighs and drags)
-- Inventory ← Rebuild (2 levels, 600 points doubling: the hold a slot more a level, to three)
-- Widen ← Rebuild (3 levels, 800 scrap growing 2.5 times: the board and the rig a lane wider a level, to four, the
-  board's new column on the right; from two lanes a truck's wheel, no brakes, rams and head-ons rammed through)
+- Lengthen ← Rebuild (4 levels, 25,000 m doubling (400 scrap until layer 13): the board a row longer a level, to five,
+  the new row behind; every row weighs and drags)
+- Inventory ← Rebuild (2 levels, 20,000 m doubling (600 points until layer 13): the hold a slot more a level, to three)
+- Widen ← Rebuild (3 levels, 50,000 m growing 2.5 times (800 scrap until layer 13): the board and the rig a lane wider
+  a level, to four, the board's new column on the right; from two lanes a truck's wheel, no brakes, rams and head-ons
+  rammed through)
 - Shells, not an upgrade (1 Nov): once rebuilt, a card on the page sells the cannon's shells, a crate of 10 for 100
   points, as often as you like.
+- The dealer, not an upgrade (layer 13): once rebuilt, a card on the page offers three parts of the enemies' before
+  each race, one of them for points, into the hold.
 - Its page keeps a work sign, under construction, while the rest is built. The other cards are planned (below).
 
 ## The Crew page (26 Oct)

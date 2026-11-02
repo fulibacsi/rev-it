@@ -1874,8 +1874,33 @@ race, the loot lost to a full inventory, and the parts lost a race.
      not by race 12; 35,000 and 70,000, two lanes by race 6, three by race 10.
    - Scrap loses its sink with them: 18,000-21,000 left by race 12 (7,000-9,500 before). The offensive cards (the map:
      the cannon's reload and damage, rams, the Grinder, the mine roller) are for it.
+   - Not the car's build (`built: 0`, as the stereo's): act 1's head start (`race.js` `headStart`) and `act1.py` weigh
+     how built-out the car is by every card paid in meters, and with these among them the car was never fully built
+     (`flash_charges_test`: #100 894 m up the road at a full car, not 400).
    - `loot_test` checks Lengthen and Inventory bought in meters (no scrap, no points), `widen_test` Widen, on both
      layouts.
+   The dealer, the second PR (built 2 Nov; `fortress.js`), as agreed (above: before each race two or three random
+   parts in random condition, one of them yours for a price, into the hold; Backpack Battles' shop, kept small). Claude's
+   design and numbers:
+   - A card on the Fortress page once rebuilt, beside Shells, in the shady people's purple: Dealer, three parts, a line
+     each (GUN 2 · 56% · 680 pts). Each is one enemy's, as if it went down: an enemy at random, a part from its drop
+     table, its size and shape, salvage-worn as the loot is (40-100%). One bought goes into the hold and the rest go
+     (Sold. More after your next race.); with the hold full, none (Your hold is full.). The same three until a race is
+     run, drawn on dice of their own (the traffic rolls as it did). A card each pushed the page off a phone: one card,
+     two columns wide, an offer a line.
+   - Its price by what the part is worth to the fortress, as the ambushes weigh it (a cannon block 3, a gun 2, the rest
+     1), by its blocks and its condition: 300 points a unit (a fresh two-block cannon 1,800, a half-worn block of armor
+     150).
+   - `act5.py` (seeds 1-4, 12 races; with room in the hold the bot buys the offer worth most to it that leaves a crate
+     of shells' points): 6-9 parts bought in the 12 races (mostly armor of three blocks; a cannon or two on each
+     seed), about 700 points each; the points left by race 12 3,600-7,400 (10,900-12,600 without it). P1 or P2 every
+     race, none wrecked, damage up to 33-66% a race (30-68% without). Tanks: 6, 7, 10 and 12 beaten (9, 14, 12 and 12
+     without); the ambushes are drawn by the board's strength, which the dealer's parts change, so four seeds don't
+     say whether that is the dealer's doing. The hold is often full at a race's end (the bot keeps what it can't fit),
+     so it buys in 6-9 races of the 12.
+   - `loot_test` checks it (three offers on the card, each its part, condition and price; the same again, the traffic's
+     dice untouched; one bought: its price off the points, the part in the hold, the rest gone; a race later three
+     more; a full hold, none), on both layouts.
 14. The act's automation.
 15. The foreshadowing, the final fight and the ending.
 

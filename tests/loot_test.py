@@ -3,9 +3,10 @@ car) drops a part by its drop table: a crate on the road, a gold diamond on the 
 over, it goes into the hold, a full hold leaves it; the tank's too, now that it is an ambush's. Its tutorial pops up at the
 first. The parts by blocks: a cannon adds to every shell, a gun to the guns, armor cuts the damage, spikes add to a ram,
 an engine pulls; every block weighs, and the board's length drags. Lengthen grows the board a row, Inventory the hold a
-slot. Nothing drops before the Rebuild. An engine on the board is heard over yours, a voice for each kind, geared to your
+slot, both for meters (layer 13). The dealer (layer 13): three parts of the enemies' before a race, one bought for points
+into the hold. Nothing drops before the Rebuild. An engine on the board is heard over yours, a voice for each kind, geared to your
 revs; the heavy engines' sound file loads only once one is mounted; Free drive has none. Phone and desktop."""
-import json
+import json, re
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
 LEVELS = dict(workshopTab=1, autopilotTab=1, blackTab=1, fleetTab=1, warrigTab=1, fortressTab=1, rebuild=1, power=10, rev=4, gears=3,
@@ -45,6 +46,31 @@ with sync_playwright() as p:
         got = js("[boardH(), holdSize(), buy('lengthen'), buy('inventory'), boardH(), holdSize(), progress.bank, progress.scrap, progress.points, progress.fortress.parts[0].y, refreshCar()].slice(0, 10)")
         check(f"{layout}: Lengthen a row for 25,000 m, behind (the cannon stays in front); Inventory a slot for 20,000 m; no scrap, no points",
               got == [1, 1, True, True, 2, 2, 10000, 5000, 5000, 0], got)
+
+        # the dealer (layer 13): three parts of the enemies' on its card, the same until a race is run, on dice of their
+        # own; one bought for points into the hold, the rest gone until the next race; a full hold, none
+        got = js("""(() => { const r0 = rng; renderGarage(); const a = JSON.stringify(dealer().offers); renderGarage();
+            const b = [...document.querySelectorAll('#cards .card.deal button')];
+            return [document.querySelectorAll('#cards .card.deal').length, b.map(x => x.textContent), JSON.stringify(dealer().offers) === a, rng === r0,
+                    dealer().offers.every((p, i) => b[i].textContent.endsWith(' · ' + fmt(dealPrice(p)) + ' pts'))]; })()""")
+        check(f"{layout}: the dealer's card: three offers, each its part, size, condition and price in points; the same again, the "
+              f"traffic's dice untouched", got[0] == 1 and len(got[1]) == 3 and all(re.fullmatch(r"(CANNON|GUN|ARMOR|SPIKES|ENGINE) [123] · \d+% · [\d,]+ pts", t)
+              for t in got[1]) and got[2:] == [True, True, True], got)
+        js("(() => { const p = dealer().offers[0]; window.P0 = [progress.points, dealPrice(p), JSON.stringify(p)]; })()")
+        pg.click('[data-deal="0"]'); pg.wait_for_timeout(100)
+        got = js("""(() => { const [pts, cost, part] = P0, h = progress.fortress.hold;
+            return [pts - progress.points === cost, h.length, JSON.stringify(h[0]) === part, $('cards').querySelector('.deal small').textContent,
+                    document.querySelectorAll('#cards .card.deal button').length]; })()""")
+        check(f"{layout}: one bought: its price off the points, the part in the hold, the rest gone until the next race",
+              got == [True, 1, True, "Sold. More after your next race.", 0], got)
+        pg.screenshot(path=f"{OUT}/loot_{layout}_dealer_sold.png")
+        got = js("""(() => { progress.runs++; renderGarage(); const fresh = dealer().offers.length === 3 && !dealer().sold;
+            progress.fortress.hold.push({ kind: 'armor', cells: ONE }); renderGarage();
+            const b = [$('cards').querySelector('.deal small').textContent, [...document.querySelectorAll('#cards .card.deal button')].every(x => x.disabled)];
+            progress.fortress.hold = []; progress.points = 5000; progress.runs--; progress.fortress.deal = null; applyUpgrades(); renderGarage();
+            return [fresh, b]; })()""")
+        check(f"{layout}: a race later, three more; with the hold full, none can be bought", got == [True, ["Your hold is full.", True]], got)
+        pg.screenshot(path=f"{OUT}/loot_{layout}_dealer.png")
         pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=20000)
         js(CLEAR); pg.wait_for_timeout(200)
 
