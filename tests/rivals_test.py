@@ -118,7 +118,7 @@ with sync_playwright() as p:
         got = js("(() => { const g = traffic.find(c => c.gang && c.stage === 'brake'); return [g.lane === lane, Math.round(g.z - odo) > 15]; })()")
         check(f"{layout}: past you, it cuts into your lane ahead of you and brakes", got == [True, True], got)
         pg.screenshot(path=f"{OUT}/rivals_{layout}_gang.png")
-        got = js("""(() => { const g = traffic.find(c => c.gang && !c.wreck), pts = progress.points, s0 = progress.shells, r0 = run.ranks; g.racer = 37;
+        got = js("""(() => { const pts = progress.points, s0 = progress.shells, r0 = run.ranks; Object.assign(g, { racer: 37, hp: null }); // its health back
             hurtCar(g, 5000); return [progress.points - pts, run.ranks - r0, progress.shells - s0, $('flash').textContent.endsWith('+64 PTS')]; })()""")
         check(f"{layout}: totaled, #37 pays its rank: 64 points (101 - 37), and 2 shells", got == [64, 64, 2, True], got)
         got = js("""(() => { const g = traffic.find(c => c.gang && c.wreck); g.z = odo - 50; updateTraffic(0, 1e6); return [g.gang, g.racer]; })()""")
