@@ -196,14 +196,28 @@ with sync_playwright() as p:
             applyUpgrades(); reloading = 0; c.hp = null; return [...bought, ...one, two, tag]; })()""")
         check(f"{layout}: Autoloader and Heavy shells bought (1,500 and 2,000 scrap): a 1.7 s reload, 313 a shell; two cannon "
               f"blocks, 626; the tag counts both (a rig at 1,300: 3 shots)", got == [True, True, 3500, 1.7, 313, 626, "RIG · 87% · 3 SHOTS · 50 m"], got)
+        # the Auto cannon (layer 14, for points; needs Auto gun): it fires for you once loaded at the reticle's car in reach, the
+        # pedal reads AUTO; switched off, it doesn't
+        got = js("""(() => { const lv = { ...progress.levels }, p0 = progress.points; progress.levels.autogun = 1; progress.points = 5000;
+            const bought = [buy('autocannon'), 5000 - progress.points]; progress.points = p0;
+            const c = traffic.find(c => c.dir > 0 && !c.racer && !c.wreck && !c.police && !c.tank && !c.rig && !c.suv && !c.heli);
+            Object.assign(c, { z: odo + 80, x: carX, lane, hp: 2000 }); c.seen = [0, 0, 1, 1]; target = c; reloading = 0; const s0 = progress.shells;
+            rigTick(0.01); renderRig(); const on = [s0 - progress.shells, $('cannon-label').textContent];
+            progress.off.autocannon = true; reloading = 0; rigTick(0.01); renderRig(); const off = [s0 - progress.shells, $('cannon-label').textContent];
+            progress.levels = lv; delete progress.off.autocannon; reloading = 0; c.hp = null; renderRig(); return [...bought, ...on, ...off]; })()""")
+        check(f"{layout}: the Auto cannon bought (3,000 points): loaded, with the car in reach, it fires a shell itself, the pedal "
+              f"reads AUTO; switched off, it doesn't, FIRE", got == [True, 3000, 1, "AUTO", 1, "FIRE"], got)
         pg.screenshot(path=f"{OUT}/fortress_{layout}_shot.png")
 
-        # 6. thrown off: a tap or a slide doesn't; held until the ring closes, gone for good
+        # 6. thrown off: a tap or a slide doesn't; held until the ring closes, gone for good. No crates meanwhile: a car the
+        # raiders total drops one now and then, and steered over it went into the hold (a flake, three times on 2 Nov)
+        js("window.DROPS0 = Object.fromEntries(Object.entries(DROPS).map(([k, d]) => [k, d[0]])); for (const d of Object.values(DROPS)) d[0] = 0; run.loot = []")
         hold_part(200); check(f"{layout}: a short press: still on", js("progress.fortress.parts.length") == 1, js("progress.fortress.parts.length"))
         hold_part(700, slide=js("parseFloat($('board').style.getPropertyValue('--cell'))")); check(f"{layout}: a slide (a cell): still on", js("progress.fortress.parts.length") == 1, js("progress.fortress.parts.length"))
         hold_part(700)
         got = js("[progress.fortress.parts.length, progress.fortress.hold.length, cannonOn(), fireCannon()]")
         check(f"{layout}: held: thrown off, gone for good; the pedal fires nothing", got == [0, 0, False, False], got)
+        js("for (const [k, p] of Object.entries(DROPS0)) DROPS[k][0] = p")
 
         # 7. kept in the save; Free drive keeps its shifter and pedals
         js("progress.fortress.parts.push({ kind: 'cannon', cells: [[0, 0]], x: 0, y: 0 }); save()"); pg.reload(); pg.wait_for_timeout(300)

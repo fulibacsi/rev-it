@@ -57,6 +57,16 @@ Object.assign(UPGRADES, {
                info: l => l ? `a ram on the rig's sides and back hurts it ${Math.round(100 * PLATES.cut * l)}% less, and the ` +
                  `car that rammed you is thrown ${PLATES.knock * l} m back` : 'bare sides and back' },
 });
+// the act's automation (layer 14), the first: the upgrade graph's, planned, "fires the cannon for you, as Auto gun does
+// the guns". Paid in points (Claude's proposal for them, the owner, 2 Nov: "we have to find an alternative sink"; the
+// currencies' plan had points paying for the crew's upgrades, the act's automation). A switch, as every one-level card
+// is. The price a first guess, for act5.py
+Object.assign(UPGRADES, {
+  autocannon: { name: 'Auto cannon', tab: 'fortress', max: 1, base: 3000, wallet: 'points', needs: ['rebuild', 'autogun'],
+                info: () => 'fires the cannon for you whenever it is loaded and the car in the reticle is in reach; the pedal ' +
+                  'reads AUTO' },
+});
+const autoCannon = () => lvl('autocannon') > 0 && !progress.off.autocannon;
 const ground = () => lvl('grinder') > 0; // the Grinder on the front: a crash there costs nothing
 const PLATES = { cut: 0.25, knock: 8 }; // Ram plates: a ram's damage less a level; m further back a level
 const plated = () => 1 - PLATES.cut * lvl('ramPlates'); // the share of a ram on the sides and back that gets through
@@ -245,6 +255,7 @@ function fireCannon() {
 }
 function rigTick(dt) { // distance.js updateRun
   reloading = Math.max(0, reloading - dt);
+  if (autoCannon() && !reloading && progress.shells > 0 && blocks('cannon') && target?.seen && target.z - odo < CANNON.reach) fireCannon();
   if (throttle > 0.8) wearOut('engine', WEAR.engine * dt); // engine.js: pulling flat out
 }
 // the war rig's keys (distance.js key): Space fires the cannon, a shell a press; the gas, clutch, brake, gears and
@@ -976,6 +987,7 @@ function renderRig() {
   $('cannon-pedal').parentNode.classList.toggle('empty', progress.shells < 1);
   $('cannon-pedal').parentNode.style.setProperty('--reload', (1 - reloading / reloadTime()).toFixed(2));
   text('shell-count', bottomless() ? '∞' : String(progress.shells)); // debug mode: bottomless (distance.js save)
+  text('cannon-label', autoCannon() ? 'AUTO' : 'FIRE'); // the Auto cannon fires for you, as AUTO on the guns' trigger
   const first = id => target?.seen && run.phase === 'run' && !progress.toured.includes(id); // the first one in sight
   if (target?.rig && first('rivals')) openTour('rivals', true);
   else if (target?.suv && first('pursuit')) openTour('pursuit', true);
