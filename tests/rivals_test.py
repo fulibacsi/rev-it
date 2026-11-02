@@ -13,7 +13,8 @@ car on the rig rams you, from behind or a PIT from the side, three times, then i
 cannon too, slower to reel in) and reels it in; totaled first, the part drops in a crate. The army's (layer 12): a
 jeep comes past you and back, peppering the side of the board it is on, the raiders' and a ram's; a rocket car holds
 the road ahead in the reticle, its rocket's mark on the cell it will land on, a lane changed and it misses. The
-Foreman's Work rate (layer 13): the crew's jobs quicker. Over a notable one the reticle's tag: what it is, its health, the shells it would take, how far. Before the rig, act 4's reticle as it was. Phone and desktop."""
+Foreman's Work rate (layer 13): the crew's jobs quicker. The Mine picker: mines picked up for shells; the Grinder:
+crashes at the front cost nothing; Ram plates: rams on the sides and back hurt less, the police car thrown back. Over a notable one the reticle's tag: what it is, its health, the shells it would take, how far. Before the rig, act 4's reticle as it was. Phone and desktop."""
 import json, re
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -142,6 +143,10 @@ with sync_playwright() as p:
               f"MINE! three times, 3.75 off the cannon each", got == [200, True, 3, "MINES!,MINE!,MINE!,MINE!", 88.75, True], got)
         got = js(f"({mines})(true)")
         check(f"{layout}: dropped in your other lane: missed, nothing hit", got[3:5] == ["MINES!", 100], got)
+        got = js(f"(() => {{ progress.levels.minePicker = 1; const s0 = progress.shells, r = ({mines})(false), gained = progress.shells - s0; "
+                 f"progress.levels.minePicker = 0; return [...r, gained]; }})()")
+        check(f"{layout}: with the Mine picker (layer 13): run over, each picked up (MINE PICKED +2 SHELLS), no blast, 6 shells",
+              got[3:5] == ["MINES!,MINE PICKED +2 SHELLS,MINE PICKED +2 SHELLS,MINE PICKED +2 SHELLS", 100] and got[6] == 6, got)
         pg.screenshot(path=f"{OUT}/rivals_{layout}_mines.png")
 
         # the gang's harpoon truck (layer 11), run frame by frame with the road moving under it: from 60 m behind up the lane
@@ -318,6 +323,29 @@ with sync_playwright() as p:
         pg.wait_for_timeout(300)
         pg.screenshot(path=f"{OUT}/rivals_{layout}_rocket.png")
         js("traffic.forEach(c => { if (c.rocket) spawnCar(c, 1500); }); rockets = []; progress.fortress.parts[0].hp = 100")
+
+        # 6b'. the Grinder (layer 13, for scrap): a crash at the front costs nothing (a car crushed or rammed through head-on,
+        # the back of one run into, an SUV's slam); one into the side still hurts
+        js(CLEAR)
+        got = js("""(() => { const cannon = progress.fortress.parts[0], d0 = progress.damage; cannon.hp = 100; progress.levels.minePicker = progress.levels.grinder = 1;
+            const [c, s] = traffic.filter(c => !c.racer && !c.fleet && !c.police && !c.wreck); Object.assign(c, { x: carX, z: odo + 2 });
+            hurt({ car: c, kmh: 120, headOn: true, plow: true }); hurt({ car: c, kmh: 60, side: false });
+            const front = [+hpOf(cannon).toFixed(2), +(progress.damage - d0).toFixed(2)];
+            Object.assign(c, { x: carX + LANE_W, z: odo }); hurt({ car: c, kmh: 60, side: true }); const side = 100 - hpOf(cannon) + progress.damage - d0 > 0;
+            const h = hpOf(cannon); Object.assign(s, { police: true, suv: true, dir: -1, x: carX, z: odo + 1, v: 40, wreck: false, hp: null }); slam(s);
+            const slammed = [s.wreck, +(h - hpOf(cannon)).toFixed(2), $('flash').textContent]; spawnCar(s, 1500);
+            Object.assign(progress.levels, { minePicker: 0, grinder: 0 }); cannon.hp = 100; return [...front, side, ...slammed]; })()""")
+        check(f"{layout}: with the Grinder: a head-on rammed through and the back of a car run into cost nothing; a side-swipe still "
+              f"hurts; an SUV's slam: SLAMMED, wrecked, nothing off the board", got == [100, 0, True, True, 0, "SLAMMED"], got)
+        # Ram plates (layer 13, for scrap): a police car's ram hurts half as much at level 2, and it is thrown 16 m further back
+        got = js("""(() => { const cannon = progress.fortress.parts[0]; cannon.hp = 100; progress.levels.ramPlates = 2;
+            const b = traffic.find(c => !c.racer && !c.fleet && !c.police && !c.wreck);
+            Object.assign(b, { police: true, suv: false, dir: 1, x: carX, at: carX, z: odo - MY_REAR - CAR_LEN, stage: 'chase', pit: false, rams: 0, hp: 1e4 });
+            copRam(b, false); const r = [+(100 - hpOf(cannon)).toFixed(2), +(odo - MY_REAR - CAR_LEN - b.z).toFixed(1), UPGRADES.ramPlates.info(2)];
+            Object.assign(b, { police: false, dir: -1, z: odo + 1500 }); progress.levels.ramPlates = 0; cannon.hp = 100; return r; })()""")
+        check(f"{layout}: with Ram plates 2: a police car's ram 2% (4% less half) less Armor plating, 0.5 off the cannon; thrown 16.5 m "
+              f"back, not 0.5", got[:2] == [0.5, 16.5] and got[2] == "a ram on the rig's sides and back hurts it 50% less, and the car "
+              f"that rammed you is thrown 16 m back", got)
 
         # 6c. the Foreman's Work rate (layer 13, for fuel): out of sight before the Rebuild; needs the Foreman; 20% quicker
         # a level at every job: crude pumped at a spot, a raider at its car again after a ram

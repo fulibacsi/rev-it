@@ -129,8 +129,11 @@ function copRam(c, pit) { // its front into your back, or its side into your rea
     slide += 3 * Math.sign(carX - c.x); // car.js: steered back
     c.x = carX + Math.sign(c.x - carX) * (CAR_W + 1.75 * (rigW - 1) + 0.3);
     speed *= 0.93;
-    hitCell(RAM.pit * (1 - armorCut()), c.x < carX ? 0 : boardW() - 1, boardH() - 1);
-  } else { c.z = odo - MY_REAR - CAR_LEN - 0.5; speed += 1.5; strike(RAM.rear, c.x, c.z); } // shoved on; on the back row
+    c.z -= knockback(); // fortress.js: thrown back off the Ram plates
+    hitCell(RAM.pit * (1 - armorCut()) * plated(), c.x < carX ? 0 : boardW() - 1, boardH() - 1);
+  } else { // shoved on, the hit on the back row; thrown back off the Ram plates (fortress.js)
+    c.z = odo - MY_REAR - CAR_LEN - 0.5 - knockback(); speed += 1.5; strike(RAM.rear * plated(), c.x, c.z);
+  }
   ram({ car: c, kmh: 40, side: pit }); // gang.js: your bull bar and spikes, as a ram of yours
   if (wrecked()) finishRun('wrecked');
 }
@@ -141,7 +144,7 @@ function slam(c) { // road.js: a kamikaze SUV into the war rig (above), the rig 
   shake = Math.max(shake, 0.8);
   crashSound();
   flash('SLAMMED', '#f55', false);
-  strike(SUV.slam, c.x, c.z); // fortress.js: head-on, on the front row
+  if (!ground()) strike(SUV.slam, c.x, c.z); // fortress.js: head-on, on the front row (the Grinder eats it)
   if (wrecked()) finishRun('wrecked');
 }
 

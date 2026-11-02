@@ -39,7 +39,28 @@ Object.assign(UPGRADES, {
                 info: l => `the cannon reloads in ${reloadTime(l).toFixed(1)} s` },
   heavyShells: { name: 'Heavy shells', tab: 'fortress', max: 3, base: 2000, growth: 2, needs: ['rebuild'],
                  info: l => `a shell does ${shellDamage(l)} damage a cannon block` },
+  // the front's (the owner, 2 Nov: "Mine picker is baseline, negates mines, gives you shells. Grinder on top of it
+  // negates frontal damage"; they were planned as a mine roller from two lanes wide and a Grinder on its own): the mine
+  // picker lifts a mine the fortress runs over off the road, no blast, its charge for the cannon; the Grinder, bolted on
+  // in front of it, eats what the fortress runs into, so a crash at its front costs nothing (mineTick, damage.js hurt,
+  // police.js slam). Prices Claude's first guesses, for act5.py
+  minePicker: { name: 'Mine picker', tab: 'fortress', max: 1, base: 2500, needs: ['rebuild'],
+                info: () => `a mine under the fortress is picked up, not set off: ${MINE.shells} shells for the cannon` },
+  grinder: { name: 'Grinder', tab: 'fortress', max: 1, base: 6000, needs: ['minePicker'],
+             info: () => 'eats what the fortress runs into: no damage from a crash at its front (a car crushed or rammed ' +
+               "through, the back of one, an SUV's slam)" },
+  // the rig's sides and back (the owner, 2 Nov: rams, "damage mitigation and knockback"; the Grinder has its front):
+  // steel plates a ram glances off, its hit a quarter less a level, and the police car that rammed you (or PITted you)
+  // thrown 8 m further back a level before it comes again (police.js copRam; a side-swipe, damage.js hurt). Claude's
+  // numbers, for act5.py
+  ramPlates: { name: 'Ram plates', tab: 'fortress', max: 3, base: 1500, growth: 2, needs: ['rebuild'],
+               info: l => l ? `a ram on the rig's sides and back hurts it ${Math.round(100 * PLATES.cut * l)}% less, and the ` +
+                 `car that rammed you is thrown ${PLATES.knock * l} m back` : 'bare sides and back' },
 });
+const ground = () => lvl('grinder') > 0; // the Grinder on the front: a crash there costs nothing
+const PLATES = { cut: 0.25, knock: 8 }; // Ram plates: a ram's damage less a level; m further back a level
+const plated = () => 1 - PLATES.cut * lvl('ramPlates'); // the share of a ram on the sides and back that gets through
+const knockback = () => PLATES.knock * lvl('ramPlates');
 const rigged = () => lvl('rebuild') > 0;
 // with no shifter and no pedals the rig drives itself (the owner, 30 Oct): the aids that work them, bolted on, their
 // garage cards under a metal plate (distance.js renderGarage), whatever their switches said
@@ -313,7 +334,7 @@ function gangDrive(c, dt) { // road.js updateTraffic: true while it is at you; e
 // there is no dodging them: the mine roller's (layer 13). Claude's numbers, for act5.py: m up the road, m/s slower, m
 // from you when it drops, s between mines, mines, % a mine before Armor plating (a spike strip's 12). Dropping at 50 m
 // from 300 m up the road, most were stopped by your raiders first (they go for the gang first): few mines were laid
-const MINE = { ahead: 200, slower: 15, near: 120, every: 0.4, drop: 3, hit: 15 };
+const MINE = { ahead: 200, slower: 15, near: 120, every: 0.4, drop: 3, hit: 15, shells: 2 }; // shells: one picked up (below)
 let mines = []; // on the road: { x, z, over }
 function sendMiner() {
   const c = gangCar();
@@ -341,6 +362,7 @@ function mineTick() { // distance.js updateRun: a mine reached, run over or miss
   for (const m of mines) {
     if (m.over || odo + MY_FRONT < m.z) continue;
     m.over = true;
+    if (lvl('minePicker')) { pickMine(m); continue; } // the Mine picker (above): lifted, a charge for the cannon
     if (!runOver(MINE.hit, m.x)) continue; // under a column of the board, or between them
     shake = Math.max(shake, 0.6); // main.js
     crashSound();
@@ -348,6 +370,14 @@ function mineTick() { // distance.js updateRun: a mine reached, run over or miss
     if (wrecked()) return finishRun('wrecked');
   }
   mines = mines.filter(m => m.z > odo - 20);
+}
+function pickMine(m) { // under a column of the board: picked up; between them, or beside the rig, missed
+  const cx = columnAt(m.x);
+  if (cx < 0 || cx >= boardW()) return;
+  progress.shells += MINE.shells;
+  run.shells += MINE.shells;
+  beep(1320, 0.06);
+  flash(`MINE PICKED +${MINE.shells} SHELLS`, '#ffd23a', false);
 }
 const mineMarks = () => mines.map(m => ({ z: m.z, kind: 'mine', value: m })); // distance.js roadMarks
 
@@ -583,7 +613,7 @@ function rocketDrive(c, dt) { // road.js updateTraffic: the road ahead held, as 
   flash('ROCKET!', '#f55', false);
   beep(1200, 0.08);
 }
-const rocketCol = r => Math.round((r.x - carX) / LANE_W + (boardW() - 1) / 2); // the board's column over its lane now
+const rocketCol = r => columnAt(r.x); // the board's column over its lane now
 function rocketTick(dt) { // distance.js updateRun: locked on, fired (unless the car was brought down first), landed
   for (const r of rockets) {
     if (!r.air && (r.c.wreck || !r.c.rocket)) { r.gone = true; continue; }
@@ -847,9 +877,10 @@ function strike(pct, x, z) { // damage.js hurt, boss.js, police.js: pct the hit'
 }
 // a spike strip (police.js stripTick) or a mine (mineTick) on the road's lane at x: the front cell of the column over it;
 // a rocket (landRocket) the row it was aimed at; with none, a miss
+const columnAt = x => Math.round((x - carX) / LANE_W + (boardW() - 1) / 2); // the board's column over the road at x
 function runOver(pct, x, row = 0) {
-  const w = boardW(), cx = Math.round((x - carX) / LANE_W + (w - 1) / 2);
-  if (cx < 0 || cx >= w) return false;
+  const cx = columnAt(x);
+  if (cx < 0 || cx >= boardW()) return false;
   hitCell(pct * (1 - armorCut()), cx, row);
   return true;
 }

@@ -1928,6 +1928,28 @@ race, the loot lost to a full inventory, and the parts lost a race.
      race, damage up to 30-61% a race (19-50%).
    - `rivals_test` checks it (out of sight before the Rebuild, and until the Foreman; at level 2 a spot pumps 40% more,
      a raider back at its car in 0.57 s), on both layouts.
+   The front and the sides, the fifth PR (built 2 Nov; `fortress.js`, `damage.js`, `police.js`), scrap's defense, on the
+   owner's answers of 2 Nov ("Mine picker is baseline, negates mines, gives you shells. Grinder on top of it negates
+   frontal damage"; rams: "damage mitigation and knockback"; they replace the planned mine roller from two lanes wide
+   and a Grinder of its own). Claude's readings and numbers, first guesses:
+   - Mine picker (2,500 scrap, after the Rebuild): a mine under a column of the fortress is lifted off the road, not
+     set off: no blast, 2 shells for the cannon (MINE PICKED +2 SHELLS). Between the columns or beside the rig it is
+     missed as before.
+   - Grinder (6,000 scrap, after the Mine picker): it eats what the fortress runs into, so a crash at its front costs
+     nothing: a car crushed or a head-on rammed through, the back of a car run into, an SUV's slam. A side-swipe still
+     hurts. Read as "frontal damage" being the crashes the front takes (the rams through and the slams), not the shells
+     and rockets that land on the front row.
+   - Ram plates (3 levels, 1,500 scrap doubling, after the Rebuild): on the rig's sides and back, a ram's hit 25% less a
+     level (a police car's ram or PIT, a side-swipe), and the police car that rammed you thrown 8 m further back a level
+     before it comes again. A fortress upgrade, not loot: the loot is parts, and the map puts rams with scrap's offense.
+   - `act5.py` (seeds 1-4, 12 races; the bot buys them with the cannon's cards, the cheapest first): Ram plates 1 by race
+     5, the Mine picker by race 7-8 (5-33 mines picked up in the races after, 10-66 shells), Ram plates 2 by race 10-12;
+     the Grinder not by race 12. Damage up to 30-43% a race (30-61% without), P1 or P2 every race, the scrap left by race
+     12 1,200-3,000. With the Grinder (and the picker) priced at nothing from race 1 (seeds 1 and 2): 27-29 crashes at
+     the front eaten and every slam, the damage over the 12 races 79-97% (152-165%), up to 27-30% a race.
+   - `rivals_test` checks them (with the picker, three mines picked up, no blast, 6 shells; with the Grinder, a head-on
+     rammed through and the back of a car run into cost nothing, a side-swipe still hurts, an SUV's slam takes nothing
+     off the board; with Ram plates 2, a police car's ram 2%, thrown 16.5 m back), on both layouts.
 14. The act's automation.
 15. The foreshadowing, the final fight and the ending.
 
