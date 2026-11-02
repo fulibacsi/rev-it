@@ -243,6 +243,12 @@ Each upgrade and what it needs, one line each: the list to edit.
 - Autoloader ← Rebuild (layer 13: 3 levels, 1,500 scrap doubling: the cannon's reload 15% shorter a level, 2 s to 1.1 s)
 - Heavy shells ← Rebuild (layer 13: 3 levels, 2,000 scrap doubling: a shell 25% harder a level, 250 a cannon block to
   438)
+- Mine picker ← Rebuild (layer 13: 2,500 scrap: a mine under the fortress is picked up, not set off, 2 shells for the
+  cannon)
+- Grinder ← Mine picker (layer 13: 6,000 scrap: no damage from a crash at the front: a car crushed or rammed through,
+  the back of one run into, an SUV's slam)
+- Ram plates ← Rebuild (layer 13: 3 levels, 1,500 scrap doubling: a ram on the rig's sides and back 25% less a level,
+  the police car that rammed you thrown 8 m further back a level)
 - Shells, not an upgrade (1 Nov): once rebuilt, a card on the page sells the cannon's shells, a crate of 10 for 100
   points, as often as you like.
 - The dealer, not an upgrade (layer 13): once rebuilt, a card on the page offers three parts of the enemies' before
@@ -274,7 +280,7 @@ the tabs already are.
 
 ```mermaid
 flowchart TD
-  subgraph X["Fortress · the tab, the Rebuild, Lengthen, Inventory, Widen, Autoloader and Heavy shells built, the rest planned"]
+  subgraph X["Fortress · the tab, the Rebuild, Lengthen, Inventory, Widen, Autoloader, Heavy shells, Mine picker, Grinder and Ram plates built, the rest planned"]
     fortressTab(["Fortress tab"])
     rebuild["Rebuild"]
     lengthen["Lengthen"]
@@ -282,14 +288,15 @@ flowchart TD
     inventory["Inventory"]
     autoloader["Autoloader"]
     heavyShells["Heavy shells"]
+    picker["Mine picker"]
     grinder["Grinder"]
-    roller["Mine roller"]
+    plates["Ram plates"]
     autocannon["Auto cannon"]
   end
   warrig(["War Rig tab"]) -- "the tank beaten" --> fortressTab
   fortressTab --> rebuild
-  rebuild --> lengthen & widen & inventory & autoloader & heavyShells & grinder & autocannon
-  widen -- "2+" --> roller
+  rebuild --> lengthen & widen & inventory & autoloader & heavyShells & picker & plates & autocannon
+  picker --> grinder
   autogun["Auto gun"] --> autocannon
 ```
 
@@ -302,8 +309,10 @@ flowchart TD
 - Inventory ← Rebuild (one slot to three; built 30 Oct)
 - Autoloader ← Rebuild (the cannon's reload; layer 13, scrap)
 - Heavy shells ← Rebuild (the cannon's damage; layer 13, scrap)
-- Grinder ← Rebuild (eats what it reaches; at four lanes, the oncoming traffic too)
-- Mine roller ← Widen 2+ (mines do no damage; by three lanes there is little room left to steer round one)
+- Mine picker ← Rebuild (layer 13: a mine under the fortress picked up, no blast, 2 shells; the owner, 2 Nov: "baseline",
+  in place of a mine roller from two lanes wide)
+- Grinder ← Mine picker (layer 13: no damage from a crash at the front; the owner: "on top of it")
+- Ram plates ← Rebuild (layer 13: rams on the sides and back hurt less, the rammer thrown back)
 - Auto cannon ← Rebuild, Auto gun (fires the cannon for you, as Auto gun does the guns)
 
 The loot isn't on the page: the notable enemies drop it on the road. The automation of the loot (picking it up;

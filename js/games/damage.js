@@ -17,7 +17,11 @@ const tuned = () => lvl('ecuRev') + lvl('ecuPower') > 0;
 
 // a collision's hit (distance.js onCollision), less Armor plating's quarter a level (gang.js): on the war rig on the
 // board's cell it meets (fortress.js strike, and plowHit for a fortress's rams)
-function hurt(i) { strike(i.plow ? plowHit(i) : i.headOn ? 50 : clamp(i.kmh * 0.25, 2, 25), i.car.x, i.car.z); }
+function hurt(i) {
+  if (ground() && (i.plow || i.headOn || !i.side)) return; // fortress.js: the Grinder eats what the front runs into
+  const pct = i.plow ? plowHit(i) : i.headOn ? 50 : clamp(i.kmh * 0.25, 2, 25);
+  strike(pct * (i.side ? plated() : 1), i.car.x, i.car.z); // fortress.js: a side-swipe glances off the Ram plates
+}
 function addDamage(pct) {
   const before = progress.damage;
   progress.damage = Math.min(100, before + pct);
