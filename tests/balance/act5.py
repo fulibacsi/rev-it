@@ -86,10 +86,11 @@ const pack = () => {
 const habits = window.afterAids; window.afterAids = () => { habits(); seekLoot(); pack(); };
 // counted for the table: the rigs that come and are totaled, their rams, the gang's totals and its brake checks
 const count = (name, f) => { const was = window[name]; window[name] = function (...a) { return f(was, ...a); }; };
-count('updateRigs', (f, dt) => { const had = traffic.some(c => c.rig && !c.wreck); f(dt); if (!had && traffic.some(c => c.rig && !c.wreck)) rigs++; });
+count('sendRig', f => { const ok = f(); if (ok) rigs++; return ok; }); // the ambushes' (fortress.js), as they come
 count('total', (f, c, ...a) => { if (c.rig) rigsDown++; if (c.suv) suvsDown++; if (c.heli) helisDown++; if (c.racer && !c.fleet) gangDown++;
   if (a[1] === 'CRUSHED') crushed++; if (a[1] === 'RAMMED THROUGH') through++; return f(c, ...a); });
-count('updatePolice', (f, dt) => { const had = traffic.some(c => c.suv && !c.wreck); f(dt); if (!had && traffic.some(c => c.suv && !c.wreck)) suvs++; });
+count('sendCop', (f, suv) => { const ok = f(suv); if (ok && suv) suvs++; if (ok && !suv) cops++; return ok; });
+count('sendTank', f => { const ok = f(); if (ok) tanks++; return ok; }); count('tankDown', (f, c) => { tanksDown++; return f(c); });
 count('rigRam', (f, c) => { rams++; f(c); });
 count('makePart', (f, ...a) => { made++; return f(...a); });
 count('stow', (f, p) => { const ok = f(p); if (ok) picked++; return ok; });
@@ -97,7 +98,7 @@ count('gangDrive', (f, c, dt) => { const was = c.stage; const on = f(c, dt); if 
 // the shield: the hits a part took, those that reached the rig, the parts that fell off
 count('hitCell', (f, ...a) => { f(...a); struck.part ? onParts++ : onRig++; });
 // the police's helicopters: come, shot down, their bursts
-count('updateHeli', (f, dt) => { const had = traffic.some(c => c.heli && !c.wreck); f(dt); if (!had && traffic.some(c => c.heli && !c.wreck)) helis++; });
+count('sendHeli', f => { const ok = f(); if (ok) helis++; return ok; });
 count('aimHeli', (f, c) => { bursts++; return f(c); });
 count('fallOff', (f, i) => { const p = progress.fortress.parts[i]; fell.push(p.kind + ' ' + p.cells.length); f(i); }); 0"""
 with sync_playwright() as p:
@@ -117,14 +118,14 @@ with sync_playwright() as p:
     tanks0 = js("progress.tanks")
     WALLET = "({ bank: progress.bank, points: progress.points, fuel: progress.fuel, scrap: progress.scrap, crude: progress.crude })"
     for race in range(1, RACES + 1):
-        boss = js("bossRace()")
+        amb = js("[+strength().toFixed(1), +budget().toFixed(1)]")  # what the race's ambushes are drawn from
         w0 = js(WALLET)
         r = js(f"""(() => {{ {f"rng = {SEED * 1000 + race};" if SEED is not None else ""} window.nextPress = 0; reloading = 0;
                   Object.assign(window, {{ shells: 0, hits: 0, rigs: 0, rigsDown: 0, rams: 0, gangDown: 0, checks: 0, suvs: 0, suvsDown: 0, made: 0, picked: 0, crushed: 0, through: 0, onParts: 0, onRig: 0, fell: [], helis: 0, helisDown: 0, bursts: 0, mounts: 0, swaps: 0, packAt: 0 }});
                   simRun({{ ...progress.levels }}, 2, 1, {{}}, true);
-                  return {{ p: run.race && run.race.p, dnf: run.race && run.race.dnf, totals: run.totals, scrap: run.scrap, heat: Math.round(progress.wanted * 100),
+                  return {{ p: run.race && run.race.p, dnf: run.race && run.race.dnf, totals: run.totals, scrap: run.scrap, ambushes: ambushes.map(a => a.faction[0] + a.members.length + (a.sent < a.members.length ? `(${a.sent})` : '')).join(' '),
                   dmg: Math.round(progress.damage), shells, hits, got: run.shells, left: progress.shells, rigs, rigsDown, rams, gangDown, checks, suvs, suvsDown,
-                  beat: run.beatTank, tank: run.tank ? Math.round(Math.max(0, run.tank.hp ?? tankHealth())) : null, made, picked, m: run.gain, crushed, through, w: rigW, onParts, onRig, fell, helis, helisDown, bursts, mounts, swaps, secs: runTime(),
+                  tanks, tanksDown, cops, made, picked, m: run.gain, crushed, through, w: rigW, onParts, onRig, fell, helis, helisDown, bursts, mounts, swaps, secs: runTime(),
                   worn: Math.round(100 * progress.fortress.parts.reduce((k, p) => k + hpOf(p), 0) / Math.max(1, progress.fortress.parts.reduce((k, p) => k + fullHp(p), 0))) }}; }})()""")
         w1 = js(WALLET)  # the race's takings: meters (the run's, the crew's racing, less the nitro), points, refined fuel, scrap
         wheel = js("wheel.held = false")

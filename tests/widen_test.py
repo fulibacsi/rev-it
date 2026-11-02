@@ -20,7 +20,7 @@ def check(name, ok, got=""):
 # the road cleared but for what a check puts there: the traffic oncoming far off, the racers far behind, the clocks held
 CLEAR = "traffic.forEach((c, i) => { if (!c.racer && !c.fleet) Object.assign(c, { dir: -1, x: LANES.oncoming[i % 2], z: odo + 1500 + 40 * i, " \
         "rig: false, police: false, suv: false, hp: null, wreck: false, swerve: null }); else if (c.racer) c.z = odo - 3000; }); " \
-        "target = quarry = null; rigClock = gangClock = copClock = 1e9; run.loot = []"
+        "target = quarry = null; gangClock = copClock = 1e9; ambushes = []; run.loot = []"
 CAR = "() => traffic.find(c => !c.racer && !c.fleet && !c.wreck && !c.rig && !c.police && !c.suv && !c.tank)"
 with sync_playwright() as p:
     b = launch(p, args=["--autoplay-policy=no-user-gesture-required"])
@@ -102,7 +102,7 @@ with sync_playwright() as p:
         got = js("""(() => { run.loot = [{ part: { kind: 'armor', from: 'rig', cells: [[0, 0]] }, z: odo + 1, x: MY_LANES[1], v: 0 }];
             lootTick(0.001); return [run.loot.length, progress.fortress.hold.length]; })()""")
         check(f"{layout}: a crate in your other lane: picked up", got == [0, 1], got)
-        got = js("""(() => { Object.assign(traffic.find(c => !c.racer && !c.fleet && !c.wreck), { z: odo + 800 }); rigClock = 0; updateRigs(0.01); rigClock = 1e9;
+        got = js("""(() => { Object.assign(traffic.find(c => !c.racer && !c.fleet && !c.wreck), { z: odo + 800 }); sendRig();
             const c = traffic.find(c => c.rig && !c.wreck); return [sideLane(), c?.stage, c && Math.round(c.z - odo)]; })()""")
         check(f"{layout}: no lane beside you: a rival rig waits up the road, holding", got == [None, "hold", 300], got)
 

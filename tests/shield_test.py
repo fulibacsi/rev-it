@@ -22,7 +22,7 @@ def check(name, ok, got=""):
 # the road cleared but for what a check puts there: the traffic oncoming far off, the racers far behind, the clocks held
 CLEAR = "traffic.forEach((c, i) => { if (!c.racer && !c.fleet) Object.assign(c, { dir: -1, x: LANES.oncoming[i % 2], z: odo + 1500 + 40 * i, " \
         "rig: false, police: false, suv: false, hp: null, wreck: false, swerve: null }); else if (c.racer) c.z = odo - 3000; }); " \
-        "target = quarry = null; rigClock = gangClock = copClock = 1e9; run.loot = []"
+        "target = quarry = null; gangClock = copClock = 1e9; ambushes = []; run.loot = []"
 CAR = "() => traffic.find(c => !c.racer && !c.fleet && !c.wreck && !c.rig && !c.police && !c.suv && !c.tank)"
 HP = "progress.fortress.parts.map(p => p.kind + ' ' + hpOf(p))"
 with sync_playwright() as p:

@@ -1,6 +1,6 @@
 """Act 5's loot (docs/design-notes.md, Act 5, layer 6): on the war rig a totaled notable enemy (and, rarely, a rival gang
 car) drops a part by its drop table: a crate on the road, a gold diamond on the sonar, no wider than the board; steered
-over, it goes into the hold, a full hold leaves it; the tank's goes straight into the hold. Its tutorial pops up at the
+over, it goes into the hold, a full hold leaves it; the tank's too, now that it is an ambush's. Its tutorial pops up at the
 first. The parts by blocks: a cannon adds to every shell, a gun to the guns, armor cuts the damage, spikes add to a ram,
 an engine pulls; every block weighs, and the board's length drags. Lengthen grows the board a row, Inventory the hold a
 slot. Nothing drops before the Rebuild. An engine on the board is heard over yours, a voice for each kind, geared to your
@@ -19,7 +19,7 @@ def check(name, ok, got=""):
 # the road cleared but for what a check puts there: the traffic oncoming, a way off; the racers far behind; the clocks held
 CLEAR = "traffic.forEach((c, i) => { if (!c.racer && !c.fleet) Object.assign(c, { dir: -1, x: LANES.oncoming[i % 2], z: odo + 1500 + 40 * i, " \
         "rig: false, police: false, suv: false, hp: null, wreck: false }); else if (c.racer) c.z = odo - 3000; }); " \
-        "target = quarry = null; rigClock = gangClock = copClock = 1e9; run.loot = []"
+        "target = quarry = null; gangClock = copClock = 1e9; ambushes = []; run.loot = []"
 RIG = """() => { const c = traffic.find(c => !c.racer && !c.fleet && !c.wreck && !c.rig);
     Object.assign(c, { dir: 1, rig: true, stage: 'hold', t: 1e9, z: odo + 60, v: speed, lane: 1 - lane, x: MY_LANES[1 - lane],
                        look: { rear: RIG_SPRITE }, w: RIG.w, h: RIG.h, hp: null, wreck: false }); return c; }"""
@@ -51,13 +51,13 @@ with sync_playwright() as p:
         check(f"{layout}: the heavy engines' sounds not loaded yet", js("!rigSoundsIn() && !document.querySelector('script[src*=\"rig-sounds\"]')"))
 
         # 2. a rig totaled drops a part: a crate on the road, as wide as the board at most; the tutorial pops up
-        got = js(f"""(() => {{ const c = ({RIG})(); hurtCar(c, 5000); const l = run.loot[0];
+        got = js(f"""(() => {{ const c = ({RIG})(); DROPS.rig[0] = 1; hurtCar(c, 5000); DROPS.rig[0] = 0.6; const l = run.loot[0]; // a sure drop
             return [run.loot.length, Object.keys(DROPS.rig[1]).includes(l.part.kind), extent(l.part.cells, 0) <= boardW(), l.part.from]; }})()""")
         check(f"{layout}: a rig totaled: a crate of one of its parts on the road, no wider than the board", got == [1, True, True, "rig"], got)
         pg.wait_for_timeout(300)
         check(f"{layout}: the first loot: its tutorial pops up", js("[menuOpen && screen, tour.id]") == ["tour", "loot"], js("[menuOpen && screen, tour.id]"))
         while js("menuOpen"): js("turnTour(1)"); pg.wait_for_timeout(50)
-        js("rigClock = gangClock = copClock = 1e9; Object.assign(run.loot[0], { z: odo + 40, x: MY_LANES[1 - lane], v: speed })")
+        js("gangClock = copClock = 1e9; ambushes = []; Object.assign(run.loot[0], { z: odo + 40, x: MY_LANES[1 - lane], v: speed })")
         pg.wait_for_timeout(300)
         check(f"{layout}: on the sonar, a gold diamond", js("!!$('sonar-blips').querySelector('.loot')"))
         pg.screenshot(path=f"{OUT}/loot_{layout}_crate.png")
@@ -98,13 +98,17 @@ with sync_playwright() as p:
                  "return [p.height <= s.height + 1, document.querySelectorAll('#fort-hold .part > i').length]; })()")
         check(f"{layout}: a three-block part fits its one slot, drawn as three blocks", got == [True, 3], got)
 
-        # 5. the tank's parts go straight into the hold; nothing drops before the Rebuild
-        js("progress.fortress.hold = []")
-        got = js("""(() => { const c = traffic.find(c => !c.racer && !c.fleet && !c.wreck && !c.rig); dropLoot({ ...c, tank: true });
-            const tank = [progress.fortress.hold.length, Object.keys(DROPS.tank[1]).includes(progress.fortress.hold[0]?.kind), run.loot.length];
+        # 5. the tank's parts drop on the road as the rest do (an ambush's, it ends no race); the chances by tier, none sure;
+        # nothing drops before the Rebuild
+        js("progress.fortress.hold = []; run.loot = []")
+        got = js("""(() => { const c = traffic.find(c => !c.racer && !c.fleet && !c.wreck && !c.rig); DROPS.tank[0] = 1; dropLoot({ ...c, tank: true });
+            DROPS.tank[0] = 0.7; const tank = [progress.fortress.hold.length, Object.keys(DROPS.tank[1]).includes(run.loot[0]?.part.kind) ? 0 : -1, run.loot.length - 1];
             progress.levels.rebuild = 0; run.loot = []; dropLoot({ ...c, rig: true }); const act4 = run.loot.length; progress.levels.rebuild = 1;
             return [...tank, act4]; })()""")
-        check(f"{layout}: the tank's part straight into the hold; before the Rebuild, no drop", got == [1, True, 0, 0], got)
+        check(f"{layout}: the tank's part a crate on the road, as the others'; before the Rebuild, no drop", got == [0, 0, 0, 0], got)
+        got = js("Object.fromEntries(Object.entries(DROPS).map(([k, d]) => [k, d[0]]))")
+        check(f"{layout}: drops by tier, none sure: fodder rarely, the midline sometimes, the notables often",
+              got == {"gang": 0.08, "cop": 0.06, "suv": 0.3, "rig": 0.6, "heli": 0.6, "tank": 0.7}, got)
 
         # 6. engines heard: a voice for each kind, geared to your revs, its file loaded once a heavy one is mounted
         js("progress.fortress.parts.push({ kind: 'engine', from: 'rig', cells: [[0, 0], [0, 1]], x: 0, y: 1 }); applyUpgrades()")
