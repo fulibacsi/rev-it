@@ -93,16 +93,24 @@ with sync_playwright() as p:
             const s0 = run.scrap; hurtCar(c, 5000); return [Math.round(scratch), c.wreck, run.scrap - s0]; })()""")
         check(f"{layout}: a ram takes a fifth of a hit (102 with the bull bar: 20); totaled, 150 scrap", got == [20, True, 150], got)
 
-        # 4. the gang: sent from behind, beyond the sonar, it comes past and cuts into your lane, brakes
+        # 4. the gang, unlimited (layer 11): a car of the traffic's taken over, numbered at random, sent from behind beyond
+        # the sonar; not in the race; it comes past and cuts into your lane, brakes; totaled, its rank's points
         js(CLEAR)
-        got = js("""(() => { const g = rivals().find(c => !c.wreck); g.z = odo - 900; gangClock = 0; updateGangCars(0.01);
-            gangClock = 1e9; return [g.stage, Math.round(g.z - odo), Math.round((g.v - speed) * 3.6)]; })()""")
-        check(f"{layout}: the gang sends the nearest one behind you: from 260 m back, 108 km/h quicker", got == ["chase", -260, 108], got)
-        js("(() => { const g = rivals().find(c => c.stage === 'chase'); g.z = odo - 5; })()")
-        pg.wait_for_function("rivals().some(c => c.stage === 'brake')", timeout=5000)
-        got = js("(() => { const g = rivals().find(c => c.stage === 'brake'); return [g.lane === lane, Math.round(g.z - odo) > 15]; })()")
+        got = js("""(() => { Object.assign(traffic.find(c => !c.racer && !c.fleet && !c.police), { z: odo + 800 }); // to take over
+            const p0 = position(), n0 = rivals().length; gangClock = 0; updateGangCars(0.01); gangClock = 1e9; const g = traffic.find(c => c.gang && !c.wreck);
+            return [g.stage, Math.round(g.z - odo), Math.round((g.v - speed) * 3.6), g.racer >= 1 && g.racer <= 100, position() === p0, rivals().length === n0]; })()""")
+        check(f"{layout}: the gang sends a car of its own, its number at random: from 260 m back, 108 km/h quicker; your place "
+              f"and the race's field as they were", got == ["chase", -260, 108, True, True, True], got)
+        js("(() => { const g = traffic.find(c => c.gang && c.stage === 'chase'); g.z = odo - 5; })()")
+        pg.wait_for_function("traffic.some(c => c.gang && c.stage === 'brake')", timeout=5000)
+        got = js("(() => { const g = traffic.find(c => c.gang && c.stage === 'brake'); return [g.lane === lane, Math.round(g.z - odo) > 15]; })()")
         check(f"{layout}: past you, it cuts into your lane ahead of you and brakes", got == [True, True], got)
         pg.screenshot(path=f"{OUT}/rivals_{layout}_gang.png")
+        got = js("""(() => { const g = traffic.find(c => c.gang && !c.wreck), pts = progress.points, s0 = progress.shells, r0 = run.ranks; g.racer = 37;
+            hurtCar(g, 5000); return [progress.points - pts, run.ranks - r0, progress.shells - s0, $('flash').textContent.endsWith('+64 PTS')]; })()""")
+        check(f"{layout}: totaled, #37 pays its rank: 64 points (101 - 37), and 2 shells", got == [64, 64, 2, True], got)
+        got = js("""(() => { const g = traffic.find(c => c.gang && c.wreck); g.z = odo - 50; updateTraffic(0, 1e6); return [g.gang, g.racer]; })()""")
+        check(f"{layout}: left behind, back into the traffic: no longer the gang's", got == [False, 0], got)
 
         # 5. the gang's ambushes send rigs: two at a time at most
         js(CLEAR)

@@ -91,7 +91,7 @@ function raceField() {
   for (let n = 1; n <= FIELD; n++) if (!isRider(n)) cars.push(racer(n, n < s ? (s - n) * RACER_GAP : -(n - s + 1) * RACER_GAP)); // oil.js: riders ride with you
   return cars;
 }
-const racers = () => traffic.filter(c => c.racer);
+const racers = () => traffic.filter(c => c.racer && !c.gang); // the race's (a gang car's number is a rank: fortress.js)
 const rivals = () => racers().filter(c => !c.fleet); // your fleet races for you (fleet.js)
 const ahead = c => c.z + CAR_LEN / 2 > odo - (MY_REAR - MY_FRONT) / 2; // its middle is past yours
 const position = () => { // racers not on the road (before the reveal: all but #100) are the faster ones, ahead; your
@@ -126,7 +126,8 @@ function raceFinish(dnf) {
   if (!progress.racing) return null;
   const start = run.slot ?? FIELD + 1; // before the reveal you started behind them all
   if (dnf) return { start, p: null, dnf, points: 0 };
-  const p = position(), finish = Math.ceil(Math.max(0, FIELD + 1 - p) / 10), fresh = firstTime(progress.finish, p);
+  // on the war rig the race pays nothing for where you finish: the gang's ranks pay instead (gang.js total)
+  const p = position(), finish = rigged() ? 0 : Math.ceil(Math.max(0, FIELD + 1 - p) / 10), fresh = firstTime(progress.finish, p);
   progress.points += finish + fresh;
   progress.finish = Math.min(progress.finish, p);
   return { start, p, points: finish + fresh, finish, fresh };

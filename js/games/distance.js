@@ -263,7 +263,7 @@ const run = { phase: 'garage', count: 0, left: 0, best: progress.best, gain: nul
 
 function startRun() { // back to the start line, engine running, in neutral, held on the brake
   Object.assign(run, { phase: 'starting', count: COUNTDOWN, left: runTime(), best: progress.best, gain: 0, newBest: false,
-                       slot: progress.racing ? startSlot() : null, race: null, revealed: false, won: false, scrap: 0, totals: 0, shells: 0,
+                       slot: progress.racing ? startSlot() : null, race: null, revealed: false, won: false, scrap: 0, totals: 0, shells: 0, ranks: 0,
                        firstTotal: false, boss: bossRace(), tank: null, beatTank: false, limp: wrecked(),
                        flashes: rigged() ? 0 : lvl('flash'), recharge: 0, loot: [] }); // the war rig has no flash (fortress.js)
   resetScene();
@@ -432,7 +432,7 @@ function runLine() {
   const r = run.race;
   if (run.gain == null) return '';
   return [`<b>+${fmt(run.gain)} m</b>${run.newBest ? ' new best!' : ''}`,
-    r && (r.dnf ? `<b>DNF</b> ${dnf(r)}` : `<b>P${r.p}</b> +${r.points} pts`),
+    r && (r.dnf ? `<b>DNF</b> ${dnf(r)}` : `<b>P${r.p}</b>${r.points || !rigged() ? ` +${r.points} pts` : ''}`), run.ranks && `the gang's ranks +${fmt(run.ranks)} pts`,
     run.team && `team places +${fmt(run.team)} pts`, run.dues && `racing +${fmt(run.dues)} m`,
     run.crude >= 0.05 && `crude +${fmtL(run.crude)} L`, run.fuel >= 0.05 && `fuel +${fmtL(run.fuel)} L`,
     run.refill && `nitro refill −${fmt(run.refill)} m`, run.repaired && `repairs −${fmt(run.repaired)} m`,
@@ -446,8 +446,9 @@ function runRows() {
   const r = run.race, rows = [];
   if (run.phase === 'garage' && run.gain != null) {
     rows.push(['Last run', `+${fmt(run.gain)} m${run.newBest ? ', a new best' : ''}`]);
-    if (r) rows.push(['Race', r.dnf ? `DNF: ${dnf(r)}` : `${r.start > FIELD ? 'from the back' : 'from P' + r.start} to P${r.p}`],
-      ['Points', `+${r.points}` + (r.fresh ? ` (${r.fresh} for new places)` : '')]);
+    if (r) rows.push(['Race', r.dnf ? `DNF: ${dnf(r)}` : `${r.start > FIELD ? 'from the back' : 'from P' + r.start} to P${r.p}`]);
+    // on the war rig the race pays nothing: the gang's ranks do (below)
+    if (r && (r.points || !rigged())) rows.push(['Points', `+${r.points}` + (r.fresh ? ` (${r.fresh} for new places)` : '')]);
     if (run.team) rows.push(['Team places', `+${fmt(run.team)} pts`]);
     if (run.crude >= 0.05 || run.fuel >= 0.05) rows.push(['Oil', `crude +${fmtL(run.crude)} L, fuel +${fmtL(run.fuel)} L`]);
     if (run.dues) rows.push(['Racing', `+${fmt(run.dues)} m`]);
@@ -455,6 +456,7 @@ function runRows() {
     if (run.repaired) rows.push(['Repairs', `−${fmt(run.repaired)} m`]);
     if (run.totals) rows.push(['Totaled', `${run.totals}, +${fmt(run.scrap)} scrap`]);
     if (run.shells) rows.push(['Shells', `+${run.shells}`]);
+    if (run.ranks) rows.push(["The gang's ranks", `+${fmt(run.ranks)} pts`]);
     if (run.beatTank) rows.push(['The tank', `scrapped, +${TANK.scrap} scrap`]);
   }
   if (progress.runs) rows.push(['Best run', `${fmt(progress.best)} m`]);

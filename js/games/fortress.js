@@ -240,10 +240,18 @@ function updateGangCars(dt) { // distance.js updateRun: one now and then, beside
   if (!rigged() || (gangClock -= dt) > 0) return;
   if (sendGangCar()) gangClock = GANG_CAR.every;
 }
-function sendGangCar() { // the nearest one still behind you, up the lane beside you; false with none, or no lane to come past in
-  const side = sideLane(), c = side != null && rivals().filter(c => !c.wreck && !c.stage && c.z < odo - GANG_CAR.from).sort((a, b) => b.z - a.z)[0];
+// the gang is unlimited (the owner, 2 Nov: "a randomly numbered enemy gang car attacks regularly"; the racers you paid
+// off left the race's own gang thin, none by race 4): a car out of sight up the road taken over, the gang's look and a
+// number at random, its rank (gang.js total pays it), and sent from behind up the lane beside you; then it races on and
+// goes back into the traffic (road.js). Not in the race: your place is the race's (race.js racers). False with no car
+// to take over, or no lane to come past in
+function sendGangCar() {
+  const side = sideLane(), c = side != null && traffic.find(c => !c.racer && !c.police && !c.tank && !c.rig && !c.heli && !c.fleet && c !== target && c !== quarry && c.z - odo > 600);
   if (!c) return false;
-  Object.assign(c, { stage: 'chase', z: odo - GANG_CAR.from, lane: side, x: MY_LANES[side], v: speed + GANG_CAR.closing });
+  const k = 1 + Math.floor(rand() * FIELD); // race.js
+  Object.assign(c, { racer: k, gang: true, look: racerSprite(k, true, false, true), dir: 1, hp: null, wreck: false, swerve: null, warned: false,
+                     beams: 0, d: NaN, hit: -Infinity, stage: 'chase', z: odo - GANG_CAR.from, lane: side, x: MY_LANES[side],
+                     v: speed + GANG_CAR.closing, want: speed + 15, again: 0 });
   return true;
 }
 function gangDrive(c, dt) { // road.js updateTraffic: true while it is at you; else it races as any racer does
