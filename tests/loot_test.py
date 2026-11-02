@@ -111,7 +111,7 @@ with sync_playwright() as p:
         check(f"{layout}: the tank's part a crate on the road, as the others'; before the Rebuild, no drop", got == [0, 0, 0, 0], got)
         got = js("Object.fromEntries(Object.entries(DROPS).map(([k, d]) => [k, d[0]]))")
         check(f"{layout}: drops by tier, none sure: fodder rarely, the midline sometimes, the notables often",
-              got == {"gang": 0.12, "cop": 0.1, "suv": 0.45, "rig": 0.8, "heli": 0.8, "tank": 0.85}, got)
+              got == {"gang": 0.12, "cop": 0.1, "suv": 0.45, "harpoon": 0.45, "rig": 0.8, "heli": 0.8, "tank": 0.85}, got)
 
         # 6. engines heard: a voice for each kind, geared to your revs, its file loaded once a heavy one is mounted
         js("progress.fortress.parts.push({ kind: 'engine', from: 'rig', cells: [[0, 0], [0, 1]], x: 0, y: 1 }); applyUpgrades()")
