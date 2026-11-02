@@ -76,7 +76,8 @@ with sync_playwright() as p:
               got == [True, True, "block" if not phone else got[2], "none", True, False] and got[2] != "none", got)
         # 2. bought: the cannon in the hold, the cockpit the rig's, the rig's tutorial up
         pg.click('[data-buy="rebuild"]'); pg.wait_for_timeout(300)
-        got = js("[progress.points, JSON.stringify(progress.fortress), menuOpen && screen, tour.id, document.body.classList.contains('rig'), "
+        got = js("[progress.points, JSON.stringify({ parts: progress.fortress.parts, hold: progress.fortress.hold }), menuOpen && screen, tour.id, " # the dealer's offers too since layer 13
+                 "document.body.classList.contains('rig'), "
                  "getComputedStyle($('shifter')).display, getComputedStyle($('board')).display]")
         check(f"{layout}: bought: 500 points left, the tank's cannon in the hold, the rig's tutorial pops up over the rig's cockpit (the board, "
               "no shifter: it showed the shifter, the owner, 2 Nov)",
