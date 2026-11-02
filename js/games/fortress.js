@@ -32,6 +32,13 @@ Object.assign(UPGRADES, {
   widen: { name: 'Widen', tab: 'fortress', max: 3, base: 50000, growth: 2.5, wallet: 'bank', built: 0, needs: ['rebuild'],
            info: l => l ? `the fortress ${1 + l} lanes wide: a truck's wheel shifts it a lane at a time, it brakes for no ` +
              'one and rams, head-on too; every lane drags' : 'a lane wide' },
+  // the cannon's offense, paid in scrap (the map, 2 Nov: scrap pays for war, the cannon's reload and damage; it lost
+  // Lengthen and Widen to meters). Claude's numbers, for act5.py: 15% off the reload a level, 25% on a shell's damage
+  // a level; prices for the 1,000-2,800 scrap a race that came in with nothing left to buy
+  autoloader: { name: 'Autoloader', tab: 'fortress', max: 3, base: 1500, growth: 2, needs: ['rebuild'],
+                info: l => `the cannon reloads in ${reloadTime(l).toFixed(1)} s` },
+  heavyShells: { name: 'Heavy shells', tab: 'fortress', max: 3, base: 2000, growth: 2, needs: ['rebuild'],
+                 info: l => `a shell does ${shellDamage(l)} damage a cannon block` },
 });
 const rigged = () => lvl('rebuild') > 0;
 // with no shifter and no pedals the rig drives itself (the owner, 30 Oct): the aids that work them, bolted on, their
@@ -175,7 +182,11 @@ function throwOff(i) {
 // the reticle, in reach and in sight, then it reloads; holding the pedal fires no more. Heavy: a car, a racer, a police
 // car in one; the next tank (1,500) in six. Act IV's guns stay on the rig. First guesses, for act5.py. It needs shells
 // (the owner, 30 Oct): the tank's with the Rebuild, then two from every rival gang car totaled; the count is on its pedal
-const CANNON = { damage: 250, reload: 2, reach: 300, heat: 10 }; // reach m, reload s, heat: a gun shot's times ten
+const CANNON = { damage: 250, reload: 2, reach: 300, heat: 10, faster: 0.15, heavier: 0.25 }; // reach m, reload s, heat: a gun
+// shot's times ten; a level of Autoloader off the reload, of Heavy shells on the damage (above)
+const reloadTime = (l = lvl('autoloader')) => CANNON.reload * (1 - CANNON.faster * l);
+const shellDamage = (l = lvl('heavyShells')) => Math.round(CANNON.damage * (1 + CANNON.heavier * l));
+const shellHit = () => shellDamage() * Math.max(1, blocks('cannon')); // every cannon block on the board, one shell
 const SHELLS = { tank: 10, gang: 2, crate: 10, price: 100 }; // the crate: shells, points (Claude's first guess, for act5.py)
 const gangShells = c => rigged() && c.racer && !c.fleet ? SHELLS.gang : 0; // a car totaled (gang.js total): its shells
 // a crate of shells for points (the owner, 31 Oct: points need something to buy; 1 Nov: no shells and nowhere to buy
@@ -200,14 +211,14 @@ function fireCannon() {
   if (!blocks('cannon')) { beep(140, 0.05); flash('JAMMED', '#6af', false); return false; } // every cannon knocked out (War Boys)
   if (progress.shells < 1) { beep(140, 0.05); flash('NO SHELLS', '#fb3', false); return false; }
   progress.shells--;
-  reloading = CANNON.reload;
+  reloading = reloadTime();
   firedAt = performance.now();
   const hit = target?.seen && target.z - odo < CANNON.reach ? target : null; // gang.js
   tracers.push(['cannon', hit, firedAt]); // drawn as a shell (gang.js drawTracers)
   beep(45, 0.3);
   shake = Math.max(shake, 0.35); // main.js: the rig jolts
   raiseHeat(WANTED.shot * CANNON.heat); // police.js
-  if (hit) hurtCar(hit, CANNON.damage * blocks('cannon')); // every cannon block on the board, one shell
+  if (hit) hurtCar(hit, shellHit());
   wearOut('cannon', WEAR.cannon); // each shell wears every cannon (below)
   return true;
 }
@@ -235,7 +246,7 @@ const sideLane = () => rigW === 1 ? (lane <= 1 ? 1 - lane : null) : lane >= 1 ? 
 // the reticle's tag (gang.js renderGang), as the crew's over a spot (oil.js; the owner, 30 Oct: "I really like how the
 // resources have their metadata over them"): what it is, its health, the shells it would take, how far
 function notableTag(t) {
-  const shots = Math.ceil(Math.max(0, t.hp ?? health(t)) / CANNON.damage);
+  const shots = Math.ceil(Math.max(0, t.hp ?? health(t)) / shellHit()); // every cannon block counted (it counted one)
   return [t.tank ? 'TANK' : t.rig ? 'RIG' : t.heli ? 'HELI' : t.harpoon ? 'HARPOON' : t.rocket ? 'ROCKET' : 'SUV', `${Math.round(100 * hpLeft(t))}%`, cannonOn() && `${shots} SHOT${shots === 1 ? '' : 'S'}`,
           `${Math.round(t.z - odo)} m`].filter(Boolean).join(' · ');
 }
@@ -932,7 +943,7 @@ function renderRig() {
   $('cannon-pedal').parentNode.classList.toggle('mounted', cannonOn());
   $('cannon-pedal').parentNode.classList.toggle('jammed', cannonOn() && !blocks('cannon')); // every cannon knocked out
   $('cannon-pedal').parentNode.classList.toggle('empty', progress.shells < 1);
-  $('cannon-pedal').parentNode.style.setProperty('--reload', (1 - reloading / CANNON.reload).toFixed(2));
+  $('cannon-pedal').parentNode.style.setProperty('--reload', (1 - reloading / reloadTime()).toFixed(2));
   text('shell-count', bottomless() ? '∞' : String(progress.shells)); // debug mode: bottomless (distance.js save)
   const first = id => target?.seen && run.phase === 'run' && !progress.toured.includes(id); // the first one in sight
   if (target?.rig && first('rivals')) openTour('rivals', true);

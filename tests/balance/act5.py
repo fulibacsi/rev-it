@@ -3,9 +3,10 @@ crew and wallets at the tank, seed 1), the bot buys the Fortress tab and the Reb
 board and races on: act4.py's bot (Hunter, the guns, the crew as the Foreman sends it, roles by the road's room) with
 the cannon fired whenever it is loaded, has a shell and the reticle's car is in reach. Between races it repairs, turns
 the meters it doesn't need into fuel once it has bought Lengthen, Inventory and Widen as they come (in meters, the
-cheapest first; it saves up for the next of them), buys the War Rig's guns and Racing, tuning and cars, crates of
-shells for points while it has fewer than 20, and, with room in the hold, the dealer's offer worth most to it (its
-packing's worth) that leaves a crate's points (layer 13).
+cheapest first; it saves up for the next of them), buys the War Rig's guns, the cannon's Autoloader and Heavy shells
+(layer 13, the cheapest first) and Racing, tuning and cars, crates of shells for points while it has fewer than 20,
+and, with room in the hold, the dealer's offer worth most to it (its packing's worth) that leaves a crate's points
+(layer 13).
 
 As it drives (packing is the race's, never the garage's) it puts what the hold carries on the board, armor and spikes
 on the end rows first (hits come from ahead and behind) and the rest on the middle rows first, or swaps one in where
@@ -179,7 +180,7 @@ with sync_playwright() as p:
             progress.roles = { harvester: harv, brewer: brew, raider: Math.min(n - brew - harv, 6) }; plan = null; })()""")
         got = js(f"""(() => {{ const b = [], buyAll = (ids, cheapest) => {{ for (;;) {{ const ok = ids.filter(id => !whyNot(id));
             if (!ok.length) return; const id = cheapest ? ok.sort((a, c) => cost(a) - cost(c))[0] : ok[0]; buy(id); b.push(id + lvl(id)); }} }};
-            buyAll({json.dumps(WARRIG)}, true); buyAll({json.dumps(FLEET)}, false);
+            buyAll({json.dumps(WARRIG)}, true); buyAll(["autoloader", "heavyShells"], true); buyAll({json.dumps(FLEET)}, false);
             let crates = 0; while (progress.shells < 20 && buyShells()) crates++; // the cannon's: 20 for a race
             // the dealer (layer 13): with room in the hold, the offer worth most to it (as it packs: a cannon five times
             // armor) that leaves a crate of shells' points
