@@ -104,19 +104,18 @@ function rammerDrive(c, dt) {
   if (c.stage === 'chase' && c.pit) {
     c.v = speed + clamp((behind + 1.5 - c.z) * 1.5, -10, RAM.closing + 12);
     if (Math.abs(behind + 1.5 - c.z) < 1 && Math.abs(c.x - c.at) < 0.3) c.stage = 'swing';
-  } else if (c.stage === 'chase') {
-    c.v = speed + RAM.closing;
-    if (c.z >= behind - 0.3 && Math.abs(c.x - carX) < reach) copRam(c, false);
-  } else if (c.stage === 'swing') {
-    c.v = speed;
-    c.x += clamp(carX - c.x, -4 * dt, 4 * dt);
-    if (Math.abs(c.x - carX) < reach) copRam(c, true);
-  } else if (c.stage === 'back') {
+  } else if (c.stage === 'chase') c.v = speed + RAM.closing;
+  else if (c.stage === 'swing') { c.v = speed; c.x += clamp(carX - c.x, -4 * dt, 4 * dt); }
+  else if (c.stage === 'back') {
     c.v = speed - 6;
     if (c.z - odo < -RAM.back) c.stage = c.rams >= RAM.rams ? 'gone' : 'chase';
   } else { c.v = speed - 15; if (c.z - odo < -60) c.passing = false; } // gone: road.js takes it back into the traffic
   if (c.stage !== 'swing') c.x += clamp(c.at - c.x, -3 * dt, 3 * dt);
   c.z += c.v * dt;
+  // contact, once it has moved: a long frame (or the simulations' steps) carried it past the moment, into you, and
+  // road.js took it for a car you ran into (a fortress crushed it)
+  if (c.stage === 'swing' && Math.abs(c.x - carX) < reach) copRam(c, true);
+  else if (c.stage === 'chase' && !c.pit && c.z >= behind - 0.3 && Math.abs(c.x - carX) < reach) copRam(c, false);
 }
 // the rig's lane nearest x (car.js: lane the rightmost of the rigW it covers)
 const yours = x => ROAD_LANES.slice(lane, lane + rigW).reduce((a, b) => Math.abs(b - x) < Math.abs(a - x) ? b : a);
@@ -126,8 +125,9 @@ function copRam(c, pit) { // its front into your back, or its side into your rea
   shake = Math.max(shake, pit ? 0.45 : 0.35); // main.js
   crashSound();
   flash(pit ? 'PIT!' : 'RAMMED', '#f55', false);
-  if (pit) { // knocked across and slowed, the hit on its side's back cell (fortress.js)
+  if (pit) { // knocked across and slowed, the hit on its side's back cell (fortress.js); it bounces off, clear of you
     slide += 3 * Math.sign(carX - c.x); // car.js: steered back
+    c.x = carX + Math.sign(c.x - carX) * (CAR_W + 1.75 * (rigW - 1) + 0.3);
     speed *= 0.93;
     hitCell(RAM.pit * (1 - armorCut()), c.x < carX ? 0 : boardW() - 1, boardH() - 1);
   } else { c.z = odo - MY_REAR - CAR_LEN - 0.5; speed += 1.5; strike(RAM.rear, c.x, c.z); } // shoved on; on the back row
