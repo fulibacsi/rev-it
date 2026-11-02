@@ -1789,6 +1789,19 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - `rivals_test` checks it (sent from behind up your other lane, holding 30 m ahead, its tag; taking aim, the reticle
      on it and a gun blinking; the gun harpooned off the board; totaled while reeling, the gun in a crate on the road;
      reeled in, gone; the tank's cannon harpooned too, slower to reel in) on both layouts.
+   The War Boys, the fourth PR (built 2 Nov; `fortress.js`), the gang's notable, its war rig, on the owner's design (The
+   factions, above: "they throw some emp-like grenades that temporarily disables some of the parts you have - maybe you
+   even have to touch the part in order to re-enable it"). Claude's numbers, first guesses:
+   - The rig no longer rams your side (the police's verb now): it comes up from behind as before and holds the road
+     45 m ahead in the reticle until totaled, and its War Boys throw a grenade back at you 2 s in, then every 4 s.
+   - The grenade arcs back from the rig onto your hood in 0.8 s (drawn over the road, its fuse blinking blue) and
+     lands on a cell of the board at random: a blue flash there, and every powered part on that cell and the four
+     beside it is knocked out (JAMMED): the cannon, guns and engines; armor and spikes shrug it off, so placing counts.
+   - A part knocked out shows it, blue static and a lightning mark, and does nothing: the cannon fires nothing (the
+     pedal tinted, JAMMED on a press), a gun adds nothing, an engine pulls nothing and falls silent, and none of them
+     wears. A tap on it restarts it; on its own it restarts after 10 s. Knocked out, it can't be thrown off or swapped
+     out (the ghost red over it). A new race starts with everything restarted.
+   - The rival gang's tutorial says so: its rig page (the War Boys' grenades) and a JAMMED page at the board.
 12. The army: jeeps with a gun, the rocket car.
 13. The currencies to the map (above): sizes in meters, the dealer, then the scrap's offensive cards and the fuel's
     crew jobs. Four lanes: the mine roller and the Grinder.

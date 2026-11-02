@@ -3,8 +3,9 @@ army's tank, the rival gang's war rigs), and the raiders' car, the quarry, is pi
 first; it is Hunter's too, and tagged on the windshield when picked. The racers you never paid off are a gang: they
 come from behind, cut into your lane and brake, in the gang's welded-up look; each one totaled gives the cannon two
 shells. The cannon needs shells: the count on its pedal, none left and it fires nothing. A rival rig (the gang's
-ambushes send them, two at a time at most) comes up from behind, holds the road ahead in the reticle, then rams you
-from the side; totaled, its scrap; its tutorial pops up as the first one shows. The police's pursuit SUV (the police's
+ambushes send them, two at a time at most) comes up from behind, holds the road ahead in the reticle, and its War Boys
+throw grenades that knock out the cannon, guns and engines they land among (layer 11): a tap restarts one, or 10 s;
+totaled, its scrap; its tutorial pops up as the first one shows. The police's pursuit SUV (the police's
 ambushes send them; the heat sends none on the rig): armored, it comes head-on, kamikaze, slamming your front and
 wrecking itself, and one that missed comes again; its tutorial as it first shows; in the reticle head-on too. A police
 car on the rig rams you, from behind or a PIT from the side, three times, then it is gone. The gang's harpoon truck
@@ -84,12 +85,22 @@ with sync_playwright() as p:
               got == [False, "NO SHELLS"] and js("$('cannon-pedal').parentNode.classList.contains('empty')"), got)
         js("progress.shells = 10")
 
-        # 3. the rig rams: dropped back beside you, it swings into your side; rams barely scratch it; totaled, its scrap
-        got = js("""(() => { const c = target, d0 = progress.damage, h0 = hpOf(progress.fortress.parts[0]); Object.assign(c, { stage: 'drop', z: odo + 0.5 });
-            for (let i = 0; i < 60 && c.stage !== 'pass'; i++) rigDrive(c, 1 / 60);
-            return [c.stage, +(progress.damage - d0 + h0 - hpOf(progress.fortress.parts[0])).toFixed(2), $('flash').textContent]; })()""")
-        check(f"{layout}: beside you it rams: 6% less a quarter for each Armor plating level (1.5%, on the board's one cell, the cannon), RAMMED, then pulls ahead",
-              got == ["pass", 1.5, "RAMMED"], got)
+        # 3. the rig's War Boys (layer 11): holding the road ahead, a grenade 2 s in and every 4 s, arcing back onto the
+        # board; its blast knocks out the cannon (JAMMED): it fires nothing, can't be thrown off; a tap restarts it, or 10 s
+        got = js("""(() => { const c = target, f = progress.fortress; f.parts = [{ kind: 'cannon', cells: [[0, 0]], x: 0, y: 0 }]; applyUpgrades(); lobs = []; jammed.clear();
+            Object.assign(c, { stage: 'hold', t: RIG.first }); let at = [];
+            for (let i = 0; i < 400; i++) { odo += speed / 60; rigDrive(c, 1 / 60); if (lobs.length > at.length) at.push(+(i / 60).toFixed(1)); if (lobs.length >= 2) break; }
+            lobs = lobs.slice(0, 1); for (let i = 0; i < 60 && lobs.length; i++) lobTick(1 / 60);
+            const p = f.parts[0], out = [at, jammed.has(p), $('flash').textContent, blocks('cannon')]; reloading = 0; out.push(fireCannon(), $('flash').textContent);
+            renderBoard(); out.push(!!$('fort-grid').querySelector('[data-jam]')); return out; })()""")
+        check(f"{layout}: the rig holds the road, its War Boys' first grenade 2 s in, the next 4 s later; landed, the cannon knocked out "
+              f"(JAMMED, blue on the board): no shell fired", got[0][0] in (2.0, 2.1) and 5.9 <= got[0][1] - 0 <= 6.2 and got[1:] == [True, "JAMMED", 0, False, "JAMMED", True], got)
+        pg.screenshot(path=f"{OUT}/rivals_{layout}_jammed.png")
+        got = js("""(() => { const f = progress.fortress, p = f.parts[0]; holdPart({ clientX: 0, clientY: 0 }, true, 0); const r = [throwing, jammed.has(p), blocks('cannon')];
+            blast([0, 0]); for (let i = 0; i < 10 * 60 + 5; i++) lobTick(1 / 60); r.push(jammed.has(p)); f.parts = [{ kind: 'armor', cells: [[0, 0]], x: 0, y: 0 }];
+            blast([0, 0]); r.push(jammed.size); f.parts = [{ kind: 'cannon', cells: [[0, 0]], x: 0, y: 0 }]; applyUpgrades(); return r; })()""")
+        check(f"{layout}: a tap restarts it (not a throw); knocked out again, it restarts on its own after 10 s; armor shrugs it off",
+              got == [None, False, 1, False, 0], got)
         got = js("""(() => { const c = target, hp = c.hp; ram({ car: c, kmh: 100, side: false }); const scratch = hp - c.hp;
             const s0 = run.scrap; hurtCar(c, 5000); return [Math.round(scratch), c.wreck, run.scrap - s0]; })()""")
         check(f"{layout}: a ram takes a fifth of a hit (102 with the bull bar: 20); totaled, 150 scrap", got == [20, True, 150], got)
@@ -98,12 +109,12 @@ with sync_playwright() as p:
         # the sonar; not in the race; it comes past and cuts into your lane, brakes; totaled, its rank's points
         js(CLEAR)
         got = js("""(() => { Object.assign(traffic.find(c => !c.racer && !c.fleet && !c.police), { z: odo + 800 }); // to take over
-            const p0 = position(), n0 = rivals().length; gangClock = 0; updateGangCars(0.01); gangClock = 1e9; const g = traffic.find(c => c.gang && !c.wreck);
+            const p0 = position(), n0 = rivals().length; gangClock = 0; updateGangCars(0.01); gangClock = 1e9; const g = window.g = traffic.find(c => c.gang && !c.wreck);
             return [g.stage, Math.round(g.z - odo), Math.round((g.v - speed) * 3.6), g.racer >= 1 && g.racer <= 100, position() === p0, rivals().length === n0]; })()""")
         check(f"{layout}: the gang sends a car of its own, its number at random: from 260 m back, 108 km/h quicker; your place "
               f"and the race's field as they were", got == ["chase", -260, 108, True, True, True], got)
-        js("(() => { const g = traffic.find(c => c.gang && c.stage === 'chase'); g.z = odo - 5; })()")
-        pg.wait_for_function("traffic.some(c => c.gang && c.stage === 'brake')", timeout=5000)
+        js("Object.assign(g, { stage: 'chase', miner: false, z: odo - 5, hp: 1e9 })")  # its handle (raiders go for the gang first:
+        pg.wait_for_function("traffic.some(c => c.gang && c.stage === 'brake')", timeout=5000)  # tough while it is checked)
         got = js("(() => { const g = traffic.find(c => c.gang && c.stage === 'brake'); return [g.lane === lane, Math.round(g.z - odo) > 15]; })()")
         check(f"{layout}: past you, it cuts into your lane ahead of you and brakes", got == [True, True], got)
         pg.screenshot(path=f"{OUT}/rivals_{layout}_gang.png")

@@ -228,7 +228,8 @@ function renderGang() {
   if ($('fire').textContent !== label) $('fire').textContent = label;
   renderKit();
   drawTracers();
-  drawHarpoons(); // fortress.js: a harpoon truck's cable
+  drawHarpoons(); // fortress.js: a harpoon truck's cable, the War Boys' grenades
+  drawLobs();
   const t = arOn() && run.phase === 'run' ? target : null, s = t?.seen;
   document.body.classList.toggle('ar-on', !!s);
   if (t) $('ar').style.setProperty('--hp', Math.max(0, t.hp ?? health(t)) / health(t)); // right as soon as it shows again
