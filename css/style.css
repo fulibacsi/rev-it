@@ -133,7 +133,10 @@ body:not([data-game="distance"]) #kit { display: none; }
 #crew-ctl button { height: 36px; min-width: 38px; padding: 0 8px; border-radius: 7px; border: 1px solid #2f6b46; background: #0d1f16e6;
                    color: #9fe8b8; font: 700 15px system-ui, sans-serif; touch-action: none; }
 #crew-ctl button:active { background: #1d6b3a; }
-#crew-send { min-width: 70px !important; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+#crew-send { min-width: 70px !important; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1;
+  position: relative; overflow: hidden; }
+#crew-send::after { content: ''; position: absolute; left: 0; bottom: 0; height: 3px; width: calc(var(--ready, 1) * 100%); background: #3f6;
+  opacity: 0.7; } /* the Foreman's dispatch, filling as he gets ready to send again (oil.js Dispatch) */
 #crew-free { font: 600 9px monospace; color: #6c9; margin-top: 2px; }
 #crew-tag { display: none; position: fixed; transform: translate(-50%, calc(-100% - 10px)); pointer-events: none; padding: 2px 7px;
             border: 1px solid #3f6; border-radius: 4px; background: #06241499; color: #9fe8b8; font: 700 12px monospace;

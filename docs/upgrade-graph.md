@@ -73,7 +73,7 @@ flowchart TD
     wells["Deep wells"]
     double["Double up"]
     foreman["Foreman"]
-    workRate["Work rate"]
+    workRate["Dispatch"]
     scavengers["Scavengers"]
     gunners["Gunners"]
   end
@@ -214,8 +214,9 @@ Each upgrade and what it needs, one line each: the list to edit.
 - Overfill ← Harvesting, Brewing
 - Double up ← Overfill
 - Foreman ← Double up (Scouting max and Sonar range max too until 27 Oct)
-- Work rate ← Foreman, the Rebuild (a story condition: act 5's; layer 13: 5 levels, 30 L growing 1.6 times: the
-  Foreman drives the crew 20% quicker a level at every job: crude pumped, fuel brewed, a raider at its car again)
+- Dispatch ← Foreman, the Rebuild (a story condition: act 5's; layer 13: 5 levels, 30 L growing 1.6 times: the
+  Foreman's speed of command: on the war rig he sends a car every 0.75 s, 30% sooner a level, down to 0.13 s; before the
+  Rebuild, four a second as ever. Its id `workRate`, from Claude's first reading, Work rate, kept for the saves)
 - Scavengers ← Foreman, the Rebuild (layer 13: 3 levels, 40 L doubling: a car of the crew a level fetches a crate lying
   in a lane the fortress misses, into the hold, while it has room)
 - Gunners ← Foreman, the Rebuild (layer 13: 3 levels, 50 L doubling: a gunner a level on the deck shoots the nearest of

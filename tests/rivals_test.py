@@ -13,7 +13,7 @@ car on the rig rams you, from behind or a PIT from the side, three times, then i
 cannon too, slower to reel in) and reels it in; totaled first, the part drops in a crate. The army's (layer 12): a
 jeep comes past you and back, peppering the side of the board it is on, the raiders' and a ram's; a rocket car holds
 the road ahead in the reticle, its rocket's mark on the cell it will land on, a lane changed and it misses. The
-Foreman's Work rate (layer 13): the crew's jobs quicker. The Mine picker: mines picked up for shells; the Grinder:
+Foreman's Dispatch (layer 13): his speed of command, a cooldown on his sends. The Mine picker: mines picked up for shells; the Grinder:
 crashes at the front cost nothing; Ram plates: rams on the sides and back hurt less, the police car thrown back. The
 crew's Scavengers fetch the crates you would pass; its Gunners shoot the small fry near you. Over a notable one the reticle's tag: what it is, its health, the shells it would take, how far. Before the rig, act 4's reticle as it was. Phone and desktop."""
 import json, re
@@ -348,19 +348,19 @@ with sync_playwright() as p:
               f"back, not 0.5", got[:2] == [0.5, 16.5] and got[2] == "a ram on the rig's sides and back hurts it 50% less, and the car "
               f"that rammed you is thrown 16 m back", got)
 
-        # 6c. the Foreman's Work rate (layer 13, for fuel): out of sight before the Rebuild; needs the Foreman; 20% quicker
-        # a level at every job: crude pumped at a spot, a raider at its car again after a ram
-        got = js("""(() => { progress.levels.rebuild = 0; const before = shows('workRate'); progress.levels.rebuild = 1;
-            const after = shows('workRate'); progress.levels.foreman = 1; const withForeman = shows('workRate');
-            progress.levels.workRate = 2; progress.off.foreman = true;
-            const s = { kind: 'oil', count: 1, crew: 1, rate: 0.5, reserve: 100, z: odo + 500, coming: [], done: false, got: 0, shown: 0 }, spots = run.spots;
-            run.spots = [s]; progress.crude = 0; crewTick(1); const pumped = +progress.crude.toFixed(3); run.spots = spots;
-            const c = { rammed: 0, turn: 0 }; raidRam(c, { hp: 1e6 }); const knock = +c.rammed.toFixed(3);
-            Object.assign(progress.levels, { foreman: 0, workRate: 0 }); progress.off.foreman = false; progress.crude = 0;
-            return [before, after, withForeman, pumped === +(0.5 * harvest() * 1.4).toFixed(3), knock, UPGRADES.workRate.info(2)]; })()""")
-        check(f"{layout}: Work rate: out of sight before the Rebuild, and after it until the Foreman is bought; at level 2 a spot "
-              f"pumps 40% more, a raider is back at its car in 0.57 s, not 0.8", got[:4] == [False, False, True, True] and got[4] == 0.571
-              and got[5].startswith("the Foreman drives your crew: every job 40% quicker"), got)
+        # 6c. the Foreman's Dispatch (layer 13, for fuel; the owner: his efficiency is his speed of command): out of sight
+        # before the Rebuild, and until the Foreman; on the war rig he sends a car every 0.75 s, 30% sooner a level (before it,
+        # four presses a second as ever); run here at an oil spot with room
+        got = js("""(() => { quarry = null; progress.levels.rebuild = 0; const before = [shows('workRate'), dispatchEvery()]; progress.levels.rebuild = 1;
+            const after = shows('workRate'); progress.levels.foreman = 1; progress.off.foreman = false; const withForeman = shows('workRate');
+            const every = [dispatchEvery(), +dispatchEvery(2).toFixed(2), UPGRADES.workRate.info(2)];
+            const s = { kind: 'oil', count: 5, crew: 0, rate: 0.5, reserve: 100, z: odo + 500, coming: [], done: false, got: 0, shown: -9 }, spots = run.spots;
+            run.spots = [s]; run.foreman = 0; const t0 = run.t; crewTick(0.01); const one = s.coming.length; crewTick(0.01); const still = s.coming.length;
+            run.t = t0 + 0.8; crewTick(0.01); const two = s.coming.length;
+            run.spots = spots; progress.levels.foreman = 0; return [...before, after, withForeman, ...every, one, still, two]; })()""")
+        check(f"{layout}: Dispatch: out of sight before the Rebuild (the Foreman's four presses a second there), and after it until "
+              f"the Foreman; on the rig a car every 0.75 s (0.37 s at level 2); he sends one, waits, and sends again 0.75 s on",
+              got == [False, 0.25, False, True, 0.75, 0.37, "the Foreman sends a car every 0.4 s", 1, 1, 2], got)
 
         # 6d. the crew's other jobs (layer 13, for fuel): a scavenger fetches a crate lying in a lane the fortress misses, while
         # the hold has room, run frame by frame; gunners on the deck shoot the nearest of the gang's cars within 60 m
