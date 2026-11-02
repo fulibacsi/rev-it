@@ -437,7 +437,7 @@ function runLine() {
     run.crude >= 0.05 && `crude +${fmtL(run.crude)} L`, run.fuel >= 0.05 && `fuel +${fmtL(run.fuel)} L`,
     run.refill && `nitro refill −${fmt(run.refill)} m`, run.repaired && `repairs −${fmt(run.repaired)} m`,
     run.totals && `totaled ${run.totals}, +${fmt(run.scrap)} scrap`, run.shells && `+${run.shells} shells`, run.beatTank && `the tank scrapped, +${TANK.scrap} scrap`,
-    arOn() && `police heat ${heatPct()}`, hint() && `<i>stuck? ${hint()}</i>`]
+    arOn() && !rigged() && `police heat ${heatPct()}`, hint() && `<i>stuck? ${hint()}</i>`]
     .filter(Boolean).join(' · ');
 }
 // ... and in full, on the act card: the run (in the garage: mid-run, the pause menu's, there is none), then where you
@@ -458,7 +458,7 @@ function runRows() {
     if (run.beatTank) rows.push(['The tank', `scrapped, +${TANK.scrap} scrap`]);
   }
   if (progress.runs) rows.push(['Best run', `${fmt(progress.best)} m`]);
-  if (arOn()) rows.push(['Police heat', heatPct()]);
+  if (arOn() && !rigged()) rows.push(['Police heat', heatPct()]); // retired on the war rig (fortress.js ambushes)
   return rows;
 }
 let card = null; // the act card up (main.js shows it)

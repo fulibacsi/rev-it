@@ -51,7 +51,7 @@ with sync_playwright() as p:
         check(f"{layout}: the heavy engines' sounds not loaded yet", js("!rigSoundsIn() && !document.querySelector('script[src*=\"rig-sounds\"]')"))
 
         # 2. a rig totaled drops a part: a crate on the road, as wide as the board at most; the tutorial pops up
-        got = js(f"""(() => {{ const c = ({RIG})(); DROPS.rig[0] = 1; hurtCar(c, 5000); DROPS.rig[0] = 0.6; const l = run.loot[0]; // a sure drop
+        got = js(f"""(() => {{ const c = ({RIG})(); DROPS.rig[0] = 1; hurtCar(c, 5000); DROPS.rig[0] = 0.8; const l = run.loot[0]; // a sure drop
             return [run.loot.length, Object.keys(DROPS.rig[1]).includes(l.part.kind), extent(l.part.cells, 0) <= boardW(), l.part.from]; }})()""")
         check(f"{layout}: a rig totaled: a crate of one of its parts on the road, no wider than the board", got == [1, True, True, "rig"], got)
         pg.wait_for_timeout(300)
@@ -102,13 +102,13 @@ with sync_playwright() as p:
         # nothing drops before the Rebuild
         js("progress.fortress.hold = []; run.loot = []")
         got = js("""(() => { const c = traffic.find(c => !c.racer && !c.fleet && !c.wreck && !c.rig); DROPS.tank[0] = 1; dropLoot({ ...c, tank: true });
-            DROPS.tank[0] = 0.7; const tank = [progress.fortress.hold.length, Object.keys(DROPS.tank[1]).includes(run.loot[0]?.part.kind) ? 0 : -1, run.loot.length - 1];
+            DROPS.tank[0] = 0.85; const tank = [progress.fortress.hold.length, Object.keys(DROPS.tank[1]).includes(run.loot[0]?.part.kind) ? 0 : -1, run.loot.length - 1];
             progress.levels.rebuild = 0; run.loot = []; dropLoot({ ...c, rig: true }); const act4 = run.loot.length; progress.levels.rebuild = 1;
             return [...tank, act4]; })()""")
         check(f"{layout}: the tank's part a crate on the road, as the others'; before the Rebuild, no drop", got == [0, 0, 0, 0], got)
         got = js("Object.fromEntries(Object.entries(DROPS).map(([k, d]) => [k, d[0]]))")
         check(f"{layout}: drops by tier, none sure: fodder rarely, the midline sometimes, the notables often",
-              got == {"gang": 0.08, "cop": 0.06, "suv": 0.3, "rig": 0.6, "heli": 0.6, "tank": 0.7}, got)
+              got == {"gang": 0.12, "cop": 0.1, "suv": 0.45, "rig": 0.8, "heli": 0.8, "tank": 0.85}, got)
 
         # 6. engines heard: a voice for each kind, geared to your revs, its file loaded once a heavy one is mounted
         js("progress.fortress.parts.push({ kind: 'engine', from: 'rig', cells: [[0, 0], [0, 1]], x: 0, y: 1 }); applyUpgrades()")

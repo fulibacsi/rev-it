@@ -86,12 +86,15 @@ with sync_playwright() as p:
         check(f"{layout}: two tanks, in your two lanes, the second 40 m further on; as tough as the fortress is strong (1,000 x (1 + strength/20))",
               got[:3] == [2, True, True] and 25 <= got[3] <= 55, got)
         pg.screenshot(path=f"{OUT}/ambush_{layout}_tanks.png")
-        got = js("""(() => { const t = traffic.find(c => c.tank && !c.wreck), s0 = run.scrap; run.loot = []; DROPS.tank[0] = 1; hurtCar(t, 1e6); DROPS.tank[0] = 0.7;
+        got = js("""(() => { const t = traffic.find(c => c.tank && !c.wreck), s0 = run.scrap; run.loot = []; DROPS.tank[0] = 1; hurtCar(t, 1e6); DROPS.tank[0] = 0.85;
             return [run.phase, run.scrap - s0, $('flash').textContent, run.loot.length, traffic.filter(c => c.tank && !c.wreck).length]; })()""")
         check(f"{layout}: one beaten: TANK DOWN, 300 scrap, its crate on the road, the race goes on, the other tank still there",
               got == ["run", 300, "TANK DOWN", 1, 1], got)
         got = js("TUTORIALS.find(t => t.id === 'act5').now()")
         check(f"{layout}: the act's card speaks of ambushes, not the police heat", "mbush" in got and "Police heat" not in got, got)
+        got = js("""(() => { const g = run.gain; run.gain = g ?? 0; const line = runLine(); run.gain = g;
+            return [line.includes('police heat'), runRows().some(r => r[0] === 'Police heat')]; })()""")
+        check(f"{layout}: the garage's run line and the act card's rows show no police heat", got == [False, False], got)
         ctx.close()
     b.close()
 print("ERRORS:", errors or "none", "| FAILS:", fails or "none")

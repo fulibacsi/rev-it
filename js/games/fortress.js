@@ -316,7 +316,8 @@ function rigRam(c) { // its side into yours: a hit on that side, a shove and a j
 // overlap. Their budget comes from the fortress's strength, its size and what is on it as worn as it is: bigger, more
 // of them, the budget growing slower than the fortress so that building pays (the owner: a 3x4 with two cannons sees
 // far more than a 2x3 with one). Claude's numbers, for act5.py
-const AMBUSH = { first: [300, 600], near: [200, 400], far: [600, 1000], cluster: 0.55, lead: 450, draws: 5 }; // m; s
+const AMBUSH = { first: [300, 600], near: [200, 400], far: [600, 1000], cluster: 0.55, lead: 450, draws: 5, // m; s
+                 base: 8, scale: 4, power: 0.85 }; // the budget: base + scale x strength ^ power
 const COST = { cop: 1, suv: 3, heli: 6, gang: 1, rig: 6, tank: 10 }; // of the budget, a member
 const FACTIONS = { // their members by tier (the factions: fodder, midline, notable), a share of the ambushes each
   police: { share: 0.4, tiers: [['heli'], ['suv'], ['cop']] }, gang: { share: 0.4, tiers: [['rig'], [], ['gang']] },
@@ -326,7 +327,7 @@ const SEND = { cop: () => sendCop(false), suv: () => sendCop(true), heli: () => 
                tank: () => sendTank() }; // police.js, here, boss.js: each false if not now (none to take over, no room, too many)
 const WORTH = { cannon: 3, gun: 2, engine: 1, armor: 1, spikes: 1 }; // a block's share of the strength, as worn as it is
 const strength = () => boardW() * boardH() + progress.fortress.parts.reduce((k, p) => k + WORTH[p.kind] * p.cells.length * hpOf(p) / fullHp(p), 0);
-const budget = () => 4 + 2 * strength() ** 0.85;
+const budget = () => AMBUSH.base + AMBUSH.scale * strength() ** AMBUSH.power;
 let ambushes = [], ambushDice = 1; // this race's: { at: m into it, faction, members: [kind], sent }
 const ambushRoll = () => ((ambushDice = (ambushDice * 48271) % 2147483647) - 1) / 2147483646;
 const within = ([lo, hi]) => lo + (hi - lo) * ambushRoll();
@@ -388,10 +389,10 @@ const SHAPES = { 1: [ONE], 2: [[[0, 0], [0, 1]], [[0, 0], [1, 0]]], 3: [[[0, 0],
 // (the factions, 2 Nov): fodder rarely, the midline sometimes, the notables often, none always (the owner: "drop chance
 // shouldn't be 100%", and ten SUVs shouldn't be ten crates)
 const DROPS = {
-  gang: [0.08, { armor: 0.4, spikes: 0.4, engine: 0.2 }], cop: [0.06, { armor: 0.6, spikes: 0.4 }],
-  suv: [0.3, { armor: 0.5, engine: 0.3, gun: 0.2 }],
-  rig: [0.6, { armor: 0.4, spikes: 0.3, engine: 0.3 }], heli: [0.6, { gun: 0.6, engine: 0.4 }], // its gun or its turbine
-  tank: [0.7, { cannon: 0.7, armor: 0.2, engine: 0.1 }],
+  gang: [0.12, { armor: 0.4, spikes: 0.4, engine: 0.2 }], cop: [0.1, { armor: 0.6, spikes: 0.4 }],
+  suv: [0.45, { armor: 0.5, engine: 0.3, gun: 0.2 }],
+  rig: [0.8, { armor: 0.4, spikes: 0.3, engine: 0.3 }], heli: [0.8, { gun: 0.6, engine: 0.4 }], // its gun or its turbine
+  tank: [0.85, { cannon: 0.7, armor: 0.2, engine: 0.1 }],
 };
 const ENGINE_POWER = { gang: 0.06, suv: 0.1, rig: 0.15, tank: 0.25, heli: 0.2 }; // more pull a block, by the engine it came from
 const LOOT = { slow: 8, reach: 3 }; // m/s² a crate skids to a stop at; m either way it is picked up within

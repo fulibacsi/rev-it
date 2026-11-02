@@ -93,7 +93,7 @@ with sync_playwright() as p:
         pg.wait_for_timeout(120); pg.screenshot(path=f"{OUT}/heli_{layout}_strafe.png")
 
         # 7. shot down: it falls onto the road, its scrap, its gun or turbine on the road
-        got = js("""(() => { const c = """ + HELI + """, s0 = progress.scrap; run.loot = []; DROPS.heli[0] = 1; hurtCar(c, 5000); DROPS.heli[0] = 0.6;
+        got = js("""(() => { const c = """ + HELI + """, s0 = progress.scrap; run.loot = []; DROPS.heli[0] = 1; hurtCar(c, 5000); DROPS.heli[0] = 0.8;
             return [c.wreck, progress.scrap - s0, run.loot.length, run.loot[0] && ['gun', 'engine'].includes(run.loot[0].part.kind), run.loot[0]?.part.from]; })()""")
         check(f"{layout}: shot down: 160 scrap, a crate of its gun or its turbine", got == [True, 160, 1, True, "heli"], got)
         pg.wait_for_timeout(1200)
