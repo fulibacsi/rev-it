@@ -16,17 +16,19 @@ Object.assign(UPGRADES, {
              info: () => "the tank's parts make your car a war rig: no shifter, no pedals, it drives itself. The tank's " +
                `cannon for its board, ${SHELLS.tank} shells and a firing pedal` },
   // the board longer, a row a level (the owner: the grid grows longer and wider; wider comes with the rig taking more
-  // lanes), and the hold's slots (the owner: one, upgraded to three). Prices Claude's first guesses, for act5.py: about
-  // 1,000-1,300 scrap and 400 points come in a race. It grows backward and to the right (the owner, 31 Oct: "my basic
-  // instinct is backwards and right"), nothing mounted moving
-  lengthen: { name: 'Lengthen', tab: 'fortress', max: 4, base: 400, growth: 2, needs: ['rebuild'],
+  // lanes), and the hold's slots (the owner: one, upgraded to three). It grows backward and to the right (the owner, 31
+  // Oct: "my basic instinct is backwards and right"), nothing mounted moving. Paid in meters, as the board's size is (the
+  // map, 2 Nov: the decent people, engineers, build it bigger; 60-78k come in a race, and had only the pump to go to).
+  // Prices Claude's, from act5.py (layer 13): two lanes wide by race 4, three by race 8, four by about race 15; half as
+  // dear again, two lanes came at race 7
+  lengthen: { name: 'Lengthen', tab: 'fortress', max: 4, base: 25000, growth: 2, wallet: 'bank', needs: ['rebuild'],
               info: l => `the fortress ${1 + l} car${l ? 's' : ''} long: room for ${1 + l} row${l ? 's' : ''} of parts, and ` +
                 'every row weighs and drags' },
-  inventory: { name: 'Inventory', tab: 'fortress', max: 2, base: 600, growth: 2, wallet: 'points', needs: ['rebuild'],
+  inventory: { name: 'Inventory', tab: 'fortress', max: 2, base: 20000, growth: 2, wallet: 'bank', needs: ['rebuild'],
                info: l => `${1 + l} slot${l ? 's' : ''} in the hold for the parts you pick up` },
   // the board a lane wider a level, to the road's four (the owner: its width is lanes), and the rig with it: from two
   // lanes wide a truck's wheel shifts it a lane at a time, the robot brakes for no one, and it rams (the owner, 30 Oct)
-  widen: { name: 'Widen', tab: 'fortress', max: 3, base: 800, growth: 2.5, needs: ['rebuild'],
+  widen: { name: 'Widen', tab: 'fortress', max: 3, base: 50000, growth: 2.5, wallet: 'bank', needs: ['rebuild'],
            info: l => l ? `the fortress ${1 + l} lanes wide: a truck's wheel shifts it a lane at a time, it brakes for no ` +
              'one and rams, head-on too; every lane drags' : 'a lane wide' },
 });

@@ -1859,7 +1859,23 @@ race, the loot lost to a full inventory, and the parts lost a race.
      cannon; a lane changed, no mark, MISSED IT; brought down while locked on, no rocket; in the reticle, its tag, its
      tutorial), `ambush_test` the army's roster and its tank first, `loot_test` the drop rates, on both layouts.
 13. The currencies to the map (above): sizes in meters, the dealer, then the scrap's offensive cards and the fuel's
-    crew jobs. Four lanes: the mine roller and the Grinder.
+    crew jobs. Four lanes: the mine roller and the Grinder. In PRs:
+   The fortress's size in meters, the first PR (built 2 Nov; `fortress.js`), on the map (above, agreed: the decent
+   people, engineers, build the fortress bigger): Lengthen, Inventory and Widen are paid in meters, which had only the
+   pump to go to. Claude's prices, from `act5.py`: Lengthen 25,000 m doubling (4 levels, 375,000 in all), Inventory
+   20,000 m doubling (2, 60,000), Widen 50,000 m growing 2.5 times (3, 487,500).
+   - `act5.py` (seeds 1 and 2, 12 races; the bot now buys the sizes before the pump, the cheapest first, and saves up
+     for the next: pumping all it had into fuel, it never had a card dearer than a race's meters): every meter of the
+     57-81k a race goes into the fortress's size; the refineries alone bring the fuel (25-41 L a race, the crew
+     full). Two lanes wide by race 4, three by race 8 (on scrap: 5, 7, and four by race 10-11); four lanes, 312,500 m,
+     about race 15, toward the act's end, where the mine roller and the Grinder come in. Tanks beaten 9 and 14, P1
+     every race, damage 0-68% a race, the board changing every 4-12 s from race 8.
+   - The guesses on the map (Lengthen from 50,000, Widen from 100,000) came out too dear: two lanes by race 7, three
+     not by race 12; 35,000 and 70,000, two lanes by race 6, three by race 10.
+   - Scrap loses its sink with them: 18,000-21,000 left by race 12 (7,000-9,500 before). The offensive cards (the map:
+     the cannon's reload and damage, rams, the Grinder, the mine roller) are for it.
+   - `loot_test` checks Lengthen and Inventory bought in meters (no scrap, no points), `widen_test` Widen, on both
+     layouts.
 14. The act's automation.
 15. The foreshadowing, the final fight and the ending.
 

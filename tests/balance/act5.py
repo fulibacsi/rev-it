@@ -2,8 +2,9 @@
 crew and wallets at the tank, seed 1), the bot buys the Fortress tab and the Rebuild, mounts the tank's cannon on the
 board and races on: act4.py's bot (Hunter, the guns, the crew as the Foreman sends it, roles by the road's room) with
 the cannon fired whenever it is loaded, has a shell and the reticle's car is in reach. Between races it repairs, turns
-the meters it doesn't need into fuel, buys the War Rig's guns and Racing, tuning and cars, Lengthen, Inventory and
-Widen as they come, and crates of shells for points while it has fewer than 20.
+the meters it doesn't need into fuel once it has bought Lengthen, Inventory and Widen as they come (in meters, the
+cheapest first; it saves up for the next of them), buys the War Rig's guns and Racing, tuning and cars, and crates of shells for points while it has
+fewer than 20.
 
 As it drives (packing is the race's, never the garage's) it puts what the hold carries on the board, armor and spikes
 on the end rows first (hits come from ahead and behind) and the rest on the middle rows first, or swaps one in where
@@ -162,7 +163,13 @@ with sync_playwright() as p:
         js("while (repair() && progress.damage > 0);")
         fixed = js("[Math.round(progress.damage), progress.bank]")
         w2 = js(WALLET)
-        js(f"convert(Math.max(0, Math.floor((progress.bank - {RESERVE}) / pumpPrice())))")
+        sizes = js(f"""(() => {{ const b = []; for (;;) {{ // the fortress's size first, in meters (layer 13), the reserve kept: then the pump
+            const ok = ["lengthen", "inventory", "widen"].filter(id => !whyNot(id) && cost(id) <= progress.bank - {RESERVE}).sort((a, c) => cost(a) - cost(c));
+            if (!ok.length) return b; buy(ok[0]); b.push(ok[0] + lvl(ok[0])); }} }})()""")
+        w2b = js(WALLET)
+        # the rest into fuel, but for what the next size costs: saved up for it (a size dearer than a race's meters was never bought)
+        js(f"""(() => {{ const next = Math.min(...["lengthen", "inventory", "widen"].filter(id => lvl(id) < maxOf(UPGRADES[id])).map(cost));
+            convert(Math.max(0, Math.floor((progress.bank - {RESERVE} - (isFinite(next) ? next : 0)) / pumpPrice()))); }})()""")
         w3 = js(WALLET)
         js("""(() => { const m = Math.max(30, progress.pace) * runTime(), spots = nextSpots().filter(s => s.z < m), big = biggest(), n = fleetSize();
             const room = spots.reduce((k, s) => k + cap(s), 0) * reach() / m, want = Math.min(n, Math.round(room / 1.3));
@@ -171,7 +178,7 @@ with sync_playwright() as p:
             progress.roles = { harvester: harv, brewer: brew, raider: Math.min(n - brew - harv, 6) }; plan = null; })()""")
         got = js(f"""(() => {{ const b = [], buyAll = (ids, cheapest) => {{ for (;;) {{ const ok = ids.filter(id => !whyNot(id));
             if (!ok.length) return; const id = cheapest ? ok.sort((a, c) => cost(a) - cost(c))[0] : ok[0]; buy(id); b.push(id + lvl(id)); }} }};
-            buyAll({json.dumps(WARRIG)}, true); buyAll(["lengthen", "inventory", "widen"], true); buyAll({json.dumps(FLEET)}, false);
+            buyAll({json.dumps(WARRIG)}, true); buyAll({json.dumps(FLEET)}, false);
             let crates = 0; while (progress.shells < 20 && buyShells()) crates++; // the cannon's: 20 for a race
             return [...b.filter(x => !x.startsWith('fleet') || x.startsWith('fleetP')), ...crates ? [`shells+${{10 * crates}}`] : []]; }})()""")
         board = js("""(() => { const f = progress.fortress, by = {}; // the board after the race (packing is the race's)
@@ -179,7 +186,7 @@ with sync_playwright() as p:
             return [Object.entries(by).map(([k, n]) => `${k} ${n}`).join(' '), f.hold.length, Math.round(rigWeight())]; })()""")
         moves = r["mounts"] + r["swaps"] + len(r["fell"]) + len(r["wornOut"])
         w4 = js(WALLET)
-        ledger = (f"meters +{w1['bank'] - w0['bank']:,} repairs -{w1['bank'] - w2['bank']:,} to fuel -{w2['bank'] - w3['bank']:,} "
+        ledger = (f"meters +{w1['bank'] - w0['bank']:,} repairs -{w1['bank'] - w2['bank']:,} sizes -{w2['bank'] - w2b['bank']:,} to fuel -{w2b['bank'] - w3['bank']:,} "
                   f"cards -{w3['bank'] - w4['bank']:,} left {w4['bank']:,} | points +{w1['points'] - w0['points']:,} cards -{w3['points'] - w4['points']:,} "
                   f"left {w4['points']:,} | fuel +{w1['fuel'] - w0['fuel']:.1f} refined +{w3['fuel'] - w2['fuel']:.0f} bought cards -{w3['fuel'] - w4['fuel']:.1f} "
                   f"left {w4['fuel']:.1f} | scrap +{w1['scrap'] - w0['scrap']:,} cards -{w3['scrap'] - w4['scrap']:,} left {w4['scrap']:,}")
@@ -190,7 +197,7 @@ with sync_playwright() as p:
               f"hold {board[1]}  {board[2]:,} kg  {r['m']:,} m  {r['w']} wide, crushed {r['crushed']} through {r['through']}  "
               f"hits on parts {r['onParts']:2} on the rig {r['onRig']:2}, lost [{', '.join(r['fell'])}] worn out [{', '.join(r['wornOut'])}], health left {r['worn']}%  "
               f"packed: {r['mounts']} on, {r['swaps']} swapped" + (f" (the board changed every {r['secs'] / moves:.0f} s)" if moves else "")
-              + f"  strength {amb[0]} budget {amb[1]}: ambushes [{r['ambushes']}]  bought {' '.join(got)}")
+              + f"  strength {amb[0]} budget {amb[1]}: ambushes [{r['ambushes']}]  bought {' '.join(sizes + got)}")
         print("          " + ledger)
     print(f"tanks beaten in {RACES} races: {js('progress.tanks') - tanks0} | scrap {js('progress.scrap')} | points {js('progress.points')} | crew {js('fleetSize()')}")
     b.close(); print("ERRORS:", errs or "none")

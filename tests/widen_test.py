@@ -30,7 +30,7 @@ with sync_playwright() as p:
                                if phone else dict(viewport={"width": 1440, "height": 900})))
         pg = ctx.new_page(); js = pg.evaluate; pg.on("pageerror", lambda e: errors.append(str(e))); pg.on("dialog", lambda d: d.accept())
         pg.goto(URL); js("localStorage.clear()")
-        js(f"Object.assign(progress, {{ racing: true, finish: 1, gang: true, totals: 60, tanks: 1, oil: 2, runs: 80, races: 60, bank: 9000, "
+        js(f"Object.assign(progress, {{ racing: true, finish: 1, gang: true, totals: 60, tanks: 1, oil: 2, runs: 80, races: 60, bank: 59000, "
            f"points: 5000, scrap: 20000, shells: 10, fortress: {{ parts: [{{ kind: 'cannon', cells: [[0, 0]], x: 0, y: 2 }}], hold: [] }}, "
            f"roles: {{ harvester: 17, brewer: 9, raider: 6 }}, levels: {json.dumps(LEVELS)}, "
            f"toured: TUTORIALS.map(t => t.id).filter(id => id !== 'wide') }}); save()")
@@ -40,9 +40,9 @@ with sync_playwright() as p:
         # 1. bought in the garage: two lanes wide, its tutorial, the plates; the board and the drag
         js("garageTab = 'fortress'; renderGarage()"); pg.wait_for_timeout(100)
         pg.click('[data-buy="widen"]'); pg.wait_for_timeout(300)
-        got = js("[progress.scrap, boardW(), rigW, menuOpen && screen, tour.id, progress.fortress.parts[0].x]")
-        check(f"{layout}: Widen for 800 scrap: two lanes wide, the new column on the right (the cannon stays put), its tutorial pops up",
-              got == [19200, 2, 2, "tour", "wide", 0], got)
+        got = js("[progress.bank, progress.scrap, boardW(), rigW, menuOpen && screen, tour.id, progress.fortress.parts[0].x]")
+        check(f"{layout}: Widen for 50,000 m (layer 13): two lanes wide, the new column on the right (the cannon stays put), its tutorial pops up",
+              got == [9000, 20000, 2, 2, "tour", "wide", 0], got)
         while js("menuOpen"): js("turnTour(1)"); pg.wait_for_timeout(50)
         js("garageTab = 'autopilot'; renderGarage()"); pg.wait_for_timeout(100)
         got = js("Object.fromEntries([...document.querySelectorAll('#cards .card.plated')].map(c => [c.querySelector('b').textContent, c.querySelector('small').textContent]))")

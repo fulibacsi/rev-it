@@ -284,7 +284,8 @@ flowchart TD
 - Fortress tab ← War Rig tab, the tank beaten (a story condition: out of sight until then)
 - Rebuild ← Fortress tab (the tank's parts: the car rebuilt into a war rig, the cockpit with it, the 1×1 grid and the
   tank's cannon to place, with 10 shells)
-- Lengthen ← Rebuild (a row a level; built 30 Oct)
+- Lengthen ← Rebuild (a row a level; built 30 Oct; in meters since layer 13, as Widen and Inventory: the board's size
+  is the engineers', paid in meters)
 - Widen ← Rebuild (a lane a level, to four; built 31 Oct)
 - Inventory ← Rebuild (one slot to three; built 30 Oct)
 - Grinder ← Rebuild (eats what it reaches; at four lanes, the oncoming traffic too)
