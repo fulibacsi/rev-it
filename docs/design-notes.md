@@ -1657,14 +1657,16 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - `act5.py` (seeds 1 and 2, 12 races): with the first guesses (a budget of 4 + 2 × strength^0.85 and the drops a
      third lower) the board changed every 8-50 s, mostly 25 s; twice the budget, every 6-50 s, mostly 7-12 s; with the
      drops as above too, chosen:
-     - 2-5 ambushes a race, the budget 17-21 while the board is a cell or two, 70-91 by race 12 (strength 25-35);
-       tanks in 5 and 8 of the 12 races, one or two at once (three in a race once), all but one beaten.
-     - The board changed every 5-12 s from race 4-5 on (17-50 s while it is a cell or two), 0-8 crates a race (mostly
-       4-6), nearly all picked up; 0-4 parts lost and 0-3 worn out a race. The tank's cannon was gone by race 3-4 on
-       both seeds: on seed 2 the next tank's crate brought one at once, and from race 7 it had three to seven cannon
-       blocks; seed 1 went without from race 4 to race 11.
-     - Damage 0-67% a race, P1-P3. The fortress fills: 9-13 t three lanes wide, so a run makes 1,000-2,600 m there
-       (2,500-3,600 with the first guesses).
+     - 2-5 ambushes a race, the budget 18-21 while the board is a cell or two, 65-76 by race 12 (strength 23-28);
+       tanks in 5 and 6 of the 12 races, one or two at once, every one beaten (6 and 8 in all).
+     - Seed 1: the board changed every 5-12 s from race 4 on (17 s while it was a cell or two), 1-9 crates a race
+       (mostly 4-6), all but one picked up. Seed 2 the same from race 10, but in races 5-9 every 17-50 s or not at all: the
+       hold sat full with parts the bot wouldn't swap in, worse or worth less than what was on, and 1-8 crates a race
+       were left on the road (a player's choice, which the pressure is meant to keep making). 0-2 parts lost and 0-2 worn out a
+       race. The tank's cannon was gone by race 3 on both seeds and a tank's crate brought one the race after: two to
+       four cannon blocks from race 5-6.
+     - Damage 0-83% a race, P1-P3. The fortress fills: 9-16 t three or four lanes wide, so a run makes 970-2,500 m
+       there (2,200-2,800 three wide in layer 6).
      - The 5 s not yet reached: from race 5 a gang ambush sends only its rigs, which wait up the road. No gang car
        comes, for two reasons: the gang has run dry (the crew bought out to 99, as the ledger found), and a fortress
        two lanes wide fills your side, leaving no lane for one to come past in (layer 6). Both are layer 11's: the
