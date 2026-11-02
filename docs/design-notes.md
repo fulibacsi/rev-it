@@ -1776,6 +1776,12 @@ race, the loot lost to a full inventory, and the parts lost a race.
      winch limit (850 kg: no cannon) on Claude's reading of the first simulation, where the truck took the first
      board's only part, the cannon, in the first race on both seeds and the bare rig was wrecked in the next; the
      reticle then went to a truck taking aim, which it didn't in that simulation.
+   - It comes only once the board holds two parts or more: simulated with the cannon stealable, on the first board (the
+     tank's cannon alone) the truck took it in the first race on both seeds, and with the cannon gone nothing brought
+     the truck down in time to get it back: no cannon for three or four races, a bare board for three. With the gate
+     (`act5.py`, seeds 1 and 2, 12 races): the cannon kept through the first races; trucks from race 4-6, 0-3 a race,
+     every one shot down; 6 parts taken in the 24 races and 5 got back from their crates; no race wrecked, P1 every
+     race; damage 0-72% a race.
    - Drawn as the rig and the SUV are: a pickup in the gang's rust and red stripe from behind, the cab's window barred,
      a harpoon gun on a post in its bed aimed back at you, its barb, the cable coiled beside it, the bumper spiked. Its
      drop table: 45%, armor, spikes or a gun, besides the part it took. Its tutorial, Harpoon trucks (the truck; its
