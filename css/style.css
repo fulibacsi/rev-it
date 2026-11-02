@@ -470,6 +470,13 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
 #fort-hit.part { display: block; background: #ffd23a55; outline: 2px solid #ffd23a; } /* a part took the hit */
 #fort-hit.rig { display: block; background: #ff333388; outline: 2px solid #f55; }     /* through to the rig */
 #fort-hit.emp { display: block; background: #4a8cff88; outline: 2px solid #8cf; box-shadow: 0 0 calc(var(--cell) * 0.6) #6af; } /* a grenade */
+/* a rocket's mark (fortress.js markRockets): crosshairs on the cell it will land on, blinking while it is locked on */
+.fort-aim { position: absolute; display: none; width: var(--cell); height: var(--cell); pointer-events: none;
+  background: linear-gradient(#f33, #f33) center / 3px 80% no-repeat, linear-gradient(#f33, #f33) center / 80% 3px no-repeat,
+              radial-gradient(circle, transparent 0 30%, #f33 31% 38%, transparent 39%); }
+.fort-aim.lock { display: block; animation: aim 0.3s steps(1) infinite; }
+.fort-aim.air { display: block; background-color: #ff333366; outline: 2px solid #f55; }
+@keyframes aim { 50% { opacity: 0; } }
 #fort-ghost { position: absolute; display: none; border-radius: 3px; pointer-events: none; }
 #fort-ghost.fit { display: block; background: #33ff6633; outline: 2px solid #5f5; }
 #fort-ghost.no { display: block; background: #ff333333; outline: 2px solid #f55; }

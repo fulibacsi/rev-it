@@ -27,7 +27,7 @@ const laneX = (l = lane) => (ROAD_LANES[l] + ROAD_LANES[l + rigW - 1]) / 2;
 // a fortress's rams (rigW 2 or more): a car of the traffic's weight against the rig's, momentum shared
 const CAR_KG = 1300;
 const plowed = v => (engine.mass * speed + CAR_KG * v) / (engine.mass + CAR_KG);
-const heavy = c => c.tank || c.rig || c.suv; // Distance's notable enemies: as heavy as the rig, never crushed
+const heavy = c => c.tank || c.rig || c.suv || c.rocket; // Distance's notable enemies: as heavy as the rig, never crushed
 let bullBar = 0, spikes = false; // Distance's War Rig: a bump costs you less speed; a side-swipe costs you none
 
 // the car as it left the factory (only the Distance garage tunes it)

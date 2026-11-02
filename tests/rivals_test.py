@@ -10,7 +10,9 @@ ambushes send them; the heat sends none on the rig): armored, it comes head-on, 
 wrecking itself, and one that missed comes again; its tutorial as it first shows; in the reticle head-on too. A police
 car on the rig rams you, from behind or a PIT from the side, three times, then it is gone. The gang's harpoon truck
 (layer 11) holds the road beside you, the reticle on it once it takes aim, harpoons a part off the board (the tank's
-cannon too, slower to reel in) and reels it in; totaled first, the part drops in a crate. Over a notable one the reticle's tag: what it is, its health, the shells it would take, how far. Before the rig, act 4's reticle as it was. Phone and desktop."""
+cannon too, slower to reel in) and reels it in; totaled first, the part drops in a crate. The army's (layer 12): a
+jeep comes past you and back, peppering the side of the board it is on, the raiders' and a ram's; a rocket car holds
+the road ahead in the reticle, its rocket's mark on the cell it will land on, a lane changed and it misses. Over a notable one the reticle's tag: what it is, its health, the shells it would take, how far. Before the rig, act 4's reticle as it was. Phone and desktop."""
 import json, re
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -244,6 +246,77 @@ with sync_playwright() as p:
             const scratch = hp - c.hp, s0 = run.scrap; hurtCar(c, 5000); return [Math.round(scratch), c.wreck, run.scrap - s0]; })()""")
         check(f"{layout}: a ram takes a fifth of a hit (20); totaled, 110 scrap", got == [20, True, 110], got)
         js("progress.wanted = 0")
+
+        # 6b. the army (layer 12): a jeep comes from behind up the lane beside you, past you, back and past again, its
+        # machine gun peppering the side of the board it is on, the front row once it is ahead; not in the reticle, the
+        # raiders'; a ram totals it. Run frame by frame, the road moving under it: a lane wide, then two lanes wide with
+        # the cannon on the left, a jeep up the right shoulder
+        js(CLEAR)
+        got = js("""(() => { lane = fromLane = 0; carX = MY_LANES[0];
+            Object.assign(traffic.find(c => !c.racer && !c.fleet && !c.police), { z: odo + 800 });
+            const sent = sendJeep(), j = window.J = traffic.find(c => c.jeep);
+            return [sent, notable(j), health(j), Math.round(j.z - odo), j.x === MY_LANES[1]]; })()""")
+        check(f"{layout}: a jeep: sent from 40 m behind up your other lane, not in the reticle, a car's health", got == [True, False, 100, -40, True], got)
+        got = js("""(() => { progress.levels.widen = progress.levels.lengthen = 1; applyUpgrades(); lane = fromLane = 0; carX = laneX(); slide = 0;
+            progress.toured = progress.toured.filter(id => id !== 'jeeps'); const cannon = progress.fortress.parts[0]; cannon.hp = 100;
+            Object.assign(J, { x: besideX(), z: odo - 40, stage: 'pass', passes: 0, shot: 0, fired: false, hp: null });
+            const shoulder = J.x === SHOULDER_X, hits = [], stages = [], was = window.hitCell, d0 = progress.damage;
+            window.hitCell = (d, x, y) => { hits.push([J.z - odo, x, y]); was(d, x, y); };
+            for (let i = 0; i < 60 * 60 && J.stage !== 'leave'; i++) { const s = J.stage; odo += speed / 60; jeepDrive(J, 1 / 60); if (J.stage !== s) stages.push(J.stage); }
+            window.hitCell = was; const ahead = hits.filter(([g]) => g > MY_FRONT + 2);
+            const out = [shoulder, stages.join(), hits.length, hits.every(([, x]) => x === 1), ahead.length > 10 && ahead.every(([, , y]) => y === 0),
+                         hpOf(cannon), +(progress.damage - d0).toFixed(1) === +(0.1 * hits.length).toFixed(1), $('flash').textContent, tour.id, menuOpen];
+            progress.levels.widen = progress.levels.lengthen = 0; applyUpgrades(); carX = laneX(); return out; })()""")
+        check(f"{layout}: two lanes wide, a jeep up the right shoulder: past you, back and past again, then off; firing all the while it "
+              f"is near (30-45 shots), all on the right column (the front row once it is ahead), each 0.4% less Armor plating through to "
+              f"the rig, the cannon on the left untouched; UNDER FIRE, its tutorial at its first shot",
+              got[:2] == [True, "back,pass,leave"] and 30 <= got[2] <= 45 and got[3:] == [True, True, 100, True, "UNDER FIRE", "jeeps", True], got)
+        pg.screenshot(path=f"{OUT}/rivals_{layout}_jeep_tour.png")
+        while js("menuOpen"): js("turnTour(1)"); pg.wait_for_timeout(50)
+        got = js("""(() => { const j = J; Object.assign(j, { stage: 'pass', passes: 0, z: odo + 40, x: MY_LANES[1], hp: null }); target = quarry = null; updateGang(0);
+            const r = [target === j, quarry === j], s0 = run.scrap; ram({ car: j, kmh: 40, side: true });
+            return [...r, j.wreck, run.scrap - s0, $('flash').textContent.startsWith('TOTALED +22 SCRAP')]; })()""")
+        check(f"{layout}: ahead, the raiders' quarry, not the reticle's; a ram totals it, 22 scrap", got == [False, True, True, 22, True], got)
+        js("spawnCar(J, 1500); progress.levels.lengthen = 0; applyUpgrades(); progress.fortress.parts[0].hp = 100")
+
+        # the rocket car (layer 12): two at most, holding the road ahead (the first in your other lane, the second further
+        # on in yours), in the reticle; a rocket every few seconds, its mark blinking on the board's cell over the lane it
+        # will land on, lit in the air; staying put, it hits that cell; a lane changed, the mark slides off the board, a
+        # miss; brought down while locked on, no rocket
+        js(CLEAR)
+        got = js("""(() => { lane = fromLane = 0; carX = MY_LANES[0]; rockets = [];
+            traffic.filter(c => !c.racer && !c.fleet && !c.police).slice(0, 3).forEach((c, i) => c.z = odo + 800 + 40 * i);
+            const sent = [sendRocket(), $('flash').textContent, sendRocket(), sendRocket()], r = traffic.filter(c => c.rocket).sort((a, b) => a.z - b.z);
+            const out = [...sent, r.length, notable(r[0]), health(r[0]), Math.round(r[0].z - odo), r[0].lane, Math.round(r[1].z - odo), r[1].lane, r[1].second];
+            window.R = r[0]; spawnCar(r[1], 1500); return out; })()""")
+        check(f"{layout}: rocket cars: ROCKET CAR!, two at most; notable, 600 health; from 250 m up the road in your other lane, the second "
+              f"290 m in yours", got == [True, "ROCKET CAR!", True, False, 2, True, 600, 250, 1, 290, 0, True], got)
+        got = js("""(() => { const c = R, cannon = progress.fortress.parts[0], marks = () => { markRockets(); return [...document.querySelectorAll('.fort-aim')]
+              .filter(e => e.className !== 'fort-aim').map(e => [e.className, e.style.left, e.style.top]); };
+            Object.assign(c, { z: odo + 70, t: 0, hp: null }); rocketDrive(c, 0.01); const out = [rockets.length, rockets[0]?.air, $('flash').textContent];
+            rockets[0].y = 0; out.push(JSON.stringify(marks())); rocketTick(ROCKET.lock); out.push(JSON.stringify(marks()));
+            rocketTick(ROCKET.flight); out.push($('flash').textContent, +hpOf(cannon).toFixed(2), rockets.length);
+            c.t = 0; rocketDrive(c, 0.01); rockets[0].y = 0; lane = 1; carX = MY_LANES[1]; out.push(JSON.stringify(marks()));
+            rocketTick(ROCKET.lock); rocketTick(ROCKET.flight); out.push($('flash').textContent, +hpOf(cannon).toFixed(2));
+            lane = 0; carX = MY_LANES[0]; c.t = 0; rocketDrive(c, 0.01); const s0 = run.scrap; hurtCar(c, 1e4); rocketTick(ROCKET.lock);
+            out.push(rockets.length, run.scrap - s0, +hpOf(cannon).toFixed(2)); return out; })()""")
+        check(f"{layout}: locked on: ROCKET!, its mark blinking on the cell over its lane (the cannon's), lit in the air; landed, ROCKET HIT, "
+              f"15% less Armor plating off the cannon (3.75); a lane changed, no mark, MISSED IT; brought down while locked on (110 scrap), no rocket",
+              got == [1, False, "ROCKET!", '[["fort-aim lock","0%","0%"]]', '[["fort-aim air","0%","0%"]]', "ROCKET HIT", 96.25, 0, "[]",
+                      "MISSED IT", 96.25, 0, 110, 96.25], got)
+        got = js("""(() => { progress.toured = progress.toured.filter(id => id !== 'rockets'); progress.fortress.parts[0].hp = 100; rockets = [];
+            const c = traffic.find(c => !c.racer && !c.fleet && !c.police && !c.wreck); Object.assign(c, { z: odo + 800 }); sendRocket();
+            const r = traffic.find(c => c.rocket && !c.wreck); Object.assign(r, { z: odo + 120, t: 1e9 }); target = null; updateGang(0);
+            return [target === r, notableTag(r).replace(/ · [0-9]+ m$/, '')]; })()""")
+        check(f"{layout}: in the reticle, its tag: ROCKET, its health, 3 shots", got[0] and re.fullmatch(r"ROCKET · (100|99)% · 3 SHOTS", got[1]), got)
+        pg.wait_for_timeout(400)
+        got = js("[menuOpen && screen, tour.id]")
+        check(f"{layout}: the first rocket car in sight: its tutorial pops up", got == ["tour", "rockets"], got)
+        pg.screenshot(path=f"{OUT}/rivals_{layout}_rocket_tour.png")
+        while js("menuOpen"): js("turnTour(1)"); pg.wait_for_timeout(50)
+        pg.wait_for_timeout(300)
+        pg.screenshot(path=f"{OUT}/rivals_{layout}_rocket.png")
+        js("traffic.forEach(c => { if (c.rocket) spawnCar(c, 1500); }); rockets = []; progress.fortress.parts[0].hp = 100")
 
         # 7. before the Rebuild, act 4's reticle as it was: the nearest car, the raiders' too
         js(CLEAR)

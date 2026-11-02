@@ -1815,7 +1815,49 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - `rivals_test` checks it (the first grenade 2 s in, the next 4 s later; landed, the cannon knocked out: JAMMED,
      blue on the board, no shell fired; a tap restarts it and doesn't throw it off; knocked out again, restarted on its
      own after 10 s; armor shrugs it off), `shield_test` a hit from beside you without the rig's ram, on both layouts.
-12. The army: jeeps with a gun, the rocket car.
+12. The army: jeeps with a gun, the rocket car (built 2 Nov; `fortress.js`, `road.js`), on the owner's design (The
+    factions, above: "military shoots"). Claude's numbers, first guesses:
+   - The jeep, its fodder (cost 1): the police car's body in olive drab with a white star, as the owner allowed, and a
+     machine gun on its roof. It takes over a car out of sight up the road and comes from 40 m behind up the lane
+     beside you (or up the right shoulder, as the gang's cars), 6 m/s quicker than you, past you to 20 m ahead, drops
+     back past you to 10 m behind, and past you once more; then it races off up the road. All the while it is near it
+     fires, a shot every 0.4 s, 0.4% each before Armor plating (a police car's ram is 4%): each lands where it comes
+     from, as every hit does (the shield, layer 7), so on the column on its side of the board, on the front row once
+     it is ahead: UNDER FIRE at its first shot, its tracer drawn while it is in sight, the board's cell flashing at
+     each. Not in the reticle: the raiders' (it is their quarry once ahead of you) and your rams' (a car's health, 100:
+     a ram with the full bull bar totals it, a wide fortress crushes it). 22 scrap; its drop 10%, its machine gun (60%)
+     or armor.
+   - The rocket car, its midline (cost 3): the police SUV's body in olive, a white star, a pod of eight rocket tubes on
+     its roof. Two at most: it takes over a car up the road and holds the road 70 m ahead (ROCKET CAR!), the first in
+     your other lane, the second 100 m ahead in yours. In the reticle (ROCKET · 100% · 3 SHOTS), an SUV's health (600),
+     scrap (110) and armor (rams barely scratch it, a wide fortress doesn't crush it). Within 90 m, 2 s after it came
+     (the second 4 s), then every 5 s, it locks on (ROCKET!): a lane the fortress covers and a row of the board, at random; the cell over that lane
+     blinks red crosshairs on the board for 1.5 s, then the rocket goes up (the mark lit), arcs over in 1 s trailing
+     smoke and comes down on the cell over that lane: 15% before Armor plating (a mine's), ROCKET HIT. A lane changed
+     in time and the mark slides off the board with you: it lands beside the rig, MISSED IT (the owner: "dodged by
+     changing lanes"). A lane wide, half a lane change does it (about 0.7 s); the wider the fortress, the slower it
+     changes lanes, and four lanes wide there is nowhere to go. Brought down while locked on, it fires nothing. Its
+     drop 45%: armor, a gun or its V8 (pulls as an SUV's).
+   - The ambushes: the army's tiers are the tank, the rocket car and the jeep. It still comes only once a tank is
+     affordable and brings its tank first (Claude's: the tanks bring the cannons, the owner's answer to a lost one),
+     then rocket cars and jeeps with the rest of its share. Its share of the ambushes goes from 20% to 30% (the police
+     and the gang 35% each, from 40%): spending its whole share now, at 20% its ambushes came half as often, and half
+     the tanks with them (`act5.py`: 4 tanks beaten in 12 races on each seed, against 9 and 11 before; seed 2 went
+     nine races without a cannon).
+   - Tutorials: Rocket cars (the car; its mark) as the first one shows in the reticle; Jeeps (their fire on the board)
+     at a jeep's first shot.
+   - `act5.py` (seeds 1 and 2, 12 races; the bot never dodges a rocket): army ambushes 14 and 10 in the 12 races (8
+     and 9 before), the police's and the gang's 12-14 each (15-21 before); tanks 18 and 11, all beaten (9 and 11
+     before). 0-10 jeeps a race (64 in all, 61 totaled), up to 166 shots a race; 0-5 rocket cars a race (20, 19
+     brought down), most before their first rocket: 11 rockets in the 24 races, all hit. No race wrecked, P1 every
+     race; damage 0-57% a race (0-75% before); the board changed every 4-17 s from race 5 (17-25 s while it is a cell
+     or two).
+   - `rivals_test` checks it (a jeep from 40 m behind up your other lane, not in the reticle; two lanes wide, up the
+     right shoulder, past, back and past again, firing all the while, every shot on the right column and the front row
+     once ahead, the cannon on the left untouched, UNDER FIRE, its tutorial; the raiders' quarry, a ram totals it; two
+     rocket cars at most, where they hold; locked on, its mark blinking on the cell, lit in the air, ROCKET HIT on the
+     cannon; a lane changed, no mark, MISSED IT; brought down while locked on, no rocket; in the reticle, its tag, its
+     tutorial), `ambush_test` the army's roster and its tank first, `loot_test` the drop rates, on both layouts.
 13. The currencies to the map (above): sizes in meters, the dealer, then the scrap's offensive cards and the fuel's
     crew jobs. Four lanes: the mine roller and the Grinder.
 14. The act's automation.
