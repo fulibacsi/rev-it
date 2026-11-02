@@ -20,15 +20,16 @@ Object.assign(UPGRADES, {
   // Oct: "my basic instinct is backwards and right"), nothing mounted moving. Paid in meters, as the board's size is (the
   // map, 2 Nov: the decent people, engineers, build it bigger; 60-78k come in a race, and had only the pump to go to).
   // Prices Claude's, from act5.py (layer 13): two lanes wide by race 4, three by race 8, four by about race 15; half as
-  // dear again, two lanes came at race 7
-  lengthen: { name: 'Lengthen', tab: 'fortress', max: 4, base: 25000, growth: 2, wallet: 'bank', needs: ['rebuild'],
+  // dear again, two lanes came at race 7. built: 0, none of it the car's build (race.js headStart, act1.py: the cards
+  // paid in meters were the car's)
+  lengthen: { name: 'Lengthen', tab: 'fortress', max: 4, base: 25000, growth: 2, wallet: 'bank', built: 0, needs: ['rebuild'],
               info: l => `the fortress ${1 + l} car${l ? 's' : ''} long: room for ${1 + l} row${l ? 's' : ''} of parts, and ` +
                 'every row weighs and drags' },
-  inventory: { name: 'Inventory', tab: 'fortress', max: 2, base: 20000, growth: 2, wallet: 'bank', needs: ['rebuild'],
+  inventory: { name: 'Inventory', tab: 'fortress', max: 2, base: 20000, growth: 2, wallet: 'bank', built: 0, needs: ['rebuild'],
                info: l => `${1 + l} slot${l ? 's' : ''} in the hold for the parts you pick up` },
   // the board a lane wider a level, to the road's four (the owner: its width is lanes), and the rig with it: from two
   // lanes wide a truck's wheel shifts it a lane at a time, the robot brakes for no one, and it rams (the owner, 30 Oct)
-  widen: { name: 'Widen', tab: 'fortress', max: 3, base: 50000, growth: 2.5, wallet: 'bank', needs: ['rebuild'],
+  widen: { name: 'Widen', tab: 'fortress', max: 3, base: 50000, growth: 2.5, wallet: 'bank', built: 0, needs: ['rebuild'],
            info: l => l ? `the fortress ${1 + l} lanes wide: a truck's wheel shifts it a lane at a time, it brakes for no ` +
              'one and rams, head-on too; every lane drags' : 'a lane wide' },
 });
