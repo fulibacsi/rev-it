@@ -1695,6 +1695,20 @@ race, the loot lost to a full inventory, and the parts lost a race.
      police stinger in hazard stripes with steel spikes (a dark one didn't read on a phone). Run over, the front cell
      of that column takes 12% and the rig is slowed to 60% of its speed, held there for 3 s (SPIKED); off the lane,
      MISSED IT. 4 s later it lights another lane.
+   - A police car's ram is checked once it has moved: in the first simulation one could slip past the moment of
+     contact into the rig, where the road took it for a car the fortress ran into, and crushed it (0-2 rams a race).
+   - `act5.py` (seeds 1 and 2, 12 races; the bot never dodges a strip or an SUV):
+     - Police cars: 3-14 a race from race 2, each ramming twice before the bull bar totals it (Bull bar 3: two rams
+       total one), 4-26 rams a race. PITs only while the rig is a lane wide with a lane beside it (3 in the 24 races):
+       most rams are into your back row.
+     - SUVs: 0-9 a race, more as the budget grows; about half shot on the way in, the rest slam (0-5 a race).
+     - Helicopters: 0-6 a race, most shot down before or soon after their first strip; 0-5 strips a race, nearly all
+       run over.
+     - Damage 0-66% a race (0-83% in layer 9), 2-25 hits on parts and 0-20 through to the rig (the rams on empty back
+       cells); P1-P2. The board changed every 5-12 s from race 7 (6-50 s before, while it was small).
+   - `rivals_test` checks the police cars' rams and the SUVs, `heli_test` the strips, on both layouts. `fortress_test`
+     now holds the race's ambushes off (a police car ramming the cannon wore it mid-check), and its two cannon timings
+     go by the game's time, not the clock (they failed now and then on a loaded machine, on main too).
 11. The gang: unlimited and numbered, its ranks paying points; mines; the harpoon truck; the war rig's War Boys.
 12. The army: jeeps with a gun, the rocket car.
 13. The currencies to the map (above): sizes in meters, the dealer, then the scrap's offensive cards and the fuel's
