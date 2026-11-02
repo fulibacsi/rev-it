@@ -12,17 +12,26 @@
 // its health, the m it keeps ahead of you, s between shells, the m they reach, % damage a hit, scrap for beating it
 // (1,000 health: the first level of guns, firing all race, just wins; act4.py)
 const TANK = { hp: 1000, gap: 80, reload: 2.5, reach: 250, hit: 8, scrap: 300 };
-const tankHealth = () => TANK.hp * (1 + 0.5 * progress.tanks); // each one beaten, the next is half as tough again
-const bossRace = () => arOn() && progress.wanted >= 1 && lvl('guns') > 0 && !wrecked(); // armed, not in limp mode
+// each one beaten, the next is half as tough again; on the war rig, tougher by how built-out the fortress is
+// (fortress.js strength: the owner, 2 Nov, "tougher versions"), as tanks come often there: 1,200 at the first single
+// cell, 2,500 on a 3x4 with two cannons. Kept on the tank as it comes (c.full: gang.js health)
+const tankHealth = () => TANK.hp * (rigged() ? 1 + strength() / 20 : 1 + 0.5 * progress.tanks);
+// armed, not in limp mode. On the war rig there is no tank's race: tanks come in the army's ambushes (fortress.js), an
+// enemy like the rest (the owner, 2 Nov: "the tank is just an ambush")
+const bossRace = () => arOn() && progress.wanted >= 1 && lvl('guns') > 0 && !wrecked() && !rigged();
 
 // the tank takes over a car up the road as the boss race starts (startRun), waiting for you there (tankDrive keeps
 // it until you come); or as soon as there is one, should the road have none
-function sendTank() {
-  const c = traffic.find(c => !c.racer && !c.police && !c.fleet && !c.rig && c !== target);
-  if (!c) return;
-  Object.assign(c, { tank: true, dir: 1, lane: 0, x: MY_LANES[0], z: odo + 250, v: 0, want: 0, look: { rear: TANK_SPRITE },
-                     w: 3, h: 2.3, hp: null, wreck: false, swerve: null, d: NaN, hit: -Infinity, shell: TANK.reload });
-  run.tank = c;
+function sendTank() { // false with no car to take over, or two tanks on the road already (the army's ambushes)
+  const k = traffic.filter(c => c.tank && !c.wreck).length;
+  const c = k < 2 && traffic.find(c => !c.racer && !c.police && !c.fleet && !c.rig && !c.heli && !c.tank && c !== target);
+  if (!c) return false;
+  Object.assign(c, { tank: true, dir: 1, lane: k, x: MY_LANES[k], z: odo + 250 + 60 * k, v: 0, want: 0, look: { rear: TANK_SPRITE },
+                     w: 3, h: 2.3, hp: null, full: tankHealth(), wreck: false, swerve: null, d: NaN, hit: -Infinity, shell: TANK.reload,
+                     second: k > 0 });
+  if (!rigged()) run.tank = c; // act 4's boss race
+  else flash('TANK!', '#f55', false);
+  return true;
 }
 function updateBoss() {
   if (!run.boss || run.tank) return;
@@ -33,10 +42,10 @@ function updateBoss() {
 // how it drives (road.js updateTraffic): it keeps its distance ahead of you, changes lanes to stay in front of you,
 // and fires back
 function tankDrive(c, dt) {
-  const gap = c.z - odo;
-  c.v = clamp(speed + (TANK.gap - gap) * 0.6, 0, 140); // closer: quicker; further: slower, or waiting
+  const gap = c.z - odo, keep = TANK.gap + (c.second ? 40 : 0); // a second tank holds the road further on, in your other lane
+  c.v = clamp(speed + (keep - gap) * 0.6, 0, 140); // closer: quicker; further: slower, or waiting
   c.z += c.v * dt;
-  if (lane <= 1 && gap > 30) c.lane = lane; // into your lane, out of reach of a ram from the side
+  if (lane <= 1 && gap > 30) c.lane = c.second ? 1 - lane : lane; // into your lane, out of reach of a ram from the side
   c.x += clamp(MY_LANES[c.lane] - c.x, -2 * dt, 2 * dt);
   c.shell -= dt;
   if (c.shell > 0 || gap < 0 || gap > TANK.reach || run.phase !== 'run') return;
@@ -49,13 +58,15 @@ function tankDrive(c, dt) {
   if (wrecked()) finishRun('wrecked');
 }
 
-// destroyed (gang.js total): the ending. The run stops (the owner, 14 Oct: that's the end state)
+// destroyed (gang.js total): the ending. The run stops (the owner, 14 Oct: that's the end state). On the war rig it is
+// one enemy down and the race goes on, its parts in a crate on the road (fortress.js)
 function tankDown(c) {
   Object.assign(c, { wreck: true, hp: 0 });
-  dropLoot(c); // fortress.js: on the war rig its parts, into the hold
+  dropLoot(c); // fortress.js
   progress.tanks++;
   progress.scrap += TANK.scrap;
   run.scrap += TANK.scrap;
+  if (rigged()) { flash('TANK DOWN', '#ffd23a', true); if (c === target) target = nextTarget(); return; }
   progress.wanted = 0;
   run.beatTank = true;
   finishRun();

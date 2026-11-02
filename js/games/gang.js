@@ -54,7 +54,7 @@ const GUN = 6, RANGE = 200; // damage a shot a level; m your guns reach (a raide
 const MADNESS = 0.25, MAD_TOP = 0.9;
 const madShare = l => Math.min(MAD_TOP, MADNESS * l);
 const GANG = FIELD / 2 + 1; // fleet cars that make a gang
-const health = c => c.tank ? tankHealth() : c.rig ? RIG.hp : c.suv ? SUV.hp : c.heli ? HELI.hp : c.police ? 200 : c.racer ? 150 : 100;
+const health = c => c.tank ? c.full ?? tankHealth() : c.rig ? RIG.hp : c.suv ? SUV.hp : c.heli ? HELI.hp : c.police ? 200 : c.racer ? 150 : 100;
                      // full health (the tank: boss.js; a rig: fortress.js; an SUV and a helicopter: police.js)
 // scrap from a totaled car: 2.2 times the first guesses (with the heat), so act 4 takes about 15 races (act4.py)
 const SCRAP = { car: 22, racer: 55 };
