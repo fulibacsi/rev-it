@@ -31,20 +31,20 @@ with sync_playwright() as p:
                                if phone else dict(viewport={"width": 1440, "height": 900})))
         pg = ctx.new_page(); js = pg.evaluate; pg.on("pageerror", lambda e: errors.append(str(e))); pg.on("dialog", lambda d: d.accept())
         pg.goto(URL); js("localStorage.clear()")
-        js(f"Object.assign(progress, {{ racing: true, finish: 1, gang: true, totals: 60, tanks: 1, oil: 2, runs: 80, races: 60, bank: 9000, "
+        js(f"Object.assign(progress, {{ racing: true, finish: 1, gang: true, totals: 60, tanks: 1, oil: 2, runs: 80, races: 60, bank: 55000, "
            f"points: 5000, scrap: 5000, shells: 10, fortress: {{ parts: [{{ kind: 'cannon', cells: [[0, 0]], x: 0, y: 0 }}], hold: [] }}, "
            f"roles: {{ harvester: 17, brewer: 9, raider: 6 }}, levels: {json.dumps(LEVELS)}, "
            f"toured: TUTORIALS.map(t => t.id).filter(id => id !== 'loot') }}); save()")
         if phone: js("settings.layout = 'touch'; applyLayout()")
         pg.click('[data-play="distance"]'); pg.wait_for_timeout(300)
 
-        # 1. the garage: Lengthen for scrap, Inventory for points, on the Fortress page
+        # 1. the garage: Lengthen and Inventory for meters (layer 13), on the Fortress page
         js("garageTab = 'fortress'; renderGarage()"); pg.wait_for_timeout(100)
         got = js("[...document.querySelectorAll('#cards .card')].map(c => c.querySelector('b').textContent)")
         check(f"{layout}: the Fortress page: Rebuild, Lengthen, Inventory", all(n in got for n in ["Rebuild", "Lengthen", "Inventory"]), got)
-        got = js("[boardH(), holdSize(), buy('lengthen'), buy('inventory'), boardH(), holdSize(), progress.scrap, progress.points, progress.fortress.parts[0].y, refreshCar()].slice(0, 9)")
-        check(f"{layout}: Lengthen a row for 400 scrap, behind (the cannon stays in front); Inventory a slot for 600 points",
-              got == [1, 1, True, True, 2, 2, 4600, 4400, 0], got)
+        got = js("[boardH(), holdSize(), buy('lengthen'), buy('inventory'), boardH(), holdSize(), progress.bank, progress.scrap, progress.points, progress.fortress.parts[0].y, refreshCar()].slice(0, 10)")
+        check(f"{layout}: Lengthen a row for 25,000 m, behind (the cannon stays in front); Inventory a slot for 20,000 m; no scrap, no points",
+              got == [1, 1, True, True, 2, 2, 10000, 5000, 5000, 0], got)
         pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=20000)
         js(CLEAR); pg.wait_for_timeout(200)
 
