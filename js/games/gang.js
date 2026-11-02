@@ -78,13 +78,13 @@ function gangMoment() {
 let target = null, quarry = null;
 function nextTarget(fits = c => !rigged() || notable(c)) {
   let t = null;
-  for (const c of traffic) if ((c.dir > 0 || c.heli) && !c.fleet && !c.wreck && c.z > odo && c.z - odo < 300 && fits(c) && (!t || c.z < t.z)) t = c;
+  for (const c of traffic) if ((c.dir > 0 || c.heli || c.suv) && !c.fleet && !c.wreck && c.z > odo && c.z - odo < 300 && fits(c) && (!t || c.z < t.z)) t = c;
   return t;
 }
 const nextQuarry = () => rigged() ? nextTarget(c => c.racer) ?? nextTarget(c => !notable(c)) : null; // the rival gang first
 // passed once its front is behind you, not its back: in a ram at speed one long frame (up to 50 ms) carries you past
 // its back before the bump settles, and the reticle moved on to the next car, at full health (28 Oct)
-const lost = t => !t || t.wreck || t.dir < 0 || t.z + CAR_LEN < odo || t.z - odo > RANGE || !traffic.includes(t);
+const lost = t => !t || t.wreck || t.dir < 0 && !t.suv || t.z + CAR_LEN < odo || t.z - odo > RANGE || !traffic.includes(t); // an SUV: head-on (police.js)
 function updateGang(dt) { // every frame of a run
   gangMoment();
   if (!arOn()) { target = quarry = null; return; }

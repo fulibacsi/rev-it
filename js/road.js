@@ -317,8 +317,9 @@ function heliSprite(f) {
   });
 }
 const HELI_LOOKS = [0, 1].map(f => { const s = heliSprite(f); return { rear: s, front: s, beams: s }; });
-// its searchlight on the lane it is about to strafe (a cone down from it, a pool of light on the road), and the dust
-// its rounds kick up (police.js heliMarks)
+// its searchlight on the lane it is about to drop a spike strip on (a cone down from it, a pool of light on the road),
+// and the strip (police.js heliMarks): a police stinger, a folding band in hazard stripes (dark asphalt hid a dark
+// one on a phone) with steel spikes along it
 const SPOT = sprite(120, 300, (g, w, h) => {
   const cone = g.createLinearGradient(0, 0, 0, h);
   cone.addColorStop(0, '#fff6c820'); cone.addColorStop(1, '#fff6c8a0');
@@ -327,11 +328,12 @@ const SPOT = sprite(120, 300, (g, w, h) => {
   pool.addColorStop(0, '#fffdf0ff'); pool.addColorStop(0.6, '#fff6c8c0'); pool.addColorStop(1, '#fff6c800');
   g.fillStyle = pool; g.beginPath(); g.ellipse(w / 2, h * 0.94, w / 2, h * 0.06, 0, 0, 2 * Math.PI); g.fill();
 });
-const DUST = sprite(80, 60, (g, w, h) => {
-  for (const [x, y, r, c] of [[0.5, 0.6, 0.34, '#b89a70c0'], [0.3, 0.7, 0.22, '#d2b88cc0'], [0.7, 0.68, 0.24, '#a08460c0'], [0.5, 0.4, 0.2, '#e0c89ca0']]) {
-    g.fillStyle = c; g.beginPath(); g.arc(w * x, h * y, w * r, 0, 2 * Math.PI); g.fill();
-  }
-  g.fillStyle = '#ffd36a'; g.beginPath(); g.arc(w / 2, h * 0.85, w * 0.08, 0, 2 * Math.PI); g.fill(); // the spark
+const STRIP = sprite(240, 40, (g, w, h) => {
+  g.fillStyle = '#ffd23a'; g.fillRect(0, h * 0.45, w, h * 0.55); // the band, striped
+  g.fillStyle = '#16161a';
+  for (let x = -h; x < w; x += 24) { g.beginPath(); g.moveTo(x, h); g.lineTo(x + 12, h); g.lineTo(x + 12 + h * 0.55, h * 0.45); g.lineTo(x + h * 0.55, h * 0.45); g.fill(); }
+  g.fillStyle = '#e6e9f0'; // the spikes
+  for (let x = 3; x < w - 6; x += 9) { g.beginPath(); g.moveTo(x, h * 0.5); g.lineTo(x + 3, 0); g.lineTo(x + 6, h * 0.5); g.fill(); }
 });
 // act 3's spots by the road (oil.js), in the palms' sunset silhouette with lamps lit: an oil puddle on the sand, a
 // pumpjack nodding (two frames, the beam up and down), a refinery with its flare flickering (two frames)
@@ -643,7 +645,7 @@ function updateTraffic(dt, clock) {
     }
     // you ran into it: your front into its back, sideways into it while changing lanes, or head-on
     const touching = !c.wreck && !c.raider && !c.alt && onCar(c.x) && c.z < odo + MY_FRONT && c.z + CAR_LEN > odo - MY_REAR && clock - c.hit > 1.5;
-    if (touching) { c.hit = clock; c.dir > 0 ? bump(c) : mad(c) ? madHeadOn(c) : headOn(c); }
+    if (touching) { c.hit = clock; c.dir > 0 ? bump(c) : c.suv ? slam(c) : mad(c) ? madHeadOn(c) : headOn(c); } // an SUV's kamikaze (police.js)
     // an oncoming car with you in its lane: flashes its lights and sounds its horn, once, about 3 s out
     c.beams = Math.max(0, (c.beams ?? 0) - dt);
     if (c.dir < 0 && !c.warned && onCar(c.x) && c.d > 0 && c.d < 3 * (speed + c.v)) { c.warned = true; c.beams = 2; horn(); }
@@ -695,9 +697,9 @@ const MARKS = {
   shell: v => { const img = wreckSprite(trafficLook(v).rear); return { x: SHOULDER + 0.8, w: CAR_M, h: CAR_M * img.height / img.width, img }; },
   // act 5's loot (fortress.js lootMarks), in its lane
   loot: v => ({ x: v.x, w: 1.6, h: 1.25, img: crateSprite(v.part.kind) }), // big enough to spot on a phone
-  // a helicopter's searchlight on a lane, from up where it hovers; its rounds' dust (police.js heliMarks)
+  // a helicopter's searchlight on a lane, from up where it hovers; its spike strip across the lane (police.js heliMarks)
   spot: v => ({ x: v.x, w: 4.5, h: v.alt, img: SPOT }),
-  dust: v => ({ x: v.x, w: 1.4, h: 1, img: DUST }),
+  strip: v => ({ x: v.x, w: 3.4, h: 0.6, img: STRIP }),
 };
 function drawRoad(g, w, h, dt) {
   const depth = 1 / Math.tan(ROAD.fov / 2 * Math.PI / 180), horizon = h * ROAD.horizon, k0 = w / 2;

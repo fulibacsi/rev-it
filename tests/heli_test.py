@@ -1,9 +1,8 @@
 """Act 5's police helicopters (docs/design-notes.md, Act 5, layer 7): on the war rig, sent by the police's ambushes, one
 at a time, a helicopter flies in from up the road and hovers ahead, over the traffic (no car brakes
 behind it). It is notable: in the reticle with its tag, its tutorial popping up. Its searchlight picks one of the
-fortress's lanes; a beat later a burst walks down it, dust and tracers, and its rounds hit the board's column over
-that lane front to back (STRAFED), a part taking its share and an empty cell letting it through to the rig; off the
-lane, they all miss (DODGED). Shot down it falls onto the road: its scrap, and its gun or its turbine as loot. A
+fortress's lanes; a beat later it drops a spike strip across it (layer 10), lying on the road: the column over that
+lane runs over it, its front cell hit and the rig slowed for a few seconds (SPIKED); off the lane, it misses. Shot down it falls onto the road: its scrap, and its gun or its turbine as loot. A
 triangle on the sonar; a mounted turbine heard. Phone and desktop."""
 import json
 from playwright.sync_api import sync_playwright
@@ -24,7 +23,9 @@ CLEAR = "traffic.forEach((c, i) => { if (!c.racer && !c.fleet) Object.assign(c, 
         "target = quarry = null; gangClock = copClock = 1e9; ambushes = []; run.loot = []"
 HELI = "traffic.find(c => c.heli && !c.wreck)"
 # a burst, frame by frame within one call (the page's own loop can't step in between): from the searchlight on
-BURST = "(x => { const c = " + HELI + "; Object.assign(c, { stage: 'aim', t: 0.01, aim: x }); for (let i = 0; i < 120; i++) heliDrive(c, 1 / 60); return c; })"
+# a strip dropped on the lane at x, then driven up to with the road moving under you (odo), until it is reached
+STRIP = "(x => { const c = " + HELI + "; Object.assign(c, { stage: 'aim', t: 0.01, aim: x }); heliDrive(c, 1 / 60); const s = strips.at(-1); " \
+        "for (let i = 0; i < 900 && !s.over; i++) { odo += speed / 60; stripTick(1 / 60); } return s; })"
 HP = "progress.fortress.parts.map(p => p.kind + ' ' + hpOf(p))"
 with sync_playwright() as p:
     b = launch(p, args=["--autoplay-policy=no-user-gesture-required"])
@@ -76,21 +77,24 @@ with sync_playwright() as p:
         got = js("heliMarks().map(m => m.kind)")
         check(f"{layout}: its searchlight on the lane", got == ["spot"], got)
         pg.screenshot(path=f"{OUT}/heli_{layout}_aim.png")
-        got = js("""(() => { const d0 = progress.damage, puffs0 = []; const c = """ + HELI + """; Object.assign(c, { stage: 'aim', t: 0.01, aim: ROAD_LANES[lane] });
-            let dust = 0; for (let i = 0; i < 120; i++) { heliDrive(c, 1 / 60); dust = Math.max(dust, puffs.length); }
-            return [...""" + HP + """, progress.damage - d0, $('flash').textContent, dust > 5, c.stage]; })()""")
-        check(f"{layout}: a burst down the right lane: its dust walking at you, six rounds down the armor's column (5 less 75% each: 7.5), "
-              "the rig untouched, STRAFED; then it waits", got == ["cannon 100", "armor 52.5", 0, "STRAFED", True, "wait"], got)
+        got = js("""(() => { const c = """ + HELI + """; Object.assign(c, { stage: 'aim', t: 0.01, aim: ROAD_LANES[lane] }); heliDrive(c, 1 / 60);
+            return [strips.length, strips[0].x === ROAD_LANES[lane], Math.round(strips[0].z - odo), c.stage, heliMarks().map(m => m.kind).join()]; })()""")
+        check(f"{layout}: then a spike strip across that lane, under it (about 60 m ahead); it waits",
+              got[:2] == [1, True] and 50 <= got[2] <= 70 and got[3:] == ["wait", "strip"], got)
+        pg.wait_for_timeout(200); pg.screenshot(path=f"{OUT}/heli_{layout}_strip.png")
+        got = js("""(() => { const d0 = progress.damage, v0 = speed; strips = []; const s = """ + STRIP + """(ROAD_LANES[lane]);
+            const r = [...""" + HP + """, progress.damage - d0, $('flash').textContent, +(speed / v0).toFixed(2), torn > 2.9];
+            speed = 2 * v0; stripTick(1 / 60); r.push(+(speed / v0).toFixed(2)); torn = 0; speed = v0; return r; })()""")
+        check(f"{layout}: run over on the right lane: the armor's front cell (12 less 75%: 3), the rig untouched, SPIKED, "
+              "slowed to 60% and held there for 3 s", got == ["cannon 100", "armor 57", 0, "SPIKED", 0.6, True, 0.6], got)
 
-        # 5. down the left lane: the cannon takes the front row's rounds, the empty cells let the rest through
-        got = js("(() => { const d0 = progress.damage; " + BURST + "(ROAD_LANES[lane + 1]); return [..." + HP + ", +(progress.damage - d0).toFixed(2)]; })()")
-        check(f"{layout}: down the left lane: two rounds on the cannon (2.5), four through to the rig (5)", got == ["cannon 97.5", "armor 52.5", 5], got)
+        # 5. on the left lane: the cannon, the front of that column
+        got = js("(() => { const d0 = progress.damage; strips = []; " + STRIP + "(ROAD_LANES[lane + 1]); torn = 0; return [..." + HP + ", progress.damage - d0]; })()")
+        check(f"{layout}: on the left lane: the cannon's front cell (3)", got == ["cannon 97", "armor 57", 0], got)
 
-        # 6. off the fortress's lanes: all miss
-        got = js("(() => { const d0 = progress.damage, h = " + HP + ".join(); " + BURST + "(ROAD_LANES[lane + 2]); return [" + HP + ".join() === h, progress.damage - d0, $('flash').textContent]; })()")
-        check(f"{layout}: a lane the fortress isn't on: every round misses, DODGED", got == [True, 0, "DODGED"], got)
-        js("(() => { const c = " + HELI + "; Object.assign(c, { stage: 'fire', t: 0.3, shot: 0, puffed: 0, hits: 0, aim: ROAD_LANES[lane] }); })()")
-        pg.wait_for_timeout(120); pg.screenshot(path=f"{OUT}/heli_{layout}_strafe.png")
+        # 6. off the fortress's lanes: missed
+        got = js("(() => { const h = " + HP + ".join(), v0 = speed; strips = []; " + STRIP + "(ROAD_LANES[lane + 2]); return [" + HP + ".join() === h, speed === v0, $('flash').textContent]; })()")
+        check(f"{layout}: on a lane the fortress isn't on: MISSED IT, nothing hit, no slower", got == [True, True, "MISSED IT"], got)
 
         # 7. shot down: it falls onto the road, its scrap, its gun or turbine on the road
         got = js("""(() => { const c = """ + HELI + """, s0 = progress.scrap; run.loot = []; DROPS.heli[0] = 1; hurtCar(c, 5000); DROPS.heli[0] = 0.8;

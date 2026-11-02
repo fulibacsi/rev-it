@@ -1674,7 +1674,27 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - `ambush_test` checks it (the heat retired; the budget by strength; the draw; a police ambush coming; two tanks
      in two lanes, as tough as the fortress, one beaten and the race going on) on both layouts; `loot_test` the drop
      rates.
-10. The police (The factions, above): cars ram, SUVs kamikaze head-on, the helicopter's spike strip.
+10. The police (The factions, above): cars ram, SUVs kamikaze head-on, the helicopter's spike strip (built 2 Nov;
+    `police.js`). Claude's numbers, first guesses:
+   - Police cars ram (the owner: "police rams you directly"): sent by an ambush, one comes up from 60 m behind and rams
+     your back row, in one of the rig's lanes, 8 m/s quicker than you (RAMMED: 4% before Armor plating, the rig shoved
+     on); or, half the time when there is a lane beside you, it comes level with your rear quarter there and swings
+     into your side, a PIT (PIT!: 5% on that side's back cell, knocked across, 7% of your speed gone). It follows you
+     from lane to lane. Each ram costs it as a ram of yours would (the bull bar and the spikes: at Bull bar 3 two rams
+     total one); it drops back 25 m and comes again, three times, then falls behind into the traffic. In act 4 the
+     police still cut in and brake.
+   - The SUVs kamikaze (the owner: Need for Speed: Most Wanted's): from 900 m up the oncoming lane nearest you, at
+     40 m/s, steering for you until 1.2 s out, flashing and honking 3 s out, as a police car head-on does. They are
+     in the reticle head-on too (its tag, 3 shots), so one can be shot on the way in, or dodged. Into you it slams the
+     front cell of its column (SLAMMED: 30%, where a head-on rammed through is 20), the rig losing 30% of its speed,
+     and wrecks itself: no scrap, no crate. Never a DNF, a lane wide too (Claude's call: a head-on of yours still is
+     one; this is its attack). Missed, it turns and comes again from 900 m, until totaled. Its brake check and
+     comeback (layer 5) are gone.
+   - The helicopter's spike strip, in place of the strafe (the police ram, they don't shoot): its searchlight on one
+     of the fortress's lanes for 1.5 s, then a strip across that lane under it, about 60 m ahead, lying still: a
+     police stinger in hazard stripes with steel spikes (a dark one didn't read on a phone). Run over, the front cell
+     of that column takes 12% and the rig is slowed to 60% of its speed, held there for 3 s (SPIKED); off the lane,
+     MISSED IT. 4 s later it lights another lane.
 11. The gang: unlimited and numbered, its ranks paying points; mines; the harpoon truck; the war rig's War Boys.
 12. The army: jeeps with a gun, the rocket car.
 13. The currencies to the map (above): sizes in meters, the dealer, then the scrap's offensive cards and the fuel's

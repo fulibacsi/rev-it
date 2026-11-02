@@ -8,10 +8,11 @@ Widen as they come, and crates of shells for points while it has fewer than 20.
 As it drives (packing is the race's, never the garage's) it puts what the hold carries on the board, armor and spikes
 on the end rows first (hits come from ahead and behind) and the rest on the middle rows first, or swaps one in where
 it throws off the least worth; it steers over a crate within 150 m on your side of the road (widened, it shifts over a
-crate's lane and back), its hand on the wheel as a player's would be. It never dodges a helicopter's burst.
+crate's lane and back), its hand on the wheel as a player's would be. It never dodges a spike strip or an SUV head-on.
 
 Each race: the place, totals (the gang's among them), scrap; shells (fired, hits, gained, left); what the ambushes
-sent (rival rigs, their rams; police cars, SUVs, helicopters and their bursts; tanks) and how many went down; the
+sent (rival rigs, their rams; police cars, their rams and PITs; SUVs, their slams; helicopters, their spike strips
+and those run over; tanks) and how many went down; the
 gang's brake checks; damage; the loot (dropped, picked up), the board's blocks and the hold, the rig's weight, the
 run's meters, the cars crushed and the head-ons rammed through; the shield (the hits on parts and on the rig, the
 parts shot off and worn out, the health the board has left: worn parts aren't repaired); how often the board changed
@@ -100,9 +101,13 @@ count('stow', (f, p) => { const ok = f(p); if (ok) picked++; return ok; });
 count('gangDrive', (f, c, dt) => { const was = c.stage; const on = f(c, dt); if (was !== 'cut' && c.stage === 'cut') checks++; return on; });
 // the shield: the hits a part took, those that reached the rig, the parts that fell off
 count('hitCell', (f, ...a) => { f(...a); struck.part ? onParts++ : onRig++; });
-// the police's helicopters: come, shot down, their bursts
+// the police's helicopters: come, shot down, their spike strips and those run over; its cars' rams and PITs, its SUVs'
+// slams (layer 10)
 count('sendHeli', f => { const ok = f(); if (ok) helis++; return ok; });
-count('aimHeli', (f, c) => { bursts++; return f(c); });
+count('dropStrip', (f, c) => { dropped++; return f(c); });
+count('runOver', (f, ...a) => { const ok = f(...a); if (ok) ranOver++; return ok; });
+count('copRam', (f, c, pit) => { pit ? pits++ : copRams++; f(c, pit); });
+count('slam', (f, c) => { slams++; f(c); });
 count('fallOff', (f, i, how) => { const p = progress.fortress.parts[i]; (how === 'WORN OUT' ? wornOut : fell).push(p.kind + ' ' + p.cells.length); f(i, how); }); 0"""
 with sync_playwright() as p:
     b = launch(p, args=["--autoplay-policy=no-user-gesture-required"])
@@ -124,11 +129,11 @@ with sync_playwright() as p:
         amb = js("[+strength().toFixed(1), +budget().toFixed(1)]")  # what the race's ambushes are drawn from
         w0 = js(WALLET)
         r = js(f"""(() => {{ {f"rng = {SEED * 1000 + race};" if SEED is not None else ""} window.nextPress = 0; reloading = 0;
-                  Object.assign(window, {{ shells: 0, hits: 0, rigs: 0, rigsDown: 0, rams: 0, gangDown: 0, checks: 0, suvs: 0, suvsDown: 0, made: 0, picked: 0, crushed: 0, through: 0, onParts: 0, onRig: 0, fell: [], helis: 0, helisDown: 0, bursts: 0, mounts: 0, swaps: 0, packAt: 0, wornOut: [], tanks: 0, tanksDown: 0, cops: 0 }});
+                  Object.assign(window, {{ shells: 0, hits: 0, rigs: 0, rigsDown: 0, rams: 0, gangDown: 0, checks: 0, suvs: 0, suvsDown: 0, made: 0, picked: 0, crushed: 0, through: 0, onParts: 0, onRig: 0, fell: [], helis: 0, helisDown: 0, dropped: 0, ranOver: 0, copRams: 0, pits: 0, slams: 0, mounts: 0, swaps: 0, packAt: 0, wornOut: [], tanks: 0, tanksDown: 0, cops: 0 }});
                   simRun({{ ...progress.levels }}, 2, 1, {{}}, true);
                   return {{ p: run.race && run.race.p, dnf: run.race && run.race.dnf, totals: run.totals, scrap: run.scrap, ambushes: ambushes.map(a => a.faction[0] + a.members.length + (a.sent < a.members.length ? '(' + a.sent + ')' : '')).join(' '),
                   dmg: Math.round(progress.damage), shells, hits, got: run.shells, left: progress.shells, rigs, rigsDown, rams, gangDown, checks, suvs, suvsDown,
-                  tanks, tanksDown, cops, made, picked, m: run.gain, crushed, through, w: rigW, onParts, onRig, fell, wornOut, helis, helisDown, bursts, mounts, swaps, secs: runTime(),
+                  tanks, tanksDown, cops, made, picked, m: run.gain, crushed, through, w: rigW, onParts, onRig, fell, wornOut, helis, helisDown, dropped, ranOver, copRams, pits, slams, mounts, swaps, secs: runTime(),
                   worn: Math.round(100 * progress.fortress.parts.reduce((k, p) => k + hpOf(p), 0) / Math.max(1, progress.fortress.parts.reduce((k, p) => k + fullHp(p), 0))) }}; }})()""")
         w1 = js(WALLET)  # the race's takings: meters (the run's, the crew's racing, less the nitro), points, refined fuel, scrap
         wheel = js("wheel.held = false")
@@ -158,7 +163,7 @@ with sync_playwright() as p:
                   f"left {w4['fuel']:.1f} | scrap +{w1['scrap'] - w0['scrap']:,} cards -{w3['scrap'] - w4['scrap']:,} left {w4['scrap']:,}")
         res = ("P" + str(r["p"])) if r["p"] else r["dnf"]
         print(f"race {race:2}: {res:10} totals {r['totals']:2} (gang {r['gangDown']:2}) +{r['scrap']:4} scrap  shells {r['shells']:2} hit {r['hits']:2} "
-              f"+{r['got']:2} left {r['left']:3}  rigs {r['rigs']} down {r['rigsDown']} rams {r['rams']:2}  suvs {r['suvs']} down {r['suvsDown']}  helis {r['helis']} down {r['helisDown']} bursts {r['bursts']}  tanks {r['tanks']} down {r['tanksDown']}  cops {r['cops']}  checks {r['checks']:2}  "
+              f"+{r['got']:2} left {r['left']:3}  rigs {r['rigs']} down {r['rigsDown']} rams {r['rams']:2}  suvs {r['suvs']} down {r['suvsDown']} slams {r['slams']}  helis {r['helis']} down {r['helisDown']} strips {r['dropped']} run over {r['ranOver']}  tanks {r['tanks']} down {r['tanksDown']}  cops {r['cops']} rams {r['copRams']} PITs {r['pits']}  checks {r['checks']:2}  "
               f"dmg {r['dmg']:3}% ({fixed[0]}% after repairs, {fixed[1]:,} m left)  loot +{r['made']} got {r['picked']}  board [{board[0]}] "
               f"hold {board[1]}  {board[2]:,} kg  {r['m']:,} m  {r['w']} wide, crushed {r['crushed']} through {r['through']}  "
               f"hits on parts {r['onParts']:2} on the rig {r['onRig']:2}, lost [{', '.join(r['fell'])}] worn out [{', '.join(r['wornOut'])}], health left {r['worn']}%  "
