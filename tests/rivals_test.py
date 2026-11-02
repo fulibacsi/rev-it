@@ -8,8 +8,8 @@ from the side; totaled, its scrap; its tutorial pops up as the first one shows. 
 ambushes send them; the heat sends none on the rig): armored, it comes head-on, kamikaze, slamming your front and
 wrecking itself, and one that missed comes again; its tutorial as it first shows; in the reticle head-on too. A police
 car on the rig rams you, from behind or a PIT from the side, three times, then it is gone. The gang's harpoon truck
-(layer 11) holds the road beside you, the reticle on it once it takes aim, harpoons a part off the board (none heavier
-than its winch pulls: not the tank's cannon) and reels it in; totaled first, the part drops in a crate. Over a notable one the reticle's tag: what it is, its health, the shells it would take, how far. Before the rig, act 4's reticle as it was. Phone and desktop."""
+(layer 11) holds the road beside you, the reticle on it once it takes aim, harpoons a part off the board (the tank's
+cannon too, slower to reel in) and reels it in; totaled first, the part drops in a crate. Over a notable one the reticle's tag: what it is, its health, the shells it would take, how far. Before the rig, act 4's reticle as it was. Phone and desktop."""
 import json, re
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -156,8 +156,11 @@ with sync_playwright() as p:
         check(f"{layout}: one that reels it in: the gun gone", got[5:] == [True, True, 0, "gun", 0, None,
               "HARPOON TRUCK!,HARPOON!,GUN 1 HARPOONED,GUN 1 GONE"], got)
         js("traffic.forEach(c => { if (c.harpoon) spawnCar(c, 1500); })")
-        got = js(f"({harpoon})(false, 'cannon')")
-        check(f"{layout}: the tank's cannon alone on the board, too heavy for its winch (900 kg): it leaves without a shot", got[4:] == ["left", 1], got)
+        got = js("""(() => { const p = { kind: 'cannon', cells: [[0, 0]] }, q = { kind: 'gun', cells: [[0, 0]] }; return [reelTime(q), reelTime(p)].map(t => +t.toFixed(2)); })()""")
+        check(f"{layout}: a heavier part is slower to reel in: a gun 4.56 s, the tank's cannon 6 s", got == [4.56, 6], got)
+        got = js(f"({harpoon})(true, 'cannon')")
+        check(f"{layout}: the tank's cannon harpooned too; totaled while it reels, the cannon in a crate", got[5:] == [True, True, 0, "cannon", 1, "cannon",
+              "HARPOON TRUCK!,HARPOON!,CANNON 1 HARPOONED"], got)
         js("traffic.forEach(c => { if (c.harpoon) spawnCar(c, 1500); }); progress.fortress.parts = [{ kind: 'cannon', cells: [[0, 0]], x: 0, y: 0 }]; applyUpgrades(); run.loot = []")
 
         # 5. the gang's ambushes send rigs: two at a time at most
