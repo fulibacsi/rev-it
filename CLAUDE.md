@@ -60,7 +60,8 @@ talking about upgrades. Keep it up to date with every change to an upgrade, a ta
   paid-off racers and their teamwork), `oil.js` (the crew's roles, the oil spots and refineries, the tracker, crude and
   fuel, the Foreman, act 3's foreshadowing), `gang.js` (War Rig: the AR target, totals, parts, guns), `police.js` (police
   heat, the scanner, police cars and act 5's SUVs and helicopters), `boss.js` (the tank), `fortress.js` (act 5, being built: the
-  Rebuild, the war rig's cockpit, the fortress's board, the cannon and its shells, the rival gang and its war rigs, the
+  Rebuild, the war rig's cockpit, the fortress's board, the cannon and its shells, the rival gang (unlimited, its ranks
+  paying points), its mines, harpoon trucks and war rigs, the
   loot, the rig widened, the shield: hits by where they land, parts worn out and falling off; the ambushes, drawn by
   the fortress's strength), `damage.js` (damage, heat, nitro), `aids.js` (Distance's driver aids: robot feet and
   hands working the same pedals and lever as the player).

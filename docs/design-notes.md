@@ -1756,6 +1756,26 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - `rivals_test` checks the mines (three dropped in your lane, each run over 3.75 off the cannon; in the other lane,
      missed), `widen_test` the shoulder (no lane beside you: up the shoulder from 260 m back, past you, into your right
      lane, braking), on both layouts.
+
+   The harpoon truck, the third PR (built 2 Nov; `fortress.js`), the gang's midline in its ambushes (cost 3, as an
+   SUV), on the owner's design (The factions, above). Claude's numbers, first guesses:
+   - It takes over a car out of sight up the road (HARPOON TRUCK!) and comes from 60 m behind up the lane beside you, or
+     with none up the right shoulder (as the gang's cars), and holds the road 30 m ahead there, in view (the owner:
+     from the radar alone a part gone would look like a ram or a bug). Notable: in the reticle (HARPOON · 100% · 2
+     SHOTS), 500 health, 100 scrap, the cannon's and the guns'. One at a time.
+   - After a second it takes aim for 2 s (HARPOON!): the part nearest its side of the board, the front one first, blinks
+     red there, and a red line blinks from the truck to your hood. Then it fires: the part is torn off the board (ARMOR
+     2 HARPOONED), its hole blinking, and dragged across the road on the cable to the truck, which reels for 4 s.
+     Totaled by then, the part falls on the road in a crate, as it was; reeled in, it is gone (ARMOR 2 GONE), and the
+     truck leaves. A bare board, and it leaves without a shot.
+   - Drawn as the rig and the SUV are: a pickup in the gang's rust and red stripe from behind, the cab's window barred,
+     a harpoon gun on a post in its bed aimed back at you, its barb, the cable coiled beside it, the bumper spiked. Its
+     drop table: 45%, armor, spikes or a gun, besides the part it took. Its tutorial, Harpoon trucks (the truck; its
+     aim), pops up as the first one shows in the reticle.
+   - Placement counts: what is on the board's edges and front is what it takes, so armor there spares the cannon.
+   - `rivals_test` checks it (sent from behind up your other lane, holding 30 m ahead, its tag; its aim blinking the
+     cannon; the cannon harpooned off the board; totaled while reeling, the cannon in a crate on the road; reeled in,
+     gone) on both layouts.
 12. The army: jeeps with a gun, the rocket car.
 13. The currencies to the map (above): sizes in meters, the dealer, then the scrap's offensive cards and the fuel's
     crew jobs. Four lanes: the mine roller and the Grinder.
