@@ -76,9 +76,11 @@ with sync_playwright() as p:
               got == [True, True, "block" if not phone else got[2], "none", True, False] and got[2] != "none", got)
         # 2. bought: the cannon in the hold, the cockpit the rig's, the rig's tutorial up
         pg.click('[data-buy="rebuild"]'); pg.wait_for_timeout(300)
-        got = js("[progress.points, JSON.stringify(progress.fortress), menuOpen && screen, tour.id]")
-        check(f"{layout}: bought: 500 points left, the tank's cannon in the hold, the rig's tutorial pops up",
-              got == [500, '{"parts":[],"hold":[{"kind":"cannon","cells":[[0,0]]}]}', "tour", "rig"], got)
+        got = js("[progress.points, JSON.stringify(progress.fortress), menuOpen && screen, tour.id, document.body.classList.contains('rig'), "
+                 "getComputedStyle($('shifter')).display, getComputedStyle($('board')).display]")
+        check(f"{layout}: bought: 500 points left, the tank's cannon in the hold, the rig's tutorial pops up over the rig's cockpit (the board, "
+              "no shifter: it showed the shifter, the owner, 2 Nov)",
+              got == [500, '{"parts":[],"hold":[{"kind":"cannon","cells":[[0,0]]}]}', "tour", "rig", True, "none", "flex"], got)
         while js("menuOpen"): js("turnTour(1)"); pg.wait_for_timeout(50)
         js("garageTab = 'fortress'; renderGarage()"); pg.wait_for_timeout(100)
         before = js("[progress.shells, progress.points]"); tap("[data-shells]"); pg.wait_for_timeout(150)
