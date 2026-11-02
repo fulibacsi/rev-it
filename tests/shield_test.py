@@ -78,10 +78,10 @@ with sync_playwright() as p:
             return [c.wreck, progress.damage === d0, a0 - hpOf(progress.fortress.parts[0]) > 0, String([struck.x, struck.y])]; }})()""")
         check(f"{layout}: a car crushed in the right lane: the front row's armor takes it, in the right column", got == [True, True, True, "1,0"], got)
         js(CLEAR)
-        got = js(f"""(() => {{ const c = ({CAR})(); Object.assign(c, {{ dir: 1, rig: true, x: carX + 3.2, z: odo }}); const d0 = progress.damage;
-            const before = {HP}.join(); rigRam(c); const after = {HP}.join(); c.rig = false;
+        got = js(f"""(() => {{ const c = ({CAR})(); Object.assign(c, {{ dir: 1, x: carX + 3.2, z: odo }}); const d0 = progress.damage;
+            const before = {HP}.join(); strike(6, c.x, c.z); const after = {HP}.join();
             return [struck.x, struck.part ? after !== before && progress.damage === d0 : progress.damage - d0 === 1.5]; }})()""")
-        check(f"{layout}: a rival rig's ram from the right: on the right column, a part's hit or the rig's", got == [1, True], got)
+        check(f"{layout}: a hit from beside you on the right (6%): on the right column, a part's hit or the rig's", got == [1, True], got)
 
         # 5. worn: cracked under two thirds of its health, badly under a third
         js("progress.fortress.parts[0].hp = 25; progress.fortress.parts[1].hp = 30"); pg.wait_for_timeout(100)

@@ -74,7 +74,7 @@ function renderBoard() {
                                     // redrew the board, and a drag on the road failed most times); it redraws after
   const f = progress.fortress, n = holdSize(), w = boardW(), h = boardH(); // redrawn on what shows: its cracks, not its health
   const key = JSON.stringify([...f.parts, ...f.hold].map(p => [p.kind, p.x, p.y, p.cells, wear(p)])) + [f.parts.length, n, w, h, innerWidth, innerHeight, fallen.length,
-    f.parts.indexOf(aimedAt())];
+    f.parts.indexOf(aimedAt()), [...jammed.keys()].map(p => f.parts.indexOf(p))];
   if (key === shownBoard) return;
   shownBoard = key;
   // the cells as big as the plate allows, the hold beside the plan: inside its padding (6 px), past the label (16 px),
@@ -83,7 +83,7 @@ function renderBoard() {
   const cell = Math.floor(Math.min(72, (inW - 8 - 4) / (w + 1), (inH - 2) / h, (inH - 6 * n) / n));
   $('board').style.setProperty('--cell', `${cell}px`);
   Object.assign($('fort-grid').style, { width: `${cell * w}px`, height: `${cell * h}px` });
-  $('fort-grid').innerHTML = f.parts.map((p, i) => partHtml(p, `data-part="${i}" data-wear="${wear(p)}"${p === aimedAt() ? ' data-hooked' : ''}`)).join('') +
+  $('fort-grid').innerHTML = f.parts.map((p, i) => partHtml(p, `data-part="${i}" data-wear="${wear(p)}"${p === aimedAt() ? ' data-hooked' : ''}${live(p) ? '' : ' data-jam'}`)).join('') +
     fallen.map(({ p }) => partHtml(p, `data-fall data-wear="2"`)).join('') + '<i id="fort-ghost"></i><i id="fort-hit"></i>';
   $('fort-hold').innerHTML = Array.from({ length: n }, (_, i) => `<div class="slot" data-slot="${i}">` +
     `${f.hold[i] ? partHtml(f.hold[i], `data-wear="${wear(f.hold[i])}"`, cell / Math.max(extent(f.hold[i].cells, 0), extent(f.hold[i].cells, 1))) : ''}</div>`).join('');
@@ -122,7 +122,8 @@ function dragPart(e, first, slot) {
   const over = left + w > g.left && left < g.right && top + h > g.top && top < g.bottom; // over the board at all
   if (!over) { dragging.at = null; doom([]); $('fort-ghost').className = ''; return; }
   if (at !== was) // other cells: the beat starts again
-    Object.assign(dragging, { at, since: performance.now(), ok: onBoard(dragging.part.cells, ...at), swaps: under(f, dragging.part.cells, ...at) });
+    Object.assign(dragging, { at, since: performance.now(), swaps: under(f, dragging.part.cells, ...at), // not over a part knocked out
+                              ok: onBoard(dragging.part.cells, ...at) && under(f, dragging.part.cells, ...at).every(i => live(f.parts[i])) });
   Object.assign($('fort-ghost').style, { left: `${at[0] * cell}px`, top: `${at[1] * cell}px`, width: `${w}px`, height: `${h}px` });
   $('fort-ghost').className = !dragging.ok ? 'no' : dragging.swaps.length ? 'swap' : 'fit';
   doom(dragging.ok ? dragging.swaps : []);
@@ -137,6 +138,7 @@ function dropPart() {
 }
 function mount(slot, x, y) { // the hold's part onto the board at x, y, throwing off whatever is there (act5.py's bot too)
   const f = progress.fortress, part = f.hold[slot], swaps = under(f, part.cells, x, y);
+  if (swaps.some(i => !live(f.parts[i]))) return false; // a part knocked out stays
   for (const i of swaps.sort((a, b) => b - a)) f.parts.splice(i, 1);
   f.parts.push({ ...part, x, y });
   f.hold.splice(slot, 1);
@@ -146,6 +148,8 @@ function mount(slot, x, y) { // the hold's part onto the board at x, y, throwing
   if (swaps.length) crashSound();
 }
 function holdPart(e, first, i) {
+  const p = progress.fortress.parts[i];
+  if (first && !live(p)) return restart(p); // knocked out: a tap restarts it, and it can't be thrown off
   if (first && packing()) throwing = { i, from: performance.now(), x: e.clientX, y: e.clientY };
   else if (throwing && Math.hypot(e.clientX - throwing.x, e.clientY - throwing.y) > 0.5 * parseFloat($('board').style.getPropertyValue('--cell')))
     letGo(); // a slide isn't a hold; a thumb's wobble (within half a cell) is
@@ -185,10 +189,11 @@ function buyShells() { // distance.js, a tap on the card's button
   save();
   return true;
 }
-const cannonOn = () => rigged() && progress.fortress.parts.some(p => p.kind === 'cannon');
+const cannonOn = () => rigged() && progress.fortress.parts.some(p => p.kind === 'cannon'); // knocked out too (below)
 let reloading = 0, firedAt = -Infinity;
 function fireCannon() {
   if (!cannonOn() || run.phase !== 'run' || reloading > 0) return false;
+  if (!blocks('cannon')) { beep(140, 0.05); flash('JAMMED', '#6af', false); return false; } // every cannon knocked out (War Boys)
   if (progress.shells < 1) { beep(140, 0.05); flash('NO SHELLS', '#fb3', false); return false; }
   progress.shells--;
   reloading = CANNON.reload;
@@ -332,38 +337,81 @@ const mineMarks = () => mines.map(m => ({ z: m.z, kind: 'mine', value: m })); //
 
 // the rival gang's war rigs (Claude's, 30 Oct), its notable enemy: a tanker welded up for war (road.js RIG_SPRITE),
 // in the gang's ambushes (below). It takes over a car out of sight up the road, as the police do, and comes up from
-// behind you in your other lane; it holds the road ahead of you for a few seconds, in the reticle; then drops back
-// beside you and swings into your side, and pulls ahead again; until it is totaled. Rams barely scratch it, as the
-// tank. First guesses, for act5.py: six shells, or four and the guns
-const RIG = { hp: 1500, ahead: 45, hold: 3, hit: 6, scrap: 150, w: 2.8, h: 3.4 }; // m, s, % a ram
+// behind you in your other lane; it holds the road ahead of you, in the reticle, until it is totaled, and its War Boys
+// throw grenades back at you (below; the owner, 2 Nov: it rammed your side until then, the police's verb now). Rams
+// barely scratch it, as the tank. First guesses, for act5.py: six shells, or four and the guns; m ahead it holds; s to
+// its first grenade, between them, in the air
+const RIG = { hp: 1500, ahead: 45, scrap: 150, w: 2.8, h: 3.4, first: 2, every: 4, flight: 0.8 };
 // distance.js startRun: the gang, its mines, the ambushes, the police's spike strips (police.js)
-const rigRun = () => { gangClock = GANG_CAR.every; ambushes = drawAmbushes(); strips = []; torn = 0; mines = []; hooked = null; };
+const rigRun = () => {
+  gangClock = GANG_CAR.every; ambushes = drawAmbushes(); strips = []; torn = 0; mines = []; hooked = null; lobs = [];
+  if (jammed.size) { jammed.clear(); applyUpgrades(); } // a new race: everything restarted
+};
 function sendRig() { // the ambushes: two at a time at most; false if not now (no car to take, no room)
   if (traffic.filter(c => c.rig && !c.wreck).length >= 2) return false;
   const c = traffic.find(c => takeable(c) && c.z - odo > 600);
   const side = sideLane(), wide = side == null && rigW > 1 && lane <= 1; // a fortress filling your side: it waits up the road
   if (!c || !wide && (side == null || !laneClear(MY_LANES[side], 10))) return false;
   Object.assign(c, { rig: true, dir: 1, look: { rear: RIG_SPRITE }, w: RIG.w, h: RIG.h, hp: null, wreck: false, swerve: null, warned: false,
-                     beams: 0, d: NaN, hit: -Infinity }, wide ? { lane, x: MY_LANES[lane], z: odo + 300, v: speed, stage: 'hold', t: RIG.hold }
+                     beams: 0, d: NaN, hit: -Infinity }, wide ? { lane, x: MY_LANES[lane], z: odo + 300, v: speed, stage: 'hold', t: RIG.first }
                      : { lane: side, x: MY_LANES[side], z: odo - 60, v: speed + 15, stage: 'pass' });
   flash('RIVAL RIG!', '#f55', false);
   horn();
   return true;
 }
-function rigDrive(c, dt) { // road.js updateTraffic
-  // a lane beside you to come at you in, in the race; with none (a fortress filling your side) it holds the road ahead
-  const gap = c.z - odo, side = sideLane(), by = side != null && run.phase === 'run';
-  if (c.stage === 'pass') { c.v = speed + 15; if (by) c.lane = side; if (gap > RIG.ahead) Object.assign(c, { stage: 'hold', t: RIG.hold }); }
-  else if (c.stage === 'hold') { c.v = Math.max(0, speed + (RIG.ahead - gap) * 0.6); if ((c.t -= dt) <= 0 && by) c.stage = 'drop'; }
-  else if (c.stage === 'drop') { c.v = Math.max(0, speed - 15); if (by) c.lane = side; if (gap < 1) c.stage = by ? 'ram' : 'pass'; }
-  else { // its side into yours, however wide you are
-    c.v = speed;
-    c.x += clamp(carX - c.x, -4 * dt, 4 * dt);
-    if (!by) c.stage = 'pass';
-    else if (Math.abs(c.x - carX) < (RIG.w + CAR_W) / 2 + 1.75 * (rigW - 1)) rigRam(c);
+function rigDrive(c, dt) { // road.js updateTraffic: past you up the lane beside you, then the road ahead held, its War
+  const gap = c.z - odo, side = sideLane();                 // Boys throwing their grenades back at you
+  if (c.stage === 'pass') { c.v = speed + 15; if (side != null) c.lane = side; if (gap > RIG.ahead) Object.assign(c, { stage: 'hold', t: RIG.first }); }
+  else {
+    c.v = Math.max(0, speed + (RIG.ahead - gap) * 0.6);
+    if ((c.t -= dt) <= 0 && run.phase === 'run') { c.t = RIG.every; lob(c); }
   }
-  if (c.stage !== 'ram') c.x += clamp(MY_LANES[c.lane] - c.x, -2 * dt, 2 * dt);
+  c.x += clamp(MY_LANES[c.lane] - c.x, -2 * dt, 2 * dt);
   c.z += c.v * dt;
+}
+
+// the War Boys' grenades (the owner, 2 Nov): one arcs back from the rig onto a cell of the board, at random, and its
+// blast (a blue flash) knocks out the powered parts there and on the four cells beside it: the cannon, guns, engines;
+// armor and spikes shrug it off, so placing counts. A part knocked out does nothing (blocks, rigPower, the engine's
+// voice) and shows it (JAMMED: blue, static, a lightning mark) until a tap restarts it, or it restarts on its own after
+// 10 s; knocked out it can't be thrown off or swapped out. Claude's numbers, for act5.py
+const EMP = { secs: 10, kinds: ['cannon', 'gun', 'engine'] };
+let lobs = [], jammed = new Map(); // grenades in the air { c, t, at: [x, y] }; a part knocked out: s until it restarts
+const live = p => !jammed.has(p);
+function lob(c) { lobs.push({ c, t: 0, at: [Math.floor(rand() * boardW()), Math.floor(rand() * boardH())] }); }
+function lobTick(dt) { // distance.js updateRun: the grenades land; the parts knocked out restart on their own
+  for (const g of lobs) if ((g.t += dt) >= RIG.flight) blast(g.at);
+  lobs = lobs.filter(g => g.t < RIG.flight);
+  for (const [p, t] of jammed) if (t <= dt) restart(p); else jammed.set(p, t - dt);
+}
+function blast([x, y]) {
+  const f = progress.fortress, near = new Set();
+  for (const [dx, dy] of [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]]) { const i = partAt(f, x + dx, y + dy); if (i >= 0) near.add(f.parts[i]); }
+  const out = [...near].filter(p => EMP.kinds.includes(p.kind) && live(p));
+  struck = { x, y, emp: true, t: performance.now() }; // the blue flash on its cell (renderRig)
+  shake = Math.max(shake, 0.25); // main.js
+  beep(120, 0.15);
+  if (!out.length) return;
+  for (const p of out) jammed.set(p, EMP.secs);
+  flash('JAMMED', '#6af', false);
+  applyUpgrades(); // distance.js: an engine's pull gone
+}
+function restart(p) { // a tap (holdPart), or 10 s
+  if (!jammed.delete(p)) return;
+  applyUpgrades();
+  beep(880, 0.05);
+}
+// a grenade in the air (gang.js renderGang): from the rig up the road down onto your hood, a high arc, its fuse blue
+function drawLobs() {
+  const w = canvas.width, h = canvas.height, now = performance.now();
+  for (const g of lobs) {
+    const s = g.c.seen;
+    if (!s || g.c.wreck) continue;
+    const k = g.t / RIG.flight, x1 = s[0] + s[2] / 2, y1 = s[1], x2 = w * (0.4 + 0.2 * (g.at[0] + 0.5) / boardW()), y2 = h * 0.72;
+    const x = x1 + (x2 - x1) * k, y = y1 + (y2 - y1) * k - Math.sin(Math.PI * k) * h * 0.18, r = w / 140 * (1 + 2 * k);
+    g2d.fillStyle = '#2a2a24'; g2d.beginPath(); g2d.arc(x, y, r, 0, 2 * Math.PI); g2d.fill();
+    g2d.fillStyle = now % 200 < 100 ? '#8cf' : '#36f'; g2d.beginPath(); g2d.arc(x, y - r * 0.6, r * 0.45, 0, 2 * Math.PI); g2d.fill();
+  }
 }
 // the rival gang's harpoon truck (the owner, 2 Nov; its midline, in the gang's ambushes): it comes past and holds the
 // road ahead of you in the lane beside you, or up the right shoulder with none, so you see it (the owner: from the
@@ -448,17 +496,6 @@ function drawHarpoons() {
     const k = Math.min(1, (now - c.fired) / 1000), px = x2 + (x1 - x2) * k, py = y2 + (y1 - y2) * k, s = w / 30 * (1 - 0.6 * k);
     g2d.drawImage(crateSprite(c.prize.kind), px - s / 2, py - s * 0.4, s, s * 0.8); // road.js
   }
-}
-
-function rigRam(c) { // its side into yours: a hit on that side, a shove and a jolt; then it pulls ahead
-  c.stage = 'pass';
-  slide += 4 * Math.sign(carX - c.x); // car.js: knocked across, and steered back
-  speed *= 0.9;
-  shake = Math.max(shake, 0.5);
-  crashSound();
-  flash('RAMMED', '#f55', false);
-  strike(RIG.hit, c.x, c.z); // on the side it comes from
-  if (wrecked()) finishRun('wrecked');
 }
 
 // ---- ambushes (layer 9; the feel and the factions, 31 Oct-2 Nov): on the war rig the heat retires, and the road
@@ -593,13 +630,13 @@ const lootMarks = () => (run.loot ?? []).map(l => ({ z: l.z, kind: 'loot', value
 
 // what the parts on the board add up to (distance.js applyUpgrades, gang.js, damage.js): blocks of a kind, the weight
 // the deck and every part in it and in the hold carry, the drag of its length, an engine's pull
-const blocks = kind => rigged() ? progress.fortress.parts.reduce((n, p) => n + (p.kind === kind ? p.cells.length : 0), 0) : 0;
+const blocks = kind => rigged() ? progress.fortress.parts.reduce((n, p) => n + (p.kind === kind && live(p) ? p.cells.length : 0), 0) : 0; // working
 const DECK = 250; // kg a cell of deck
 const rigWeight = () => !rigged() ? 0 : boardW() * boardH() * DECK +
   [...progress.fortress.parts, ...progress.fortress.hold].reduce((kg, p) => kg + PARTS[p.kind].kg * p.cells.length, 0);
 const rigDrag = () => rigged() ? boardW() + 0.1 * (boardH() - 1) : 1; // its width is frontal area: a lane's more each; its
                                                                        // length a little
-const rigPower = () => rigged() ? progress.fortress.parts.reduce((k, p) => k + (p.kind === 'engine' ? ENGINE_POWER[p.from] * p.cells.length : 0), 0) : 0;
+const rigPower = () => rigged() ? progress.fortress.parts.reduce((k, p) => k + (p.kind === 'engine' && live(p) ? ENGINE_POWER[p.from] * p.cells.length : 0), 0) : 0;
 const armorCut = () => 0.25 * lvl('armour'); // Armor plating (gang.js); the war rig's armor parts are its shield, below
 
 // ---- the shield (layer 7; the owner, 29 Oct: "parts fall off"): a hit on the war rig lands on the board's cell by where
@@ -627,7 +664,7 @@ function cellAt(x, z) {
   if (across < along) return [x < carX ? 0 : w - 1, Math.floor(rand() * h)];
   return [clamp(Math.round((x - carX) / LANE_W + (w - 1) / 2), 0, w - 1), z + CAR_LEN / 2 > odo + (MY_FRONT - MY_REAR) / 2 ? 0 : h - 1];
 }
-function strike(pct, x, z) { // damage.js hurt, boss.js, rigRam: pct the hit's damage before Armor plating, from x, z
+function strike(pct, x, z) { // damage.js hurt, boss.js, police.js: pct the hit's damage before Armor plating, from x, z
   const d = pct * (1 - armorCut());
   if (!rigged()) return addDamage(d); // damage.js
   hitCell(d, ...cellAt(x, z));
@@ -670,7 +707,7 @@ function wearOut(kind, by) { // fireCannon, gang.js fireGuns and ram, rigTick
   if (!rigged()) return;
   for (let i = f.parts.length - 1; i >= 0; i--) {
     const p = f.parts[i];
-    if (p.kind !== kind) continue;
+    if (p.kind !== kind || !live(p)) continue; // knocked out, it isn't working
     p.hp = Math.max(0, hpOf(p) - by);
     if (p.hp <= 0) fallOff(i, 'WORN OUT');
   }
@@ -684,7 +721,7 @@ let heard = '', rigSounds = false; // SUV's V8, a rig's truck diesel, a tank's V
 function engineVoices() { // renderRig, every frame: set again only when it changes
   const want = {};
   for (const p of rigged() ? progress.fortress.parts : []) {
-    if (p.kind === 'engine') want[ENGINE_SOUND[p.from]] = Math.min(1, (want[ENGINE_SOUND[p.from]] ?? 0.2) + 0.2 * p.cells.length);
+    if (p.kind === 'engine' && live(p)) want[ENGINE_SOUND[p.from]] = Math.min(1, (want[ENGINE_SOUND[p.from]] ?? 0.2) + 0.2 * p.cells.length);
   }
   if (!rigSounds && Object.keys(want).some(n => !SOUNDS[n])) {
     rigSounds = true;
@@ -714,7 +751,7 @@ function renderRig() {
   fallen = fallen.filter(x => now - x.t < FALL);
   renderBoard();
   const ago = struck ? now - struck.t : Infinity, hit = $('fort-hit'); // the cell hit: amber on a part, red through to the rig
-  hit.className = ago < 400 ? (struck.part ? 'part' : 'rig') : '';
+  hit.className = ago < 400 ? (struck.emp ? 'emp' : struck.part ? 'part' : 'rig') : ''; // a grenade's blast: blue
   if (ago < 400) Object.assign(hit.style, { left: `${struck.x * 100 / boardW()}%`, top: `${struck.y * 100 / boardH()}%`,
                                             opacity: (1 - ago / 400).toFixed(2) });
   $('fort-drag').classList.toggle('armed', armed());
@@ -726,6 +763,7 @@ function renderRig() {
   }
   $('cannon-pedal').classList.toggle('pressed', pedalDown || now - firedAt < 150);
   $('cannon-pedal').parentNode.classList.toggle('mounted', cannonOn());
+  $('cannon-pedal').parentNode.classList.toggle('jammed', cannonOn() && !blocks('cannon')); // every cannon knocked out
   $('cannon-pedal').parentNode.classList.toggle('empty', progress.shells < 1);
   $('cannon-pedal').parentNode.style.setProperty('--reload', (1 - reloading / CANNON.reload).toFixed(2));
   text('shell-count', bottomless() ? '∞' : String(progress.shells)); // debug mode: bottomless (distance.js save)
@@ -761,7 +799,10 @@ TUTORIALS.push( // the war rig's, once rebuilt (the owner's: the controls change
   { id: 'rivals', name: 'The rival gang', open: () => rigged() && progress.toured.includes('rivals'), pages: [
     { title: 'A RIVAL RIG', at: '#ar',
       both: "The rival gang's war rig. Only rigs, tanks and police SUVs are in the reticle now: the cannon and guns " +
-        'are for them. It holds the road ahead, then rams you from the side.' },
+        'are for them. It holds the road ahead, and its War Boys throw grenades back at you.' },
+    { title: 'JAMMED', at: '#board',
+      both: "A grenade's blast knocks out the cannon, guns and engines it lands among, blue on the board: they do " +
+        'nothing until you tap them, or for 10 s. Armor and spikes shrug it off.' },
     { title: 'ITS TAG', at: '#ar',
       both: 'Over the reticle: what it is, its health, the shells it would take, how far.' },
     { title: 'THE RIVAL GANG',
