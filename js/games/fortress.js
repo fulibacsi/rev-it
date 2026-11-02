@@ -84,7 +84,8 @@ function renderBoard() {
   $('board').style.setProperty('--cell', `${cell}px`);
   Object.assign($('fort-grid').style, { width: `${cell * w}px`, height: `${cell * h}px` });
   $('fort-grid').innerHTML = f.parts.map((p, i) => partHtml(p, `data-part="${i}" data-wear="${wear(p)}"${p === aimedAt() ? ' data-hooked' : ''}${live(p) ? '' : ' data-jam'}`)).join('') +
-    fallen.map(({ p }) => partHtml(p, `data-fall data-wear="2"`)).join('') + '<i id="fort-ghost"></i><i id="fort-hit"></i>';
+    fallen.map(({ p }) => partHtml(p, `data-fall data-wear="2"`)).join('') + '<i id="fort-ghost"></i><i id="fort-hit"></i>' +
+    '<i class="fort-aim"></i>'.repeat(3); // the rockets' marks (markRockets): two rocket cars', and one still in the air
   $('fort-hold').innerHTML = Array.from({ length: n }, (_, i) => `<div class="slot" data-slot="${i}">` +
     `${f.hold[i] ? partHtml(f.hold[i], `data-wear="${wear(f.hold[i])}"`, cell / Math.max(extent(f.hold[i].cells, 0), extent(f.hold[i].cells, 1))) : ''}</div>`).join('');
   for (const el of $('fort-hold').querySelectorAll('.slot')) // the whole slot is its handle: a part shrunk to fit one is small
@@ -218,12 +219,13 @@ function rigKey(k, repeat) {
   if (k === ' ') { if (!repeat) fireCannon(); return true; }
   return ['Shift', 'b', 'B', 'ArrowUp', 'ArrowDown', 'n', 'N', 'f', 'F'].includes(k);
 }
-// ---- the road (the owner, 30 Oct): the reticle takes only the notable enemies, the army's tanks, the rival gang's war
-// rigs and harpoon trucks, the police's pursuit SUVs and helicopters (police.js); the rest are the raiders' (gang.js
-// crewTarget), and Hunter's
-const notable = c => !!(c.tank || c.rig || c.suv || c.heli || c.harpoon);
+// ---- the road (the owner, 30 Oct): the reticle takes only the notable enemies, the army's tanks and rocket cars, the
+// rival gang's war rigs and harpoon trucks, the police's pursuit SUVs and helicopters (police.js); the rest are the
+// raiders' (gang.js crewTarget), and Hunter's
+const notable = c => !!(c.tank || c.rig || c.suv || c.heli || c.harpoon || c.rocket);
 // a car out of sight up the road an enemy can take over (police.js, boss.js, here): the traffic's, none of theirs
-const takeable = c => !c.racer && !c.police && !c.tank && !c.rig && !c.heli && !c.harpoon && !c.fleet && c !== target && c !== quarry;
+const takeable = c => !c.racer && !c.police && !c.tank && !c.rig && !c.heli && !c.harpoon && !c.jeep && !c.rocket && !c.fleet && c !== target &&
+  c !== quarry;
 // the lane beside the rig on your side of the road, for an enemy coming past it: your other lane while it is a lane
 // wide, the one to the right of a fortress over the double yellow; none while it fills your side (car.js lane, rigW)
 const sideLane = () => rigW === 1 ? (lane <= 1 ? 1 - lane : null) : lane >= 1 ? Math.min(lane - 1, 1) : null;
@@ -231,7 +233,7 @@ const sideLane = () => rigW === 1 ? (lane <= 1 ? 1 - lane : null) : lane >= 1 ? 
 // resources have their metadata over them"): what it is, its health, the shells it would take, how far
 function notableTag(t) {
   const shots = Math.ceil(Math.max(0, t.hp ?? health(t)) / CANNON.damage);
-  return [t.tank ? 'TANK' : t.rig ? 'RIG' : t.heli ? 'HELI' : t.harpoon ? 'HARPOON' : 'SUV', `${Math.round(100 * hpLeft(t))}%`, cannonOn() && `${shots} SHOT${shots === 1 ? '' : 'S'}`,
+  return [t.tank ? 'TANK' : t.rig ? 'RIG' : t.heli ? 'HELI' : t.harpoon ? 'HARPOON' : t.rocket ? 'ROCKET' : 'SUV', `${Math.round(100 * hpLeft(t))}%`, cannonOn() && `${shots} SHOT${shots === 1 ? '' : 'S'}`,
           `${Math.round(t.z - odo)} m`].filter(Boolean).join(' · ');
 }
 
@@ -344,7 +346,7 @@ const mineMarks = () => mines.map(m => ({ z: m.z, kind: 'mine', value: m })); //
 const RIG = { hp: 1500, ahead: 45, scrap: 150, w: 2.8, h: 3.4, first: 2, every: 4, flight: 0.8 };
 // distance.js startRun: the gang, its mines, the ambushes, the police's spike strips (police.js)
 const rigRun = () => {
-  gangClock = GANG_CAR.every; ambushes = drawAmbushes(); strips = []; torn = 0; mines = []; hooked = null; lobs = [];
+  gangClock = GANG_CAR.every; ambushes = drawAmbushes(); strips = []; torn = 0; mines = []; hooked = null; lobs = []; rockets = [];
   if (jammed.size) { jammed.clear(); applyUpgrades(); } // a new race: everything restarted
 };
 function sendRig() { // the ambushes: two at a time at most; false if not now (no car to take, no room)
@@ -434,16 +436,17 @@ const aimedAt = () => traffic.some(c => c.harpoon && !c.wreck && c.stage === 'wi
 function sendHarpoon() {
   if (traffic.some(c => c.harpoon && !c.wreck && c.stage !== 'leave') || progress.fortress.parts.length < 2) return false;
   const c = traffic.find(c => takeable(c) && c.z - odo > 600);
-  if (!c || harpoonX() == null) return false;
+  if (!c || besideX() == null) return false;
   Object.assign(c, { harpoon: true, dir: 1, look: { rear: HARPOON_SPRITE }, w: HARPOON.w, h: HARPOON.h, hp: null, wreck: false, swerve: null,
-                     warned: false, beams: 0, d: NaN, hit: -Infinity, prize: null, x: harpoonX(), z: odo - 60, v: speed + 15, stage: 'pass' });
+                     warned: false, beams: 0, d: NaN, hit: -Infinity, prize: null, x: besideX(), z: odo - 60, v: speed + 15, stage: 'pass' });
   flash('HARPOON TRUCK!', '#f55', false);
   return true;
 }
-// where it drives beside you: the lane beside the rig, else the right shoulder (the road's right lane yours), else none
-const harpoonX = () => { const side = sideLane(); return side != null ? MY_LANES[side] : lane === 0 ? SHOULDER_X : null; };
+// where it drives beside you (a jeep too, below): the lane beside the rig, else the right shoulder (the road's right lane
+// yours), else none
+const besideX = () => { const side = sideLane(); return side != null ? MY_LANES[side] : lane === 0 ? SHOULDER_X : null; };
 function harpoonDrive(c, dt) { // road.js updateTraffic
-  const gap = c.z - odo, at = harpoonX() ?? c.x;
+  const gap = c.z - odo, at = besideX() ?? c.x;
   if (c.stage === 'leave') { c.v = speed + 20; c.z += c.v * dt; return; } // off up the road, back into the traffic (road.js)
   c.x += clamp(at - c.x, -3 * dt, 3 * dt);
   c.v = c.stage === 'pass' ? speed + 15 : c.stage === 'reel' ? speed + 8 : Math.max(0, speed + (HARPOON.ahead - gap) * 0.8);
@@ -498,6 +501,122 @@ function drawHarpoons() {
   }
 }
 
+// ---- the army (layer 12; the factions, the owner, 2 Nov: "military shoots"). Its fodder, the jeep (the raiders' and
+// your rams'): the police car's body in olive drab with a white star (the owner: reskins are fine for the fodder), a
+// machine gun on its roof, peppering you as it passes, on the side it is on. It comes up from behind in the lane beside
+// you (or the right shoulder, as the gang's cars), past you, drops back past you, and past you once more, firing all
+// the while it is near: each shot lands where it comes from (cellAt), on the column on its side of the board, the front
+// row once it is ahead. Then it races off up the road. Claude's numbers, for act5.py: health (a car's: a ram with the
+// full bull bar totals it); m/s quicker or slower than you; m ahead and behind it turns; times past you; s between
+// shots; % a shot before Armor plating (a police car's ram is 4)
+const JEEP = { hp: 100, by: 6, ahead: 20, behind: 10, passes: 3, every: 0.4, hit: 0.4 };
+function sendJeep() { // the ambushes; false with no car to take over, no way past you, or another just sent that way
+  const x = besideX(), c = x != null && !traffic.some(o => o.jeep && !o.wreck && sameLane(o.x, x) && o.z < odo - 20) &&
+    traffic.find(c => takeable(c) && c.z - odo > 600);
+  if (!c) return false;
+  Object.assign(c, { jeep: true, dir: 1, look: JEEP_LOOK, hp: null, wreck: false, swerve: null, warned: false, beams: 0, d: NaN,
+                     hit: -Infinity, x, z: odo - 40, v: speed + JEEP.by, stage: 'pass', passes: 0, shot: 0, fired: false });
+  return true;
+}
+function jeepDrive(c, dt) { // road.js updateTraffic: past you and back, firing while it is near; then off up the road
+  const gap = c.z - odo;
+  if (c.stage === 'leave') { c.v = speed + 20; c.z += c.v * dt; return; } // back into the traffic (road.js)
+  c.x += clamp((besideX() ?? c.x) - c.x, -3 * dt, 3 * dt);
+  if (c.stage === 'pass' && gap > JEEP.ahead || c.stage === 'back' && gap < -JEEP.behind)
+    c.stage = ++c.passes >= JEEP.passes ? 'leave' : c.stage === 'pass' ? 'back' : 'pass';
+  c.v = speed + (c.stage === 'back' ? -JEEP.by : JEEP.by);
+  c.z += c.v * dt;
+  if (run.phase === 'run' && gap > -JEEP.behind && gap < JEEP.ahead && (c.shot -= dt) <= 0) jeepFire(c);
+}
+function jeepFire(c) { // a shot: its tracer, the hit on the side of the board it is on
+  c.shot = JEEP.every;
+  tracers.push([c, 'you', performance.now()]); // gang.js: drawn while it is in sight
+  beep(110, 0.03);
+  strike(JEEP.hit, c.x, c.z);
+  if (!c.fired) { c.fired = true; flash('UNDER FIRE', '#f55', false); }
+  if (!progress.toured.includes('jeeps')) openTour('jeeps', true);
+  if (wrecked()) finishRun('wrecked');
+}
+// its midline, the rocket car: the police SUV's body in olive, a rocket pod on the roof. It takes over a car up the road
+// and holds the road ahead, two at most (the second further on, in your lane: the first takes your other), in the
+// reticle, the cannon's and the guns'; rams barely scratch it. Every few seconds it locks on: a lane the fortress
+// covers and a row of the board, its mark blinking on the cell over that lane (the owner: "a marker on the cell it
+// will land on"), then the rocket goes up, its mark lit, and comes down there. Change lanes before it lands and the
+// mark moves with you, off the board: it misses (the owner: "dodged by changing lanes"); a fortress three or four lanes
+// wide changes lanes too slowly to dodge, or can't at all. Claude's numbers, for act5.py: an SUV's health (three
+// shells), scrap and size; m ahead it holds; s to its first lock, between them, locked on, in the air; % a hit before
+// Armor plating (a mine's 15)
+const ROCKET = { hp: 600, scrap: 110, w: 2.1, h: 1.9, ahead: 70, first: 2, every: 5, lock: 1.5, flight: 1, hit: 15 };
+let rockets = []; // locked on or in the air: { c, x (the road's lane), y (the board's row), t, air, from }
+function sendRocket() { // the ambushes; false with two on the road, or no car to take over
+  const k = traffic.filter(c => c.rocket && !c.wreck).length, c = k < 2 && traffic.find(c => takeable(c) && c.z - odo > 600);
+  if (!c) return false;
+  const at = lane > 1 ? k : k ? lane : 1 - lane;
+  Object.assign(c, { rocket: true, dir: 1, look: ROCKET_LOOK, w: ROCKET.w, h: ROCKET.h, hp: null, wreck: false, swerve: null, warned: false,
+                     beams: 0, d: NaN, hit: -Infinity, lane: at, x: MY_LANES[at], z: odo + 250 + 40 * k, v: speed, t: ROCKET.first + k * 2,
+                     second: k > 0 });
+  flash('ROCKET CAR!', '#f55', false);
+  return true;
+}
+function rocketDrive(c, dt) { // road.js updateTraffic: the road ahead held, as the tank holds it; a rocket every few seconds
+  const keep = ROCKET.ahead + (c.second ? 30 : 0);
+  c.v = clamp(speed + (keep - (c.z - odo)) * 0.6, 0, 140);
+  c.z += c.v * dt;
+  c.x += clamp(MY_LANES[c.lane] - c.x, -2 * dt, 2 * dt);
+  if ((c.t -= dt) > 0 || run.phase !== 'run' || c.z - odo > keep + 20 || rockets.some(r => r.c === c && !r.air)) return;
+  c.t = ROCKET.every;
+  rockets.push({ c, x: ROAD_LANES[lane + Math.floor(rand() * rigW)], y: Math.floor(rand() * boardH()), t: ROCKET.lock, air: false });
+  flash('ROCKET!', '#f55', false);
+  beep(1200, 0.08);
+}
+const rocketCol = r => Math.round((r.x - carX) / LANE_W + (boardW() - 1) / 2); // the board's column over its lane now
+function rocketTick(dt) { // distance.js updateRun: locked on, fired (unless the car was brought down first), landed
+  for (const r of rockets) {
+    if (!r.air && (r.c.wreck || !r.c.rocket)) { r.gone = true; continue; }
+    if ((r.t -= dt) > 0) continue;
+    if (r.air) { r.gone = true; landRocket(r); continue; }
+    const s = r.c.seen;
+    Object.assign(r, { air: true, t: ROCKET.flight, from: s && [s[0] + s[2] / 2, s[1]] });
+    beep(220, 0.2);
+  }
+  rockets = rockets.filter(r => !r.gone);
+}
+function landRocket(r) { // on the cell over its lane, or beside the rig: true if it hit
+  shake = Math.max(shake, 0.3); // main.js
+  if (!runOver(ROCKET.hit, r.x, r.y)) { flash('MISSED IT', '#3f6', false); beep(90, 0.15); return false; }
+  shake = Math.max(shake, 0.6);
+  crashSound();
+  flash('ROCKET HIT', '#f55', false);
+  if (wrecked()) finishRun('wrecked');
+  return true;
+}
+// a rocket in the air (gang.js renderGang): up from the car's roof in a high arc and down onto the cell over its lane,
+// beside the rig once you are out from under it, a trail of smoke behind it
+function drawRockets() {
+  const w = canvas.width, h = canvas.height;
+  for (const r of rockets) {
+    if (!r.air || !r.from) continue;
+    const col = (r.x - carX) / LANE_W + (boardW() - 1) / 2, [x1, y1] = r.from, x2 = w * (0.4 + 0.2 * (col + 0.5) / boardW()), y2 = h * 0.72;
+    const at = k => [x1 + (x2 - x1) * k, y1 + (y2 - y1) * k - Math.sin(Math.PI * k) * h * 0.3], k = 1 - r.t / ROCKET.flight, size = w / 160 * (1 + 2 * k);
+    for (let i = 6; i > 0; i--) { // the smoke
+      const [x, y] = at(Math.max(0, k - i * 0.035));
+      g2d.fillStyle = `rgba(170, 170, 170, ${(0.6 - i * 0.08).toFixed(2)})`; g2d.beginPath(); g2d.arc(x, y, size * (0.8 + i * 0.15), 0, 2 * Math.PI); g2d.fill();
+    }
+    const [x, y] = at(k);
+    g2d.fillStyle = '#ffb347'; g2d.beginPath(); g2d.arc(x, y, size * 1.1, 0, 2 * Math.PI); g2d.fill(); // its flame, its nose
+    g2d.fillStyle = '#2b3011'; g2d.beginPath(); g2d.arc(x, y, size * 0.7, 0, 2 * Math.PI); g2d.fill();
+  }
+}
+// the rockets' marks on the board (renderRig): blinking while locked on, lit in the air; none once its lane is off
+// the board
+function markRockets() {
+  [...$('fort-grid').querySelectorAll('.fort-aim')].forEach((el, i) => {
+    const r = rockets[i], cx = r ? rocketCol(r) : -1, on = cx >= 0 && cx < boardW();
+    el.className = on ? `fort-aim ${r.air ? 'air' : 'lock'}` : 'fort-aim';
+    if (on) Object.assign(el.style, { left: `${cx * 100 / boardW()}%`, top: `${r.y * 100 / boardH()}%` });
+  });
+}
+
 // ---- ambushes (layer 9; the feel and the factions, 31 Oct-2 Nov): on the war rig the heat retires, and the road
 // fights back by how built-out the fortress is. Each race's ambushes are drawn before it on dice of their own, as act
 // 3's spots are (the owner: "a bit of randomization, like in act 3"; the traffic stays the same), in clusters and gaps
@@ -507,13 +626,16 @@ function drawHarpoons() {
 // far more than a 2x3 with one). Claude's numbers, for act5.py
 const AMBUSH = { first: [300, 600], near: [200, 400], far: [600, 1000], cluster: 0.55, lead: 450, draws: 5, // m; s
                  base: 8, scale: 4, power: 0.85 }; // the budget: base + scale x strength ^ power
-const COST = { cop: 1, suv: 3, heli: 6, gang: 1, harpoon: 3, rig: 6, tank: 10 }; // of the budget, a member
+const COST = { cop: 1, suv: 3, heli: 6, gang: 1, harpoon: 3, rig: 6, jeep: 1, rocket: 3, tank: 10 }; // of the budget, a member
+// (the army's a 20% share while it was tanks alone; with its rocket cars and jeeps (layer 12) its ambushes spend their
+// whole share, and at 20% they came half as often: half the tanks, and the tanks bring the cannons. act5.py)
 const FACTIONS = { // their members by tier (the factions: fodder, midline, notable), a share of the ambushes each
-  police: { share: 0.4, tiers: [['heli'], ['suv'], ['cop']] }, gang: { share: 0.4, tiers: [['rig'], ['harpoon'], ['gang']] },
-  army: { share: 0.2, tiers: [['tank'], [], []] },
+  police: { share: 0.35, tiers: [['heli'], ['suv'], ['cop']] }, gang: { share: 0.35, tiers: [['rig'], ['harpoon'], ['gang']] },
+  army: { share: 0.3, tiers: [['tank'], ['rocket'], ['jeep']] },
 };
 const SEND = { cop: () => sendCop(false), suv: () => sendCop(true), heli: () => sendHeli(), gang: () => sendGangCar(), rig: () => sendRig(),
-               harpoon: () => sendHarpoon(), tank: () => sendTank() }; // police.js, here, boss.js: each false if not now (none to take over, no room, too many)
+               harpoon: () => sendHarpoon(), jeep: () => sendJeep(), rocket: () => sendRocket(), tank: () => sendTank() }; // police.js,
+               // here, boss.js: each false if not now (none to take over, no room, too many)
 const WORTH = { cannon: 3, gun: 2, engine: 1, armor: 1, spikes: 1 }; // a block's share of the strength, as worn as it is
 const strength = () => boardW() * boardH() + progress.fortress.parts.reduce((k, p) => k + WORTH[p.kind] * p.cells.length * hpOf(p) / fullHp(p), 0);
 const budget = () => AMBUSH.base + AMBUSH.scale * strength() ** AMBUSH.power;
@@ -540,7 +662,7 @@ function drawOnce(length, money) {
   }
   return list;
 }
-function pickFaction(left) { // the army only once a tank is affordable
+function pickFaction(left) { // the army only once a tank is affordable: it brings its tank first, then its rocket cars and jeeps
   const open = Object.keys(FACTIONS).filter(f => f !== 'army' || left >= COST.tank);
   let r = ambushRoll() * open.reduce((k, f) => k + FACTIONS[f].share, 0);
   return open.find(f => (r -= FACTIONS[f].share) < 0) ?? open.at(-1);
@@ -582,15 +704,16 @@ const DROPS = {
   suv: [0.45, { armor: 0.5, engine: 0.3, gun: 0.2 }],
   harpoon: [0.45, { armor: 0.4, spikes: 0.3, gun: 0.3 }], // besides the part it took, if it had one (gang.js total)
   rig: [0.8, { armor: 0.4, spikes: 0.3, engine: 0.3 }], heli: [0.8, { gun: 0.6, engine: 0.4 }], // its gun or its turbine
+  jeep: [0.1, { gun: 0.6, armor: 0.4 }], rocket: [0.45, { armor: 0.4, gun: 0.3, engine: 0.3 }], // the jeep's machine gun mostly
   tank: [0.85, { cannon: 0.7, armor: 0.2, engine: 0.1 }],
 };
-const ENGINE_POWER = { gang: 0.06, suv: 0.1, rig: 0.15, tank: 0.25, heli: 0.2 }; // more pull a block, by the engine it came from
+const ENGINE_POWER = { gang: 0.06, suv: 0.1, rocket: 0.1, rig: 0.15, tank: 0.25, heli: 0.2 }; // more pull a block, by the engine it came from
 // m/s² a crate skids to a stop at; m either way it is picked up within; m ahead of you a crate lands at least, so you
 // see it coming and choose (the owner, 2 Nov: drops beside you went straight into the hold unseen, and those behind you
 // were never seen at all)
 const LOOT = { slow: 8, reach: 3, ahead: 25 };
 const pick = table => { let r = rand(); const ks = Object.keys(table); return ks.find(k => (r -= table[k]) < 0) ?? ks.at(-1); };
-const sourceOf = c => c.tank ? 'tank' : c.rig ? 'rig' : c.harpoon ? 'harpoon' : c.suv ? 'suv' : c.heli ? 'heli' : c.police ? 'cop' :
+const sourceOf = c => c.tank ? 'tank' : c.rig ? 'rig' : c.harpoon ? 'harpoon' : c.rocket ? 'rocket' : c.jeep ? 'jeep' : c.suv ? 'suv' : c.heli ? 'heli' : c.police ? 'cop' :
   c.racer && !c.fleet ? 'gang' : null;
 // a size it comes in, then a shape of it no wider than the board (one wider never fits), in salvage condition (the
 // feel, 31 Oct): worn, SALVAGE of its health at random, so a fresher one is worth a swap even on a full board
@@ -670,11 +793,11 @@ function strike(pct, x, z) { // damage.js hurt, boss.js, police.js: pct the hit'
   hitCell(d, ...cellAt(x, z));
 }
 // a spike strip (police.js stripTick) or a mine (mineTick) on the road's lane at x: the front cell of the column over it;
-// with none, a miss
-function runOver(pct, x) {
+// a rocket (landRocket) the row it was aimed at; with none, a miss
+function runOver(pct, x, row = 0) {
   const w = boardW(), cx = Math.round((x - carX) / LANE_W + (w - 1) / 2);
   if (cx < 0 || cx >= w) return false;
-  hitCell(pct * (1 - armorCut()), cx, 0);
+  hitCell(pct * (1 - armorCut()), cx, row);
   return true;
 }
 function hitCell(d, cx, cy) { // d: the hit's damage after Armor plating
@@ -716,8 +839,9 @@ function wearOut(kind, by) { // fireCannon, gang.js fireGuns and ram, rigTick
 // an engine heard (the owner, 30 Oct: "a new engine sound added on top of the existing one"): a voice for each kind of
 // engine on the board, louder the more blocks of it (engine.js setVoices); the heavy ones' file loaded the first time
 // one is mounted, so the page weighs no more until then
-const ENGINE_SOUND = { gang: 'boxer', suv: 'v8', rig: 'truck', tank: 'tank', heli: 'turbine' }; // a rival car's boxer, an
-let heard = '', rigSounds = false; // SUV's V8, a rig's truck diesel, a tank's V12 diesel, a helicopter's gas turbine
+const ENGINE_SOUND = { gang: 'boxer', suv: 'v8', rocket: 'v8', rig: 'truck', tank: 'tank', heli: 'turbine' }; // a rival car's
+let heard = '', rigSounds = false; // boxer, an SUV's V8 (the rocket car's too), a rig's truck diesel, a tank's V12 diesel, a
+                                   // helicopter's gas turbine
 function engineVoices() { // renderRig, every frame: set again only when it changes
   const want = {};
   for (const p of rigged() ? progress.fortress.parts : []) {
@@ -754,6 +878,7 @@ function renderRig() {
   hit.className = ago < 400 ? (struck.emp ? 'emp' : struck.part ? 'part' : 'rig') : ''; // a grenade's blast: blue
   if (ago < 400) Object.assign(hit.style, { left: `${struck.x * 100 / boardW()}%`, top: `${struck.y * 100 / boardH()}%`,
                                             opacity: (1 - ago / 400).toFixed(2) });
+  markRockets();
   $('fort-drag').classList.toggle('armed', armed());
   $('fort-drag').classList.toggle('swap', !!dragging?.swaps?.length);
   if (throwing) {
@@ -772,6 +897,7 @@ function renderRig() {
   else if (target?.suv && first('pursuit')) openTour('pursuit', true);
   else if (target?.heli && first('heli')) openTour('heli', true);
   else if (target?.harpoon && first('harpoon')) openTour('harpoon', true);
+  else if (target?.rocket && first('rockets')) openTour('rockets', true);
 }
 
 TUTORIALS.push( // the war rig's, once rebuilt (the owner's: the controls change with it)
@@ -855,6 +981,20 @@ TUTORIALS.push( // the war rig's, once rebuilt (the owner's: the controls change
     { title: 'ITS AIM', at: '#board',
       both: 'The part it aims at blinks on the board. Bring the truck down before it reels the part in, and the part ' +
         'falls on the road in a crate.' },
+  ] },
+  // on the road, the first time a rocket car is in the reticle (renderRig); listed once seen
+  { id: 'rockets', name: 'Rocket cars', open: () => rigged() && progress.toured.includes('rockets'), pages: [
+    { title: 'A ROCKET CAR', at: '#ar',
+      both: "The army's rocket car, in the reticle. It holds the road ahead and fires a rocket every few seconds." },
+    { title: 'ITS MARK', at: '#board',
+      both: 'Where a rocket will land blinks red on the board. Change lanes before it comes down and the mark slides off ' +
+        'the board with you: it misses.' },
+  ] },
+  // on the road, the first shot of the army's jeeps (jeepFire); listed once seen
+  { id: 'jeeps', name: 'Jeeps', open: () => rigged() && progress.toured.includes('jeeps'), pages: [
+    { title: 'JEEPS', at: '#board',
+      both: "The army's jeeps come past you and back, their machine guns peppering the side of the board they are on. " +
+        'Your raiders go after them, and a ram does for one.' },
   ] },
   // on the road, the first time a police SUV is in the reticle (renderRig); listed once seen
   { id: 'pursuit', name: 'Police SUVs', open: () => rigged() && progress.toured.includes('pursuit'), pages: [

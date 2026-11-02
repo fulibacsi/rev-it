@@ -160,27 +160,52 @@ function policeSprite(side, lit) { // black and white (white down to the glass, 
   return c;
 }
 const POLICE = [0, 1].map(lit => ({ rear: policeSprite('rear', lit), front: policeSprite('front', lit), beams: policeSprite('beams', lit) }));
+// the army's jeep (Distance's act 5, fortress.js): the police car's body in olive drab, a white star on it (the owner,
+// 2 Nov: reskins are fine for the fodder), a machine gun on the roof where the light bar was
+const OLIVE = '#5f6b35', STAR = ['...#...', '..###..', '#######', '.#####.', '..###..', '.##.##.', '.#...#.'];
+function jeepSprite(side) {
+  const v = CAR_ART[POLICE_MODEL][side === 'beams' ? 'front' : side], pad = side === 'front' ? 5 : 0, rear = side === 'rear'; // room for
+                                                                                                         // the gun over the front's roof
+  const c = side === 'beams' ? beamsSprite(v, [v.car], OLIVE) : pixelSprite(v, [v.car], OLIVE, { pad });
+  const [x0, y0, x1, y1] = v.glass, k = rear ? 2 : 1, sx = Math.round((x0 + x1) / 2 - 3.5 * k); // the star: on the trunk, the hood
+  const sy = rear ? y1 + 7 : y1 + 2;
+  STAR.forEach((row, j) => [...row].forEach((ch, i) => ch === '#' && dab(c, pad, '#f2f2ea', sx + i * k, sy + j * k, k, k)));
+  if (side === 'beams') return c;
+  const mid = Math.round((x0 + x1) / 2), roof = v.body[1];
+  dab(c, pad, '#2b3011', mid - 8, roof - 4, 16, 4); // the gun's shield on the roof, and its barrel at you
+  dab(c, pad, '#14160c', mid - 2, roof - 6, 4, 3);
+  return c;
+}
+const JEEP_LOOK = { rear: jeepSprite('rear'), front: jeepSprite('front'), beams: jeepSprite('beams') };
 // the police's pursuit SUV (Distance's act 5, police.js), drawn as the tank and the rig are: tall and boxy, the police's
 // black and white, a steel push bar in front and a spiked one behind, the spare wheel on the tailgate, its light bar lit
-// red (0) or blue (1); beams: in front, its headlights flashing you
-function suvSprite(side, lit) {
+// red (0) or blue (1); beams: in front, its headlights flashing you. Army: the army's rocket car (fortress.js), the
+// same body in olive, a white star, a rocket pod on the roof, its tubes' ends at you
+function suvSprite(side, lit, army) {
   return sprite(220, 200, (g, w, h) => {
     const front = side !== 'rear', box = (c, x, y, bw, bh, r = 0) => { g.fillStyle = c; g.beginPath(); g.roundRect(w * x, h * y, w * bw, h * bh, r); g.fill(); };
     const steel = (x, y, bw, bh) => { box('#3c3c42', x, y, bw, bh); box('#9a9aa4', x, y, bw, 0.012); };
     for (const x of [0.05, 0.75]) box('#121214', x, 0.78, 0.2, 0.22, 6); // the tires, big
-    box('#1c1c22', 0.03, 0.44, 0.94, 0.42, 10); // the body: black below,
-    box('#e9e9ee', 0.07, 0.1, 0.86, 0.38, 12); // white above
+    box(army ? '#3e4424' : '#1c1c22', 0.03, 0.44, 0.94, 0.42, 10); // the body: black below,
+    box(army ? OLIVE : '#e9e9ee', 0.07, 0.1, 0.86, 0.38, 12); // white above
     box('#26303c', front ? 0.11 : 0.14, 0.15, front ? 0.78 : 0.72, front ? 0.24 : 0.2, 6); // the glass
     box('#3a4656', front ? 0.16 : 0.18, 0.17, 0.2, 0.02);
-    box('#222', 0.2, 0.02, 0.6, 0.08, 3); // the light bar
-    g.shadowColor = g.fillStyle = lit ? '#48f' : '#f33'; g.shadowBlur = 14;
-    box(lit ? '#48f' : '#f33', lit ? 0.5 : 0.2, 0.02, 0.3, 0.08, 3);
-    g.shadowBlur = 0;
+    if (army) { // the rocket pod, two rows of tubes
+      box('#2b3011', 0.2, 0, 0.6, 0.13, 3);
+      g.fillStyle = '#0e0f08';
+      for (const y of [0.035, 0.095]) for (let i = 0; i < 4; i++) { g.beginPath(); g.arc(w * (0.29 + i * 0.14), h * y, w * 0.026, 0, 2 * Math.PI); g.fill(); }
+    } else {
+      box('#222', 0.2, 0.02, 0.6, 0.08, 3); // the light bar
+      g.shadowColor = g.fillStyle = lit ? '#48f' : '#f33'; g.shadowBlur = 14;
+      box(lit ? '#48f' : '#f33', lit ? 0.5 : 0.2, 0.02, 0.3, 0.08, 3);
+      g.shadowBlur = 0;
+    }
     if (!front) {
       for (const x of [0.05, 0.87]) box('#c0201a', x, 0.48, 0.08, 0.17, 2); // the tail lights
       g.fillStyle = '#121214'; g.beginPath(); g.arc(w / 2, h * 0.6, w * 0.11, 0, 2 * Math.PI); g.fill(); // the spare wheel
       g.fillStyle = '#55555c'; g.beginPath(); g.arc(w / 2, h * 0.6, w * 0.05, 0, 2 * Math.PI); g.fill();
-      g.fillStyle = '#f4f4f4'; g.font = `bold ${h * 0.08}px sans-serif`; g.textAlign = 'center'; g.fillText('POLICE', w / 2, h * 0.8);
+      g.fillStyle = '#f4f4f4'; g.font = `bold ${h * (army ? 0.12 : 0.08)}px sans-serif`; g.textAlign = 'center';
+      g.fillText(army ? '★' : 'POLICE', army ? w * 0.28 : w / 2, h * 0.8);
       steel(0.02, 0.84, 0.96, 0.05); // the bumper, spiked
       g.fillStyle = '#e2e2ea';
       for (let i = 0; i < 6; i++) { const x = w * (0.12 + i * 0.152); g.beginPath(); g.moveTo(x - 4, h * 0.84); g.lineTo(x, h * 0.78); g.lineTo(x + 4, h * 0.84); g.fill(); }
@@ -198,6 +223,7 @@ function suvSprite(side, lit) {
   });
 }
 const SUV_LOOKS = [0, 1].map(lit => ({ rear: suvSprite('rear', lit), front: suvSprite('front', lit), beams: suvSprite('beams', lit) }));
+const ROCKET_LOOK = { rear: suvSprite('rear', 0, true), front: suvSprite('front', 0, true), beams: suvSprite('beams', 0, true) };
 // Fuel madness (Distance's War Rig): a mad driver's own car, gone to seed and armed: the paint mostly rust (one of
 // three shades), a primer panel, rust holes, one tail light out, bars welded over the rear window, a pipe bar across
 // the back with spikes along it and on the roof, in the pack's way of shading (a lit side, a dark side)
@@ -515,6 +541,7 @@ function spawnCar(car, d) {
     wreck: false, hp: null, // totaled (Distance's War Rig), and its health when hurt (null: unhurt)
     police: false, stage: null, passing: false, // a police car (Distance's War Rig, police.js), how far into its move
     racer: 0, gang: false, harpoon: false, prize: null, // a gang car of act 5's (fortress.js), its number; its harpoon truck
+    jeep: false, rocket: false, // the army's jeep and rocket car (fortress.js)
     tank: false, rig: false, suv: false, w: undefined, h: undefined, // the final boss (boss.js), a rival war rig
                                                                      // (fortress.js), a police SUV (police.js); its size, m
     heli: false, alt: undefined, // the police's helicopter (police.js), and how high it flies, m
@@ -558,10 +585,10 @@ const PASS = 10 / 3.6, MIRROR = 4, SIGNAL = 1;
 // Fuel madness (the game's madness(), Distance's War Rig: the share of drivers gone mad, 0 to 1): which ordinary cars
 // are mad, going your way or coming at you (the owner, 18 Oct: the oncoming traffic had none). Picked by serial in golden-ratio steps: an even spread, and no draw on the traffic's seeded
 // dice, so the road is the same as before for everyone else
-const mad = c => !c.racer && !c.fleet && !c.police && !c.tank && !c.rig && !c.harpoon &&
+const mad = c => !c.racer && !c.fleet && !c.police && !c.tank && !c.rig && !c.harpoon && !c.jeep && !c.rocket &&
   c.serial * 0.6180339887 % 1 < (game.madness?.() ?? 0);
 // the first rusty cars (the game's rust(): the share of ordinary cars gone to rust, 0 to 1; Distance's act 3, oil.js)
-const rusty = c => !c.racer && !c.fleet && !c.police && !c.tank && !c.rig && !c.harpoon && c.serial * 0.3819660113 % 1 < (game.rust?.() ?? 0);
+const rusty = c => !c.racer && !c.fleet && !c.police && !c.tank && !c.rig && !c.harpoon && !c.jeep && !c.rocket && c.serial * 0.3819660113 % 1 < (game.rust?.() ?? 0);
 function driveCar(c, dt) { // follow at a safe distance, or pull out and pass
   const lead = leader(c), gap = lead ? lead.z - c.z - CAR_LEN : Infinity, safe = 8 + 1.2 * c.v;
   let aim = c.want;
@@ -608,7 +635,7 @@ function indicator(c) {
 // flashed: an ordinary car ahead of you in your lane (within 250 m) moves over to your other lane if there is room.
 // Racers don't care.
 // yields: whether car c would move over into lane `to` for a flash now (racers never do)
-const yields = (c, to) => !c.racer && !c.police && !c.tank && !c.rig && !c.harpoon && !c.yielding && c.dir > 0 && c.z > odo && c.z - odo <= 250 && roomAt(c, MY_LANES[to], 12, 25);
+const yields = (c, to) => !c.racer && !c.police && !c.tank && !c.rig && !c.harpoon && !c.jeep && !c.rocket && !c.yielding && c.dir > 0 && c.z > odo && c.z - odo <= 250 && roomAt(c, MY_LANES[to], 12, 25);
 // Playing chicken (Distance's upgrade), an oncoming car in your lane within 250 m swerves into its other lane, if
 // nobody is there within 25 m of it
 let chicken = false;
@@ -653,6 +680,8 @@ function updateTraffic(dt, clock) {
     else if (c.tank) tankDrive(c, dt); // boss.js
     else if (c.rig) rigDrive(c, dt); // a rival war rig (fortress.js)
     else if (c.harpoon) harpoonDrive(c, dt); // the gang's harpoon truck (fortress.js)
+    else if (c.jeep) jeepDrive(c, dt); // the army's jeep and rocket car (fortress.js)
+    else if (c.rocket) rocketDrive(c, dt);
     else if (c.runner) runnerDrive(c, dt); // a car of your crew on its way to a spot (oil.js)
     else if (c.raider) raiderDrive(c, dt); // a raider of your crew after its car (gang.js)
     else if (c.dir > 0) { if (!(c.racer && gangDrive(c, dt))) driveCar(c, dt); } // the rival gang's moves (fortress.js)
@@ -665,10 +694,11 @@ function updateTraffic(dt, clock) {
     const d = c.z - odo;
     if (c.d > 0 && d <= 0) whoosh(Math.abs(speed - c.dir * c.v) * 3.6, c.x < carX ? -0.7 : 0.7); // went past the driver
     c.d = d;
-    if (c.racer && (!c.gang || c.stage && !c.wreck) || c.passing || c.tank || (c.rig || c.heli || c.harpoon && c.stage !== 'leave') && !c.wreck ||
-        c.runner || c.raider) { /* racers stay where they are, however far: their places are the race; a gang car while it is
-      at you; a police car comes up from behind; the tank holds the road, a rig comes and goes round you, a helicopter flies
-      in, a harpoon truck comes past and holds the road; a car of your crew goes on to its spot, or after its car */ }
+    if (c.racer && (!c.gang || c.stage && !c.wreck) || c.passing || c.tank || (c.rig || c.heli || c.rocket || (c.harpoon || c.jeep) && c.stage !== 'leave') &&
+        !c.wreck || c.runner || c.raider) { /* racers stay where they are, however far: their places are the race; a gang car
+      while it is at you; a police car comes up from behind; the tank holds the road, a rig comes and goes round you, a
+      helicopter flies in, a harpoon truck comes past and holds the road, a jeep comes and goes past you, a rocket car holds
+      the road; a car of your crew goes on to its spot, or after its car */ }
     else if (d < -40 || c.dir > 0 && d < -8 && c.v < speed - 1) spawnAhead(c); // left behind: back to the horizon
     else if (d > ROAD.draw * ROAD.segment + 100) { // pulled away: comes up from behind instead, in a lane you're not in
       spawnCar(c, -30);

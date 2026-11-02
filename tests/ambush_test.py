@@ -2,8 +2,9 @@
 scanner goes, no tank's race), and the road fights back by how built-out the fortress is. Each race's ambushes are
 drawn as it starts, on dice of their own: along the race in clusters and gaps, one faction each, their members bought
 from a budget the fortress's strength sets (a bigger, better-armed board more, a battered one less). Near one, its
-members come one by one, POLICE AMBUSH! and the like. The army's: tanks, two at once in two lanes, as tough as the
-fortress is strong; beaten, TANK DOWN, the race goes on and a crate is on the road. Phone and desktop."""
+members come one by one, POLICE AMBUSH! and the like. The army's: a tank first (two at once in two lanes, as tough as
+the fortress is strong; beaten, TANK DOWN, the race goes on and a crate is on the road), then its rocket cars and jeeps
+(layer 12). Phone and desktop."""
 import json
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -56,7 +57,7 @@ with sync_playwright() as p:
         # 3. the draw: along the race in clusters and gaps, one faction each from its own roster, within the budget; the
         # same again for the same race; the traffic's dice untouched
         got = js("""(() => { const r0 = rng, a = drawAmbushes(), b = drawAmbushes(), length = Math.max(30, progress.pace) * runTime();
-            const roster = { police: ['cop', 'suv', 'heli'], gang: ['gang', 'harpoon', 'rig'], army: ['tank'] };
+            const roster = { police: ['cop', 'suv', 'heli'], gang: ['gang', 'harpoon', 'rig'], army: ['jeep', 'rocket', 'tank'] };
             const gaps = a.slice(1).map((x, i) => x.at - a[i].at);
             return [a.length >= 2, a[0].at >= 300 && a[0].at <= 600, gaps.every(g => g >= 200 && g <= 400 || g >= 600 && g <= 1000), a.every(x => x.at < length),
                     a.every(x => x.members.length && x.members.every(m => roster[x.faction].includes(m))), costOf(a) <= budget() * 1.2,
@@ -64,6 +65,13 @@ with sync_playwright() as p:
         check(f"{layout}: ambushes along the race, the first 300-600 m in, then 200-400 m (a cluster) or 600-1,000 m (a gap) apart, "
               f"each one faction's own, within the budget; the same for the same race; the traffic's dice untouched ({got[8]})",
               got[:8] == [True] * 8, got)
+
+        # the army brings its tank, and its rocket cars and jeeps with what is left of its share (layer 12): fifty races'
+        got = js("""(() => { const runs = progress.runs, army = [];
+            for (progress.runs = 1; progress.runs <= 50; progress.runs++) army.push(...drawAmbushes().filter(a => a.faction === 'army'));
+            progress.runs = runs; const m = army.flatMap(a => a.members);
+            return [army.length > 0, army.every(a => a.members[0] === 'tank'), m.includes('rocket'), m.includes('jeep')]; })()""")
+        check(f"{layout}: the army's ambushes in fifty races: each brings a tank first, and rocket cars and jeeps come with them", got == [True] * 4, got)
 
         # 4. near one, its members come one by one: a police ambush
         js(CLEAR)

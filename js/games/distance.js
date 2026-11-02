@@ -311,7 +311,7 @@ function updateRun(dt) {
   else if (run.phase === 'finish' && (run.count -= dt) <= 0) run.phase = 'garage';
   run.still = run.phase === 'run' && speed < 1 ? (run.still ?? 0) + dt : 0; // s standing still in the run (stuck?)
   if (run.phase === 'run' && raceTick()) run.revealed = true;
-  if (run.phase === 'run') { rechargeFlash(dt); updateGang(dt); updatePolice(dt); ambushTick(); updateGangCars(dt); updateBoss(); crewTick(dt); rigTick(dt); lootTick(dt); stripTick(dt); mineTick(); lobTick(dt); }
+  if (run.phase === 'run') { rechargeFlash(dt); updateGang(dt); updatePolice(dt); ambushTick(); updateGangCars(dt); updateBoss(); crewTick(dt); rigTick(dt); lootTick(dt); stripTick(dt); mineTick(); lobTick(dt); rocketTick(dt); }
   if (run.phase === 'run' && damageOn()) damageTick(dt);
   if (run.phase === 'run' && run.limp && odo >= LIMP) finishRun('limped'); // as far as a wreck gets
 }
