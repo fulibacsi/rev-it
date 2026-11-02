@@ -519,7 +519,7 @@ function renderGarage(bought) {
   const building = garageTab === 'fortress' && pageOpen('fortress') ? `<div class="card building"><b>UNDER CONSTRUCTION</b>` +
     `<small>Act V is being built a piece at a time, more with each update. Until then the tanks keep coming, each one ` +
     `tougher.</small></div>` : '';
-  $('cards').innerHTML = first + repairCard + building + shellCard() + (garageTab === 'fleet' && pageOpen('fleet') ? exchangeCard() + roleCard() : '') +
+  $('cards').innerHTML = first + repairCard + building + shellCard() + dealCard() + (garageTab === 'fleet' && pageOpen('fleet') ? exchangeCard() + roleCard() : '') +
     Object.entries(UPGRADES).filter(onTab).map(([id, u]) => {
     // the aids the war rig drives with, bolted on (fortress.js): their cards stay, under a metal plate (the owner, 30 Oct)
     if (rigDrives(id)) return `<div class="card plated"><b>${u.name}</b><i class="plate">BOLTED ON<small>` + (rigW > 1 &&
@@ -557,6 +557,7 @@ $('garage').onclick = e => {
   if ('repair' in b.dataset && repair()) { beep(1320, 0.1); refreshCar(); }
   if ('autorepair' in b.dataset) { progress.autoRepair = !progress.autoRepair; save(); }
   if ('shells' in b.dataset && buyShells()) beep(1760, 0.08); // fortress.js
+  if (b.dataset.deal && buyDeal(+b.dataset.deal)) beep(1760, 0.08);
   if (('exchange' in b.dataset || 'exchangeAll' in b.dataset) && convert('exchange' in b.dataset ? exchange : Infinity)) beep(1760, 0.08);
   if (i) { progress.engine = +i; save(); refreshCar(); }
   if (toggle) { progress.off[toggle] = !progress.off[toggle]; save(); }
