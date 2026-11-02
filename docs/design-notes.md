@@ -1731,6 +1731,25 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - `rivals_test` checks it (a gang car sent with a number from 1 to 100, from 260 m back, your place and the field as
      they were; past you, into your lane, braking; totaled, #37's 64 points and 2 shells; left behind, back into the
      traffic) on both layouts.
+
+   The gang's mines and the shoulder, the second PR (built 2 Nov; `fortress.js`). Asked how the gang should come at a
+   fortress that fills your side (Claude's three: mines from ahead, past you over the double yellow, or head-on and then
+   mines), the owner: "Both mines from ahead, and also past from the right side (the same way my crew bolts to the
+   resources, next to the road)". Claude's numbers, first guesses:
+   - Half the gang's cars, every 8 s and in its ambushes, lay mines: one appears 300 m up the road in one of the rig's
+     lanes, 15 m/s slower than you; 50 m off it drops three mines in its lane, one every 0.4 s (MINES!), and pulls off
+     onto the right shoulder and races on. A mine lies still on the road: a dark plate with a hazard-yellow rim and a
+     red light blinking (smaller ones didn't read on a phone). Run over, it hits the front cell of the column over its
+     lane, 15% before Armor plating (a spike strip's 12), MINE!; off its lane it misses. A lane wide it can be dodged
+     by changing lanes, as can a two- or three-lane fortress that shifts off its lane; four lanes wide there is no
+     dodging it, which is the mine roller's (layer 13).
+   - The rest come from behind as before: up the lane beside you, or with none (a fortress filling your side, on the
+     road's right lane) up the right shoulder, the crew's line, then past you and into your right lane ahead, braking.
+     A fortress two lanes wide or more brakes for no one: it crushes the car (its rank paid) and takes the hit on its
+     front row.
+   - `rivals_test` checks the mines (three dropped in your lane, each run over 3.75 off the cannon; in the other lane,
+     missed), `widen_test` the shoulder (no lane beside you: up the shoulder from 260 m back, past you, into your right
+     lane, braking), on both layouts.
 12. The army: jeeps with a gun, the rocket car.
 13. The currencies to the map (above): sizes in meters, the dealer, then the scrap's offensive cards and the fuel's
     crew jobs. Four lanes: the mine roller and the Grinder.
