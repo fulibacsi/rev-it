@@ -457,6 +457,9 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
 .part[data-wear="2"] > i::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1 2.2 3.4 4 2.9 6.1 5.4 7.4 5.9 10M10 2.8 7.6 4.4 8.1 6.6 5.4 7.4M3.4 4 5.2 1.6 4.7 0' fill='none' stroke='%23000a' stroke-width='.9'/%3E%3Cpath d='M1 2.2 3.4 4 2.9 6.1 5.4 7.4 5.9 10M10 2.8 7.6 4.4 8.1 6.6 5.4 7.4M3.4 4 5.2 1.6 4.7 0' fill='none' stroke='%23fff5' stroke-width='.3'/%3E%3C/svg%3E"); }
 .part[data-fall] { animation: falling 0.3s steps(1) infinite; } .part[data-fall] > i { pointer-events: none; }
 @keyframes falling { 50% { opacity: 0.15; } }
+/* the part a harpoon truck aims at (fortress.js aimHarpoon): a red outline blinking */
+.part[data-hooked] > i { animation: hooked 0.3s steps(1) infinite; }
+@keyframes hooked { 50% { box-shadow: inset 0 0 0 3px #ff3030; } }
 #fort-hit { position: absolute; display: none; width: var(--cell); height: var(--cell); border-radius: 3px; pointer-events: none; }
 #fort-hit.part { display: block; background: #ffd23a55; outline: 2px solid #ffd23a; } /* a part took the hit */
 #fort-hit.rig { display: block; background: #ff333388; outline: 2px solid #f55; }     /* through to the rig */

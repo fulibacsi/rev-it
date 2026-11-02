@@ -56,7 +56,7 @@ with sync_playwright() as p:
         # 3. the draw: along the race in clusters and gaps, one faction each from its own roster, within the budget; the
         # same again for the same race; the traffic's dice untouched
         got = js("""(() => { const r0 = rng, a = drawAmbushes(), b = drawAmbushes(), length = Math.max(30, progress.pace) * runTime();
-            const roster = { police: ['cop', 'suv', 'heli'], gang: ['gang', 'rig'], army: ['tank'] };
+            const roster = { police: ['cop', 'suv', 'heli'], gang: ['gang', 'harpoon', 'rig'], army: ['tank'] };
             const gaps = a.slice(1).map((x, i) => x.at - a[i].at);
             return [a.length >= 2, a[0].at >= 300 && a[0].at <= 600, gaps.every(g => g >= 200 && g <= 400 || g >= 600 && g <= 1000), a.every(x => x.at < length),
                     a.every(x => x.members.length && x.members.every(m => roster[x.faction].includes(m))), costOf(a) <= budget() * 1.2,

@@ -73,7 +73,8 @@ function renderBoard() {
   if (dragging || throwing) return; // never under a finger: the drag would go with the element it holds (a hit on a part
                                     // redrew the board, and a drag on the road failed most times); it redraws after
   const f = progress.fortress, n = holdSize(), w = boardW(), h = boardH(); // redrawn on what shows: its cracks, not its health
-  const key = JSON.stringify([...f.parts, ...f.hold].map(p => [p.kind, p.x, p.y, p.cells, wear(p)])) + [f.parts.length, n, w, h, innerWidth, innerHeight, fallen.length];
+  const key = JSON.stringify([...f.parts, ...f.hold].map(p => [p.kind, p.x, p.y, p.cells, wear(p)])) + [f.parts.length, n, w, h, innerWidth, innerHeight, fallen.length,
+    f.parts.indexOf(aimedAt())];
   if (key === shownBoard) return;
   shownBoard = key;
   // the cells as big as the plate allows, the hold beside the plan: inside its padding (6 px), past the label (16 px),
@@ -82,7 +83,7 @@ function renderBoard() {
   const cell = Math.floor(Math.min(72, (inW - 8 - 4) / (w + 1), (inH - 2) / h, (inH - 6 * n) / n));
   $('board').style.setProperty('--cell', `${cell}px`);
   Object.assign($('fort-grid').style, { width: `${cell * w}px`, height: `${cell * h}px` });
-  $('fort-grid').innerHTML = f.parts.map((p, i) => partHtml(p, `data-part="${i}" data-wear="${wear(p)}"`)).join('') +
+  $('fort-grid').innerHTML = f.parts.map((p, i) => partHtml(p, `data-part="${i}" data-wear="${wear(p)}"${p === aimedAt() ? ' data-hooked' : ''}`)).join('') +
     fallen.map(({ p }) => partHtml(p, `data-fall data-wear="2"`)).join('') + '<i id="fort-ghost"></i><i id="fort-hit"></i>';
   $('fort-hold').innerHTML = Array.from({ length: n }, (_, i) => `<div class="slot" data-slot="${i}">` +
     `${f.hold[i] ? partHtml(f.hold[i], `data-wear="${wear(f.hold[i])}"`, cell / Math.max(extent(f.hold[i].cells, 0), extent(f.hold[i].cells, 1))) : ''}</div>`).join('');
@@ -213,9 +214,11 @@ function rigKey(k, repeat) {
   return ['Shift', 'b', 'B', 'ArrowUp', 'ArrowDown', 'n', 'N', 'f', 'F'].includes(k);
 }
 // ---- the road (the owner, 30 Oct): the reticle takes only the notable enemies, the army's tanks, the rival gang's war
-// rigs and the police's pursuit SUVs (police.js; helicopters to come); the rest are the raiders' (gang.js crewTarget),
-// and Hunter's
-const notable = c => !!(c.tank || c.rig || c.suv || c.heli);
+// rigs and harpoon trucks, the police's pursuit SUVs and helicopters (police.js); the rest are the raiders' (gang.js
+// crewTarget), and Hunter's
+const notable = c => !!(c.tank || c.rig || c.suv || c.heli || c.harpoon);
+// a car out of sight up the road an enemy can take over (police.js, boss.js, here): the traffic's, none of theirs
+const takeable = c => !c.racer && !c.police && !c.tank && !c.rig && !c.heli && !c.harpoon && !c.fleet && c !== target && c !== quarry;
 // the lane beside the rig on your side of the road, for an enemy coming past it: your other lane while it is a lane
 // wide, the one to the right of a fortress over the double yellow; none while it fills your side (car.js lane, rigW)
 const sideLane = () => rigW === 1 ? (lane <= 1 ? 1 - lane : null) : lane >= 1 ? Math.min(lane - 1, 1) : null;
@@ -223,7 +226,7 @@ const sideLane = () => rigW === 1 ? (lane <= 1 ? 1 - lane : null) : lane >= 1 ? 
 // resources have their metadata over them"): what it is, its health, the shells it would take, how far
 function notableTag(t) {
   const shots = Math.ceil(Math.max(0, t.hp ?? health(t)) / CANNON.damage);
-  return [t.tank ? 'TANK' : t.rig ? 'RIG' : t.heli ? 'HELI' : 'SUV', `${Math.round(100 * hpLeft(t))}%`, cannonOn() && `${shots} SHOT${shots === 1 ? '' : 'S'}`,
+  return [t.tank ? 'TANK' : t.rig ? 'RIG' : t.heli ? 'HELI' : t.harpoon ? 'HARPOON' : 'SUV', `${Math.round(100 * hpLeft(t))}%`, cannonOn() && `${shots} SHOT${shots === 1 ? '' : 'S'}`,
           `${Math.round(t.z - odo)} m`].filter(Boolean).join(' · ');
 }
 
@@ -251,7 +254,7 @@ function updateGangCars(dt) { // distance.js updateRun: one now and then, beside
 const SHOULDER_X = SHOULDER - 0.6; // road.js: the crew's line, off the road on the right (oil.js, gang.js)
 const sendGangCar = () => rand() < GANG_CAR.mines ? sendMiner() || sendChaser() : sendChaser() || sendMiner();
 function gangCar() { // a car out of sight up the road, taken over by the gang, its number at random
-  const c = traffic.find(c => !c.racer && !c.police && !c.tank && !c.rig && !c.heli && !c.fleet && c !== target && c !== quarry && c.z - odo > 600);
+  const c = traffic.find(c => takeable(c) && c.z - odo > 600);
   if (!c) return null;
   const k = 1 + Math.floor(rand() * FIELD); // race.js
   return Object.assign(c, { racer: k, gang: true, look: racerSprite(k, true, false, true), dir: 1, hp: null, wreck: false, swerve: null,
@@ -334,10 +337,10 @@ const mineMarks = () => mines.map(m => ({ z: m.z, kind: 'mine', value: m })); //
 // tank. First guesses, for act5.py: six shells, or four and the guns
 const RIG = { hp: 1500, ahead: 45, hold: 3, hit: 6, scrap: 150, w: 2.8, h: 3.4 }; // m, s, % a ram
 // distance.js startRun: the gang, its mines, the ambushes, the police's spike strips (police.js)
-const rigRun = () => { gangClock = GANG_CAR.every; ambushes = drawAmbushes(); strips = []; torn = 0; mines = []; };
+const rigRun = () => { gangClock = GANG_CAR.every; ambushes = drawAmbushes(); strips = []; torn = 0; mines = []; hooked = null; };
 function sendRig() { // the ambushes: two at a time at most; false if not now (no car to take, no room)
   if (traffic.filter(c => c.rig && !c.wreck).length >= 2) return false;
-  const c = traffic.find(c => !c.racer && !c.police && !c.tank && !c.rig && !c.heli && !c.fleet && c !== target && c !== quarry && c.z - odo > 600);
+  const c = traffic.find(c => takeable(c) && c.z - odo > 600);
   const side = sideLane(), wide = side == null && rigW > 1 && lane <= 1; // a fortress filling your side: it waits up the road
   if (!c || !wide && (side == null || !laneClear(MY_LANES[side], 10))) return false;
   Object.assign(c, { rig: true, dir: 1, look: { rear: RIG_SPRITE }, w: RIG.w, h: RIG.h, hp: null, wreck: false, swerve: null, warned: false,
@@ -362,6 +365,82 @@ function rigDrive(c, dt) { // road.js updateTraffic
   if (c.stage !== 'ram') c.x += clamp(MY_LANES[c.lane] - c.x, -2 * dt, 2 * dt);
   c.z += c.v * dt;
 }
+// the rival gang's harpoon truck (the owner, 2 Nov; its midline, in the gang's ambushes): it comes past and holds the
+// road ahead of you in the lane beside you, or up the right shoulder with none, so you see it (the owner: from the
+// radar alone a part gone would look like a ram or a bug); in the reticle, it winds up, the part it aims at blinking
+// on the board; fires, and the part nearest its side (the front one first) is torn off the board on its cable and
+// dragged across the road to it. Totaled before it gets clear, the part falls on the road in a crate; reeled in, it
+// is gone. Claude's numbers, for act5.py: health (two shells), scrap; m ahead it holds; s it holds, winds up, reels
+const HARPOON = { hp: 500, scrap: 100, w: 2.3, h: 2.2, ahead: 30, hold: 1, wind: 2, reel: 4 };
+let hooked = null; // the part a truck aims at
+const aimedAt = () => traffic.some(c => c.harpoon && !c.wreck && c.stage === 'wind') ? hooked : null; // renderBoard blinks it
+function sendHarpoon() { // the ambushes: one at a time; false if not now
+  if (traffic.some(c => c.harpoon && !c.wreck && c.stage !== 'leave')) return false;
+  const c = traffic.find(c => takeable(c) && c.z - odo > 600);
+  if (!c || harpoonX() == null) return false;
+  Object.assign(c, { harpoon: true, dir: 1, look: { rear: HARPOON_SPRITE }, w: HARPOON.w, h: HARPOON.h, hp: null, wreck: false, swerve: null,
+                     warned: false, beams: 0, d: NaN, hit: -Infinity, prize: null, x: harpoonX(), z: odo - 60, v: speed + 15, stage: 'pass' });
+  flash('HARPOON TRUCK!', '#f55', false);
+  return true;
+}
+// where it drives beside you: the lane beside the rig, else the right shoulder (the road's right lane yours), else none
+const harpoonX = () => { const side = sideLane(); return side != null ? MY_LANES[side] : lane === 0 ? SHOULDER_X : null; };
+function harpoonDrive(c, dt) { // road.js updateTraffic
+  const gap = c.z - odo, at = harpoonX() ?? c.x;
+  if (c.stage === 'leave') { c.v = speed + 20; c.z += c.v * dt; return; } // off up the road, back into the traffic (road.js)
+  c.x += clamp(at - c.x, -3 * dt, 3 * dt);
+  c.v = c.stage === 'pass' ? speed + 15 : c.stage === 'reel' ? speed + 8 : Math.max(0, speed + (HARPOON.ahead - gap) * 0.8);
+  c.z += c.v * dt;
+  if (run.phase !== 'run') return;
+  if (c.stage === 'pass') { if (gap > HARPOON.ahead) Object.assign(c, { stage: 'hold', t: HARPOON.hold }); }
+  else if (c.stage === 'hold') { if ((c.t -= dt) <= 0) aimHarpoon(c); }
+  else if (c.stage === 'wind') { if (!progress.fortress.parts.includes(hooked)) aimHarpoon(c); else if ((c.t -= dt) <= 0) fireHarpoon(c); }
+  else if ((c.t -= dt) <= 0) { // reeled in: the part is the gang's
+    if (c.prize) flash(`${PARTS[c.prize.kind].name} ${c.prize.cells.length} GONE`, '#f55', false);
+    Object.assign(c, { stage: 'leave', prize: null });
+  }
+}
+function aimHarpoon(c) { // the part nearest its side, the front one first; with the board bare, it leaves
+  const f = progress.fortress, col = c.x < carX ? 0 : boardW() - 1;
+  const dist = p => Math.min(...p.cells.map(([x, y]) => Math.abs(p.x + x - col) * 10 + p.y + y));
+  hooked = [...f.parts].sort((a, b) => dist(a) - dist(b))[0] ?? null;
+  if (!hooked) return Object.assign(c, { stage: 'leave' });
+  if (c.stage !== 'wind') flash('HARPOON!', '#f55', false);
+  Object.assign(c, { stage: 'wind', t: HARPOON.wind });
+}
+function fireHarpoon(c) { // the part torn off the board, dragged across the road to the truck
+  const f = progress.fortress, i = f.parts.indexOf(hooked);
+  hooked = null;
+  if (i < 0) return aimHarpoon(c);
+  const [p] = f.parts.splice(i, 1);
+  fallen.push({ p, t: performance.now() }); // its hole blinks on the board
+  letGo(); // a part held to throw off: the board's numbers have moved
+  applyUpgrades(); // distance.js: its weight, its pull
+  save();
+  shake = Math.max(shake, 0.4); // main.js
+  crashSound();
+  flash(`${PARTS[p.kind].name} ${p.cells.length} HARPOONED`, '#f55', false);
+  Object.assign(c, { stage: 'reel', t: HARPOON.reel, prize: p, fired: performance.now() });
+}
+// the cable (gang.js renderGang), from the truck to your side of the hood: aimed, a thin red line blinking; fired, the
+// cable taut, the part on it dragged across to the truck in its first second, then hanging behind it
+function drawHarpoons() {
+  const w = canvas.width, h = canvas.height, now = performance.now();
+  for (const c of traffic) {
+    if (!c.harpoon || c.wreck || !c.seen || c.stage !== 'wind' && c.stage !== 'reel') continue;
+    const x1 = c.seen[0] + c.seen[2] / 2, y1 = c.seen[1] + c.seen[3] * 0.25, x2 = w * (c.x < carX ? 0.3 : 0.7), y2 = h * 0.72;
+    if (c.stage === 'wind') {
+      if (now % 300 > 150) continue;
+      g2d.strokeStyle = '#ff3030'; g2d.lineWidth = Math.max(2, w / 450); g2d.setLineDash([w / 80, w / 120]); // thin didn't show on a phone
+    } else { g2d.strokeStyle = '#1a1a1e'; g2d.lineWidth = Math.max(2, w / 300); g2d.setLineDash([]); }
+    g2d.beginPath(); g2d.moveTo(x1, y1); g2d.lineTo(x2, y2); g2d.stroke();
+    g2d.setLineDash([]);
+    if (c.stage !== 'reel' || !c.prize) continue;
+    const k = Math.min(1, (now - c.fired) / 1000), px = x2 + (x1 - x2) * k, py = y2 + (y1 - y2) * k, s = w / 30 * (1 - 0.6 * k);
+    g2d.drawImage(crateSprite(c.prize.kind), px - s / 2, py - s * 0.4, s, s * 0.8); // road.js
+  }
+}
+
 function rigRam(c) { // its side into yours: a hit on that side, a shove and a jolt; then it pulls ahead
   c.stage = 'pass';
   slide += 4 * Math.sign(carX - c.x); // car.js: knocked across, and steered back
@@ -382,13 +461,13 @@ function rigRam(c) { // its side into yours: a hit on that side, a shove and a j
 // far more than a 2x3 with one). Claude's numbers, for act5.py
 const AMBUSH = { first: [300, 600], near: [200, 400], far: [600, 1000], cluster: 0.55, lead: 450, draws: 5, // m; s
                  base: 8, scale: 4, power: 0.85 }; // the budget: base + scale x strength ^ power
-const COST = { cop: 1, suv: 3, heli: 6, gang: 1, rig: 6, tank: 10 }; // of the budget, a member
+const COST = { cop: 1, suv: 3, heli: 6, gang: 1, harpoon: 3, rig: 6, tank: 10 }; // of the budget, a member
 const FACTIONS = { // their members by tier (the factions: fodder, midline, notable), a share of the ambushes each
-  police: { share: 0.4, tiers: [['heli'], ['suv'], ['cop']] }, gang: { share: 0.4, tiers: [['rig'], [], ['gang']] },
+  police: { share: 0.4, tiers: [['heli'], ['suv'], ['cop']] }, gang: { share: 0.4, tiers: [['rig'], ['harpoon'], ['gang']] },
   army: { share: 0.2, tiers: [['tank'], [], []] },
 };
 const SEND = { cop: () => sendCop(false), suv: () => sendCop(true), heli: () => sendHeli(), gang: () => sendGangCar(), rig: () => sendRig(),
-               tank: () => sendTank() }; // police.js, here, boss.js: each false if not now (none to take over, no room, too many)
+               harpoon: () => sendHarpoon(), tank: () => sendTank() }; // police.js, here, boss.js: each false if not now (none to take over, no room, too many)
 const WORTH = { cannon: 3, gun: 2, engine: 1, armor: 1, spikes: 1 }; // a block's share of the strength, as worn as it is
 const strength = () => boardW() * boardH() + progress.fortress.parts.reduce((k, p) => k + WORTH[p.kind] * p.cells.length * hpOf(p) / fullHp(p), 0);
 const budget = () => AMBUSH.base + AMBUSH.scale * strength() ** AMBUSH.power;
@@ -455,6 +534,7 @@ const SHAPES = { 1: [ONE], 2: [[[0, 0], [0, 1]], [[0, 0], [1, 0]]], 3: [[[0, 0],
 const DROPS = {
   gang: [0.12, { armor: 0.4, spikes: 0.4, engine: 0.2 }], cop: [0.1, { armor: 0.6, spikes: 0.4 }],
   suv: [0.45, { armor: 0.5, engine: 0.3, gun: 0.2 }],
+  harpoon: [0.45, { armor: 0.4, spikes: 0.3, gun: 0.3 }], // besides the part it took, if it had one (gang.js total)
   rig: [0.8, { armor: 0.4, spikes: 0.3, engine: 0.3 }], heli: [0.8, { gun: 0.6, engine: 0.4 }], // its gun or its turbine
   tank: [0.85, { cannon: 0.7, armor: 0.2, engine: 0.1 }],
 };
@@ -464,7 +544,8 @@ const ENGINE_POWER = { gang: 0.06, suv: 0.1, rig: 0.15, tank: 0.25, heli: 0.2 };
 // were never seen at all)
 const LOOT = { slow: 8, reach: 3, ahead: 25 };
 const pick = table => { let r = rand(); const ks = Object.keys(table); return ks.find(k => (r -= table[k]) < 0) ?? ks.at(-1); };
-const sourceOf = c => c.tank ? 'tank' : c.rig ? 'rig' : c.suv ? 'suv' : c.heli ? 'heli' : c.police ? 'cop' : c.racer && !c.fleet ? 'gang' : null;
+const sourceOf = c => c.tank ? 'tank' : c.rig ? 'rig' : c.harpoon ? 'harpoon' : c.suv ? 'suv' : c.heli ? 'heli' : c.police ? 'cop' :
+  c.racer && !c.fleet ? 'gang' : null;
 // a size it comes in, then a shape of it no wider than the board (one wider never fits), in salvage condition (the
 // feel, 31 Oct): worn, SALVAGE of its health at random, so a fresher one is worth a swap even on a full board
 const SALVAGE = [0.4, 1];
@@ -643,6 +724,7 @@ function renderRig() {
   if (target?.rig && first('rivals')) openTour('rivals', true);
   else if (target?.suv && first('pursuit')) openTour('pursuit', true);
   else if (target?.heli && first('heli')) openTour('heli', true);
+  else if (target?.harpoon && first('harpoon')) openTour('harpoon', true);
 }
 
 TUTORIALS.push( // the war rig's, once rebuilt (the owner's: the controls change with it)
@@ -714,6 +796,15 @@ TUTORIALS.push( // the war rig's, once rebuilt (the owner's: the controls change
     { title: 'ITS SEARCHLIGHT', at: '#board',
       both: 'Its light on a lane: a beat later a spike strip lies across it. Get off the lane in time, or the front of ' +
         "that column takes it and the rig slows, its tires torn." },
+  ] },
+  // on the road, the first time a harpoon truck is in the reticle (renderRig); listed once seen
+  { id: 'harpoon', name: 'Harpoon trucks', open: () => rigged() && progress.toured.includes('harpoon'), pages: [
+    { title: 'A HARPOON TRUCK', at: '#ar',
+      both: "The rival gang's harpoon truck, in the reticle. It holds the road beside you, takes aim and harpoons a " +
+        'part off your fortress, the one nearest its side.' },
+    { title: 'ITS AIM', at: '#board',
+      both: 'The part it aims at blinks on the board. Bring the truck down before it reels the part in, and the part ' +
+        'falls on the road in a crate.' },
   ] },
   // on the road, the first time a police SUV is in the reticle (renderRig); listed once seen
   { id: 'pursuit', name: 'Police SUVs', open: () => rigged() && progress.toured.includes('pursuit'), pages: [

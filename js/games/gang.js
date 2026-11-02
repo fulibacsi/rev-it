@@ -54,7 +54,8 @@ const GUN = 6, RANGE = 200; // damage a shot a level; m your guns reach (a raide
 const MADNESS = 0.25, MAD_TOP = 0.9;
 const madShare = l => Math.min(MAD_TOP, MADNESS * l);
 const GANG = FIELD / 2 + 1; // fleet cars that make a gang
-const health = c => c.tank ? c.full ?? tankHealth() : c.rig ? RIG.hp : c.suv ? SUV.hp : c.heli ? HELI.hp : c.police ? 200 : c.racer ? 150 : 100;
+const health = c => c.tank ? c.full ?? tankHealth() : c.rig ? RIG.hp : c.harpoon ? HARPOON.hp : c.suv ? SUV.hp : c.heli ? HELI.hp : c.police ? 200 :
+  c.racer ? 150 : 100;
                      // full health (the tank: boss.js; a rig: fortress.js; an SUV and a helicopter: police.js)
 // scrap from a totaled car: 2.2 times the first guesses (with the heat), so act 4 takes about 15 races (act4.py)
 const SCRAP = { car: 22, racer: 55 };
@@ -138,7 +139,7 @@ function total(c, gang, how) { // the scrap is yours, whoever did it; the heat t
   if (c.tank) return tankDown(c); // boss.js
   // a mad driver's stolen fuel (Fuel madness), double; a rival rig's (fortress.js), a police SUV's and helicopter's
   // (police.js); a rival gang car's shells
-  const scrap = c.rig ? RIG.scrap : c.suv ? SUV.scrap : c.heli ? HELI.scrap : (c.racer ? SCRAP.racer : SCRAP.car) * (mad(c) ? 2 : 1);
+  const scrap = c.rig ? RIG.scrap : c.harpoon ? HARPOON.scrap : c.suv ? SUV.scrap : c.heli ? HELI.scrap : (c.racer ? SCRAP.racer : SCRAP.car) * (mad(c) ? 2 : 1);
   const shells = gangShells(c);
   // on the war rig a gang member pays its rank (the owner, 31 Oct): #k the points of the place k, 101 - k (race.js)
   const rank = rigged() && c.racer && !c.fleet ? FIELD + 1 - c.racer : 0;
@@ -147,6 +148,8 @@ function total(c, gang, how) { // the scrap is yours, whoever did it; the heat t
   raiseHeat(gang ? WANTED.gang : c.police || c.heli ? WANTED.police : c.racer || c.rig ? WANTED.racer : WANTED.car);
   Object.assign(c, { wreck: true, hp: 0 });
   dropLoot(c); // fortress.js: a part, maybe
+  // a harpoon truck's catch, totaled before it got clear: the part on the road in a crate (fortress.js)
+  if (c.prize) { run.loot.push({ part: c.prize, z: Math.max(c.z, odo + LOOT.ahead), x: c.x, v: c.v }); c.prize = null; }
   if (c === target) target = nextTarget(); // the reticle moves on at once: for a frame Hunter had nothing to hunt, and
   if (c === quarry) quarry = nextQuarry(); // autocruise steered away from the car it would hunt next
   progress.totals++;
@@ -156,7 +159,8 @@ function total(c, gang, how) { // the scrap is yours, whoever did it; the heat t
   run.shells += shells;
   run.totals++;
   if (progress.totals === 1) { run.firstTotal = true; run.left = Math.min(run.left, 3); } // the first job done: 3 s more
-  const who = c.racer ? `#${c.racer}` : c.suv ? 'A POLICE SUV' : c.police ? 'A POLICE CAR' : c.rig ? 'A RIG' : 'A CAR'; // raiders ram anything
+  // raiders ram anything
+  const who = c.racer ? `#${c.racer}` : c.suv ? 'A POLICE SUV' : c.police ? 'A POLICE CAR' : c.rig ? 'A RIG' : c.harpoon ? 'A HARPOON TRUCK' : 'A CAR';
   flash(`${gang ? `THE GANG TOTALED ${who}` : how ?? 'TOTALED'} +${scrap} SCRAP${shells ? ` +${shells} SHELLS` : ''}${rank ? ` +${rank} PTS` : ''}`, '#ff6a4a', true);
 }
 
@@ -223,6 +227,7 @@ function renderGang() {
   if ($('fire').textContent !== label) $('fire').textContent = label;
   renderKit();
   drawTracers();
+  drawHarpoons(); // fortress.js: a harpoon truck's cable
   const t = arOn() && run.phase === 'run' ? target : null, s = t?.seen;
   document.body.classList.toggle('ar-on', !!s);
   if (t) $('ar').style.setProperty('--hp', Math.max(0, t.hp ?? health(t)) / health(t)); // right as soon as it shows again

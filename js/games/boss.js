@@ -24,7 +24,7 @@ const bossRace = () => arOn() && progress.wanted >= 1 && lvl('guns') > 0 && !wre
 // it until you come); or as soon as there is one, should the road have none
 function sendTank() { // false with no car to take over, or two tanks on the road already (the army's ambushes)
   const k = traffic.filter(c => c.tank && !c.wreck).length;
-  const c = k < 2 && traffic.find(c => !c.racer && !c.police && !c.fleet && !c.rig && !c.heli && !c.tank && c !== target);
+  const c = k < 2 && traffic.find(takeable); // fortress.js
   if (!c) return false;
   Object.assign(c, { tank: true, dir: 1, lane: k, x: MY_LANES[k], z: odo + 250 + 60 * k, v: 0, want: 0, look: { rear: TANK_SPRITE },
                      w: 3, h: 2.3, hp: null, full: tankHealth(), wreck: false, swerve: null, d: NaN, hit: -Infinity, shell: TANK.reload,
