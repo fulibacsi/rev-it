@@ -165,6 +165,8 @@ function renderTutorials() {
 function openTour(id, popup = false) {
   if (!progress.toured.includes(id)) { progress.toured.push(id); save(); } // seen: it pops up no more (the Driving one)
   Object.assign(tour, { id, page: 0, popup });
+  if (!menuOpen) game.render?.(); // main.js: the cockpit as the purchase left it (the game is paused under a menu): the
+                                  // Rebuild's tutorial pointed at a board still hidden behind the shifter
   document.activeElement?.blur(); // Space turns the page, not the button just clicked
   if (menuOpen) showScreen('tour'); else openMenu('tour');
 }
