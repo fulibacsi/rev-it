@@ -1406,8 +1406,9 @@ race, the loot lost to a full inventory, and the parts lost a race.
    the wheel, and no brakes); then the engines' sounds (built 30 Oct, before Widen: its design was settled).
    - Drops: on the war rig a totaled enemy drops a part by its drop table (Claude's draft, above: the rival gang's cars
      5%, the rigs always, the SUVs half the time, the tank always); the tank's goes straight into the hold (its race
-     ends there), the rest skid along the road in a crate, from where it fell at its speed, slowing at 8 m/s², so it
-     can be steered for: hazard stripes, a beacon, a panel in the part's color (1.6 m wide, big enough to spot on a
+     ends there), the rest skid along the road in a crate, from where it fell at its speed (at least 25 m ahead of you
+     since 2 Nov, thrown clear: the owner's playtest saw only the rigs' drops, as those beside you went straight into
+     the hold and those behind you were never seen), slowing at 8 m/s², so it can be steered for: hazard stripes, a beacon, a panel in the part's color (1.6 m wide, big enough to spot on a
      phone), a gold diamond on the sonar. Steered over, it goes into the hold; with the hold full it stays on the road
      (HOLD FULL), passed it is gone. The Loot tutorial pops up at the first drop.
    - A part's shape is drawn at random among its sizes, and among the shapes no wider than the board (Claude's: one
