@@ -1731,6 +1731,31 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - `rivals_test` checks it (a gang car sent with a number from 1 to 100, from 260 m back, your place and the field as
      they were; past you, into your lane, braking; totaled, #37's 64 points and 2 shells; left behind, back into the
      traffic) on both layouts.
+
+   The gang's mines and the shoulder, the second PR (built 2 Nov; `fortress.js`). Asked how the gang should come at a
+   fortress that fills your side (Claude's three: mines from ahead, past you over the double yellow, or head-on and then
+   mines), the owner: "Both mines from ahead, and also past from the right side (the same way my crew bolts to the
+   resources, next to the road)". Claude's numbers, first guesses:
+   - Half the gang's cars, every 8 s and in its ambushes, lay mines: one appears 200 m up the road in one of the rig's
+     lanes, 15 m/s slower than you; 120 m off it drops three mines in its lane, one every 0.4 s (MINES!), and pulls off
+     onto the right shoulder and races on. First built from 300 m and dropping at 50 m: your raiders, who go for the
+     gang first, stopped most of them before they dropped (0 mines in most races). A mine lies still on the road: a dark plate with a hazard-yellow rim and a
+     red light blinking (smaller ones didn't read on a phone). Run over, it hits the front cell of the column over its
+     lane, 15% before Armor plating (a spike strip's 12), MINE!; off its lane it misses. A lane wide it can be dodged
+     by changing lanes, as can a two- or three-lane fortress that shifts off its lane; four lanes wide there is no
+     dodging it, which is the mine roller's (layer 13).
+   - The rest come from behind as before: up the lane beside you, or with none (a fortress filling your side, on the
+     road's right lane) up the right shoulder, the crew's line, then past you and into your right lane ahead, braking.
+     A fortress two lanes wide or more brakes for no one: it crushes the car (its rank paid) and takes the hit on its
+     front row.
+   - `act5.py` (seeds 1 and 2, 12 races; the bot never dodges a mine): 1-11 gang cars from behind a race, every one up
+     the shoulder once the rig is two lanes wide; 0-12 mine-layers a race, mines laid in 11 of the 24 races (0-25 a
+     race, most when an ambush brings several), nearly all run over; damage 0-78% a race (63-78% in the races with
+     14-25 mines); the board changed every 5-8 s from race 5-7. The ranks paid 57-961 points a race, 8,700-9,100
+     unspent by race 12.
+   - `rivals_test` checks the mines (three dropped in your lane, each run over 3.75 off the cannon; in the other lane,
+     missed), `widen_test` the shoulder (no lane beside you: up the shoulder from 260 m back, past you, into your right
+     lane, braking), on both layouts.
 12. The army: jeeps with a gun, the rocket car.
 13. The currencies to the map (above): sizes in meters, the dealer, then the scrap's offensive cards and the fuel's
     crew jobs. Four lanes: the mine roller and the Grinder.

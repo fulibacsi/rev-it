@@ -233,7 +233,8 @@ function notableTag(t) {
 // a hard stop, then it races on, and does it again a while later; so does a rival coming past you on its own. One that
 // gets away has a place on you; one totaled is out of the race, behind you (race.js position): places are won by
 // destroying them now. In the oncoming lanes you are out of their way
-const GANG_CAR = { every: 8, from: 260, closing: 30 }; // s, m behind you, m/s quicker than you
+// s between them, m behind you, m/s quicker than you; the share that lay mines (below)
+const GANG_CAR = { every: 8, from: 260, closing: 30, mines: 0.5 };
 const CHECK = { near: 25, far: 60, cut: 3, stop: 2, again: 8 }; // m ahead; s to get across, braking, between goes
 let gangClock = 0;
 function updateGangCars(dt) { // distance.js updateRun: one now and then, besides the gang's ambushes (below)
@@ -242,16 +243,25 @@ function updateGangCars(dt) { // distance.js updateRun: one now and then, beside
 }
 // the gang is unlimited (the owner, 2 Nov: "a randomly numbered enemy gang car attacks regularly"; the racers you paid
 // off left the race's own gang thin, none by race 4): a car out of sight up the road taken over, the gang's look and a
-// number at random, its rank (gang.js total pays it), and sent from behind up the lane beside you; then it races on and
-// goes back into the traffic (road.js). Not in the race: your place is the race's (race.js racers). False with no car
-// to take over, or no lane to come past in
-function sendGangCar() {
-  const side = sideLane(), c = side != null && traffic.find(c => !c.racer && !c.police && !c.tank && !c.rig && !c.heli && !c.fleet && c !== target && c !== quarry && c.z - odo > 600);
-  if (!c) return false;
+// number at random, its rank (gang.js total pays it); then it races on and goes back into the traffic (road.js). Not in
+// the race: your place is the race's (race.js racers). Half of them lay mines from ahead (below); the rest come from
+// behind up the lane beside you, or with none (a fortress filling your side) up the right shoulder, the way your crew's
+// cars go to their spots (the owner, 2 Nov), to cut in ahead of you and brake. False with no car to take over, or no
+// way to come at you
+const SHOULDER_X = SHOULDER - 0.6; // road.js: the crew's line, off the road on the right (oil.js, gang.js)
+const sendGangCar = () => rand() < GANG_CAR.mines ? sendMiner() || sendChaser() : sendChaser() || sendMiner();
+function gangCar() { // a car out of sight up the road, taken over by the gang, its number at random
+  const c = traffic.find(c => !c.racer && !c.police && !c.tank && !c.rig && !c.heli && !c.fleet && c !== target && c !== quarry && c.z - odo > 600);
+  if (!c) return null;
   const k = 1 + Math.floor(rand() * FIELD); // race.js
-  Object.assign(c, { racer: k, gang: true, look: racerSprite(k, true, false, true), dir: 1, hp: null, wreck: false, swerve: null, warned: false,
-                     beams: 0, d: NaN, hit: -Infinity, stage: 'chase', z: odo - GANG_CAR.from, lane: side, x: MY_LANES[side],
-                     v: speed + GANG_CAR.closing, want: speed + 15, again: 0 });
+  return Object.assign(c, { racer: k, gang: true, look: racerSprite(k, true, false, true), dir: 1, hp: null, wreck: false, swerve: null,
+                            warned: false, beams: 0, d: NaN, hit: -Infinity, want: speed + 15, again: 0, shoulder: false, miner: false });
+}
+function sendChaser() {
+  const side = sideLane(), shoulder = side == null && lane === 0, c = (side != null || shoulder) && gangCar();
+  if (!c) return false;
+  Object.assign(c, { stage: 'chase', z: odo - GANG_CAR.from, lane: side ?? 0, x: shoulder ? SHOULDER_X : MY_LANES[side], shoulder,
+                     v: speed + GANG_CAR.closing });
   return true;
 }
 function gangDrive(c, dt) { // road.js updateTraffic: true while it is at you; else it races as any racer does
@@ -259,18 +269,63 @@ function gangDrive(c, dt) { // road.js updateTraffic: true while it is at you; e
   const now = runTime() - run.left, ahead = c.z - odo, on = run.phase === 'run' && lane <= 1;
   if (!c.stage && on && ahead > CHECK.near && ahead < CHECK.far && c.v > speed - 1 && now >= (c.again ?? 0)) c.stage = 'chase';
   if (!c.stage) return false;
-  if (c.stage === 'chase') { // up your other lane and past you
+  if (c.miner) return minerDrive(c, dt);
+  if (c.stage === 'chase') { // up your other lane (or the shoulder) and past you
     c.v = speed + GANG_CAR.closing;
-    if (ahead > CHECK.near) Object.assign(c, on ? { stage: 'cut', lane, t: CHECK.cut } : { stage: null, again: now + CHECK.again });
+    if (ahead > CHECK.near) Object.assign(c, on ? { stage: 'cut', lane, t: CHECK.cut, shoulder: false } : { stage: null, again: now + CHECK.again });
   } else if (c.stage === 'cut') { // across into your lane
     c.v = speed + 2;
     if (Math.abs(c.x - MY_LANES[c.lane]) < 0.3 || (c.t -= dt) <= 0) Object.assign(c, { stage: 'brake', t: CHECK.stop });
   } else if ((c.t -= dt) > 0) c.v = Math.max(0, c.v - 9 * dt); // stamping on the brakes
   else { Object.assign(c, { stage: null, again: now + CHECK.again }); return false; }
-  c.x += clamp(MY_LANES[c.lane] - c.x, -3 * dt, 3 * dt);
+  c.x += clamp((c.shoulder ? SHOULDER_X : MY_LANES[c.lane]) - c.x, -3 * dt, 3 * dt);
   c.z += c.v * dt;
   return !!c.stage;
 }
+
+// the gang's mines (the owner, 2 Nov: "mines from ahead"): a gang car up the road in one of your lanes, slower than you;
+// once you are close it drops mines in its lane, then pulls off onto the right shoulder and races on. A mine run over
+// hits the front cell of the column over it (runOver, as a spike strip's); off its lane it misses. Four lanes wide
+// there is no dodging them: the mine roller's (layer 13). Claude's numbers, for act5.py: m up the road, m/s slower, m
+// from you when it drops, s between mines, mines, % a mine before Armor plating (a spike strip's 12). Dropping at 50 m
+// from 300 m up the road, most were stopped by your raiders first (they go for the gang first): few mines were laid
+const MINE = { ahead: 200, slower: 15, near: 120, every: 0.4, drop: 3, hit: 15 };
+let mines = []; // on the road: { x, z, over }
+function sendMiner() {
+  const c = gangCar();
+  if (!c) return false;
+  const at = ROAD_LANES[lane + Math.floor(rand() * rigW)]; // one of the rig's lanes (car.js: lane its rightmost)
+  Object.assign(c, { miner: true, stage: 'mine', z: odo + MINE.ahead, x: at, lane: 0, v: speed - MINE.slower, dropped: 0, t: 0 });
+  return true;
+}
+function minerDrive(c, dt) { // gangDrive: up ahead and slower, then its mines, then off the road and away
+  if (c.stage === 'mine') {
+    c.v = speed - MINE.slower;
+    if (c.z - odo < MINE.near && run.phase === 'run') { Object.assign(c, { stage: 'drop', t: 0 }); flash('MINES!', '#f55', false); }
+  } else if (c.stage === 'drop') {
+    c.v = speed - MINE.slower;
+    if ((c.t -= dt) <= 0) { mines.push({ x: c.x, z: c.z - 1 }); c.t = MINE.every; if (++c.dropped === MINE.drop) c.stage = 'off'; }
+  } else { // onto the shoulder, flat out
+    c.v = Math.min(c.v + 12 * dt, speed + 15);
+    c.x += clamp(SHOULDER_X - c.x, -5 * dt, 5 * dt);
+    if (Math.abs(c.x - SHOULDER_X) < 0.2 && c.z - odo > 0) Object.assign(c, { miner: false, stage: null, lane: 0, again: Infinity });
+  }
+  c.z += c.v * dt;
+  return true;
+}
+function mineTick() { // distance.js updateRun: a mine reached, run over or missed
+  for (const m of mines) {
+    if (m.over || odo + MY_FRONT < m.z) continue;
+    m.over = true;
+    if (!runOver(MINE.hit, m.x)) continue; // under a column of the board, or between them
+    shake = Math.max(shake, 0.6); // main.js
+    crashSound();
+    flash('MINE!', '#f55', false);
+    if (wrecked()) return finishRun('wrecked');
+  }
+  mines = mines.filter(m => m.z > odo - 20);
+}
+const mineMarks = () => mines.map(m => ({ z: m.z, kind: 'mine', value: m })); // distance.js roadMarks
 
 // the rival gang's war rigs (Claude's, 30 Oct), its notable enemy: a tanker welded up for war (road.js RIG_SPRITE),
 // in the gang's ambushes (below). It takes over a car out of sight up the road, as the police do, and comes up from
@@ -278,8 +333,8 @@ function gangDrive(c, dt) { // road.js updateTraffic: true while it is at you; e
 // beside you and swings into your side, and pulls ahead again; until it is totaled. Rams barely scratch it, as the
 // tank. First guesses, for act5.py: six shells, or four and the guns
 const RIG = { hp: 1500, ahead: 45, hold: 3, hit: 6, scrap: 150, w: 2.8, h: 3.4 }; // m, s, % a ram
-// distance.js startRun: the gang, the ambushes, the police's spike strips (police.js)
-const rigRun = () => { gangClock = GANG_CAR.every; ambushes = drawAmbushes(); strips = []; torn = 0; };
+// distance.js startRun: the gang, its mines, the ambushes, the police's spike strips (police.js)
+const rigRun = () => { gangClock = GANG_CAR.every; ambushes = drawAmbushes(); strips = []; torn = 0; mines = []; };
 function sendRig() { // the ambushes: two at a time at most; false if not now (no car to take, no room)
   if (traffic.filter(c => c.rig && !c.wreck).length >= 2) return false;
   const c = traffic.find(c => !c.racer && !c.police && !c.tank && !c.rig && !c.heli && !c.fleet && c !== target && c !== quarry && c.z - odo > 600);
@@ -487,7 +542,8 @@ function strike(pct, x, z) { // damage.js hurt, boss.js, rigRam: pct the hit's d
   if (!rigged()) return addDamage(d); // damage.js
   hitCell(d, ...cellAt(x, z));
 }
-// a spike strip (police.js stripTick) across the road's lane at x: the front cell of the column over it; with none, a miss
+// a spike strip (police.js stripTick) or a mine (mineTick) on the road's lane at x: the front cell of the column over it;
+// with none, a miss
 function runOver(pct, x) {
   const w = boardW(), cx = Math.round((x - carX) / LANE_W + (w - 1) / 2);
   if (cx < 0 || cx >= w) return false;

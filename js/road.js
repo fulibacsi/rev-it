@@ -335,6 +335,15 @@ const STRIP = sprite(240, 40, (g, w, h) => {
   g.fillStyle = '#e6e9f0'; // the spikes
   for (let x = 3; x < w - 6; x += 9) { g.beginPath(); g.moveTo(x, h * 0.5); g.lineTo(x + 3, 0); g.lineTo(x + 6, h * 0.5); g.fill(); }
 });
+// the gang's mine (fortress.js mineMarks): a dark plate on the road, a hazard-yellow rim so it reads on a phone, its
+// fuse light blinking red (two frames)
+const MINES = [0, 1].map(lit => sprite(120, 44, (g, w, h) => {
+  g.fillStyle = '#ffd23a'; g.beginPath(); g.ellipse(w / 2, h * 0.68, w * 0.48, h * 0.3, 0, 0, 2 * Math.PI); g.fill(); // the rim
+  g.fillStyle = '#2a2a24'; g.beginPath(); g.ellipse(w / 2, h * 0.6, w * 0.4, h * 0.26, 0, 0, 2 * Math.PI); g.fill(); // the plate
+  g.fillStyle = '#4a4a3c'; g.beginPath(); g.ellipse(w / 2, h * 0.5, w * 0.16, h * 0.14, 0, 0, 2 * Math.PI); g.fill(); // its cap
+  g.fillStyle = lit ? '#ff3030' : '#5a1010'; g.shadowColor = '#ff3030'; g.shadowBlur = lit ? 10 : 0;
+  g.beginPath(); g.arc(w / 2, h * 0.3, w * 0.07, 0, 2 * Math.PI); g.fill(); // the fuse light
+}));
 // act 3's spots by the road (oil.js), in the palms' sunset silhouette with lamps lit: an oil puddle on the sand, a
 // pumpjack nodding (two frames, the beam up and down), a refinery with its flare flickering (two frames)
 const PUDDLE = sprite(240, 48, (g, w, h) => {
@@ -702,6 +711,7 @@ const MARKS = {
   // a helicopter's searchlight on a lane, from up where it hovers; its spike strip across the lane (police.js heliMarks)
   spot: v => ({ x: v.x, w: 4.5, h: v.alt, img: SPOT }),
   strip: v => ({ x: v.x, w: 3.4, h: 0.6, img: STRIP }),
+  mine: v => ({ x: v.x, w: 1.6, h: 0.58, img: MINES[Math.floor(performance.now() / 250) % 2] }), // the gang's (fortress.js)
 };
 function drawRoad(g, w, h, dt) {
   const depth = 1 / Math.tan(ROAD.fov / 2 * Math.PI / 180), horizon = h * ROAD.horizon, k0 = w / 2;
