@@ -311,7 +311,7 @@ function updateRun(dt) {
   else if (run.phase === 'finish' && (run.count -= dt) <= 0) run.phase = 'garage';
   run.still = run.phase === 'run' && speed < 1 ? (run.still ?? 0) + dt : 0; // s standing still in the run (stuck?)
   if (run.phase === 'run' && raceTick()) run.revealed = true;
-  if (run.phase === 'run') { rechargeFlash(dt); updateGang(dt); updatePolice(dt); ambushTick(); updateGangCars(dt); updateBoss(); crewTick(dt); rigTick(dt); lootTick(dt); stripTick(dt); }
+  if (run.phase === 'run') { rechargeFlash(dt); updateGang(dt); updatePolice(dt); ambushTick(); updateGangCars(dt); updateBoss(); crewTick(dt); rigTick(dt); lootTick(dt); stripTick(dt); mineTick(); }
   if (run.phase === 'run' && damageOn()) damageTick(dt);
   if (run.phase === 'run' && run.limp && odo >= LIMP) finishRun('limped'); // as far as a wreck gets
 }
@@ -339,9 +339,9 @@ function roadMarks() {
   const marks = [];
   for (let m = Math.max(100, Math.ceil(odo / 100) * 100); m < odo + 1500; m += 100) marks.push({ z: m, kind: 'board', value: m });
   if (run.best) marks.push({ z: run.best, kind: 'best', value: run.best });
-  marks.push(...crewMarks(), ...omenMarks(), ...lootMarks(), ...heliMarks()); // oil.js: act 3's spots, your crew's cars at
-  return marks; // them, and its foreshadowing; fortress.js: the loot on the road; police.js: a helicopter's light and dust
-}
+  marks.push(...crewMarks(), ...omenMarks(), ...lootMarks(), ...mineMarks(), ...heliMarks()); // oil.js: act 3's spots, your
+  return marks; // crew's cars at them, and its foreshadowing; fortress.js: the loot and the gang's mines on the road;
+}               // police.js: a helicopter's light and its spike strips
 
 // the Crew's Fuel converter (the Mile converter until 26 Oct): meters for fuel, one way, at the pump price: a mile's
 // meters a liter at first (the owner: thousands, not hundreds), climbing with the crew to three times at the gang (a

@@ -3,8 +3,8 @@ rig with it on the road. From two lanes wide (the owner, 30 Oct): a truck's whee
 the whole rig a lane at a time, slower, over the double yellow too, as far as the road goes; the robot brakes for no
 one and leaves the lanes to you (Autocruise's and Lane assist's plates say so); a car of the traffic's in any lane it
 covers is crushed for a little speed; head-on it rams through (the car scrap, the rig 20% less its armor, the run goes
-on), and an oncoming car swerves out of its way if it can; a rival rig with no lane beside you waits up the road; a
-crate in any lane it covers is picked up. Its tutorial pops up as it is bought. A lane wide, a head-on is still the end
+on), and an oncoming car swerves out of its way if it can; a rival rig with no lane beside you waits up the road, and
+a gang car comes up the right shoulder instead (layer 11); a crate in any lane it covers is picked up. Its tutorial pops up as it is bought. A lane wide, a head-on is still the end
 of the run. Phone and desktop."""
 import json
 from playwright.sync_api import sync_playwright
@@ -105,6 +105,15 @@ with sync_playwright() as p:
         got = js("""(() => { Object.assign(traffic.find(c => !c.racer && !c.fleet && !c.wreck), { z: odo + 800 }); sendRig();
             const c = traffic.find(c => c.rig && !c.wreck); return [sideLane(), c?.stage, c && Math.round(c.z - odo)]; })()""")
         check(f"{layout}: no lane beside you: a rival rig waits up the road, holding", got == [None, "hold", 300], got)
+        # a gang car with no lane beside you comes up the right shoulder, the crew's line (layer 11), past you, and cuts in
+        got = js("""(() => { Object.assign(traffic.find(c => !c.racer && !c.fleet && !c.wreck && !c.rig), { z: odo + 800 }); const ok = sendChaser();
+            const g = traffic.find(c => c.gang && c.stage === 'chase'), at = [ok, g.shoulder, g.x === SHOULDER - 0.6, Math.round(g.z - odo)];
+            for (let i = 0; i < 900 && g.stage === 'chase'; i++) { odo += speed / 60; gangDrive(g, 1 / 60); }
+            for (let i = 0; i < 300 && g.stage === 'cut'; i++) { odo += speed / 60; gangDrive(g, 1 / 60); }
+            return [...at, g.stage, Math.abs(g.x - MY_LANES[lane]) < 0.4, g.z - odo > 15]; })()""")
+        check(f"{layout}: no lane beside you: a gang car comes up the right shoulder from 260 m back, past you, cuts in ahead of "
+              f"your right lane and brakes", got == [True, True, True, -260, "brake", True, True], got)
+        js("traffic.forEach(c => { if (c.gang) spawnCar(c, 1500); })")  # back into the traffic, its look too
 
         # 7. four lanes wide: across the road, nowhere to shift
         got = js("(() => { progress.levels.widen = 3; applyUpgrades(); changeLane(-1); return [rigW, lane, laneX(), +(CAR.drag / STOCK_DRAG).toFixed(1)]; })()")

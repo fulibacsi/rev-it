@@ -112,6 +112,23 @@ with sync_playwright() as p:
         got = js("""(() => { const g = traffic.find(c => c.gang && c.wreck); g.z = odo - 50; updateTraffic(0, 1e6); return [g.gang, g.racer]; })()""")
         check(f"{layout}: left behind, back into the traffic: no longer the gang's", got == [False, 0], got)
 
+        # the gang's mines (layer 11), run frame by frame with the road moving under them: a gang car up the road in your
+        # lane, slower; 50 m off it drops three in its lane and pulls onto the shoulder; each run over hits the board's front
+        # cell (15 less 75%: 3.75); dropped in your other lane, they miss
+        js(CLEAR)
+        mines = """(other) => { lane = fromLane = 0; carX = MY_LANES[0]; // settled in a lane (the robot may be changing lanes)
+            Object.assign(traffic.find(c => !c.racer && !c.fleet && !c.police && !c.wreck), { z: odo + 800 }); mines = [];
+            const cannon = progress.fortress.parts[0], seen = [], was = window.flash; cannon.hp = 100; window.flash = (t, ...a) => { seen.push(t); return was(t, ...a); };
+            sendMiner(); const m = traffic.find(c => c.miner); if (other) m.x = ROAD_LANES[1 - lane]; const at = [Math.round(m.z - odo), m.x === ROAD_LANES[lane]];
+            for (let i = 0; i < 4000 && (m.miner || !mines.length || mines.some(x => !x.over)); i++) { odo += speed / 60; gangDrive(m, 1 / 60); mineTick(); }
+            window.flash = was; return [...at, m.dropped, seen.filter(t => t.startsWith('MINE')).join(), +hpOf(cannon).toFixed(2), Math.abs(m.x - (SHOULDER - 0.6)) < 0.3]; }"""
+        got = js(f"({mines})(false)")
+        check(f"{layout}: a gang car 300 m up your lane drops three mines (MINES!) and pulls onto the shoulder; run over, MINE! three "
+              f"times, 3.75 off the cannon each", got == [300, True, 3, "MINES!,MINE!,MINE!,MINE!", 88.75, True], got)
+        got = js(f"({mines})(true)")
+        check(f"{layout}: dropped in your other lane: missed, nothing hit", got[3:5] == ["MINES!", 100], got)
+        pg.screenshot(path=f"{OUT}/rivals_{layout}_mines.png")
+
         # 5. the gang's ambushes send rigs: two at a time at most
         js(CLEAR)
         got = js("(() => { traffic.filter(c => !c.racer && !c.fleet).slice(0, 3).forEach((c, i) => Object.assign(c, { z: odo + 800 + 40 * i })); " # to take over, out of sight
