@@ -143,7 +143,8 @@ with sync_playwright() as p:
             step(() => c.stage === 'wind' || c.stage === 'leave'); if (c.stage === 'leave') return [...out, 'left', f.parts.length];
             updateGang(0); out.push(Math.round(c.z - odo), target === c); renderBoard(); out.push(!!$('fort-grid').querySelector('[data-hooked]'));
             step(() => c.stage === 'reel'); out.push(f.parts.length, c.prize?.kind);
-            if (kill) { hurtCar(c, 1e4); out.push(run.loot.length, run.loot[0]?.part.kind); }
+            // totaled: its own drop table off, so the crate on the road is the part it took
+            if (kill) { const d = DROPS.harpoon[0]; DROPS.harpoon[0] = 0; hurtCar(c, 1e4); DROPS.harpoon[0] = d; out.push(run.loot.length, run.loot[0]?.part.kind); }
             else { step(() => c.stage === 'leave'); out.push(f.parts.length, c.prize); }
             window.flash = was; out.push(seen.filter(t => /HARPOON|GONE/.test(t)).join()); return out; }"""
         got = js(f"({harpoon})(true)")
