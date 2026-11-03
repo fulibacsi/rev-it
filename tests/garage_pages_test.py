@@ -112,5 +112,9 @@ with sync_playwright() as p:
     set_("progress.off.reckless = true")  # a save from when Reckless driving read ON/OFF: it switched off Reckless auto-drive only
     got = [js(buttons)["recklessCruise"], js("(() => { run.phase = 'run'; const on = aid('recklessCruise'); run.phase = 'garage'; return on; })()")]
     check("a save with Reckless driving switched off: Reckless auto-drive still ON, and working", got == ["ON switch", True], got)
+    set_("Object.assign(progress.levels, { flash: 5 }); progress.off.flash = true")  # the flash has no switch: the code read one nothing set
+    got = [js(buttons)["autoflash"], js("(() => { run.phase = 'run'; run.flashes = 1; const on = [aid('autoflash'), DISTANCE.useFlash()]; "
+                                        "run.phase = 'garage'; return on; })()")]
+    check("a save with the flash switched off: Auto flash still ON and working, the flash flashes", got == ["ON switch", [True, True]], got)
     b.close()
 print("ERRORS:", errors or "none", "| FAILS:", fails or "none")

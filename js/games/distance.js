@@ -27,7 +27,7 @@ const UPGRADES = {
   // the white car fell 3 to 10 runs later (tests/balance/act1.py, cheapest and value); in sight from 5 flashes, a teaser
   flashRecharge: { name: 'Flash recharge', max: 5, base: 2500, growth: 1.5, built: 0, needs: [['flash', 5], 'reckless'],
                    info: l => l ? `a flash back every ${rechargeTime(l)} s` : 'a flash used is gone for the run' },
-  autoflash: { name: 'Auto flash', tab: 'autopilot', max: 1, base: 2000, toggle: true, needs: ['autopilotTab', ['flash', 5]], on: ['flash'],
+  autoflash: { name: 'Auto flash', tab: 'autopilot', max: 1, base: 2000, toggle: true, needs: ['autopilotTab', ['flash', 5]],
                info: () => 'flashes slower cars ahead for you' + (progress.racing ? ', and changes lanes round racers instead' : '') },
   clutch: { name: 'Auto clutch', tab: 'autopilot', max: 1, base: 700, toggle: true, needs: ['autopilotTab'], info: () => 'works the clutch: no stalls' },
   gas:    { name: 'Auto gas', tab: 'autopilot', max: 1, base: 800, toggle: true, needs: ['autopilotTab'], info: () => 'launch and traction control' },
@@ -631,7 +631,7 @@ function renderRun() {
   $('timer-fill').style.width = `${97 * run.left / runTime()}%`;
   $('timer-left').textContent = run.left.toFixed(1);
   document.body.classList.toggle('low', run.phase === 'run' && run.left < 5);
-  document.body.classList.toggle('has-flash', lvl('flash') > 0 && !progress.off.flash && !rigged()); // gone with the Rebuild
+  document.body.classList.toggle('has-flash', lvl('flash') > 0 && !rigged()); // gone with the Rebuild
   $('hud-flashes').textContent = run.phase === 'garage' ? lvl('flash') : run.flashes;
   $('hud-beam').classList.toggle('empty', run.phase !== 'garage' && !run.flashes);
   $('hud-beam').style.setProperty('--charge', run.phase === 'run' ? run.recharge / rechargeTime() : 0); // the refill
@@ -687,7 +687,7 @@ const DISTANCE = {
   crash: i => onCollision(i),
   marks: roadMarks,
   useFlash() { // a charge from this run's flashes
-    if (run.phase !== 'run' || progress.off.flash || !run.flashes || rigged()) return false;
+    if (run.phase !== 'run' || !run.flashes || rigged()) return false;
     run.flashes--;
     return true;
   },

@@ -297,7 +297,8 @@ driving is act 1's game, and the robot takes over as the fantasy moves on.
   Hunter), the Car stereo, War Rig radio, Fuel madness (beside its next level), Double up, the Foreman, Auto gun and
   Auto cannon. Until 3 Nov every one-level card read ON/OFF, most switching nothing (the Rebuild read OFF and the rig
   stayed rebuilt); Reckless driving's switched off only Reckless auto-drive, the oncoming lanes still yours, so it
-  went too.
+  went too. The Headlight flash has none: the code read one that nothing could set (gone 3 Nov), and Auto flash
+  stopped looking for it.
 - **The upgrade graph** (the owner, 23 Oct): what needs what is the owner's graph, `docs/upgrade-graph.md`, the source
   of truth (keep it up to date). Every tab is bought, so everything has a parent: the Workshop (100 m), the Autopilot
   (500 m, after 2 km driven in all), the Black market (1 point, once the race is revealed), the Fleet (1 point, at P1),
