@@ -106,6 +106,9 @@ with sync_playwright() as p:
         # 3. on the road: no shifter, no pedals, the firing pedal; the aids drive, whatever their switches say
         js("progress.off.cruise = progress.off.gas = true"); pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=20000)
         js("ambushes = []")  # the race's ambushes held off: a police car ramming the cannon (layer 10) wore it mid-check
+        # and the rival gang, its racers far behind (they stay there, road.js): a gang car totaled pays shells, which threw
+        # off the held pedal's count of them (section 5; four runs at a time, 3 Nov)
+        js("gangClock = 1e9; traffic.forEach(c => { if (c.racer && !c.fleet) Object.assign(c, { z: odo - 3000, stage: null }); })")
         js("traffic.forEach(c => { if (!c.racer) c.z = odo + 3000; })"); pg.wait_for_timeout(1500)
         got = js("[document.body.classList.contains('rig'), getComputedStyle($('shifter')).display, getComputedStyle($('gas').parentNode).display, "
                  "getComputedStyle($('brake').parentNode).display, getComputedStyle($('board')).display, getComputedStyle($('cannon-pedal').parentNode).display, "
@@ -219,8 +222,9 @@ with sync_playwright() as p:
         check(f"{layout}: held: thrown off, gone for good; the pedal fires nothing", got == [0, 0, False, False], got)
         js("for (const [k, p] of Object.entries(DROPS0)) DROPS[k][0] = p")
 
-        # 7. kept in the save; Free drive keeps its shifter and pedals
-        js("progress.fortress.parts.push({ kind: 'cannon', cells: [[0, 0]], x: 0, y: 0 }); save()"); pg.reload(); pg.wait_for_timeout(300)
+        # 7. kept in the save; Free drive keeps its shifter and pedals. Paused first: unloading, the page saves again (the
+        # pause menu's), and a hit on the cannon in between put its wear in the save (a flake, 3 Nov)
+        js("openMenu(); progress.fortress.parts.push({ kind: 'cannon', cells: [[0, 0]], x: 0, y: 0 }); save()"); pg.reload(); pg.wait_for_timeout(300)
         check(f"{layout}: kept in the save", js("JSON.stringify(progress.fortress.parts)") == '[{"kind":"cannon","cells":[[0,0]],"x":0,"y":0}]', js("JSON.stringify(progress.fortress)"))
         js("play(ARCADE.find(g => g.id === 'free'))"); pg.wait_for_timeout(300)
         got = js("[document.body.classList.contains('rig'), getComputedStyle($('shifter')).display, getComputedStyle($('gas').parentNode).display]")
