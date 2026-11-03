@@ -31,8 +31,8 @@ Object.assign(UPGRADES, { // the Black market (distance.js PAGES), paid in race 
   // market at 6,360 points against the ~5,200 act 2 pays, with 10 a race after P1. On sale only once 7th gear is
   // bought (18 Oct: a playtester spent the points on it and had none left for 7th gear, which the top 10 need; it
   // doesn't make the car any quicker). It works on Autocruise in the oncoming lanes, whatever 7th gear does
-  recklessCruise: { name: 'Reckless auto-drive', tab: 'black', max: 1, base: 600, needs: ['blackTab', 'cruise', 'gear7'],
-                    on: ['cruise', 'reckless'],
+  recklessCruise: { name: 'Reckless auto-drive', tab: 'black', max: 1, base: 600, toggle: true, needs: ['blackTab', 'cruise', 'gear7'],
+                    on: ['cruise'],
                     info: () => 'adds to Autocruise: the oncoming lanes, chicken, the ECU tune and nitro, as far as ' +
                       'the car has them' },
   cooling: { name: 'Cooling', tab: 'black', max: 3, base: 60, growth: 2, needs: ['ecuPower'],

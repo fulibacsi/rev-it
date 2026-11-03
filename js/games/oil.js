@@ -23,12 +23,12 @@ Object.assign(UPGRADES, {
               info: l => l ? `a spot takes ${25 * l}% more cars than it needs, each pumping its share` : 'a full spot takes no more' },
   wells: { name: 'Deep wells', tab: 'fleet', max: 4, base: 15, growth: 2.5, needs: ['harvesting'],
            info: l => l ? `oil spots hold ${25 * l}% more` : 'oil spots as they come' },
-  doubleUp: { name: 'Double up', tab: 'fleet', max: 1, base: 25, needs: ['overfill'],
+  doubleUp: { name: 'Double up', tab: 'fleet', max: 1, base: 25, toggle: true, needs: ['overfill'],
               info: () => 'a press of SEND sends two cars' },
   // the act's automation (the owner, 26 Oct: Double up first, then the Foreman), as Auto gun is act 4's; within reach
   // well before the 51st (the owner, 27 Oct: an earlier unlock, to help reach 51; it needed Scouting and Sonar range
   // maxed, and with them about 430 L, out of the act's reach)
-  foreman: { name: 'Foreman', tab: 'fleet', max: 1, base: 60, needs: ['doubleUp'],
+  foreman: { name: 'Foreman', tab: 'fleet', max: 1, base: 60, toggle: true, needs: ['doubleUp'],
              info: () => 'sends your crew for you, where you would; your own SEND still works' },
   // the Foreman's efficiency, his speed of command (layer 13; the owner, 2 Nov: "Foreman efficiency for me means speed
   // of command. Raiders have a lot to do and they do it quickly. Let's add a cooldown to foreman dispatch and upgrade
@@ -59,7 +59,7 @@ const ARRIVE = 1.6;                     // s a car takes to get to its spot; Cre
 const arrive = () => ARRIVE * (1 - 0.1 * lvl('fleetPace'));
 const cap = s => Math.floor(s.count * (1 + 0.25 * lvl('overfill'))); // cars a spot takes
 const harvest = () => 1 + 0.2 * lvl('harvesting');
-const twice = () => lvl('doubleUp') > 0 && !progress.off.doubleUp; // a switch, as every one-level card is
+const twice = () => lvl('doubleUp') > 0 && !progress.off.doubleUp; // a switch
 const foremanOn = () => lvl('foreman') > 0 && !progress.off.foreman;
 // s between the Foreman's sends: on the war rig a cooldown (the owner, above), 30% shorter a level of Dispatch (0.75 s
 // down to 0.13 s); before it, four presses a second, as acts 3 and 4 were simulated. act5.py: from 2 s he sent 25 cars

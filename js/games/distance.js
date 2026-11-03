@@ -6,7 +6,8 @@
 // base · growth^n. info(level) describes what the car has at that level. needs: its parents in the owner's graph
 // (docs/upgrade-graph.md, the source of truth): an id (bought), or [id, levels] ([id, 'max']: maxed); a function of the
 // level when each level has its own (the engines). It shows once one is met and is bought with all of them (shows,
-// whyNot). on: the aids it works on top of: one switched off switches it off too (aid).
+// whyNot). on: the aids it works on top of: one switched off switches it off too (aid). toggle: a switch, ON/OFF in
+// the garage once bought (progress.off); every other card bought out reads MAX.
 // tab: the garage page it is on, see PAGES; max can depend on
 // progress (then locked says why there is no more yet); gate(level) can hold the next level back with a reason;
 // built: how many levels count toward the car being built (headStart in race.js), when not all of them.
@@ -26,17 +27,17 @@ const UPGRADES = {
   // the white car fell 3 to 10 runs later (tests/balance/act1.py, cheapest and value); in sight from 5 flashes, a teaser
   flashRecharge: { name: 'Flash recharge', max: 5, base: 2500, growth: 1.5, built: 0, needs: [['flash', 5], 'reckless'],
                    info: l => l ? `a flash back every ${rechargeTime(l)} s` : 'a flash used is gone for the run' },
-  autoflash: { name: 'Auto flash', tab: 'autopilot', max: 1, base: 2000, needs: ['autopilotTab', ['flash', 5]], on: ['flash'],
+  autoflash: { name: 'Auto flash', tab: 'autopilot', max: 1, base: 2000, toggle: true, needs: ['autopilotTab', ['flash', 5]], on: ['flash'],
                info: () => 'flashes slower cars ahead for you' + (progress.racing ? ', and changes lanes round racers instead' : '') },
-  clutch: { name: 'Auto clutch', tab: 'autopilot', max: 1, base: 700, needs: ['autopilotTab'], info: () => 'works the clutch: no stalls' },
-  gas:    { name: 'Auto gas', tab: 'autopilot', max: 1, base: 800, needs: ['autopilotTab'], info: () => 'launch and traction control' },
-  shift:  { name: 'Auto shift', tab: 'autopilot', max: 1, base: 2500, needs: ['clutch'], on: ['clutch'],
+  clutch: { name: 'Auto clutch', tab: 'autopilot', max: 1, base: 700, toggle: true, needs: ['autopilotTab'], info: () => 'works the clutch: no stalls' },
+  gas:    { name: 'Auto gas', tab: 'autopilot', max: 1, base: 800, toggle: true, needs: ['autopilotTab'], info: () => 'launch and traction control' },
+  shift:  { name: 'Auto shift', tab: 'autopilot', max: 1, base: 2500, toggle: true, needs: ['clutch'], on: ['clutch'],
             info: () => 'changes gear at the limiter' },
-  steer:  { name: 'Lane assist', tab: 'autopilot', max: 1, base: 1500, needs: ['autopilotTab'],
+  steer:  { name: 'Lane assist', tab: 'autopilot', max: 1, base: 1500, toggle: true, needs: ['autopilotTab'],
             info: () => 'swerves round a car you are about to hit' },
-  cruise: { name: 'Autocruise', tab: 'autopilot', max: 1, base: 6000, needs: ['steer', 'shift', 'gas'], on: ['steer', 'gas', 'shift'],
+  cruise: { name: 'Autocruise', tab: 'autopilot', max: 1, base: 6000, toggle: true, needs: ['steer', 'shift', 'gas'], on: ['steer', 'gas', 'shift'],
             info: () => 'drives the whole run: passes, keeps right, brakes when boxed in' },
-  stereo: { name: 'Car stereo', max: 1, base: 500, built: 0, needs: ['workshopTab'], // stereo.js; no use for speed, so not part of building the car
+  stereo: { name: 'Car stereo', max: 1, base: 500, built: 0, toggle: true, needs: ['workshopTab'], // stereo.js; no use for speed, so not part of building the car
             info: () => 'synthwave on five tapes: tap the lights in the cluster (or M) for the next, or off' },
   engine: { name: 'Engine swap', max: ENGINES.length - 1, base: 4000, growth: 2.5, info: l => ENGINES[l].name,
             needs: l => l ? [['power', 'max'], ['rev', 'max'], ['gears', 'max']] : ['power', 'rev', 'gears'] }, // the V8, the I6
@@ -532,7 +533,7 @@ function renderGarage(bought) {
     const info = max > 1 || steps === 0 ? u.info(l) + (why !== 'max' && !why.startsWith('finish') ? ` → ${u.info(l + 1)}` : '') : u.info();
     const toggle = u.on?.some(n => progress.off[n]) ? `<button disabled>needs ${UPGRADES[u.on.find(n => progress.off[n])].name} on</button>`
       : `<button data-toggle="${id}"${progress.off[id] ? '' : ' class="on"'}>${progress.off[id] ? 'OFF' : 'ON'}</button>`;
-    const button = why === u.locked ? `<button disabled>${why}</button>` : why === 'max' ? (u.max !== 1 && !u.toggle ? '<button disabled>MAX</button>' : toggle)
+    const button = why === u.locked ? `<button disabled>${why}</button>` : why === 'max' ? (u.toggle ? toggle : '<button disabled>MAX</button>')
       : why.startsWith('needs') ? `<button disabled>${why}</button>`
       : `<button data-buy="${id}"${why ? ' disabled' : ''}>${price(id, cost(id))}</button>` +
         (steps === 0 && !why ? `<button data-max="${id}">all I can</button>` : '') + // the grid: many slots at once

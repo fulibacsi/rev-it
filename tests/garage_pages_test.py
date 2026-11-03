@@ -4,7 +4,7 @@ market's once the race is revealed (and not a word of it before), the Fleet's at
 totaled. A card shows once one of its parents is bought (a count on the arrow once met), locked, with its name and
 its whole rule: what is done checked, a parent out of sight as ??? (Flash recharge's in act I, a teaser). The next
 engine is a card. A tab with an upgrade unlocked that you haven't looked at yet has a yellow !, until you do (kept in
-the save). A save from before the tabs keeps its pages."""
+the save). A save from before the tabs keeps its pages. Bought out, a switch reads ON/OFF, every other card MAX."""
 import re
 from playwright.sync_api import sync_playwright
 from common import URL, OUT, launch
@@ -95,5 +95,22 @@ with sync_playwright() as p:
     # 6. a save from before the tabs: its pages kept, nothing for sale
     set_("progress.levels = { power: 3, clutch: 1, reckless: 1 }")
     check("a save from before the tabs: its pages kept", tabs()[:3] == ["Workshop", "Autopilot", "Black market"], tabs())
+    # 7. bought out: a switch reads ON/OFF, every other card MAX (3 Nov: every one-level card had ON/OFF, most of them
+    # switching nothing; the Rebuild read OFF and stayed rebuilt, fortress_test)
+    SWITCHES = {"autoflash", "clutch", "gas", "shift", "steer", "cruise", "stereo", "recklessCruise", "autogun", "hunter", "warradio",
+                "doubleUp", "foreman", "autocannon"}
+    buttons = """(() => { const seen = {}; for (const [page] of PAGES) { garageTab = page; renderGarage();
+      for (const c of document.querySelectorAll('#cards .card')) { const id = Object.keys(UPGRADES).find(i => UPGRADES[i].name === c.querySelector('b').textContent);
+        if (UPGRADES[id]?.max === 1) seen[id] = [...c.querySelectorAll('button:not(.tip)')].map(b => b.textContent + (b.dataset.toggle ? ' switch' : '')).join(' '); } }
+      return seen; })()"""
+    set_("progress.levels = Object.fromEntries(Object.keys(UPGRADES).filter(id => UPGRADES[id].max === 1 && id !== 'rebuild').map(id => [id, 1])); "
+         "Object.assign(progress, { off: {}, tanks: 1 })")  # the Rebuild left out: it bolts the aids on (fortress_test)
+    got = js(buttons); got.pop("rebuild")  # for sale
+    want = {id: "ON switch" if id in SWITCHES else "MAX" for id in got}
+    check("every one-level card bought: the switches ON, the rest MAX", got == want and set(got) >= SWITCHES and len(got) == 22,
+          {id: v for id, v in got.items() if v != want[id]} or len(got))
+    set_("progress.off.reckless = true")  # a save from when Reckless driving read ON/OFF: it switched off Reckless auto-drive only
+    got = [js(buttons)["recklessCruise"], js("(() => { run.phase = 'run'; const on = aid('recklessCruise'); run.phase = 'garage'; return on; })()")]
+    check("a save with Reckless driving switched off: Reckless auto-drive still ON, and working", got == ["ON switch", True], got)
     b.close()
 print("ERRORS:", errors or "none", "| FAILS:", fails or "none")

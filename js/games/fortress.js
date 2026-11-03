@@ -59,10 +59,10 @@ Object.assign(UPGRADES, {
 });
 // the act's automation (layer 14), the first: the upgrade graph's, planned, "fires the cannon for you, as Auto gun does
 // the guns". Paid in points (Claude's proposal for them, the owner, 2 Nov: "we have to find an alternative sink"; the
-// currencies' plan had points paying for the crew's upgrades, the act's automation). A switch, as every one-level card
-// is. The price a first guess, for act5.py
+// currencies' plan had points paying for the crew's upgrades, the act's automation). A switch, as Auto gun is. The
+// price a first guess, for act5.py
 Object.assign(UPGRADES, {
-  autocannon: { name: 'Auto cannon', tab: 'fortress', max: 1, base: 3000, wallet: 'points', needs: ['rebuild', 'autogun'],
+  autocannon: { name: 'Auto cannon', tab: 'fortress', max: 1, base: 3000, toggle: true, wallet: 'points', needs: ['rebuild', 'autogun'],
                 info: () => 'fires the cannon for you whenever it is loaded and the car in the reticle is in reach; the pedal ' +
                   'reads AUTO' },
 });

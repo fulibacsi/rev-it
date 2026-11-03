@@ -84,6 +84,10 @@ with sync_playwright() as p:
               got == [500, '{"parts":[],"hold":[{"kind":"cannon","cells":[[0,0]]}]}', "tour", "rig", True, "none", "flex"], got)
         while js("menuOpen"): js("turnTour(1)"); pg.wait_for_timeout(50)
         js("garageTab = 'fortress'; renderGarage()"); pg.wait_for_timeout(100)
+        got = js("[...document.querySelectorAll('#cards .card')].find(c => c.querySelector('b').textContent === 'Rebuild').querySelector('button:not(.tip)').outerHTML")
+        check(f"{layout}: the Rebuild bought reads MAX, no switch (its ON/OFF switched nothing: it read OFF, the rig stayed)",
+              got == '<button disabled="">MAX</button>', got)
+        pg.screenshot(path=f"{OUT}/fortress_{layout}_page.png")
         before = js("[progress.shells, progress.points]"); tap("[data-shells]"); pg.wait_for_timeout(150)
         got = js("[progress.shells, progress.points, $('cards').querySelector('.shells small').textContent]")
         check(f"{layout}: a crate of shells on the Fortress page: 10 for 100 points, as often as you like", before == [10, 500]

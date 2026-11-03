@@ -22,7 +22,7 @@ Object.assign(UPGRADES, {
           info: l => l ? `the wheel's red marker (or G) fires at the car in the reticle: ${GUN * l} damage a shot, ` +
             `4 a second, up to ${RANGE} m` : 'unarmed' },
   // the owner's idea (14 Oct): on a phone your thumbs are busy steering and on the pedals
-  autogun: { name: 'Auto gun', tab: 'warrig', max: 1, base: 200, needs: ['guns'],
+  autogun: { name: 'Auto gun', tab: 'warrig', max: 1, base: 200, toggle: true, needs: ['guns'],
              info: () => 'fires for you whenever the car in the reticle is in reach and in sight; the marker reads AUTO' },
   // the owner's idea (18 Oct; first called Bad drivers, the id kept so saves keep it): a share of ordinary traffic goes
   // mad for fuel, drops its manners and jumps in front of you (road.js mad), so a cut-in is a ram, not a crash to
@@ -33,13 +33,13 @@ Object.assign(UPGRADES, {
                   'Mad ones (rusty, weaving) jump in front of you; ram one that does: totaled. Stolen fuel: double scrap' },
   // the owner's idea (18 Oct): autocruise hunts the car in the reticle (aids.js hunt), as act4.py's bot did by hand; a
   // switch. Price: a first guess, see act4.py
-  hunter: { name: 'Hunter', tab: 'warrig', max: 1, base: 100, needs: ['warrigTab', 'cruise', 'recklessCruise'], on: ['cruise'],
+  hunter: { name: 'Hunter', tab: 'warrig', max: 1, base: 100, toggle: true, needs: ['warrigTab', 'cruise', 'recklessCruise'], on: ['cruise'],
             info: () => 'adds to Autocruise (and Reckless auto-drive): it hunts ' + (rigged() ? "your raiders' car, on the " +
               'tracker' : 'the car in the reticle') + ', into its lane and into it. Not the tank, and it backs off past 60% damage' },
   // the owner's idea (18 Oct): the stereo plays the War Rig's own music instead of synthwave (stereo.js: three tapes, the
   // owner's, made with Suno);
   // a switch, so synthwave is a tap away. No use for speed. Price: a first guess, see act4.py
-  warradio: { name: 'War Rig radio', tab: 'warrig', max: 1, base: 100, needs: ['warrigTab', 'stereo'], on: ['stereo'],
+  warradio: { name: 'War Rig radio', tab: 'warrig', max: 1, base: 100, toggle: true, needs: ['warrigTab', 'stereo'], on: ['stereo'],
               info: () => "the stereo tunes in to the War Rig's own: three tapes of war rig anthems and darksynth" },
   // the owner's idea (18 Oct: "Fleet should have an attack upgrade so they hunt just like you"), the Hunting pack until
   // 27 Oct: every crew car hunted the car ahead of it. Now a role (the owner: Raiders, riding with you, sent with SEND);
