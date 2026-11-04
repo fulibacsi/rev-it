@@ -13,7 +13,8 @@ car on the rig rams you, from behind or a PIT from the side, three times, then i
 cannon too, slower to reel in) and reels it in; totaled first, the part drops in a crate. The army's (layer 12): a
 jeep comes past you and back, peppering the side of the board it is on, the raiders' and a ram's; a rocket car holds
 the road ahead in the reticle, its rocket's mark on the cell it will land on, a lane changed and it misses. The
-War chief: on the war rig he sends the raiders, a car each time he can (his Dispatch); the Foreman the oil crew alone. The Mine picker: mines picked up for shells; the Grinder:
+War chief: on the war rig he sends the raiders, a car each time he can (his Dispatch), on every hostile car in reach at
+once; gunners on the deck and scavengers for the crates, his stance saying who goes first; the Foreman the oil crew alone. The Mine picker: mines picked up for shells; the Grinder:
 crashes at the front cost nothing; Ram plates: rams on the sides and back hurt less, the police car thrown back. The
 crew's Scavengers fetch the crates you would pass; its Gunners shoot the small fry near you. Over a notable one the reticle's tag: what it is, its health, the shells it would take, how far. Before the rig, act 4's reticle as it was. Phone and desktop."""
 import json, re
@@ -371,27 +372,34 @@ with sync_playwright() as p:
               f"a second; the War chief a raider every 0.75 s (0.37 s at Dispatch 2), the bar under AUTO his cooldown, none without him",
               got == [False, False, True, False, True, [1, 1], [1, 1], [2, 1], [3, 2], True, False, 0.37, "the War chief sends a car every 0.4 s"], got)
 
-        # 6d. the crew's other jobs (layer 13, for fuel): a scavenger fetches a crate lying in a lane the fortress misses, while
-        # the hold has room, run frame by frame; gunners on the deck shoot the nearest of the gang's cars within 60 m
+        # 6d. the war crew's jobs (the owner, 4 Nov), the War chief assigning them: a scavenger for a crate you would pass
+        # (Scavengers), while the hold has room, run frame by frame; a raid on every hostile car in reach at once, three
+        # raiders each; gunners on the deck, one a cell (Gunners); short of crew, his stance says who goes first
         js(CLEAR)
-        got = js("""(() => { lane = fromLane = 0; carX = MY_LANES[0]; Object.assign(progress.levels, { foreman: 1, scavengers: 1, gunners: 2 });
-            progress.off.foreman = true; const f = progress.fortress; f.hold = []; run.gunners = 1e9; // the gunners held, for now
+        got = js("""(() => { lane = fromLane = 0; carX = MY_LANES[0]; Object.assign(progress.levels, { warChief: 1, scavengers: 1, gunners: 2 });
+            progress.off.foreman = true; progress.stance = 'attack'; const f = progress.fortress; f.hold = []; run.gunners = 1e9; // the guns held, for now
             const l = { part: makePart('armor', 'gang'), z: odo + 60, x: MY_LANES[1], v: 0 }; run.loot = [l];
             crewJobs(0.01); const c = traffic.find(c => c.scav === l), sent = !!c;
             for (let i = 0; i < 600 && c && !c.gone; i++) { odo += speed / 60; scavDrive(c, 1 / 60); }
             const fetched = [sent, l.tried && l.got, f.hold.length, $('flash').textContent.includes('INTO THE HOLD')];
             f.hold = [makePart('gun', 'gang')]; progress.levels.inventory = 0; const k = { part: makePart('armor', 'gang'), z: odo + 60, x: MY_LANES[1], v: 0 };
-            run.loot = [k]; crewJobs(0.01); const full = !traffic.some(c => c.scav === k && !c.gone); f.hold = []; run.loot = [];
-            const g = traffic.find(c => !c.racer && !c.fleet && !c.police && !c.wreck);
-            Object.assign(g, { racer: 7, gang: true, dir: 1, x: MY_LANES[1], z: odo + 30, v: speed, hp: null, stage: null });
-            const far = traffic.find(c => !c.racer && !c.fleet && !c.police && !c.wreck && c !== g); Object.assign(far, { racer: 9, gang: true, dir: 1, x: MY_LANES[1], z: odo + 80, v: speed, hp: null });
-            run.gunners = 0; crewJobs(0.01); const shot = [health(g) - (g.hp ?? health(g)), far.hp];
-            Object.assign(progress.levels, { foreman: 0, scavengers: 0, gunners: 0 }); progress.off.foreman = false;
-            for (const c of [g, far]) Object.assign(c, { racer: 0, gang: false, dir: -1, z: odo + 1500, hp: null });
-            return [...fetched, full, ...shot]; })()""")
-        check(f"{layout}: a scavenger fetches the crate in your other lane into the hold (+ARMOR INTO THE HOLD); with the hold full none goes; "
-              f"two gunners hit the gang car 30 m off for 15 (a shot every 0.5 s, 15 a second each), not the one 80 m off",
-              got == [True, True, 1, True, True, 15, None], got)
+            run.loot = [k]; crewJobs(0.01); const full = !traffic.some(c => c.scav === k && !c.gone); f.hold = [];
+            const gs = traffic.filter(c => !c.racer && !c.fleet && !c.police && !c.wreck).slice(0, 3);
+            gs.forEach((g, i) => Object.assign(g, { racer: 7 + i, gang: true, dir: 1, x: MY_LANES[1], z: odo + 30 + 40 * i, v: speed, hp: 1e6, stage: null }));
+            for (let i = 0; i < 9; i++) send(raidNext(), true);
+            const raids = gs.map(g => raidersOn({ car: g })); traffic.forEach(c => { if (c.raider) c.gone = true; });
+            progress.roles = { harvester: 52, brewer: 20, raider: 6 }; const split = {}; // eight at war
+            for (const s of ['attack', 'guard', 'salvage']) { progress.stance = s; split[s] = warJobs(); }
+            progress.stance = 'guard'; run.gunners = 0; const hp = gs[0].hp; crewJobs(0.01); const shot = hp - gs[0].hp;
+            progress.roles = { harvester: 17, brewer: 9, raider: 6 }; delete progress.stance; run.loot = []; run.gunners = 0;
+            Object.assign(progress.levels, { warChief: 0, scavengers: 0, gunners: 0 }); progress.off.foreman = false;
+            for (const c of gs) Object.assign(c, { racer: 0, gang: false, dir: -1, z: odo + 1500, hp: null });
+            return [...fetched, full, raids, split.attack, split.guard, split.salvage, shot]; })()""")
+        check(f"{layout}: a scavenger fetches the crate in your other lane into the hold; with the hold full none goes; three gang cars "
+              f"in reach, three raiders each; eight at war, three cars, a crate and a deck of one cell: ATTACK all eight raid, GUARD "
+              f"one gunner and seven raid, SALVAGE one scavenger and seven raid; a gunner at Gunners 2 hits for 4 a volley (8 a second)",
+              got == [True, True, 1, True, True, [3, 3, 3], {"raid": 8, "gun": 0, "scav": 0}, {"raid": 7, "gun": 1, "scav": 0},
+                      {"raid": 7, "gun": 0, "scav": 1}, 4], got)
 
         # 7. before the Rebuild, act 4's reticle as it was: the nearest car, the raiders' too
         js(CLEAR)

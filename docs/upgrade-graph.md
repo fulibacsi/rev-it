@@ -131,9 +131,8 @@ flowchart TD
   harvesting & brewing --> overfill
   overfill --> double
   double --> foreman
-  foreman -- "the Rebuild" --> scavengers & gunners
   pack -- "the Rebuild" --> warChief
-  warChief --> workRate
+  warChief --> workRate & scavengers & gunners
 
   fleetTab -- "totaled a car" --> warrig
   warrig --> bullbar & armor & spikes & radio & hunter
@@ -219,14 +218,16 @@ Each upgrade and what it needs, one line each: the list to edit.
 - Double up ← Overfill
 - Foreman ← Double up (Scouting max and Sonar range max too until 27 Oct)
 - War chief ← Raiders, the Rebuild (a story condition: act 5's; 40 L, a switch: on the war rig he sends the war crew,
-  raiders at the car the crew goes after, a car each time he can; the Foreman the oil crew alone there)
+  a car each time he can: three raiders at every hostile car in reach at once, gunners and scavengers with their cards,
+  his stance on the role card saying who goes first when the crew is short; the Foreman the oil crew alone there)
 - Dispatch ← War chief (layer 13: 5 levels, 30 L growing 1.6 times: his speed of command, a car every 0.75 s, 30% sooner
   a level, down to 0.13 s; the Foreman's from 2 Nov until the War chief took the war crew. Its id `workRate`, from
   Claude's first reading, Work rate, kept for the saves)
-- Scavengers ← Foreman, the Rebuild (layer 13: 3 levels, 40 L doubling: a car of the crew a level fetches a crate lying
-  in a lane the fortress misses, into the hold, while it has room)
-- Gunners ← Foreman, the Rebuild (layer 13: 3 levels, 50 L doubling: a gunner a level on the deck shoots the nearest of
-  the gang's cars, police cars and jeeps within 60 m, 15 damage a second each)
+- Scavengers ← War chief (layer 13: 3 levels, 40 L doubling: the war crew fetches the crates lying in lanes the
+  fortress misses, a car a crate, as many at once as its level; until 4 Nov the Foreman's, a car a level)
+- Gunners ← War chief (layer 13: 3 levels, 50 L doubling: the war crew mans the deck, a gunner a cell, firing at the
+  nearest of the gang's cars, police cars and jeeps within 60 m, 6, 8, 10 damage a second each; until 4 Nov the
+  Foreman's, a gunner a level)
 
 ### War Rig (1 scrap; needs the Crew, and a car totaled)
 

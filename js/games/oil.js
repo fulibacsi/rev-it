@@ -41,15 +41,15 @@ Object.assign(UPGRADES, {
   // keeps its levels). Claude's numbers, for act5.py
   workRate: { name: 'Dispatch', tab: 'fleet', max: 5, base: 30, growth: 1.6, needs: ['warChief'], story: () => rigged(),
               info: l => `the War chief sends a car every ${fmtL(dispatchEvery(l))} s` },
-  // the crew's other act 5 jobs (the map: fuel pays for the man-powered ones; the owner, 2 Nov: the Foreman first, "then
-  // the rest"), the Foreman sending them: scavengers fetch the crates you would drive past, gunners on the deck shoot the
-  // small fry the reticle leaves to the raiders (crewJobs, below). Claude's numbers, for act5.py
-  scavengers: { name: 'Scavengers', tab: 'fleet', max: 3, base: 40, growth: 2, needs: ['foreman'], story: () => rigged(),
-                info: l => l ? `${l} car${l > 1 ? 's' : ''} of your crew fetch${l > 1 ? '' : 'es'} a crate lying in a lane the ` +
-                  'fortress misses, into the hold' : 'the crates are yours to steer over' },
-  gunners: { name: 'Gunners', tab: 'fleet', max: 3, base: 50, growth: 2, needs: ['foreman'], story: () => rigged(),
-             info: l => l ? `${l} gunner${l > 1 ? 's' : ''} on the deck shoot${l > 1 ? '' : 's'} the gang's cars, police cars and ` +
-               `jeeps within ${GUNNERS.reach} m: ${GUNNERS.damage * l} damage a second` : 'nobody on the deck' },
+  // the war crew's other jobs (the map: fuel pays for the man-powered ones; the owner, 3-4 Nov: jobs of the war crew's,
+  // behind upgrades, the War chief assigning them): scavengers fetch the crates you would drive past, gunners on the deck
+  // shoot the small fry the reticle leaves to the raiders (warJobs, crewJobs, below). Claude's numbers, for act5.py
+  scavengers: { name: 'Scavengers', tab: 'fleet', max: 3, base: 40, growth: 2, needs: ['warChief'], story: () => rigged(),
+                info: l => l ? `up to ${l} car${l > 1 ? 's' : ''} of the war crew fetch the crates lying in lanes the fortress ` +
+                  'misses, into the hold' : 'the crates are yours to steer over' },
+  gunners: { name: 'Gunners', tab: 'fleet', max: 3, base: 50, growth: 2, needs: ['warChief'], story: () => rigged(),
+             info: l => l ? `gunners of the war crew on the deck, one a cell of it, at the gang's cars, police cars and jeeps ` +
+               `within ${GUNNERS.reach} m: ${gunnerDps(l)} damage a second each` : 'nobody on the deck' },
 });
 const fmtL = n => (Math.round(n * 10) / 10).toString();
 const fmtKm = m => m < 1000 ? `${m} m` : `${m / 1000} km`;
@@ -71,7 +71,8 @@ const warChiefOn = () => rigged() && lvl('warChief') > 0 && !progress.off.warChi
 // the oil (the fuel halved); from 0.75 s, 46-92. The Foreman sends four a second (FOREMAN), in every act
 const DISPATCH = { every: 0.75, faster: 0.7 }, FOREMAN = 0.25;
 const dispatchEvery = (l = lvl('workRate')) => DISPATCH.every * DISPATCH.faster ** l;
-const GUNNERS = { reach: 60, every: 0.5, damage: 15 }; // m either way; s between shots; damage a second a gunner
+const GUNNERS = { reach: 60, every: 0.5 }; // m either way; s between the deck's volleys
+const gunnerDps = (l = lvl('gunners')) => 4 + 2 * l; // a gunner's damage a second, a level of Gunners: 6, 8, 10
 
 // ---- the roles: racers race in their slots; harvesters and brewers ride with you. They are the crew's first paid off
 // (the slowest, #100 down), so the racers on the grid are its quickest, and in act IV they are the gang. The oil runs on
@@ -189,7 +190,7 @@ function crewEnd() { // finishRun: the spots still at work count as passed
 const ROLE_OF = { oil: 'harvester', refinery: 'brewer', raid: 'raider' }; // who works what
 const busy = kind => kind === 'raid' ? raiding().length // gang.js: raiders on the road
   : run.spots.reduce((n, s) => n + (s.kind === kind && !s.done ? s.crew + s.coming.length : 0), 0);
-const free = kind => role(ROLE_OF[kind]) - busy(kind);
+const free = kind => (kind === 'raid' ? warJobs().raid : role(ROLE_OF[kind])) - busy(kind); // raiders: the War chief's share
 const spotsAhead = () => run.spots.filter(s => !s.done && s.z > odo && (s.scripted || s.z - odo <= reach()));
 // the tracker and its controls: while the run has spots, the script's from their tutorials on, not before (the owner,
 // 27 Oct: on the tracker from the start, the puddle spoilt the surprise and the tutorial)
@@ -233,31 +234,56 @@ function crewTick(dt) {
     if (s) { send(s, true); run.foreman = run.t + FOREMAN; }
   }
   if (warChiefOn() && run.t >= run.warChief) { // the War chief: a raider at the crew's car each time he can (Dispatch)
-    const r = raidNow();
+    const r = raidNext();
     if (r) { send(r, true); run.warChief = run.t + dispatchEvery(); }
   }
 }
-// ---- the crew's act 5 jobs (Scavengers, Gunners: above). A scavenger goes for a crate up the road in a lane the
-// fortress doesn't cover (you would drive past it) while the hold has room for it, up the right shoulder as a runner
-// goes, and brings it in; gunners fire at the nearest of the gang's cars, the police's cars and the army's jeeps within
-// reach, either way, its tracer drawn while it is in sight (gang.js drawTracers)
+// ---- the war crew's jobs (the owner, 4 Nov: so that its size counts): with the War chief it raids every hostile car
+// in reach at once, three raiders each (the gang's cars, the police's cars, the army's jeeps; with none, the crew's car
+// as before), mans the deck with gunners, a cell each (with Gunners), and sends a scavenger for each crate you would
+// pass (with Scavengers, as many as its level at once). Short of crew, the War chief's stance says which job gets it
+// first; whatever is left raids. Without him the whole war crew raids, a car at a time (SEND)
+const STANCES = { attack: ['raid', 'gun', 'scav'], guard: ['gun', 'raid', 'scav'], salvage: ['scav', 'raid', 'gun'] };
+const stance = () => STANCES[progress.stance] ? progress.stance : 'attack';
+const hostile = c => !c.wreck && !c.fleet && c.dir > 0 && (c.racer || c.police && !c.suv || c.jeep); // the small fry at war with you
+const raidTargets = () => traffic.filter(c => hostile(c) && c.z > odo + 5 && c.z - odo < RANGE).sort((a, b) => a.z - b.z);
+const deckTarget = () => traffic.filter(c => hostile(c) && Math.abs(c.z - odo) < GUNNERS.reach).sort((a, b) => Math.abs(a.z - odo) - Math.abs(b.z - odo))[0];
+const cratesOut = () => run.loot.filter(l => !l.tried && !l.fetched && l.z > odo + 5 && !onCar(l.x)); // fortress.js
+const scavsOut = () => traffic.filter(c => c.scav && !c.gone).length;
+function warJobs() { // the war crew's split now: { raid, gun, scav }
+  const w = role('raider');
+  if (!warChiefOn()) return { raid: w, gun: 0, scav: 0 };
+  const need = { raid: raidTargets().length * RAID, gun: lvl('gunners') && deckTarget() ? boardW() * boardH() : 0,
+                 scav: Math.min(lvl('scavengers'), scavsOut() + cratesOut().length) };
+  const got = {};
+  let left = w;
+  for (const job of STANCES[stance()]) { got[job] = Math.min(need[job], left); left -= got[job]; }
+  got.raid += left; // the rest raid (the crew's car, with no hostile one in reach)
+  return got;
+}
+function raidNext() { // the War chief's next raid: a hostile car in reach with room on it, the nearest first; else the crew's car
+  if (free('raid') <= 0) return null;
+  const c = raidTargets().find(c => raidersOn({ car: c }) < RAID);
+  return c ? { kind: 'raid', car: c, z: c.z } : raidNow();
+}
+// a scavenger goes for a crate up the road in a lane the fortress doesn't cover while the hold has room for it, up the
+// right shoulder as a runner goes, and brings it in; the gunners fire at the nearest hostile car within reach, either
+// way, its tracer drawn while it is in sight (gang.js drawTracers)
 function crewJobs(dt) {
   if (!rigged() || run.phase !== 'run') return;
-  const out = traffic.filter(c => c.scav && !c.gone).length, room = holdSize() - progress.fortress.hold.length - out;
-  const l = run.loot.find(l => !l.tried && !l.fetched && l.z > odo + 5 && !onCar(l.x)); // fortress.js
-  if (l && out < lvl('scavengers') && room > 0) {
+  const jobs = warJobs(), out = scavsOut(), room = holdSize() - progress.fortress.hold.length - out, l = cratesOut()[0];
+  if (l && out < jobs.scav && room > 0) {
     l.fetched = true;
     const n = FIELD - (run.sent++ % Math.max(1, riders())); // one of the riders, as a runner (above)
     traffic.push({ scav: l, fleet: true, dir: 1, x: SHOULDER - 0.6, z: odo - 20, v: speed + 15, look: racerSprite(n, true, true),
                    d: NaN, hit: -Infinity, seen: null });
   }
-  if (!lvl('gunners') || (run.gunners = (run.gunners ?? 0) - dt) > 0) return;
-  const t = traffic.filter(c => !c.wreck && !c.fleet && c.dir > 0 && Math.abs(c.z - odo) < GUNNERS.reach && (c.racer || c.police && !c.suv || c.jeep))
-    .sort((a, b) => Math.abs(a.z - odo) - Math.abs(b.z - odo))[0];
+  if (!jobs.gun || (run.gunners = (run.gunners ?? 0) - dt) > 0) return;
+  const t = deckTarget();
   if (!t) return;
   run.gunners = GUNNERS.every;
   if (t.seen) tracers.push(['deck', t, performance.now()]); // gang.js
-  hurtCar(t, GUNNERS.damage * lvl('gunners') * GUNNERS.every, true); // the crew's: the gang totaled it
+  hurtCar(t, jobs.gun * gunnerDps() * GUNNERS.every, true); // the crew's: the gang totaled it
 }
 function scavDrive(c, dt) { // road.js updateTraffic: off the shoulder into the crate's lane and up to it; there, into the hold
   const l = c.scav;
@@ -443,6 +469,8 @@ function rigRoleCard() {
     `<input type="range" class="crew-split" data-role="oil" min="0" max="${fleetSize()}" value="${oilCrew()}" ` +
     `style="${splitStyle()}"><button data-role="oil" data-by="1">+</button></div>` +
     `<span class="ends"><span class="oil">Oil crew <b>${oilCrew()}</b></span><span class="raider">War crew <b>${role('raider')}</b></span></span>` +
+    (warChiefOn() && (lvl('gunners') || lvl('scavengers')) ? '<span class="stance">Stance' + Object.keys(STANCES).map(k => // the War chief's
+      `<button data-stance="${k}"${k === stance() ? ' class="on"' : ''}>${k.toUpperCase()}</button>`).join('') + '</span>' : '') +
     `${scouted() ? `<small><i>${scouted()}</i></small>` : ''}</div>`;
 }
 const splitStyle = () => `--of: ${(oilCrew() / Math.max(1, fleetSize())).toFixed(3)}`;
@@ -484,6 +512,19 @@ TUTORIALS.push({ id: 'warcrew', name: 'The war crew', open: () => rigged(), page
   { title: 'OIL OR WAR',
     both: 'Slide the bar: the oil crew on the left, the war crew on the right. The Foreman splits the oil crew between ' +
       'harvesting and brewing himself: no need to balance them.' },
+] });
+
+// the War chief's (warJobs), as he is bought, and behind his cards' ?
+TUTORIALS.push({ id: 'warjobs', name: 'The War chief', for: ['warChief', 'gunners', 'scavengers'], open: () => rigged() && lvl('warChief') > 0, pages: [
+  { title: 'THE WAR CHIEF',
+    both: 'He sends your war crew for you: three raiders at every hostile car in reach at once, a car each time he can. ' +
+      'Dispatch makes him quicker.' },
+  { title: 'GUNS AND CRATES',
+    both: 'With Gunners, some of the war crew man the deck, one a cell, firing at the small fry near you. With Scavengers, ' +
+      'they fetch the crates you would drive past.' },
+  { title: 'HIS STANCE',
+    both: 'Short of crew, his stance on the role card says who goes first: ATTACK the raids, GUARD the guns, SALVAGE the ' +
+      'crates. The rest raid.' },
 ] });
 
 // ---- the tutorials: popped up mid-run by the script, and kept under HOW TO DRIVE

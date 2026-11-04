@@ -1967,6 +1967,30 @@ race, the loot lost to a full inventory, and the parts lost a race.
      there, the Foreman sends the oil crew alone, four a second, the War chief a raider every 0.75 s, 0.37 s at Dispatch
      2; the bar his cooldown, none without him), on both layouts; and asks for a chaser where it checks one (half the
      gang's cars lay mines instead, at random).
+   The war crew's jobs, the tenth PR (built 4 Nov; `oil.js`), on the owner's (4 Nov: gunners and scavengers jobs of the
+   war crew's behind upgrades, the War chief assigning them, so that the war crew's size counts: before, raiders went
+   after a single car, three at most, and a crew of 70 mostly rode idle). With the War chief:
+   - Raids on every hostile car in reach at once (the gang's cars, the police's cars, the army's jeeps, within 200 m),
+     three raiders each, the nearest first; with none, the crew's car as before.
+   - Gunners (now after the War chief: 3 levels, 50 L doubling): the war crew mans the deck, a gunner a cell of the board,
+     while a hostile car is within 60 m either way: 6, 8, 10 damage a second each, a volley every 0.5 s at the nearest.
+     A bigger fortress carries more guns.
+   - Scavengers (now after the War chief: 3 levels, 40 L doubling): a car of the war crew for each crate lying in a lane
+     the fortress misses, while the hold has room, as many at once as its level.
+   - His stance, on the role card once he and Gunners or Scavengers are bought (ATTACK, GUARD, SALVAGE): short of crew,
+     the job filled first (the raids, the guns, the crates); whatever is left raids. Its tutorial, The War chief (three
+     pages), pops up as he is bought and is behind his cards' ?.
+   - `act5.py` (seeds 1-4, 12 races; the bot keeps ATTACK): Scavengers by race 5, Gunners by race 7-8; 3-9 crates fetched
+     (1-2 before), 190-268 of the deck's volleys; the gang's cars totaled 96-125 (84-114), all totals 326-328 (281-346);
+     damage up to 15-34% a race (22-50%), P1 every race. The bot's war crew (50-70 cars) covers every job (an ambush asks
+     about 34 at most: 21 raiders, 12 gunners, a scavenger), so its stance never decided anything: it does once more of
+     the crew goes to the oil.
+   - `rivals_test` checks them (a scavenger fetches a crate, none with the hold full; three gang cars in reach, three
+     raiders each; eight at war: ATTACK all raid, GUARD a gunner first, SALVAGE a scavenger first; a gunner's volley),
+     `loot_test` the stance on the card, on both layouts.
+   - Open (the owner, 4 Nov, after act 5 in debug mode): "there could be more pressure / ambushes", to tune once the act
+     is feature complete (the ambushes' budget, `AMBUSH.base` and `scale`, by `act5.py`). Debug mode's bottomless wallets
+     buy the fortress out at once, its ambushes as big as its strength: in play the budget grows with the board.
    The front and the sides, the fifth PR (built 2 Nov; `fortress.js`, `damage.js`, `police.js`), scrap's defense, on the
    owner's answers of 2 Nov ("Mine picker is baseline, negates mines, gives you shells. Grinder on top of it negates
    frontal damage"; rams: "damage mitigation and knockback"; they replace the planned mine roller from two lanes wide
