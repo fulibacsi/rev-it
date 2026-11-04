@@ -77,6 +77,7 @@ flowchart TD
     workRate["Dispatch"]
     scavengers["Scavengers"]
     gunners["Gunners"]
+    fieldRepair["Field repair"]
   end
   subgraph R["War Rig · 1 scrap"]
     warrig(["War Rig tab"])
@@ -131,7 +132,7 @@ flowchart TD
   harvesting & brewing --> overfill
   overfill --> double
   double --> foreman
-  pack -- "the Rebuild" --> warChief
+  pack -- "the Rebuild" --> warChief & fieldRepair
   warChief --> workRate & scavengers & gunners
 
   fleetTab -- "totaled a car" --> warrig
@@ -228,6 +229,8 @@ Each upgrade and what it needs, one line each: the list to edit.
 - Gunners ← War chief (layer 13: 3 levels, 50 L doubling: the war crew mans the deck, a gunner a cell, firing at the
   nearest of the gang's cars, police cars and jeeps within 60 m, 6, 8, 10 damage a second each; until 4 Nov the
   Foreman's, a gunner a level)
+- Field repair ← Raiders, the Rebuild (a story condition: act 5's; 3 levels, 40 L doubling: the war crew's dents mended
+  as it rides, 3 health a second a level, for meters at the garage's price, 3,000 m a car, before they wreck a car)
 
 ### War Rig (1 scrap; needs the Crew, and a car totaled)
 

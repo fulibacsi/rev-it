@@ -7,9 +7,9 @@ Between races it repairs (the rig, and the crew's wrecks the free fifth left), t
 they come (in meters, the cheapest first; it saves up for the next of them), buys the War Rig's guns, the cannon's
 Autoloader and Heavy shells, the Mine picker, the Grinder and Ram plates (layer 13, the cheapest first), the Foreman (a
 level of Overfill, Double up) and the War chief (from then on it leaves the oil to the one and the raids to the other,
-as a player busy with the cannon and the board would) and his Dispatch, Scavengers and Gunners (layer 13, the cheapest
-first) before Racing, tuning and cars, crates of shells for points while it has fewer than 20, and, with room in the
-hold, the dealer's offer worth most to it (its packing's worth) that leaves a crate's points (layer 13).
+as a player busy with the cannon and the board would) and his Dispatch, Scavengers and Gunners (layer 13), and Field
+repair (the cheapest first) before Racing, tuning and cars, crates of shells for points while it has fewer than 20, and,
+with room in the hold, the dealer's offer worth most to it (its packing's worth) that leaves a crate's points (layer 13).
 
 As it drives (packing is the race's, never the garage's) it puts what the hold carries on the board, armor and spikes
 on the end rows first (hits come from ahead and behind) and the rest on the middle rows first, or swaps one in where
@@ -175,7 +175,7 @@ with sync_playwright() as p:
                   const war0 = role('raider'); simRun({{ ...progress.levels }}, 2, 1, {{}}, true);
                   return {{ p: run.race && run.race.p, dnf: run.race && run.race.dnf, totals: run.totals, scrap: run.scrap, ranks: run.ranks, ambushes: ambushes.map(a => a.faction[0] + a.members.length + (a.sent < a.members.length ? '(' + a.sent + ')' : '')).join(' '),
                   dmg: Math.round(progress.damage), shells, hits, got: run.shells, left: progress.shells, rigs, rigsDown, lobbed, knocked, taps, gangDown, checks, suvs, suvsDown,
-                  tanks, tanksDown, cops, made, picked, m: run.gain, crushed, through, w: rigW, onParts, onRig, fell, wornOut, helis, helisDown, dropped, ranOver, copRams, pits, slams, miners, laid, minesHit, chasers, shoulders, harpoons, harpoonsDown, stolen, recovered, mounts, swaps, jeeps, jeepsDown, jeepShots, rocketCars, rocketCarsDown, rocketsFired, rocketHits, minesPicked, eaten, fetched, gunShots, sent, dispatched, raidsSent, secs: runTime(), wrecked: run.wrecked, byRam, byMine, byDeck, back: run.crewBack, down: progress.crewDown, war: war0,
+                  tanks, tanksDown, cops, made, picked, m: run.gain, crushed, through, w: rigW, onParts, onRig, fell, wornOut, helis, helisDown, dropped, ranOver, copRams, pits, slams, miners, laid, minesHit, chasers, shoulders, harpoons, harpoonsDown, stolen, recovered, mounts, swaps, jeeps, jeepsDown, jeepShots, rocketCars, rocketCarsDown, rocketsFired, rocketHits, minesPicked, eaten, fetched, gunShots, sent, dispatched, raidsSent, secs: runTime(), wrecked: run.wrecked, byRam, byMine, byDeck, back: run.crewBack, down: progress.crewDown, war: war0, field: Math.ceil(run.field),
                   worn: Math.round(100 * progress.fortress.parts.reduce((k, p) => k + hpOf(p), 0) / Math.max(1, progress.fortress.parts.reduce((k, p) => k + fullHp(p), 0))) }}; }})()""")
         w1 = js(WALLET)  # the race's takings: meters (the run's, the crew's racing, less the nitro), points, refined fuel, scrap
         wheel = js("wheel.held = false")
@@ -201,7 +201,7 @@ with sync_playwright() as p:
             buyAll({json.dumps(WARRIG)}, true); buyAll(["autoloader", "heavyShells", "minePicker", "grinder", "ramPlates"], true);
             if (!whyNot('autocannon') && progress.points - cost('autocannon') >= {SHELLS_KEEP}) {{ buy('autocannon'); b.push('autocannon1'); }} // layer 14
             if (!lvl('overfill') && !whyNot('overfill')) {{ buy('overfill'); b.push('overfill1'); }} // the Foreman's way to Dispatch (layer 13)
-            buyAll(["doubleUp", "foreman", "warChief", "workRate", "scavengers", "gunners"], true); buyAll({json.dumps(FLEET)}, false);
+            buyAll(["doubleUp", "foreman", "warChief", "workRate", "scavengers", "gunners", "fieldRepair"], true); buyAll({json.dumps(FLEET)}, false);
             let crates = 0; while (progress.shells < 20 && buyShells()) crates++; // the cannon's: 20 for a race
             // the dealer (layer 13): with room in the hold, the offer worth most to it (as it packs: a cannon five times
             // armor) that leaves a crate of shells' points
@@ -222,7 +222,7 @@ with sync_playwright() as p:
         res = ("P" + str(r["p"])) if r["p"] else r["dnf"]
         print(f"race {race:2}: {res:10} totals {r['totals']:2} (gang {r['gangDown']:2}, ranks +{r['ranks']:4} pts; gang cars {r['chasers']} ({r['shoulders']} up the shoulder), mine-layers {r['miners']}, mines {r['laid']} hit {r['minesHit']} picked {r['minesPicked']}; harpoons {r['harpoons']} down {r['harpoonsDown']}, parts taken {r['stolen']} back {r['recovered']}) +{r['scrap']:4} scrap  shells {r['shells']:2} hit {r['hits']:2} "
               f"+{r['got']:2} left {r['left']:3}  rigs {r['rigs']} down {r['rigsDown']} grenades {r['lobbed']:2} knocked out {r['knocked']:2} tapped {r['taps']:2}  suvs {r['suvs']} down {r['suvsDown']} slams {r['slams']}  helis {r['helis']} down {r['helisDown']} strips {r['dropped']} run over {r['ranOver']}  jeeps {r['jeeps']} down {r['jeepsDown']} shots {r['jeepShots']:3}  rocket cars {r['rocketCars']} down {r['rocketCarsDown']} rockets {r['rocketsFired']:2} hit {r['rocketHits']:2}  tanks {r['tanks']} down {r['tanksDown']}  cops {r['cops']} rams {r['copRams']} PITs {r['pits']}  checks {r['checks']:2}  "
-              f"dmg {r['dmg']:3}% ({fixed[0]}% after repairs, {fixed[1]:,} m left)  crew wrecked {r['wrecked']:2} of {r['war']} at war (rams {r['byRam']}, mines {r['byMine']}, the deck {r['byDeck']}) back free {r['back']} repaired {crewFix:.0f}  loot +{r['made']} got {r['picked']} (scavenged {r['fetched']})  gunners' shots {r['gunShots']}  sent {r['sent']} (by the bosses {r['dispatched']}), raiders {r['raidsSent']}  board [{board[0]}] "
+              f"dmg {r['dmg']:3}% ({fixed[0]}% after repairs, {fixed[1]:,} m left)  crew wrecked {r['wrecked']:2} of {r['war']} at war (rams {r['byRam']}, mines {r['byMine']}, the deck {r['byDeck']}) back free {r['back']} repaired {crewFix:.0f}, field repair {r['field']:,} m  loot +{r['made']} got {r['picked']} (scavenged {r['fetched']})  gunners' shots {r['gunShots']}  sent {r['sent']} (by the bosses {r['dispatched']}), raiders {r['raidsSent']}  board [{board[0]}] "
               f"hold {board[1]}  {board[2]:,} kg  {r['m']:,} m  {r['w']} wide, crushed {r['crushed']} through {r['through']} ground {r['eaten']}  "
               f"hits on parts {r['onParts']:2} on the rig {r['onRig']:2}, lost [{', '.join(r['fell'])}] worn out [{', '.join(r['wornOut'])}], health left {r['worn']}%  "
               f"packed: {r['mounts']} on, {r['swaps']} swapped" + (f" (the board changed every {r['secs'] / moves:.0f} s)" if moves else "")
