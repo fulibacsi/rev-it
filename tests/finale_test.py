@@ -99,6 +99,31 @@ with sync_playwright() as p:
             cooling.you = {}; const n = raiding().length; k('s'); return [cannon, guns, raiding().length - n]; })()""")
         check(f"{layout}: Space fires the cannon, G the guns, S sends the raiders", got == [True, True, 3], got)
 
+        # 6b. rocket pods (layer 2): a part the army's rocket cars drop most, the dealer's sometimes; mounted, the launch
+        # button shows, and a press is a salvo from every pod block, landing a rocket's flight (1 s) later, 200 a block,
+        # on the one cooldown; with every pod knocked out, JAMMED and nothing spent
+        pg.wait_for_function("raiding().length === 0 && !run.burst", timeout=15000)  # section 6's raiders home, its burst over
+        got = js("""(() => { const t = DROPS.rocket[1], most = Object.keys(t).sort((a, b) => t[b] - t[a])[0];
+            const others = Object.entries(DROPS).filter(([k]) => k !== 'rocket').some(([, d]) => d[1].rockets);
+            const runs = progress.runs; let at = -1; const f = progress.fortress, deal = f.deal;
+            for (let r = 0; r < 300 && at < 0; r++) { progress.runs = r; if (dealer().offers.some(p => p.kind === 'rockets')) at = r; }
+            progress.runs = runs; f.deal = deal;
+            f.parts.push({ kind: 'rockets', cells: [[0, 0], [1, 0]], x: 0, y: 2, from: 'rocket' }); applyUpgrades();
+            return [most, others, at >= 0]; })()""")
+        pg.wait_for_timeout(200)
+        got += js("""(() => { cooling.you = {}; cooling.him = { cannon: 99, rockets: 99 }; const shown = !$('fight-rockets').hidden;
+            window.hp0 = warlord.hp; const a = move('rockets'), b = move('guns'); return [shown, a, b, salvos.length, warlord.hp === hp0]; })()""")
+        pg.wait_for_timeout(500)
+        pg.screenshot(path=f"{OUT}/finale_{layout}_rockets.png")  # the salvo in the air, the launch button
+        pg.wait_for_timeout(800)
+        got += js("[salvos.length, Math.round(hp0 - warlord.hp)]")
+        got += js("""(() => { cooling.you = {}; const pod = progress.fortress.parts.at(-1); jammed.set(pod, 9); const r = [move('rockets'), salvos.length];
+            jammed.delete(pod); return r; })()""")
+        check(f"{layout}: rocket pods: the rocket car's drop mostly, nobody else's; the dealer offers one now and then; mounted, the "
+              f"launch button; a salvo goes up (the lever then waits), lands a second later, 400 off him (200 a block, two blocks); jammed, nothing",
+              got == ["rockets", False, True, True, True, False, 1, True, 0, 400, False, 0], got)
+        js("progress.fortress.parts.pop(); applyUpgrades()")
+
         # 7. wrecked: back to the garage, FIGHT waiting for a repair; repaired, FIGHT again
         js("progress.damage = 99.9; cooling.him = {}; rng = 1; hisMove()")
         pg.wait_for_function("run.phase === 'garage'", timeout=15000)

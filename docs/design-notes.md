@@ -1294,6 +1294,7 @@ explore them further"):
   | A helicopter | 100% | its gun 60%, its turbine 40% |
   | The tank | 100% | its turret 70%, armor plating 20%, its engine 10% (the owner's) |
   | Traffic, police cars | none | scrap only |
+  | The army's rocket car (layer 12; the pod since the finale) | 45% | its rocket pod 55%, armor 20%, a gun 15%, its engine 10% |
 - The parts by what they do (Claude's, open): a turret fires shells at the reticle (the tank's cannon is one); a gun
   fires at the reticle, as act IV's do; armor plating does nothing but take hits, the shield; a spiked bar makes rams
   hurt more and side rams hurt less; an engine adds power and its sound. Each comes in the shapes that suit it (an
@@ -2128,6 +2129,17 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - `finale_test` checks it (the trigger and its card, FIGHT; the standoff, the cleared dashboard and the instruments;
      the shared cooldown and Dispatch; the cannon, the burst and the raiding party; his shell and rocket; the keys; lost
      and won), on both layouts.
+   Rocket pods, the second PR (built 4 Nov; `fortress.js`, `finale.js`), on the owner's ("salvage as a part, dropped by
+   the military rocket cars (with the highest probability). Also randomly, from the dealer"): a new part, ROCKETS, the
+   rocket car's pod (400 kg a block, 12 health, one or two blocks; worth 2 to the fortress's strength, as a gun). The
+   rocket car now drops it most (when it drops at all, 45%: the pod 55%, armor 20%, a gun 15%, an engine 10%), and
+   nothing else does; the dealer's offers come from the same tables, so a pod turns up there now and then. Mounted, the
+   finale's launch button shows: a salvo from every working pod block, landing a rocket's flight (1 s) later, 200 a
+   block (a cannon block's shell is 250), on the one cooldown; each salvo wears the pods half a point (24 a block); a
+   War Boy's grenade jams them as it does the cannon and the guns. Outside the fight a pod does nothing yet (weight on
+   the board): open, whether it should fire at the reticle's notables in the act's races too.
+   - `finale_test` checks it (the drop tables, the dealer, the button, a salvo of 400 on the cooldown, jammed), on both
+     layouts.
 
 ### Balance targets and results
 

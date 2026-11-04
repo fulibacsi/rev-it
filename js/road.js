@@ -756,7 +756,7 @@ const weave = c => mad(c) && !c.wreck ? 0.3 * Math.sin(performance.now() / 250 +
 // the game's marks by kind, each sprite made only for its own kind (all three were, for every mark: the best banner,
 // a 640 px canvas, was redrawn for each distance board ahead, every frame, and a speed sign kept for each distance)
 // a crate of loot on the road (Distance's act 5, fortress.js): steel, in hazard stripes, its panel the part's color
-const CRATE_TONES = { cannon: '#4b5320', gun: '#4a4f5a', armor: '#8a8c94', spikes: '#c8c8d0', engine: '#8a2a1e' }, CRATES = new Map();
+const CRATE_TONES = { cannon: '#4b5320', gun: '#4a4f5a', armor: '#8a8c94', spikes: '#c8c8d0', engine: '#8a2a1e', rockets: '#6b5a2a' }, CRATES = new Map();
 function crateSprite(kind) {
   if (!CRATES.has(kind)) CRATES.set(kind, sprite(140, 110, (g, w, h) => {
     g.fillStyle = '#2b2b30'; g.beginPath(); g.roundRect(0, h * 0.1, w, h * 0.9, 8); g.fill(); // the crate

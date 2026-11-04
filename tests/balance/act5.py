@@ -83,7 +83,7 @@ const seekLoot = () => {
 // first that fits, the shield (armor, spikes) on the end rows first and the rest in the middle; with no room, the
 // first that swaps in where it throws off the least worth, if less than its own: health, weighed by what a part is to a
 // player (a cannon five times armor's: health alone threw the tank's cannon away for a fresher pair of spikes)
-const WORTH = { cannon: 5, gun: 2, engine: 2, armor: 1, spikes: 1 }, worth = p => hpOf(p) * WORTH[p.kind];
+const WORTH = { cannon: 5, gun: 2, engine: 2, armor: 1, spikes: 1, rockets: 2 }, worth = p => hpOf(p) * WORTH[p.kind];
 const pack = () => {
   const f = progress.fortress;
   if (run.phase !== 'run' || !f.hold.length || run.t < window.packAt) return;
@@ -205,7 +205,7 @@ with sync_playwright() as p:
             let crates = 0; while (progress.shells < 20 && buyShells()) crates++; // the cannon's: 20 for a race
             // the dealer (layer 13): with room in the hold, the offer worth most to it (as it packs: a cannon five times
             // armor) that leaves a crate of shells' points
-            const d = dealer(), w = p => hpOf(p) * {{ cannon: 5, gun: 2, engine: 2, armor: 1, spikes: 1 }}[p.kind];
+            const d = dealer(), w = p => hpOf(p) * {{ cannon: 5, gun: 2, engine: 2, armor: 1, spikes: 1, rockets: 2 }}[p.kind];
             const deal = !d.sold && progress.fortress.hold.length < holdSize() && d.offers.map((p, i) => [i, p])
               .filter(([, p]) => dealPrice(p) <= progress.points - SHELLS.price).sort((x, y) => w(y[1]) - w(x[1]))[0];
             const dealt = deal && buyDeal(deal[0]) ? [`deal:${{deal[1].kind}}${{deal[1].cells.length}}@${{dealPrice(deal[1])}}`] : [];

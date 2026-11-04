@@ -98,6 +98,9 @@ const ICONS = { // a part from above, ahead up, on its first block: the tank's t
   engine: '<svg viewBox="0 0 10 10"><rect x="2" y="1.4" width="6" height="7.2" rx="1" fill="#2e2e34"/><g fill="#8a8c94">' +
     '<circle cx="3.8" cy="3" r=".9"/><circle cx="6.2" cy="3" r=".9"/><circle cx="3.8" cy="5" r=".9"/><circle cx="6.2" cy="5" r=".9"/>' +
     '<circle cx="3.8" cy="7" r=".9"/><circle cx="6.2" cy="7" r=".9"/></g></svg>',
+  rockets: '<svg viewBox="0 0 10 10"><rect x="1.4" y="1.4" width="7.2" height="7.2" rx="1" fill="#2b3011" stroke="#4b5320" ' + // the rocket
+    'stroke-width=".5"/><g fill="#0c0e06" stroke="#b8a060" stroke-width=".35"><circle cx="3.6" cy="3.6" r="1.2"/>' + // car's pod,
+    '<circle cx="6.4" cy="3.6" r="1.2"/><circle cx="3.6" cy="6.4" r="1.2"/><circle cx="6.4" cy="6.4" r="1.2"/></g></svg>', // its tubes
 };
 const extent = (cells, i) => 1 + Math.max(...cells.map(c => c[i]));
 // a part as its blocks (a bent three leaves a corner empty), its icon on the first; cell: px a block, in the hold where
@@ -437,7 +440,7 @@ function rigDrive(c, dt) { // road.js updateTraffic: past you up the lane beside
 // armor and spikes shrug it off, so placing counts. A part knocked out does nothing (blocks, rigPower, the engine's
 // voice) and shows it (JAMMED: blue, static, a lightning mark) until a tap restarts it, or it restarts on its own after
 // 10 s; knocked out it can't be thrown off or swapped out. Claude's numbers, for act5.py
-const EMP = { secs: 10, kinds: ['cannon', 'gun', 'engine'] };
+const EMP = { secs: 10, kinds: ['cannon', 'gun', 'engine', 'rockets'] };
 let lobs = [], jammed = new Map(); // grenades in the air { c, t, at: [x, y] }; a part knocked out: s until it restarts
 const live = p => !jammed.has(p);
 function lob(c) { lobs.push({ c, t: 0, at: [Math.floor(rand() * boardW()), Math.floor(rand() * boardH())] }); }
@@ -696,7 +699,7 @@ const FACTIONS = { // their members by tier (the factions: fodder, midline, nota
 const SEND = { cop: () => sendCop(false), suv: () => sendCop(true), heli: () => sendHeli(), gang: () => sendGangCar(), rig: () => sendRig(),
                harpoon: () => sendHarpoon(), jeep: () => sendJeep(), rocket: () => sendRocket(), tank: () => sendTank() }; // police.js,
                // here, boss.js: each false if not now (none to take over, no room, too many)
-const WORTH = { cannon: 3, gun: 2, engine: 1, armor: 1, spikes: 1 }; // a block's share of the strength, as worn as it is
+const WORTH = { cannon: 3, gun: 2, engine: 1, armor: 1, spikes: 1, rockets: 2 }; // a block's share of the strength, as worn as it is
 const strength = () => boardW() * boardH() + progress.fortress.parts.reduce((k, p) => k + WORTH[p.kind] * p.cells.length * hpOf(p) / fullHp(p), 0);
 const budget = () => AMBUSH.base + AMBUSH.scale * strength() ** AMBUSH.power;
 let ambushes = [], ambushDice = 1; // this race's: { at: m into it, faction, members: [kind], sent }
@@ -751,6 +754,9 @@ const PARTS = { // a block's kg, its health (the shield, below) and the sizes (b
   cannon: { name: 'CANNON', kg: 900, hp: 100, sizes: [1, 2] }, gun: { name: 'GUN', kg: 250, hp: 8, sizes: [1, 2] },
   armor: { name: 'ARMOR', kg: 500, hp: 20, sizes: [1, 2, 3] }, spikes: { name: 'SPIKES', kg: 300, hp: 15, sizes: [1, 2, 3] },
   engine: { name: 'ENGINE', kg: 700, hp: 10, sizes: [1, 2] },
+  // the rocket car's pod (the finale, finale.js: the owner, 4 Nov: "salvage as a part, dropped by the military rocket
+  // cars (with the highest probability). Also randomly, from the dealer"): its launch button in the warlord's fight
+  rockets: { name: 'ROCKETS', kg: 400, hp: 12, sizes: [1, 2] },
 };
 // the nine shapes (the owner: one to three blocks, each turn its own drop, never turned): one; two stacked, two side by
 // side; three in a line along and across, and the bent three in its four turns
@@ -764,7 +770,8 @@ const DROPS = {
   suv: [0.45, { armor: 0.5, engine: 0.3, gun: 0.2 }],
   harpoon: [0.45, { armor: 0.4, spikes: 0.3, gun: 0.3 }], // besides the part it took, if it had one (gang.js total)
   rig: [0.8, { armor: 0.4, spikes: 0.3, engine: 0.3 }], heli: [0.8, { gun: 0.6, engine: 0.4 }], // its gun or its turbine
-  jeep: [0.1, { gun: 0.6, armor: 0.4 }], rocket: [0.45, { armor: 0.4, gun: 0.3, engine: 0.3 }], // the jeep's machine gun mostly
+  jeep: [0.1, { gun: 0.6, armor: 0.4 }], rocket: [0.45, { rockets: 0.55, armor: 0.2, gun: 0.15, engine: 0.1 }], // the jeep's
+  // machine gun mostly; the rocket car's pod (the dealer's offers come from these tables too)
   tank: [0.85, { cannon: 0.7, armor: 0.2, engine: 0.1 }],
 };
 const ENGINE_POWER = { gang: 0.06, suv: 0.1, rocket: 0.1, rig: 0.15, tank: 0.25, heli: 0.2 }; // more pull a block, by the engine it came from
@@ -925,7 +932,7 @@ function fallOff(i, how = 'LOST') { // and what it did goes with it: its weight,
 // an engine block 200 s flat out. Half the first guesses, and a quarter for the cannon (the first guesses wore the
 // tank's cannon out in the second race, half of them by the third, and only a tank drops another): the ambushes, more
 // enemies and more loot, the tanks among them, are for the faster churn the owner wants
-const WEAR = { cannon: 1, gun: 0.05, spikes: 1, engine: 0.05 };
+const WEAR = { cannon: 1, gun: 0.05, spikes: 1, engine: 0.05, rockets: 0.5 }; // a pod: a salvo (finale.js), 24 a block
 function wearOut(kind, by) { // fireCannon, gang.js fireGuns and ram, rigTick
   const f = progress.fortress;
   if (!rigged()) return;
