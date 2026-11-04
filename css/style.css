@@ -343,14 +343,12 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
 .card.roles .tug { display: flex; align-items: center; gap: 6px; margin: 4px 0 2px; }
 .card.roles .tug button { min-width: 30px; }
 .card.roles .crew-split { -webkit-appearance: none; appearance: none; flex: 1; min-width: 60px; height: 22px; margin: 0; border-radius: 6px;
-  touch-action: pan-x; background: linear-gradient(to right, var(--harvester) 0 calc(5px + (100% - 10px) * var(--hf)),
-  var(--brewer) 0 calc(5px + (100% - 10px) * var(--of)), var(--raider) 0); } /* stops at the handle's middle: it is 10 px */
+  touch-action: pan-x; background: linear-gradient(to right, var(--harvester) 0 calc(5px + (100% - 10px) * var(--of)),
+  var(--raider) 0); } /* the stop at the handle's middle: it is 10 px */
 .card.roles .crew-split::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 32px; border-radius: 4px; background: #f4f4f4;
   box-shadow: 0 0 0 2px #141418; }
 .card.roles .crew-split::-moz-range-thumb { width: 10px; height: 32px; border: 0; border-radius: 4px; background: #f4f4f4; box-shadow: 0 0 0 2px #141418; }
-.card.roles .ends { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.card.roles .ends > .raider { flex-shrink: 0; white-space: nowrap; } /* the war crew always in full: the oil side wraps */
-.card.roles .ends small { min-height: 0; color: #9ab; }
+.card.roles .ends { display: flex; justify-content: space-between; gap: 8px; white-space: nowrap; }
 .card.roles .oil { color: var(--harvester); }
 .card.roles .harvester { color: var(--harvester); } .card.roles .split .harvester { background: var(--harvester); }
 .card.roles .brewer { color: var(--brewer); } .card.roles .split .brewer { background: var(--brewer); }
