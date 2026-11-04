@@ -50,12 +50,13 @@ with sync_playwright() as p:
         # the war rig's crew (the owner, 3 Nov): nobody races; the role card has one slider, the oil crew (the Foreman splitting
         # it) against the war crew, the rest; every car pays Racing's dues for the meters it rides with you
         got = js("""(() => { garageTab = 'fleet'; renderGarage(); const card = $('cards').querySelector('.roles');
-            const rows = [...card.querySelectorAll('.role')].map(e => e.firstChild.nodeValue.trim() + ' ' + e.querySelector('b').textContent);
-            const before = [oilCrew(), role('raider'), racersOf()], s = card.querySelector('input[data-role="oil"]'); s.value = 40; slideRole(s);
-            const after = [oilCrew(), role('harvester') + role('brewer'), role('raider'), racersOf(), card.querySelector('.role.raider b').textContent];
+            const rows = [...card.querySelectorAll('.ends > span')].map(e => e.firstChild.nodeValue.trim() + ' ' + e.querySelector('b').textContent);
+            const before = [oilCrew(), role('raider'), racersOf(), card.querySelectorAll('input[type=range]').length], s = card.querySelector('.crew-split');
+            s.value = 40; slideRole(s);
+            const after = [oilCrew(), role('harvester') + role('brewer'), role('raider'), racersOf(), card.querySelector('.ends .raider b').textContent];
             const g = run.gain; run.gain = 3000; const dues = fleetDues(); run.gain = g; return [rows, ...before, ...after, dues]; })()""")
-        check(f"{layout}: the war rig's role card: oil crew 26 and war crew 54 of 80, none racing; the oil slider to 40: 40 at war; "
-              f"every car's dues, 30% of 3,000 m each: 72,000 m", got == [["Oil crew 26", "War crew 54"], 26, 54, 0, 40, 40, 40, 0, "40", 72000], got)
+        check(f"{layout}: the war rig's role card: oil crew 26 and war crew 54 of 80, none racing, the bar the only slider; dragged to "
+              f"40: 40 at war; every car's dues, 30% of 3,000 m each: 72,000 m", got == [["Oil crew 26", "War crew 54"], 26, 54, 0, 1, 40, 40, 40, 0, "40", 72000], got)
         pg.screenshot(path=f"{OUT}/loot_{layout}_roles.png")
         js("progress.roles = { harvester: 17, brewer: 9, raider: 6 }; garageTab = 'fortress'; renderGarage()")
 

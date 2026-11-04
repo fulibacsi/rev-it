@@ -426,27 +426,29 @@ function roleCard() {
     `into fuel${lvl('pack') ? ' · raiders ram the car in the reticle, for scrap' : ''} · a car with no spot to work ` +
     `earns nothing${scouted() ? ` · <i>${scouted()}</i>` : ''}</small></div>`;
 }
-// the war rig's (the owner, 3 Nov: one slider, between fuel and war): the oil crew, which the Foreman splits himself,
-// and the war crew, the rest; nobody races
+// the war rig's (the owner, 3 Nov: one slider, between fuel and war; 4 Nov: the bar itself the slider): the crew's split
+// as a bar in the roles' colors, its handle the line between the oil crew (left: harvesters, brewers, the Foreman's
+// split) and the war crew (right, the rest); − and + a car at a time. Nobody races
 function rigRoleCard() {
-  return `<div class="card roles"><b>Roles · ${fleetSize()} cars</b><div class="split">` +
-    ['harvester', 'brewer', 'raider'].map(r => `<i class="${r}" style="flex-grow: ${role(r)}"></i>`).join('') + '</div>' +
-    `<span class="role oil">Oil crew <b>${oilCrew()}</b><button data-role="oil" data-by="-1">−</button><input type="range" ` +
-    `data-role="oil" min="0" max="${fleetSize()}" value="${oilCrew()}"><button data-role="oil" data-by="1">+</button></span>` +
-    `<span class="role raider">War crew <b>${role('raider')}</b><small>the rest</small></span>` +
-    `<small>the oil crew pumps crude and brews it into fuel: <i class="split-oil">${oilSplitText()}</i>, the Foreman's split · ` +
-    'the war crew rides to raid · every car pays Racing\'s dues for the meters it rides with you' +
-    `${scouted() ? ` · <i>${scouted()}</i>` : ''}</small></div>`;
+  return `<div class="card roles"><b>Roles · ${fleetSize()} cars</b><div class="tug"><button data-role="oil" data-by="-1">−</button>` +
+    `<input type="range" class="crew-split" data-role="oil" min="0" max="${fleetSize()}" value="${oilCrew()}" ` +
+    `style="${splitStyle()}"><button data-role="oil" data-by="1">+</button></div>` +
+    `<span class="ends"><span class="oil">Oil crew <b>${oilCrew()}</b> <small class="split-oil">${oilSplitText()}</small></span>` +
+    `<span class="raider">War crew <b>${role('raider')}</b></span></span>` +
+    '<small>the oil crew pumps crude and brews it into fuel, the Foreman splitting it · the war crew rides to raid · ' +
+    `every car pays Racing's dues for the meters it rides with you${scouted() ? ` · <i>${scouted()}</i>` : ''}</small></div>`;
 }
 const oilSplitText = () => `${role('harvester')} harvesting, ${role('brewer')} brewing`;
+const splitStyle = () => `--hf: ${(role('harvester') / Math.max(1, fleetSize())).toFixed(3)}; --of: ${(oilCrew() / Math.max(1, fleetSize())).toFixed(3)}`;
 function syncRigRoles(card) {
-  for (const r of ['harvester', 'brewer', 'raider']) card.querySelector(`.split .${r}`).style.flexGrow = role(r);
-  card.querySelector('.role.oil b').textContent = oilCrew();
-  card.querySelector('.role.raider b').textContent = role('raider');
+  const bar = card.querySelector('.crew-split');
+  bar.value = oilCrew();
+  bar.setAttribute('style', splitStyle());
+  card.querySelector('.ends .oil b').textContent = oilCrew();
+  card.querySelector('.ends .raider b').textContent = role('raider');
   card.querySelector('.split-oil').textContent = oilSplitText();
-  card.querySelector('input[data-role="oil"]').value = oilCrew();
-  card.querySelector('.role.oil [data-by="-1"]').disabled = !oilCrew();
-  card.querySelector('.role.oil [data-by="1"]').disabled = !role('raider');
+  card.querySelector('.tug [data-by="-1"]').disabled = !oilCrew();
+  card.querySelector('.tug [data-by="1"]').disabled = !role('raider');
 }
 function syncRoles() { // the card as the crew is now: its bar, counts, sliders and buttons
   const card = $('cards').querySelector('.roles');
