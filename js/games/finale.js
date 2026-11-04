@@ -325,3 +325,27 @@ TUTORIALS.push({ id: 'fight', name: "The warlord's fight", open: () => finaleOpe
     both: 'Each of his moves shows itself before it lands. Answer with the one that beats it: his is cancelled, yours does ' +
       'double. Answer with the one it beats and yours is lost. He answers yours too, now and then.' },
 ] });
+
+// ---- the warning signs (the owner, 4 Nov: "only start to appear when war rig's size is at least 2 for each
+// dimension"): his fortress far off on the horizon, a silhouette against the sunset with its lights on and its smoke
+// going up, nearer (bigger) as yours grows, two lanes by two rows at the first (0) to four by five (1), when his fight
+// opens. Never named: the fight's card names him. Gone once he is beaten, and in his fight, where he is on the road
+const warning = () => rigged() && !progress.warlord && !fighting() && boardW() >= 2 && boardH() >= 2 ? (boardW() * boardH() - 4) / 16 : -1;
+function drawOmen(g, w, horizon) { // road.js drawSky, behind the near hills: up the road, right of where it meets the
+  const k = warning();             // sky (the heads-up display's tags are over the middle), swaying a little with the bends
+  if (k < 0) return;
+  const ww = w * (0.035 + 0.075 * k), hh = ww * 0.32, x = w * (0.68 + 0.06 * Math.sin(scenery / w)), y = horizon - w * 0.006;
+  const now = performance.now() / 1000;
+  for (let i = 0; i < 6; i++) { // his engines' smoke, drifting up and fading
+    const f = (now * 0.15 + i / 6) % 1, sx = x - ww * 0.3 + (i % 3) * ww * 0.3 + f * ww * 0.15;
+    g.fillStyle = `rgba(40, 24, 50, ${(0.45 * (1 - f)).toFixed(2)})`;
+    g.beginPath(); g.arc(sx, y - hh - f * hh * 2.5, hh * (0.25 + f * 0.5), 0, 2 * Math.PI); g.fill();
+  }
+  g.fillStyle = '#1c0e26'; // the silhouette: his wall of steel, its turret, the spikes along its foot
+  g.fillRect(x - ww / 2, y - hh, ww, hh);
+  g.fillRect(x - ww * 0.12, y - hh * 1.45, ww * 0.24, hh * 0.5);
+  g.fillRect(x - ww * 0.02, y - hh * 1.75, ww * 0.04, hh * 0.35); // its gun, up
+  for (let i = 0; i < 10; i++) { const sx = x - ww / 2 + (i + 0.5) * ww / 10; g.beginPath(); g.moveTo(sx - ww * 0.02, y); g.lineTo(sx, y + hh * 0.18); g.lineTo(sx + ww * 0.02, y); g.fill(); }
+  g.fillStyle = '#ffcf6a'; // its lights, a few winking out and on
+  for (let i = 0; i < 7; i++) if (Math.sin(now * 0.7 + i * 2.3) > -0.6) g.fillRect(x - ww * 0.42 + i * ww * 0.13, y - hh * 0.62, Math.max(1, ww * 0.025), Math.max(1, hh * 0.1));
+}

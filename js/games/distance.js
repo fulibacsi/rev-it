@@ -708,6 +708,7 @@ const DISTANCE = {
   tune: applyUpgrades,
   madness: () => run.phase === 'run' && !progress.off.baddrivers ? madShare(lvl('baddrivers')) : 0, // gang.js
   rust: () => omenRust(), // oil.js (it loads later)
+  horizon: (g, w, y) => drawOmen(g, w, y), // finale.js: his fortress, far off
   start() { // a new game goes straight onto the road, its first act's card up first, then the Driving tutorial (unless
     // seen): no garage before the first run, with nothing in it yet (the owner, 23 Oct)
     Object.assign(run, { phase: 'garage', best: progress.best }); shownPhase = null;
