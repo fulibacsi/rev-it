@@ -466,7 +466,7 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
             height: var(--cell); box-sizing: border-box; border: 1px solid #0006; border-radius: 3px; background: var(--tone);
             pointer-events: auto; } /* a block: a bent three's empty corner takes no touch */
 .part.cannon { --tone: #4b5320; } .part.gun { --tone: #4a4f5a; } .part.armor { --tone: #8a8c94; }
-.part.spikes { --tone: #3c3c42; } .part.engine { --tone: #8a2a1e; }
+.part.spikes { --tone: #3c3c42; } .part.engine { --tone: #8a2a1e; } .part.rockets { --tone: #2b3011; }
 .part svg { display: block; width: 100%; height: 100%; pointer-events: none; }
 #fort-grid .part::after { content: ''; position: absolute; inset: 12%; border-radius: 50%; pointer-events: none; /* held: the ring */
                           background: conic-gradient(#ff5a3c calc(var(--held, 0) * 360deg), transparent 0); opacity: 0.7; }

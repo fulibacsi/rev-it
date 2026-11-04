@@ -7,15 +7,15 @@
 // Foreman. No traffic: his fortress holds the road. Your health is in the mirror where the time was, his over his
 // fortress (the owner: health bars for the first iteration). Your weapons are instruments of their own on the dashboard,
 // each there only if you have it (the owner): the CB radio sends a raiding party, the pedal fires the cannon, the lever
-// a burst of the guns, the launch button the rockets (their pods are to come). They share one cooldown, so mashing them
+// a burst of the guns, the launch button a salvo from the rocket pods on the board. They share one cooldown, so mashing them
 // all wins nothing (the owner), and Dispatch shortens it. This first layer: his attacks on his own clock, his cannon at
 // your front row and his rockets on a cell of the board; the moves that beat one another (the owner's
 // rock-paper-scissors) come next. Claude's numbers, for the balance to come: m between you; his health; s a beat, and
 // Dispatch's share less a level; s between his moves, the first; % his shell before Armor plating (a rocket's 15);
-// raiders a party; a burst's shots, s apart
-const FINALE = { gap: 70, hp: 8000, beat: 1.5, quicker: 0.08, his: 3, first: 2, shot: 10, party: 3, burst: 8, burstEvery: 0.1 };
+// raiders a party; a burst's shots, s apart; a salvo's damage a block of rocket pods (a block of cannon's shell is 250)
+const FINALE = { gap: 70, hp: 8000, beat: 1.5, quicker: 0.08, his: 3, first: 2, shot: 10, party: 3, burst: 8, burstEvery: 0.1, salvo: 200 };
 const finaleOpen = () => rigged() && lvl('widen') >= 3 && lvl('lengthen') >= 4 && lvl('grinder') > 0;
-let warlord = null; // his fortress, on the road while you fight
+let warlord = null, salvos = []; // his fortress, on the road while you fight; your rockets in the air { t, hit }
 const fighting = () => !!run.fight && run.phase !== 'garage'; // a fight under way (run.fight: the last run was one)
 
 // the pacing (the owner, 4 Nov: "Let's go with the shared timeout and the dispatch improvement, but make the codebase to
@@ -31,7 +31,7 @@ function spend(side, m) { for (const k of PACE === 'shared' ? MOVES : [m]) cooli
 const readiness = m => clamp(1 - (cooling.you[m] ?? 0) / beatOf('you'), 0, 1); // the instruments' bars
 
 // your weapons, each there only if you have it (the owner): a war crew to raid with, a cannon on the board, guns (the
-// War Rig's or on the board), a rocket pod (to come)
+// War Rig's or on the board), a rocket pod on the board
 const mounted = kind => progress.fortress.parts.some(p => p.kind === kind);
 const HAVE = { raid: () => role('raider') > 0, cannon: () => mounted('cannon'), guns: () => lvl('guns') > 0 || mounted('gun'),
                rockets: () => mounted('rockets') };
@@ -45,6 +45,7 @@ function fightRun() { // startRun, for a fight: the road his, nobody else on it,
   target = quarry = null; // gang.js: the reticle on him once the fight is on
   cooling = { you: {}, him: { cannon: FINALE.first, rockets: FINALE.first } };
   Object.assign(run, { burst: 0, burstAt: 0, won: false });
+  salvos = [];
 }
 function warlordDrive(c) { c.z = odo + FINALE.gap; } // road.js updateTraffic: he stands his ground
 
@@ -56,6 +57,8 @@ function fightTick(dt) {
   target = warlord.wreck ? null : warlord;
   rigTick(dt); // fortress.js: the cannon's reload, the engines' wear
   if (run.burst > 0 && (run.burstAt -= dt) <= 0) gunShot();
+  for (const s of salvos) if ((s.t -= dt) <= 0 && !warlord.wreck) { hurtCar(warlord, s.hit); crashSound(); } // landed
+  salvos = salvos.filter(s => s.t > 0);
   if (ready('him', 'cannon')) hisMove();
   rocketTick(dt);
 }
@@ -67,10 +70,36 @@ function move(m) {
   if (m === 'cannon') { reloading = 0; if (!fireCannon()) return false; } // fortress.js: the beat is the reload
   if (m === 'raid') for (let n = Math.min(FINALE.party, role('raider')); n > 0; n--) sendRaider({ car: warlord }); // gang.js
   if (m === 'guns') Object.assign(run, { burst: FINALE.burst, burstAt: 0 });
-  if (m === 'rockets') return false; // their pods are to come
+  if (m === 'rockets' && !salvo()) return false;
   spend('you', m);
   beep(m === 'raid' ? 520 : 880, 0.05);
   return true;
+}
+function salvo() { // the launch button: every working pod's rockets up, onto his fortress after a rocket's flight (fortress.js)
+  const n = blocks('rockets');
+  if (!n) { beep(140, 0.05); flash('JAMMED', '#6af', false); return false; } // every pod knocked out (a War Boy's grenade)
+  salvos.push({ t: ROCKET.flight, hit: FINALE.salvo * n });
+  wearOut('rockets', WEAR.rockets); // fortress.js
+  beep(220, 0.2);
+  return true;
+}
+// a salvo in the air (gang.js renderGang): from your rig's front up in a high arc and down onto his fortress, a trail of
+// smoke behind each rocket, as his come at you (fortress.js drawRockets)
+function drawSalvos() {
+  const s = warlord?.seen, w = canvas.width, h = canvas.height;
+  if (!s) return;
+  for (const r of salvos) {
+    const k = 1 - r.t / ROCKET.flight, [x1, y1] = [w / 2, h * 0.7], [x2, y2] = [s[0] + s[2] / 2, s[1] + s[3] / 2];
+    for (let i = 0; i < 3; i++) { // three rockets abreast
+      const at = q => [x1 + (x2 - x1) * q + (i - 1) * w * 0.03 * (1 - q), y1 + (y2 - y1) * q - Math.sin(Math.PI * q) * h * 0.25];
+      for (let j = 4; j > 0; j--) {
+        const [x, y] = at(Math.max(0, k - j * 0.04));
+        g2d.fillStyle = `rgba(170, 170, 170, ${(0.5 - j * 0.1).toFixed(2)})`; g2d.beginPath(); g2d.arc(x, y, w / 260 * (1 + j * 0.3), 0, 2 * Math.PI); g2d.fill();
+      }
+      const [x, y] = at(k);
+      g2d.fillStyle = '#ffb347'; g2d.beginPath(); g2d.arc(x, y, w / 220, 0, 2 * Math.PI); g2d.fill();
+    }
+  }
 }
 function gunShot() { // a round of the burst: the War Rig's guns and the board's, as fireGuns does (gang.js)
   run.burst--;

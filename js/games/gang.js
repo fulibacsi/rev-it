@@ -236,6 +236,7 @@ function renderGang() {
   drawHarpoons(); // fortress.js: a harpoon truck's cable, the War Boys' grenades, the army's rockets
   drawLobs();
   drawRockets();
+  drawSalvos(); // finale.js: yours, at the warlord
   const t = arOn() && run.phase === 'run' ? target : null, s = t?.seen;
   document.body.classList.toggle('ar-on', !!s);
   if (t) $('ar').style.setProperty('--hp', Math.max(0, t.hp ?? health(t)) / health(t)); // right as soon as it shows again
