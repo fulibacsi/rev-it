@@ -2175,6 +2175,15 @@ race, the loot lost to a full inventory, and the parts lost a race.
    pays. A fight costs 17-46 wrecked crew cars (his cannon shooting up the raiders, their knocks), back a fifth a race
    or repaired. A harder set (40,000, 40%, 15%, 2%, 60%) had every bot wrecked inside 40 s, the front row shot away and
    the cannon with it; one between (30,000, 20%, 8%, 1%, 30%) let only the good bot win, with 22% left.
+   The warning signs, the fifth PR (built 4 Nov; `finale.js`, `road.js`), on the owner's ("only start to appear when war
+   rig's size is at least 2 for each dimension"): from a 2×2 board, in every act 5 race, his fortress far off on the
+   horizon, up the road right of where it meets the sky (clear of the heads-up display's tags), swaying a little with
+   the bends: a silhouette against the sunset, its turret and its gun up, spikes along its foot, its lights winking,
+   its smoke going up. Nearer (bigger) as your board grows, from 2×2 to 4×5, when his fight opens; never named (his
+   card names him), gone once he is beaten and in his fight. Drawn through a new hook of the game interface,
+   `horizon(g, w, y)`, between the far hills and the near ones (`main.js`).
+   - `finale_test` checks it (none below 2×2, from 0 at 2×2 to 1 at 4×5, none once he is beaten; drawn in a run), with
+     screenshots at 2×2 and 4×4 on both layouts.
 
 ### Balance targets and results
 

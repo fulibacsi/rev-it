@@ -910,6 +910,7 @@ function drawSky(g, w, horizon) {
   g.fillStyle = sky; // stripes cut through the lower half of the sun
   for (let i = 0; i < 6; i++) g.fillRect(sx - r, horizon - r * 0.5 + i * r * 0.1, 2 * r, r * 0.02 + i * r * 0.012);
   for (const [color, height, shift] of [['#4a2659', 0.09, 0.3], ['#2f1840', 0.05, 0.6]]) { // hills, two layers
+    if (shift > 0.3) game.horizon?.(g, w, horizon); // the game's, between them (main.js)
     g.fillStyle = color; g.beginPath(); g.moveTo(0, horizon);
     for (let px = 0; px <= w; px += 20) {
       const u = (px + scenery * shift) / w, land = Math.min(1, Math.max(0, (px / w - 0.3) / 0.3)); // low over the sea

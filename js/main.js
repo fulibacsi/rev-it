@@ -8,7 +8,8 @@
 //   the car has a stereo, tape() the tape it plays (null: off) and nextTape(round) to change it (round: a tape ended,
 //   so the next, round to the first; stereo.js), madness() the
 //   share of ordinary drivers gone mad, 0 to 1: no look, no signal, they jump in front of you (road.js), rust() the
-//   share of ordinary cars gone to rust, 0 to 1 (a look only: road.js); the main game
+//   share of ordinary cars gone to rust, 0 to 1 (a look only: road.js), horizon(g, w, y) to draw on the horizon between
+//   the far hills and the near ones (road.js drawSky); the main game
 //   (Distance) also:
 //   pause() as the menu opens over it, endRun() for the pause menu's END RUN, stats() for STATS }
 const fmt = n => Math.round(n).toLocaleString('en-US');

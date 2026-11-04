@@ -40,6 +40,23 @@ with sync_playwright() as p:
         if phone: js("settings.layout = 'touch'; applyLayout()")
         pg.click('[data-play="distance"]'); pg.wait_for_timeout(300)
 
+        # 0. the warning signs: from a 2x2 board his fortress on the horizon, nearer as yours grows (0 at 2x2, 1 at 4x5);
+        # none below 2x2, none once he is beaten. Drawn in a run (road.js drawSky's game.horizon)
+        got = js("""(() => { const at = (w, l) => { Object.assign(progress.levels, { widen: w, lengthen: l }); return +warning().toFixed(2); };
+            const r = [at(0, 4), at(1, 0), at(1, 1), at(2, 3), at(3, 4)]; progress.warlord = 1; r.push(at(3, 4)); delete progress.warlord;
+            at(1, 1); return r; })()""")
+        pg.wait_for_function("document.body.classList.contains('garage')", timeout=20000)
+        pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=20000); pg.wait_for_timeout(1500)
+        got += [js("""(() => { let n = 0; const was = window.drawOmen; window.drawOmen = (...a) => { n++; return was(...a); };
+            return new Promise(done => setTimeout(() => { window.drawOmen = was; done(n > 0); }, 300)); })()""")]
+        pg.screenshot(path=f"{OUT}/finale_{layout}_omen_2x2.png")
+        js("Object.assign(progress.levels, { widen: 3, lengthen: 3 })"); pg.wait_for_timeout(300)
+        pg.screenshot(path=f"{OUT}/finale_{layout}_omen_4x4.png")
+        js("game.endRun()"); pg.wait_for_function("run.phase === 'garage'", timeout=15000)
+        js("Object.assign(progress.levels, { widen: 3, lengthen: 4 }); closeMenu(); renderGarage()")
+        check(f"{layout}: his fortress on the horizon: none at 1x5 or 2x1, from 2x2 (0) nearer as yours grows (0.5 at 3x4, 1 at "
+              f"4x5), none once he is beaten; drawn in a run", got == [-1, -1, 0, 0.5, 1, -1, True], got)
+
         # 1. the trigger: full size, and the Grinder; its card as the Grinder is bought; FIGHT beside DRIVE from then on
         got = js("[finaleOpen(), !$('fight').hidden, TUTORIALS.find(t => t.id === 'warlord').open()]")
         js("garageTab = 'fortress'; renderGarage()")
