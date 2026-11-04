@@ -562,6 +562,7 @@ $('garage').onclick = e => {
   if (i) { progress.engine = +i; save(); refreshCar(); }
   if (toggle) { progress.off[toggle] = !progress.off[toggle]; save(); }
   if (b.dataset.role) { makeRole(b.dataset.role, +b.dataset.by); plan = null; save(); } // oil.js: the role card
+  if (b.dataset.stance) { progress.stance = b.dataset.stance; save(); } // oil.js: the War chief's stance, on it
   if (b.id === 'drive') return drive();
   renderGarage(id ?? max);
 };

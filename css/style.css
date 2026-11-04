@@ -350,6 +350,8 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
 .card.roles .crew-split::-moz-range-thumb { width: 10px; height: 32px; border: 0; border-radius: 4px; background: #f4f4f4; box-shadow: 0 0 0 2px #141418; }
 .card.roles .ends { display: flex; justify-content: space-between; gap: 8px; white-space: nowrap; }
 .card.roles .oil { color: var(--harvester); }
+.card.roles .stance { display: flex; align-items: center; gap: 6px; margin-top: 4px; color: var(--raider); } /* the War chief's */
+.card.roles .stance button { flex: 1; min-width: 0; }
 .card.roles .harvester { color: var(--harvester); } .card.roles .split .harvester { background: var(--harvester); }
 .card.roles .brewer { color: var(--brewer); } .card.roles .split .brewer { background: var(--brewer); }
 .card.roles .harvester input { accent-color: var(--harvester); } .card.roles .brewer input { accent-color: var(--brewer); }

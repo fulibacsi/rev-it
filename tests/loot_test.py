@@ -60,6 +60,15 @@ with sync_playwright() as p:
               f"40: 40 at war (the Foreman splitting the oil crew); its ? the war crew's tutorial; every car's dues, 30% of 3,000 m "
               f"each: 72,000 m", got == [["Oil crew 26", "War crew 54"], 26, 54, 0, 1, 40, 40, 40, 0, "40", "warcrew", True, 72000], got)
         pg.screenshot(path=f"{OUT}/loot_{layout}_roles.png")
+        # the War chief's stance on it (the war crew's jobs, 4 Nov): once he and Gunners or Scavengers are bought
+        got = js("(() => { const none = !$('cards').querySelector('.stance'); Object.assign(progress.levels, { warChief: 1, gunners: 1 }); renderGarage(); "
+                 "return [none, [...$('cards').querySelectorAll('.stance button')].map(b => b.textContent + (b.classList.contains('on') ? '*' : ''))]; })()")
+        pg.click('[data-stance="guard"]'); pg.wait_for_timeout(100)
+        got += js("[progress.stance, $('cards').querySelector('.stance .on').textContent]")
+        check(f"{layout}: the War chief's stance on the role card once he and Gunners are bought: ATTACK first; GUARD tapped, his",
+              got == [True, ["ATTACK*", "GUARD", "SALVAGE"], "guard", "GUARD"], got)
+        pg.screenshot(path=f"{OUT}/loot_{layout}_stance.png")
+        js("Object.assign(progress.levels, { warChief: 0, gunners: 0 }); delete progress.stance")
         js("progress.roles = { harvester: 17, brewer: 9, raider: 6 }; garageTab = 'fortress'; renderGarage()")
 
         # the dealer (layer 13): three parts of the enemies' on its card, the same until a race is run, on dice of their
