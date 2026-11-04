@@ -268,6 +268,9 @@ Each upgrade and what it needs, one line each: the list to edit.
   the police car that rammed you thrown 8 m further back a level)
 - Auto cannon ← Rebuild, Auto gun (layer 14: 3,000 points, a switch: fires the cannon for you whenever it is loaded and
   the car in the reticle is in reach; the pedal reads AUTO)
+- The finale (layer 15, not a card): FIGHT beside DRIVE in the garage once Widen and Lengthen are at their last levels
+  (four lanes, five rows) and the Grinder is bought (the owner, 4 Nov); its card, THE WARLORD, pops up as the last of
+  them is bought
 - Shells, not an upgrade (1 Nov): once rebuilt, a card on the page sells the cannon's shells, a crate of 10 for 100
   points, as often as you like.
 - The dealer, not an upgrade (layer 13): once rebuilt, a card on the page offers three parts of the enemies' before

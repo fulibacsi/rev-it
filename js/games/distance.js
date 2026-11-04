@@ -159,6 +159,19 @@ const ACTS = [
              roles: { harvester: 17, brewer: 9, raider: 6 } }, // act4.py's split by then
     wallets: { bank: 8000, points: 2800, fuel: 7, scrap: 300 }, // act4.py at the tank (seed 1), the tank's 300 scrap
     moment: () => { progress.tanks = 1; progress.toured.push('tanksent'); } }, // the tank beaten: its own card seen in its race
+  // the finale (finale.js): act 5 bought out, its board packed as a player might have it, a cannon in the middle of the
+  // front row, armor either side, the guns behind, engines at the back; the War chief's split (act5.py's by race 12)
+  { pages: ['workshop', 'autopilot', 'black', 'fleet', 'warrig', 'fortress'], cap: () => ({ fleet: 92 }),
+    story: { runs: 100, races: 80, driven: 900000, best: 5000, racing: true, finish: 1, oil: 2, gang: true, totals: 400, tanks: 10,
+             roles: { harvester: 26, brewer: 12, raider: 0 } },
+    wallets: { bank: 20000, points: 1000, fuel: 20, scrap: 1000, shells: 30 },
+    moment: () => {
+      const part = (kind, cells, x, y, from) => ({ kind, cells, x, y, from });
+      Object.assign(progress.fortress, { hold: [], parts: [part('armor', [[0, 0]], 0, 0, 'gang'), part('cannon', [[0, 0], [1, 0]], 1, 0, 'tank'),
+        part('armor', [[0, 0]], 3, 0, 'gang'), part('gun', [[0, 0], [1, 0]], 0, 1, 'heli'), part('gun', [[0, 0], [1, 0]], 2, 1, 'heli'),
+        part('spikes', [[0, 0], [1, 0], [2, 0]], 0, 2, 'gang'), part('engine', [[0, 0], [1, 0]], 0, 4, 'tank'), part('engine', [[0, 0], [1, 0]], 2, 4, 'rig')] });
+      progress.shells = Math.max(progress.shells, 30);
+    } },
 ];
 function debugAct(act) {
   if (!debugSave) return;
@@ -248,9 +261,10 @@ function buy(id) {
   return true;
 }
 
-// a driver aid works while bought, switched on and a run is under way, and only with the aids it builds on working
+// a driver aid works while bought, switched on and a run is under way, and only with the aids it builds on working;
+// none in the finale (finale.js: the owner, "if you want to win, you have to play")
 function aid(id) {
-  if (run.phase !== 'countdown' && run.phase !== 'run') return false;
+  if (run.phase !== 'countdown' && run.phase !== 'run' || fighting()) return false;
   if (rigDrives(id)) return true; // fortress.js: the war rig drives itself, these bolted on
   if (!lvl(id) || progress.off[id]) return false;
   return (UPGRADES[id].on ?? []).every(aid);
@@ -261,8 +275,9 @@ function aid(id) {
 // (braking, the score is in) -> 'garage'. best: the best distance before this run, marked on the road.
 const run = { phase: 'garage', count: 0, left: 0, best: progress.best, gain: null, newBest: false }; // gain null: no run yet
 
-function startRun() { // back to the start line, engine running, in neutral, held on the brake
-  Object.assign(run, { phase: 'starting', count: COUNTDOWN, left: runTime(), best: progress.best, gain: 0, newBest: false,
+function startRun(fight = false) { // back to the start line, engine running, in neutral, held on the brake; fight: the
+  // finale's (finale.js), no time to it
+  Object.assign(run, { phase: 'starting', count: COUNTDOWN, left: fight ? Infinity : runTime(), best: progress.best, gain: 0, newBest: false, fight,
                        slot: progress.racing ? startSlot() : null, race: null, revealed: false, won: false, scrap: 0, totals: 0, shells: 0, ranks: 0,
                        firstTotal: false, boss: bossRace(), tank: null, beatTank: false, limp: wrecked(),
                        flashes: rigged() ? 0 : lvl('flash'), recharge: 0, loot: [] }); // the war rig has no flash (fortress.js)
@@ -271,12 +286,14 @@ function startRun() { // back to the start line, engine running, in neutral, hel
   coolDown();
   copClock = copEvery(); // police.js: the first police car after a while
   rigRun(); // fortress.js: the rival gang, the ambushes
+  if (fight) fightRun(); // finale.js: the road his
   run.refill = run.limp ? 0 : refillNitro(); // limping: keep the meters for the repair
   crewRun(); // oil.js: this run's spots
   if (run.boss) sendTank(); // boss.js: up the road, waiting
 }
 
 function finishRun(dnf) { // dnf: why the run ended early (a crash), if it did
+  if (run.fight) return finishFight(false); // finale.js: wrecked, or the pause menu's END RUN
   run.gain = Math.floor(odo);
   run.newBest = run.gain > progress.best;
   progress.bank += run.gain;
@@ -307,14 +324,16 @@ function finishRun(dnf) { // dnf: why the run ended early (a crash), if it did
 
 function updateRun(dt) {
   progress.time += dt; // played, garage included (the menu pauses it)
-  if (run.phase === 'starting' || run.phase === 'countdown') { speed = odo = 0; holdRacers(); } // held at the line
+  if (run.phase === 'starting' || run.phase === 'countdown' || fighting()) { speed = odo = 0; holdRacers(); } // held at the line;
+                                                                                                     // a fight's standoff
   if (run.phase === 'starting' && state === 'running') run.phase = 'countdown';
   else if (run.phase === 'countdown' && (run.count -= dt) <= 0) { run.phase = 'run'; brakePedal = 0; raceGo(); }
   else if (run.phase === 'run' && (run.left -= dt) <= 0) { run.left = 0; finishRun(); }
   else if (run.phase === 'finish' && (run.count -= dt) <= 0) run.phase = 'garage';
   run.still = run.phase === 'run' && speed < 1 ? (run.still ?? 0) + dt : 0; // s standing still in the run (stuck?)
-  if (run.phase === 'run' && raceTick()) run.revealed = true;
-  if (run.phase === 'run') { rechargeFlash(dt); updateGang(dt); updatePolice(dt); ambushTick(); updateGangCars(dt); updateBoss(); crewTick(dt); rigTick(dt); lootTick(dt); stripTick(dt); mineTick(); lobTick(dt); rocketTick(dt); }
+  if (run.phase === 'run' && run.fight) fightTick(dt); // finale.js: nothing else on the road
+  else if (run.phase === 'run' && raceTick()) run.revealed = true;
+  if (run.phase === 'run' && !run.fight) { rechargeFlash(dt); updateGang(dt); updatePolice(dt); ambushTick(); updateGangCars(dt); updateBoss(); crewTick(dt); rigTick(dt); lootTick(dt); stripTick(dt); mineTick(); lobTick(dt); rocketTick(dt); }
   if (run.phase === 'run' && damageOn()) damageTick(dt);
   if (run.phase === 'run' && run.limp && odo >= LIMP) finishRun('limped'); // as far as a wreck gets
 }
@@ -416,6 +435,13 @@ TUTORIALS.unshift(
     now: () => rigged() ? 'No more heat: the road fights back as your fortress grows. Ambushes ahead, the police, the ' +
       'gang and the army, more and tougher the bigger you build. Every one is loot.'
       : bossRace() ? 'The army has sent another tank: it waits up the road.' : `Police heat ${heatPct()}: at 100% the army sends another tank, tougher.` },
+  // the finale (finale.js; the owner, 4 Nov): once the fortress is full size with the Grinder on its front, popped up as
+  // the last of them is bought
+  { id: 'warlord', name: 'THE WARLORD', open: () => finaleOpen(),
+    text: () => 'Your fortress fills the road, four lanes wide and five rows long, the Grinder on its front. The warlord of ' +
+      'the coast road has seen it: his own fortress waits up the road, across all four lanes, facing you. FIGHT him from ' +
+      'the garage when you are ready. Nothing does it for you in his fight: no aids, no Auto cannon, no War chief.',
+    now: () => progress.warlord ? 'The warlord is down: the coast road is yours.' : 'He waits up the road: FIGHT, from the garage.' },
 );
 const UNDER_CONSTRUCTION = 'Under construction: act V is being built a piece at a time, more with each update.';
 const heatPct = () => `${Math.round(progress.wanted * 100)}%`;
@@ -434,6 +460,8 @@ const dnf = r => ({ 'head-on': 'head-on with oncoming traffic', wrecked: 'the ca
 function runLine() {
   const r = run.race;
   if (run.gain == null) return '';
+  if (run.fight) return run.won ? '<b>THE WARLORD IS DOWN</b>' : '<b>WRECKED</b> by the warlord' +
+    (run.repaired ? ` · repairs −${fmt(run.repaired)} m` : ''); // finale.js
   return [`<b>+${fmt(run.gain)} m</b>${run.newBest ? ' new best!' : ''}`,
     r && (r.dnf ? `<b>DNF</b> ${dnf(r)}` : `<b>P${r.p}</b>${r.points || !rigged() ? ` +${r.points} pts` : ''}`), run.ranks && `the gang's ranks +${fmt(run.ranks)} pts`,
     run.team && `team places +${fmt(run.team)} pts`, run.dues && `racing +${fmt(run.dues)} m`,
@@ -448,7 +476,8 @@ function runLine() {
 // stand
 function runRows() {
   const r = run.race, rows = [];
-  if (run.phase === 'garage' && run.gain != null) {
+  if (run.phase === 'garage' && run.fight) rows.push(['The warlord', run.won ? 'beaten' : 'not yet']); // finale.js
+  else if (run.phase === 'garage' && run.gain != null) {
     rows.push(['Last run', `+${fmt(run.gain)} m${run.newBest ? ', a new best' : ''}`]);
     if (r) rows.push(['Race', r.dnf ? `DNF: ${dnf(r)}` : `${r.start > FIELD ? 'from the back' : 'from P' + r.start} to P${r.p}`]);
     // on the war rig the race pays nothing: the gang's ranks do (below)
@@ -514,6 +543,8 @@ function renderGarage(bought) {
   const onTab = ([id, u]) => !u.opens && pageOf(u) === garageTab && shows(id);
   const d = progress.damage;
   $('drive').textContent = wrecked() ? `LIMP ${LIMP} m ▶` : 'DRIVE ▶'; // a wreck can always limp: no dead end
+  $('fight').hidden = !finaleOpen(); // finale.js: from full size and the Grinder on, the warlord waits
+  $('fight').disabled = wrecked(); // a wreck can't fight: repair first
   // from act IV it stays with its AUTO switch (damage.js), damaged or not, so the switch can be turned off again
   const auto = autoButton();
   const state = d > 0 ? `${Math.round(d)}% damage · rev limit −${fmt(revLoss())} rpm` +
@@ -572,6 +603,7 @@ $('garage').onclick = e => {
   if (b.dataset.role) { makeRole(b.dataset.role, +b.dataset.by); plan = null; save(); } // oil.js: the role card
   if (b.dataset.stance) { progress.stance = b.dataset.stance; save(); } // oil.js: the War chief's stance, on it
   if (b.id === 'drive') return drive();
+  if (b.id === 'fight') return drive(true); // finale.js
   renderGarage(id ?? max);
 };
 
@@ -584,9 +616,9 @@ $('garage').oninput = e => { // the Exchange's slider: only its button changes, 
   b.disabled = !exchange;
 };
 
-function drive() {
+function drive(fight = false) { // fight: the finale's (finale.js)
   markTours(); // what is open before the run: a system it brings pops its tutorial up after (tutorial.js)
-  startRun();
+  startRun(fight);
   passedBest = shownReveal = false;
   startEngine(); // the key turns itself
   if (run.boss) openCard('tanksent'); // boss.js: a boss fight, said so over the road before the lights (the owner, 27 Oct)
@@ -599,9 +631,10 @@ const onRadio = () => TAPES.filter(t => !!t.war === (lvl('warradio') > 0 && !pro
 let shownPhase, shownCount, passedBest = false, shownReveal = false;
 function renderRun() {
   if (run.phase !== shownPhase) { // a new phase starts
-    if (run.phase === 'run') { flash('GO!', '#5f5', true); beep(1320, 0.5); }
-    if (run.phase === 'finish') { flash(run.beatTank ? 'TANK DOWN!' : 'TIME!', '#ec4', true); beep(880, 0.8); }
+    if (run.phase === 'run') { flash(run.fight ? 'FIGHT!' : 'GO!', '#5f5', true); beep(1320, 0.5); }
+    if (run.phase === 'finish') { flash(run.beatTank ? 'TANK DOWN!' : run.fight ? (run.won ? 'THE WARLORD IS DOWN!' : 'WRECKED') : 'TIME!', '#ec4', true); beep(880, 0.8); }
     if (run.phase === 'garage') renderGarage();
+    if (run.phase === 'garage' && run.fight && run.won) openMenu('win'); // main.js: the ending (finale.js)
     // act V's card once the tank is beaten, after its race or in a save from before act 5 (the tank's own card, popped up
     // as you drove off, ended that run's pop-ups); else a system new this run: its tutorial (tutorial.js); a new game: its
     // first act's card, over the road
@@ -624,11 +657,13 @@ function renderRun() {
     starting: ['', 'starting the engine…'],
     countdown: ['GET READY', [!aid('clutch') && 'clutch down', !aid('shift') && '1st gear', !aid('gas') && 'gas']
       .filter(Boolean).join(' · ') || 'sit back: the car does it all'],
-    run: stuck() ? nextStep()
+    run: run.fight ? ['', ''] // finale.js: his health over his fortress, yours in the mirror
+      : stuck() ? nextStep()
       : run.limp ? ['LIMP MODE', `${Math.floor(odo)} of ${LIMP} m`] // the time left is in the mirror
       : progress.racing ? [`P${position()}`, `${fmt(odo)} m` + gaps()]
       : [`${fmt(odo)} m`, run.best ? `best ${fmt(run.best)} m` : ''],
     finish: run.beatTank ? ['TANK DOWN', 'the road is yours'] // boss.js: the tank destroyed
+      : run.fight ? (run.won ? ['THE WARLORD IS DOWN', 'the coast road is yours'] : ['WRECKED', 'repair, and fight again']) // finale.js
       : run.race?.dnf ? ['DNF', run.race.dnf]
       : run.race ? [`P${run.race.p}`, `+${run.race.points} pts · ${fmt(run.gain)} m`]
       : [`${fmt(run.gain)} m`, run.newBest ? 'new best!' : 'time'],
@@ -636,9 +671,10 @@ function renderRun() {
   $('run-dist').textContent = dist;
   $('run-info').textContent = info;
   document.body.classList.toggle('timing', run.phase !== 'garage');
-  $('timer-fill').style.width = `${97 * run.left / runTime()}%`;
-  $('timer-left').textContent = run.left.toFixed(1);
-  document.body.classList.toggle('low', run.phase === 'run' && run.left < 5);
+  // a fight's (finale.js): no time, your health instead (the owner)
+  $('timer-fill').style.width = `${97 * (run.fight ? 1 - progress.damage / 100 : run.left / runTime())}%`;
+  $('timer-left').textContent = run.fight ? `${Math.round(100 - progress.damage)}%` : run.left.toFixed(1);
+  document.body.classList.toggle('low', run.phase === 'run' && (run.fight ? progress.damage > 75 : run.left < 5));
   document.body.classList.toggle('has-flash', lvl('flash') > 0 && !progress.off.flash && !rigged()); // gone with the Rebuild
   $('hud-flashes').textContent = run.phase === 'garage' ? lvl('flash') : run.flashes;
   $('hud-beam').classList.toggle('empty', run.phase !== 'garage' && !run.flashes);
@@ -689,9 +725,10 @@ const DISTANCE = {
     if (progress.tanks) s.push(['Tanks beaten', fmt(progress.tanks)]);
     return s;
   },
-  stop() { run.phase = 'garage'; document.body.classList.remove('garage', 'low', 'has-flash', 'timing', 'has-fleet', 'ar-on', 'has-guns', 'has-heat', 'has-crew', 'has-tank', 'tag-on', 'rig'); clearDamageView(); quietRig(); }, // earns nothing
+  stop() { run.phase = 'garage'; document.body.classList.remove('garage', 'low', 'has-flash', 'timing', 'has-fleet', 'ar-on', 'has-guns', 'has-heat', 'has-crew', 'has-tank', 'tag-on', 'rig', 'fight'); clearDamageView(); quietRig(); }, // earns nothing
   update: updateRun,
-  render() { renderRun(); renderDamage(); renderSonar(); renderCrew(); renderGang(); renderPolice(); renderRig(); },
+  render() { renderRun(); renderDamage(); renderSonar(); renderCrew(); renderGang(); renderPolice(); renderFight(); renderRig(); }, // the fight's
+                                                                                       // dashboard first: the board sizes itself to it
   crash: i => onCollision(i),
   marks: roadMarks,
   useFlash() { // a charge from this run's flashes

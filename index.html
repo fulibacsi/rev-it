@@ -128,7 +128,7 @@
   <nav id="tabs"></nav>
   <div id="engine-row"></div>
   <div id="cards"></div>
-  <footer><button id="drive">DRIVE ▶</button></footer>
+  <footer><button id="fight" hidden>FIGHT ▶</button><button id="drive">DRIVE ▶</button></footer> <!-- FIGHT: the finale's (finale.js) -->
 </div>
 
 <svg id="cluster" viewBox="0 0 560 200">
@@ -199,6 +199,32 @@
 <!-- act 5's war rig (fortress.js): in the shifter's place the fortress's board, its plan from above, ahead up, and the
   hold beside it; a part being dragged floats over it -->
 <div id="board"><b>FORTRESS</b><div id="fort-grid"></div><div id="fort-hold"></div></div>
+<!-- the finale's instruments (finale.js), each there only if you have its weapon, its ready bar under it; the cannon's is
+  its pedal. The CB radio: tap its handset, a raiding party (or S) -->
+<div id="fight-raid" class="instrument" hidden title="send a raiding party (or S)"><svg viewBox="0 0 200 150">
+  <rect x="8" y="18" width="130" height="62" rx="8" fill="#2b2b30" stroke="#55555f" stroke-width="3"/>
+  <rect x="18" y="28" width="60" height="22" rx="3" fill="#1a2a12"/>
+  <text x="48" y="44" fill="#7f5" font-size="14" text-anchor="middle" font-family="ui-monospace, monospace">CH 19</text>
+  <circle cx="105" cy="48" r="16" fill="#3a3a44" stroke="#777" stroke-width="2"/><line x1="105" y1="48" x2="105" y2="35" stroke="#ccc" stroke-width="3"/>
+  <circle cx="25" cy="66" r="4" fill="#f33"/><circle cx="38" cy="66" r="4" fill="#5f5"/>
+  <path d="M70,80 C70,100 120,95 115,110 C110,125 150,118 150,104" stroke="#111" stroke-width="5" fill="none"/>
+  <g class="press"><rect x="138" y="60" width="44" height="62" rx="16" fill="#3a3a44" stroke="#ffcf3f" stroke-width="3"/>
+    <rect x="148" y="72" width="24" height="16" rx="3" fill="#222"/><path d="M152,77 H168 M152,83 H168" stroke="#555" stroke-width="2"/></g>
+</svg><i class="ready"></i><b>RAIDERS</b></div>
+<!-- the guns' lever in its slot: pull it, a burst (or G) -->
+<div id="fight-guns" class="instrument" hidden title="fire a burst (or G)"><svg viewBox="0 0 80 150">
+  <rect x="30" y="20" width="20" height="100" rx="8" fill="#151518" stroke="#55555f" stroke-width="2"/>
+  <g class="press"><line x1="40" y1="100" x2="40" y2="40" stroke="#888" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="40" cy="36" r="16" fill="#c33" stroke="#ffcf3f" stroke-width="3"/></g>
+</svg><i class="ready"></i><b>GUNS</b></div>
+<!-- the rockets' launch button, big and red in a hazard-striped bezel (or R) -->
+<div id="fight-rockets" class="instrument" hidden title="launch the rockets (or R)"><svg viewBox="0 0 140 150">
+  <defs><pattern id="hazard" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <rect width="7" height="14" fill="#f2c12e"/><rect x="7" width="7" height="14" fill="#1b1b1f"/></pattern></defs>
+  <rect x="15" y="15" width="110" height="105" rx="12" fill="url(#hazard)"/><rect x="25" y="25" width="90" height="85" rx="8" fill="#222"/>
+  <g class="press"><circle cx="70" cy="67" r="32" fill="#c33" stroke="#7a1a1a" stroke-width="5"/><circle cx="62" cy="58" r="10" fill="#f77" opacity="0.6"/></g>
+</svg><i class="ready"></i><b>ROCKETS</b></div>
+<div id="warlord-bar" hidden><b>THE WARLORD</b><i></i></div> <!-- over his fortress (finale.js) -->
 <div id="fort-drag" hidden></div>
 
 <div id="pedals">
@@ -253,7 +279,7 @@
     </nav>
     <button data-show="credits" class="corner">credits</button>
     <nav id="debug-acts">start at act <button data-act="0">I</button><button data-act="1">II</button><button data-act="2">III</button><button
-      data-act="3">IV</button><button data-act="4">V</button><button id="debug-money"></button></nav> <!-- debug mode only: the debug game set to an act's start
+      data-act="3">IV</button><button data-act="4">V</button><button data-act="5">FINALE</button><button id="debug-money"></button></nav> <!-- debug mode only: the debug game set to an act's start
       (distance.js debugAct), and its money switch: unlimited, or as in play -->
   </section>
   <section data-screen="pause">
@@ -358,10 +384,10 @@
     <dl id="act-run"></dl>
     <footer><button id="act-drive">HOW TO DRIVE</button><button id="act-go" class="big">CONTINUE ▶</button></footer>
   </section>
-  <section data-screen="win"> <!-- the ending (the owner's pick of title and words, 20 Oct): act 5's end, to come; the
-    tank's until 30 Oct, when beating the tank opened act 5 instead -->
+  <section data-screen="win"> <!-- the ending (the owner's pick of title and words, 20 Oct): the warlord beaten (finale.js);
+    the tank's until 30 Oct, when beating the tank opened act 5 instead (its fortress where the tank stood, 4 Nov) -->
     <h3 id="warlord">WARLORD OF THE COAST ROAD</h3>
-    <p class="warlord">Steel, smoke and silence where the tank stood. A hundred engines howl your name. Nobody's chasing
+    <p class="warlord">Steel, smoke and silence where his fortress stood. A hundred engines howl your name. Nobody's chasing
       you any more. They're following.</p>
     <dl id="win-stats"></dl>
     <footer><button id="win-main">MAIN MENU</button><button data-share>SHARE</button><button data-show="feedback">FEEDBACK</button><button id="win-garage" class="big">BACK TO THE GARAGE</button></footer>
@@ -411,6 +437,7 @@
 <script src="js/games/police.js"></script>
 <script src="js/games/boss.js"></script>
 <script src="js/games/fortress.js"></script>
+<script src="js/games/finale.js"></script>
 <script src="js/games/damage.js"></script>
 <script src="js/games/aids.js"></script>
 <script src="js/main.js"></script>

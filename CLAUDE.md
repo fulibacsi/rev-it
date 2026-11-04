@@ -63,7 +63,8 @@ talking about upgrades. Keep it up to date with every change to an upgrade, a ta
   heat, the scanner, police cars and act 5's SUVs and helicopters), `boss.js` (the tank), `fortress.js` (act 5, being built: the
   Rebuild, the war rig's cockpit, the fortress's board, the cannon and its shells, the rival gang (unlimited, its ranks
   paying points), its mines, harpoon trucks and war rigs, the army's jeeps and rocket cars, the loot, the rig widened, the shield: hits by where they
-  land, parts worn out and falling off; the ambushes, drawn by the fortress's strength), `damage.js` (damage, heat, nitro), `aids.js` (Distance's driver aids: robot feet and
+  land, parts worn out and falling off; the ambushes, drawn by the fortress's strength), `finale.js` (the warlord's fight:
+  FIGHT, the standoff, the fight's instruments and their shared cooldown, his moves, the ending), `damage.js` (damage, heat, nitro), `aids.js` (Distance's driver aids: robot feet and
   hands working the same pedals and lever as the player).
 - Saves: `localStorage` keys `car-rev-settings` and `car-rev-incremental` (Distance progress). Keep these names so
   players keep their saves. Debug mode plays `car-rev-incremental-debug` and never writes the real save.
@@ -129,7 +130,8 @@ uv run --no-project --with playwright playwright install chromium         # once
   copied from the game the first time, with unlimited meters, points, fuel and scrap (shown as ∞), every grid slot
   for sale and police heat rising ten times quicker, so the later acts are quick to reach; the same again switches it
   off and the real game comes back as it was. In a test: `settings.debug = true; applyDebug()`. Its main menu has
-  "start at act I II III IV V" in the corner: the debug game set to that act's start, the pages before it bought out as
+  "start at act I II III IV V FINALE" in the corner: the debug game set to that act's start (the finale's: act 5 bought
+  out, its board packed), the pages before it bought out as
   the upgrade graph allows, everything later gone, the act's card popping up (`debugAct` in `distance.js`; its `ACTS`
   say what each act's start is, so a change to an act's story or pages goes there too). Beside it, "money ∞" switches
   the bottomless wallets off ("money as in play", `settings.debugMoney`): they empty, then fill and empty as in play,
