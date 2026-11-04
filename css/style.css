@@ -135,7 +135,7 @@ body:not([data-game="distance"]) #kit { display: none; }
 #crew-ctl button:active { background: #1d6b3a; }
 #crew-send { min-width: 70px !important; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1;
   position: relative; overflow: hidden; }
-#crew-send::after { content: ''; position: absolute; left: 0; bottom: 0; height: 3px; width: calc(var(--ready, 1) * 100%); background: #3f6;
+#crew-send.cooldown::after { content: ''; position: absolute; left: 0; bottom: 0; height: 3px; width: calc(var(--ready, 1) * 100%); background: #3f6;
   opacity: 0.7; } /* the Foreman's dispatch, filling as he gets ready to send again (oil.js Dispatch) */
 #crew-free { font: 600 9px monospace; color: #6c9; margin-top: 2px; }
 #crew-tag { display: none; position: fixed; transform: translate(-50%, calc(-100% - 10px)); pointer-events: none; padding: 2px 7px;
@@ -339,6 +339,8 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
 .card.roles .role button { min-width: 30px; }
 .card.roles .role input { flex: 1; min-width: 60px; margin: 0; touch-action: pan-x; }
 .card.roles .racer { color: var(--racer); } .card.roles .split .racer { background: var(--racer); }
+.card.roles .oil { color: var(--harvester); } .card.roles .oil input { accent-color: var(--harvester); } /* the war rig's oil
+   crew (oil.js rigRoleCard) */
 .card.roles .harvester { color: var(--harvester); } .card.roles .split .harvester { background: var(--harvester); }
 .card.roles .brewer { color: var(--brewer); } .card.roles .split .brewer { background: var(--brewer); }
 .card.roles .harvester input { accent-color: var(--harvester); } .card.roles .brewer input { accent-color: var(--brewer); }

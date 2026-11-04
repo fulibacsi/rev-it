@@ -11,21 +11,25 @@ Object.assign(UPGRADES, {
   // dearer took about 26 races; the owner (18 Oct) wanted about 15, the Fleet being the weakest act: 3.5% takes 14-16
   fleet: { name: 'Pay off a racer', tab: 'fleet', base: 1, growth: 1.035, max: () => FIELD - 1, locked: "#1 won't sell",
            needs: ['fleetTab'],
-           info: l => !l ? 'every racer for themselves' : l === 1 ? '#100 races for you'
-             : `#${FIELD + 1 - l} to #100 race for you` },
+           info: l => !l ? 'every racer for themselves' : l === 1 ? `#100 ${rigged() ? 'rides with' : 'races for'} you`
+             : `#${FIELD + 1 - l} to #100 ${rigged() ? 'ride with' : 'race for'} you` }, // the war rig: none races (oil.js)
   // Fleet dues until 26 Oct: the racer's own upgrade now, with the roles (the first crude; or at the gang, for a save
   // that got there before the oil: Raiders need it); the role upgrades and tuning grow steeply (the owner, 26
   // Oct). Crew flash went (it never fired at P1: the racers are far behind you)
   dues: { name: 'Racing', tab: 'fleet', max: 5, base: 5, growth: 3, needs: ['fleetTab'], story: () => progress.oil >= 1 || arOn(),
-          info: l => l ? `each racer pays you ${10 * l}% of the meters it drives` : 'your racers drive for nothing' },
+          info: l => rigged() ? `each car of your crew pays you ${10 * l}% of the meters it rides with you` // oil.js: none races
+            : l ? `each racer pays you ${10 * l}% of the meters it drives` : 'your racers drive for nothing' },
   fleetPace: { name: 'Crew tuning', tab: 'fleet', max: 5, base: 3, growth: 3, needs: ['fleet'],
-               info: l => l ? `your racers ${5 * l}% quicker, and your cars get to their spots sooner` : 'as they came' },
+               info: l => rigged() ? `your cars get to their spots ${10 * l}% sooner` // the war rig's crew races no more
+                 : l ? `your racers ${5 * l}% quicker, and your cars get to their spots sooner` : 'as they came' },
 });
 const fleetSize = () => lvl('fleet');
 const inFleet = n => progress.racing && n > FIELD - fleetSize(); // racer n is yours
 const fleetPace = () => 1 + 0.05 * lvl('fleetPace');
 // the dues for a run: a share of the meters your fleet drove from the grid, paid into the bank at the finish
-const fleetDues = () => Math.round(0.1 * lvl('dues') * racers().reduce((m, c) => m + (c.fleet ? Math.max(0, c.z - c.grid) : 0), 0));
+// On the war rig (the owner, 3 Nov) every car of the crew rides with you and pays for the meters it rides, yours (oil.js)
+const fleetDues = () => Math.round(0.1 * lvl('dues') * (rigged() ? fleetSize() * run.gain :
+  racers().reduce((m, c) => m + (c.fleet ? Math.max(0, c.z - c.grid) : 0), 0)));
 // team places (the owner, 23 Oct; points since 26 Oct, so what is left on the Black market stays in reach): at the
 // finish each racer of yours pays TEAM points for each ten places it is from the back (P101 to P92 one, P2 ten), so
 // more racers and quicker ones pay more. Its place among the cars on the road (your riders aren't: oil.js)

@@ -1931,6 +1931,23 @@ race, the loot lost to a full inventory, and the parts lost a race.
      49 on a seed), the fuel 290-405 L.
    - `rivals_test` checks it (out of sight before the Rebuild, the Foreman's four a second there, and until the Foreman;
      on the rig a car every 0.75 s, 0.37 s at level 2; he sends one, waits, and sends again 0.75 s on), on both layouts.
+   The war rig's crew, the eighth PR (built 4 Nov; `oil.js`, `fleet.js`), on the owner's (3 Nov: "racers -> raiders,
+   slider between fuel <-> war, all crew earns meters"; "solves multiple problems at once"). On the war rig only; acts 3
+   and 4 as they were:
+   - Nobody races: the whole crew rides with you. The role card has one slider, the oil crew, and the rest are the war
+     crew (raiders, for now). The Foreman splits the oil crew between harvesters and brewers himself, by the crude in the
+     tank (act5.py's bot's rule since 31 Oct): a race's share of brewers 25% near empty, 35%, 50% near full; enough
+     harvesters for the biggest spot.
+   - Every car pays Racing's dues for the meters it rides with you (30% each at level 3), where only the racers on the
+     grid did; no Team places (none of the crew finishes): the points come from the gang's ranks alone.
+   - `act5.py` (seeds 1-4, 12 races; the bot sets the oil crew by the road's room, as it set harvesters and brewers):
+     80-91k meters a race (61-64k), points 345-450 a race (730-775), the fuel the same (37-40 L). The fortress grows
+     sooner: three lanes by race 5-7, four by race 11-12 (four not by race 12 before). The fighting barely changes (the
+     gang's cars totaled 78-100, 81-103 before; raiders sent 358-386, 321-405): with 70-odd raiders the bottleneck is
+     their dispatch and three to a car, the War chief's (next). Tanks beaten 13-19 (6-16), P1 every race, damage up to
+     48-61% a race (24-51%): the bigger fortress draws bigger ambushes.
+   - `loot_test` checks the card (oil crew 26 and war crew 54 of 80, none racing; the slider to 40: 40 at war; every
+     car's dues), none of the crew on the grid on the road; `oil_test` that act 3's SEND has no cooldown bar.
    The front and the sides, the fifth PR (built 2 Nov; `fortress.js`, `damage.js`, `police.js`), scrap's defense, on the
    owner's answers of 2 Nov ("Mine picker is baseline, negates mines, gives you shells. Grinder on top of it negates
    frontal damage"; rams: "damage mitigation and knockback"; they replace the planned mine roller from two lanes wide

@@ -204,7 +204,8 @@ Each upgrade and what it needs, one line each: the list to edit.
 - Fuel converter ← Crew (free; the Mile converter until 26 Oct)
 - Pay off a racer ← Crew
 - Crew tuning ← Pay off a racer (Fleet tuning)
-- Racing ← Crew, the first crude (Fleet dues)
+- Racing ← Crew, the first crude (Fleet dues; on the war rig every car of the crew pays it for the meters it rides with
+  you, none racing: the role card there is one slider, the oil crew against the war crew)
 - Harvesting ← Crew, the first crude
 - Brewing ← Crew, the first fuel
 - Crude tank ← Harvesting

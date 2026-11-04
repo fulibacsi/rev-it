@@ -72,12 +72,17 @@ const GUNNERS = { reach: 60, every: 0.5, damage: 15 }; // m either way; s betwee
 // ---- the roles: racers race in their slots; harvesters and brewers ride with you. They are the crew's first paid off
 // (the slowest, #100 down), so the racers on the grid are its quickest, and in act IV they are the gang. The oil runs on
 // through act IV (the owner, 27 Oct: it shouldn't disappear; by then the Foreman runs it, and more cars bring more)
+// On the war rig (the owner, 3 Nov) no car of the crew races: they all ride with you, the oil crew the role card sets
+// (the Foreman splitting it between harvesters and brewers: crewRun) and the rest at war, raiders; each pays Racing's
+// dues for the meters it rides (fleet.js fleetDues)
 const crewOn = () => progress.racing && fleetSize() > 0;
-const role = r => crewOn() ? Math.min(progress.roles[r] ?? 0, fleetSize()) : 0;
+const oilCrew = () => Math.min((progress.roles.harvester ?? 0) + (progress.roles.brewer ?? 0), fleetSize());
+const role = r => !crewOn() ? 0 : rigged() && r === 'raider' ? fleetSize() - oilCrew() : Math.min(progress.roles[r] ?? 0, fleetSize());
 const riders = () => role('harvester') + role('brewer') + role('raider'); // raiders ride with you too (gang.js)
-const racersOf = () => fleetSize() - riders(); // your crew on the grid
+const racersOf = () => fleetSize() - riders(); // your crew on the grid (none on the war rig)
 const isRider = n => inFleet(n) && n > FIELD - riders(); // race.js raceField: not on the grid
 function makeRole(r, n) { // the script turns racers into harvesters or brewers; the role card moves them about
+  if (r === 'oil') return setOilCrew(oilCrew() + n); // the war rig's card (rigRoleCard)
   const by = Math.max(-(progress.roles[r] ?? 0), Math.min(n, racersOf()));
   progress.roles[r] = (progress.roles[r] ?? 0) + by;
   return by;
@@ -154,7 +159,16 @@ function crewRun() { // startRun: this run's spots
                        firstOil: scripted() && progress.oil === 0 }); // the whole script this run: the puddle, then the refinery
   if (scripted()) run.spots = progress.oil === 0 ? [newSpot(FIRST_PUDDLE)] : [];
   else run.spots = nextSpots();
+  if (rigged()) splitOil();
   plan = null;
+}
+// on the war rig the Foreman splits the oil crew himself, by the crude in the tank (act5.py's bot did, from 31 Oct): more
+// brewers with the tank full, fewer with it near empty; enough harvesters for the biggest spot, the brewers for one too
+const setOilCrew = n => splitOil(clamp(n, 0, fleetSize()));
+function splitOil(n = oilCrew()) {
+  const big = biggest(), share = progress.crude > 0.6 * tankSize() ? 0.5 : progress.crude < 0.2 * tankSize() ? 0.25 : 0.35;
+  const brewer = clamp(Math.min(n - big, Math.max(Math.ceil(big * 0.6), Math.round(n * share))), 0, n);
+  Object.assign(progress.roles, { harvester: n - brewer, brewer });
 }
 function firstRefinery() { // the script's second half: the refinery, your last two racers made brewers, its tutorial
   run.spots.push(newSpot(FIRST_REFINERY, odo + 1100));
@@ -388,8 +402,9 @@ function renderCrew() {
   text('crew-free', `${free('oil')}H${role('brewer') ? ` ${free('refinery')}B` : ''}${role('raider') ? ` ${free('raid')}R` : ''}`);
   const word = foremanOn() ? 'AUTO' : 'SEND'; // the Foreman sends for you, as AUTO on the trigger fires for you (gang.js)
   if ($('crew-send').firstChild.nodeValue !== word) $('crew-send').firstChild.nodeValue = word;
-  const ready = foremanOn() && rigged() ? clamp(1 - (run.foreman - run.t) / dispatchEvery(), 0, 1) : 1; // his cooldown filling
-  $('crew-send').style.setProperty('--ready', ready.toFixed(2));
+  const cooling = foremanOn() && rigged(); // his cooldown filling: the war rig's only (acts 3 and 4: no bar)
+  $('crew-send').classList.toggle('cooldown', cooling);
+  if (cooling) $('crew-send').style.setProperty('--ready', clamp(1 - (run.foreman - run.t) / dispatchEvery(), 0, 1).toFixed(2));
 }
 
 // ---- the garage: who does what (from the oil on), and what Scouting has seen of the next run. A wide card: the crew's
@@ -401,6 +416,7 @@ const shownRoles = () => ROLES.filter(([r]) => (r !== 'brewer' || progress.oil >
 const countOf = r => r === 'racer' ? racersOf() : role(r);
 function roleCard() {
   if (progress.oil < 1 || !crewOn()) return '';
+  if (rigged()) return rigRoleCard();
   const row = ([r, name]) => `<span class="role ${r}">${name} <b>${countOf(r)}</b>` + (r === 'racer' ? '<small>the rest</small>'
     : `<button data-role="${r}" data-by="-1">−</button><input type="range" data-role="${r}" min="0" max="${fleetSize()}" ` +
       `value="${role(r)}"><button data-role="${r}" data-by="1">+</button>`) + '</span>';
@@ -410,9 +426,32 @@ function roleCard() {
     `into fuel${lvl('pack') ? ' · raiders ram the car in the reticle, for scrap' : ''} · a car with no spot to work ` +
     `earns nothing${scouted() ? ` · <i>${scouted()}</i>` : ''}</small></div>`;
 }
+// the war rig's (the owner, 3 Nov: one slider, between fuel and war): the oil crew, which the Foreman splits himself,
+// and the war crew, the rest; nobody races
+function rigRoleCard() {
+  return `<div class="card roles"><b>Roles · ${fleetSize()} cars</b><div class="split">` +
+    ['harvester', 'brewer', 'raider'].map(r => `<i class="${r}" style="flex-grow: ${role(r)}"></i>`).join('') + '</div>' +
+    `<span class="role oil">Oil crew <b>${oilCrew()}</b><button data-role="oil" data-by="-1">−</button><input type="range" ` +
+    `data-role="oil" min="0" max="${fleetSize()}" value="${oilCrew()}"><button data-role="oil" data-by="1">+</button></span>` +
+    `<span class="role raider">War crew <b>${role('raider')}</b><small>the rest</small></span>` +
+    `<small>the oil crew pumps crude and brews it into fuel: <i class="split-oil">${oilSplitText()}</i>, the Foreman's split · ` +
+    'the war crew rides to raid · every car pays Racing\'s dues for the meters it rides with you' +
+    `${scouted() ? ` · <i>${scouted()}</i>` : ''}</small></div>`;
+}
+const oilSplitText = () => `${role('harvester')} harvesting, ${role('brewer')} brewing`;
+function syncRigRoles(card) {
+  for (const r of ['harvester', 'brewer', 'raider']) card.querySelector(`.split .${r}`).style.flexGrow = role(r);
+  card.querySelector('.role.oil b').textContent = oilCrew();
+  card.querySelector('.role.raider b').textContent = role('raider');
+  card.querySelector('.split-oil').textContent = oilSplitText();
+  card.querySelector('input[data-role="oil"]').value = oilCrew();
+  card.querySelector('.role.oil [data-by="-1"]').disabled = !oilCrew();
+  card.querySelector('.role.oil [data-by="1"]').disabled = !role('raider');
+}
 function syncRoles() { // the card as the crew is now: its bar, counts, sliders and buttons
   const card = $('cards').querySelector('.roles');
   if (!card) return;
+  if (rigged()) return syncRigRoles(card);
   for (const [r] of shownRoles()) {
     card.querySelector(`.split .${r}`).style.flexGrow = countOf(r);
     card.querySelector(`.role.${r} b`).textContent = countOf(r);
@@ -424,7 +463,8 @@ function syncRoles() { // the card as the crew is now: its bar, counts, sliders 
   }
 }
 function slideRole(slider) { // a slider as it moves: as far as the racers go, the card only, so the drag carries on
-  makeRole(slider.dataset.role, +slider.value - role(slider.dataset.role));
+  const r = slider.dataset.role;
+  makeRole(r, +slider.value - (r === 'oil' ? oilCrew() : role(r)));
   plan = null;
   save();
   syncRoles();
