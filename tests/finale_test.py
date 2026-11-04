@@ -20,6 +20,7 @@ PARTS = [dict(kind="armor", cells=[[0, 0]], x=0, y=0, frm="gang"), dict(kind="ca
          dict(kind="armor", cells=[[0, 0]], x=3, y=0, frm="gang"), dict(kind="gun", cells=[[0, 0], [1, 0]], x=0, y=1, frm="heli"),
          dict(kind="engine", cells=[[0, 0], [1, 0]], x=0, y=4, frm="tank")]
 PARTS = [{**{k: v for k, v in p.items() if k != "frm"}, "from": p["frm"]} for p in PARTS]
+HOLD = "FINALE.react = 0; cooling.him = { raid: 99, cannon: 99, guns: 99, rockets: 99 }"  # him held: no move, no answer
 errors, fails = [], []
 def check(name, ok, got=""):
     print(f"{'ok ' if ok else 'FAIL'} {name}" + (f": {got}" if got != "" else ""))
@@ -63,20 +64,20 @@ with sync_playwright() as p:
                                                    "CANNON", True], got)
         pg.screenshot(path=f"{OUT}/finale_{layout}_fight.png")
 
-        # 3. one cooldown for them all (1.5 s, 0.08 of it less a level of Dispatch): the cannon fires (a shell: 250, Heavy
-        # shells none, two blocks), then the lever too soon does nothing; a beat later its burst (8 rounds of 6 x (3 + 2));
-        # no Auto cannon, no War chief meanwhile
-        got = js("""(() => { cooling.him = { cannon: 99, rockets: 99 }; const hp0 = health(warlord), shells = progress.shells;
+        # 3. one cooldown for them all (1.5 s, 0.08 of it less a level of Dispatch): the cannon winds up (1.2 s) and fires (a
+        # shell: 250, Heavy shells none, two blocks), the lever too soon does nothing; a beat later its burst (8 rounds of
+        # 6 x (3 + 2)); no Auto cannon, no War chief meanwhile
+        got = js(f"""(() => {{ {HOLD}; const hp0 = health(warlord), shells = progress.shells;
             const a = move('cannon'), b = move('guns'), hp1 = warlord.hp, cd = +cooling.you.guns.toFixed(2);
-            return [a, b, hp0 - hp1, shells - progress.shells, cd, +beatOf('you').toFixed(2), (progress.levels.workRate = 5, +beatOf('you').toFixed(2))]; })()""")
+            return [a, b, hp0 - (hp1 ?? hp0), shells - progress.shells, cd, +beatOf('you').toFixed(2), (progress.levels.workRate = 5, +beatOf('you').toFixed(2))]; }})()""")
         js("progress.levels.workRate = 0")
         pg.wait_for_timeout(1700)
         got += js("""(() => { const hp = warlord.hp, ok = move('guns'); return [ok, run.burst]; })()""")
         pg.wait_for_timeout(1200)
         got += js("""[raiding().length, Math.round(8000 - 500 - warlord.hp)]""")
-        check(f"{layout}: one cooldown: the cannon fires (500 off his 8,000, a shell spent), the lever at once does nothing, 1.5 s "
-              f"(0.9 at Dispatch 5); a beat later the burst, 8 rounds of 30; no Auto cannon, no raiders sent by the War chief",
-              got == [True, False, 500, 1, 1.5, 1.5, 0.9, True, 8, 0, 240], got)
+        check(f"{layout}: one cooldown: the cannon winds up (nothing yet, a shell spent), the lever at once does nothing, 1.5 s "
+              f"(0.9 at Dispatch 5); a beat later the burst, 8 rounds of 30, the shell's 500 in by then; no Auto cannon, no raiders "
+              f"sent by the War chief", got == [True, False, 0, 1, 1.5, 1.5, 0.9, True, 8, 0, 240], got)
 
         # 4. the CB radio: a raiding party of three, a ram each (102 with the bull bar), and back
         pg.wait_for_timeout(1600)
@@ -86,12 +87,21 @@ with sync_playwright() as p:
         check(f"{layout}: the CB radio sends three raiders; they ram him once each and are gone, 306 and their guns' rounds off him",
               got[:2] == [True, 3] and got[2] - got2 >= 306, [got, got2])
 
-        # 5. his moves: a shell at your front row (10% less Armor plating's 75% off the part there), a rocket locked on a cell
-        got = js("""(() => { const f = progress.fortress, hp = f.parts.map(hpOf), r0 = rockets.length; cooling.him = {};
-            const roll = rng; rng = 1; hisMove(); const shot = f.parts.map((p, i) => +(hp[i] - hpOf(p)).toFixed(2)).filter(x => x > 0);
-            cooling.him = {}; let k = 0; while (rockets.length === r0 && k++ < 20) { cooling.him = {}; hisMove(); }
-            rng = roll; return [shot, rockets.length > r0, rockets.at(-1)?.c === warlord]; })()""")
-        check(f"{layout}: his shell takes 2.5 off a part on your front row; his rocket locks on a cell of the board", got[0] == [2.5] and got[1:] == [True, True], got)
+        # 5. his moves, each telegraphed: his cannon winds up (HIS CANNON!), its shell 10% less Armor plating's 75% off a part
+        # on your front row 1.2 s later; his rockets lock on a cell of the board; his raiders come out of his gate at you;
+        # his gun nests fire a burst
+        js("FINALE.react = 0")
+        got = js("""(() => { const f = progress.fortress; window.hp5 = f.parts.map(hpOf); cooling.him = {}; hisMove('cannon');
+            return [$('flash').textContent, f.parts.every((p, i) => hpOf(p) === hp5[i]), underway.some(u => u.side === 'him' && u.m === 'cannon')]; })()""")
+        pg.wait_for_timeout(1500)
+        got += [js("""progress.fortress.parts.map((p, i) => +(hp5[i] - hpOf(p)).toFixed(2)).filter(x => x > 0)""")]
+        got += js("""(() => { cooling.him = {}; hisMove('rockets'); const r = rockets.at(-1)?.c === warlord; cooling.him = {}; hisMove('raid');
+            const cars = traffic.filter(c => c.hisRaider).length; cooling.him = {}; hisMove('guns');
+            const out = [r, cars, !!hisBurst]; underway = []; rockets = []; hisBurst = null; traffic.forEach(c => { if (c.hisRaider) c.gone = true; });
+            return out; })()""")
+        js(HOLD)
+        check(f"{layout}: HIS CANNON! winds up, nothing hit yet; 1.2 s later 2.5 off a part on your front row; his rockets lock "
+              f"on; three of his raiders come at you; his guns fire", got == ["HIS CANNON!", True, True, [2.5], True, 3, True], got)
 
         # 6. keys: S the raiders, Space the cannon, G the guns, as the instruments
         got = js("""(() => { cooling.you = {}; const k = key => { const e = new KeyboardEvent('keydown', { key }); dispatchEvent(e); };
@@ -111,7 +121,8 @@ with sync_playwright() as p:
             f.parts.push({ kind: 'rockets', cells: [[0, 0], [1, 0]], x: 0, y: 2, from: 'rocket' }); applyUpgrades();
             return [most, others, at >= 0]; })()""")
         pg.wait_for_timeout(200)
-        got += js("""(() => { cooling.you = {}; cooling.him = { cannon: 99, rockets: 99 }; const shown = !$('fight-rockets').hidden;
+        js(HOLD)
+        got += js("""(() => { cooling.you = {}; const shown = !$('fight-rockets').hidden;
             window.hp0 = warlord.hp; const a = move('rockets'), b = move('guns'); return [shown, a, b, salvos.length, warlord.hp === hp0]; })()""")
         pg.wait_for_timeout(500)
         pg.screenshot(path=f"{OUT}/finale_{layout}_rockets.png")  # the salvo in the air, the launch button
@@ -122,10 +133,45 @@ with sync_playwright() as p:
         check(f"{layout}: rocket pods: the rocket car's drop mostly, nobody else's; the dealer offers one now and then; mounted, the "
               f"launch button; a salvo goes up (the lever then waits), lands a second later, 400 off him (200 a block, two blocks); jammed, nothing",
               got == ["rockets", False, True, True, True, False, 1, True, 0, 400, False, 0], got)
-        js("progress.fortress.parts.pop(); applyUpgrades()")
+        # 6c. the cycle (layer 3): each move beats one (the cannon raiders, raiders guns, guns rockets, rockets the cannon).
+        # Stepped here a 60th at a time, the loop paused. Under way, his move is cancelled by the one that beats it, yours
+        # doing double, and he is open a beat; yours is lost to the one that beats it (raiders shot up: wrecks), his landing;
+        # neutral, both land. He answers yours now and then: with FINALE.react 1, at once, with the move that beats it
+        got = js("""(() => { menuOpen = true;
+            const step = s => { for (let t = 0; t < s; t += 1 / 60) { fightTick(1 / 60); updateTraffic(1 / 60, performance.now() / 1000); } };
+            const f = progress.fortress, hp = () => Math.round(warlord.hp ?? health(warlord));
+            let hits = 0; const cell = window.hitCell; window.hitCell = (...a) => { hits++; return cell(...a); }; const board = () => hits; // hits landed
+            const clear = () => { underway = []; answer = hisBurst = null; rockets = []; salvos = []; run.burst = 0; FINALE.react = 0;
+              cooling = { you: {}, him: { raid: 99, cannon: 99, guns: 99, rockets: 99 } }; traffic.forEach(c => { if (c.raider || c.hisRaider) c.gone = true; }); step(0.05); };
+            const his = m => { cooling.him = {}; hisMove(m); }, out = {};
+            clear(); his('cannon'); step(1); let b0 = board(), h0 = hp(); move('rockets'); const open = +cooling.him.cannon.toFixed(1); step(1.5);
+            out.cannonByRockets = [board() === b0, h0 - hp(), open];
+            clear(); his('raid'); b0 = board(); h0 = hp(); move('cannon'); const downed = traffic.filter(c => c.hisRaider && c.wreck).length; step(1.5);
+            out.raidByCannon = [downed, board() === b0, h0 - hp()];
+            clear(); his('rockets'); b0 = board(); h0 = hp(); move('guns'); const gone = !rockets.length; step(3);
+            out.rocketsByGuns = [gone, board() === b0, h0 - hp()];
+            clear(); his('guns'); step(0.2); move('raid'); const stopped = !hisBurst; h0 = hp(); step(5);
+            out.gunsByRaid = [stopped, h0 - hp() >= 612];
+            clear(); const down = progress.crewDown; his('cannon'); b0 = board(); move('raid'); step(1.5);
+            out.raidLost = [progress.crewDown - down, board() !== b0, raiding().length];
+            progress.crewDown = down; clear(); his('cannon'); b0 = board(); h0 = hp(); move('guns'); step(1.5);
+            out.neutral = [board() !== b0, h0 - hp()];
+            clear(); FINALE.react = 1; cooling.him = {}; b0 = board(); h0 = hp(); move('rockets'); step(1.5);
+            out.answered = [h0 - hp(), board() !== b0];
+            clear(); FINALE.react = 0.3; f.parts.pop(); applyUpgrades(); menuOpen = false; window.hitCell = cell;
+            return out; })()""")
+        js(HOLD)
+        check(f"{layout}: rockets on his winding cannon: his shell never comes, the salvo doubled (800), he is open a beat", got["cannonByRockets"] == [True, 800, 3], got["cannonByRockets"])
+        check(f"{layout}: the cannon on his raiders: all three wrecked, none rams you, the shell doubled (1,000)", got["raidByCannon"] == [3, True, 1000], got["raidByCannon"])
+        check(f"{layout}: the guns on his rockets: shot down, nothing lands, the burst doubled (480)", got["rocketsByGuns"] == [True, True, 480], got["rocketsByGuns"])
+        check(f"{layout}: raiders on his gun nests: his burst stops, their rams doubled (612 and more)", got["gunsByRaid"] == [True, True], got["gunsByRaid"])
+        check(f"{layout}: raiders into his winding cannon: shot up, three wrecks, and his shell lands", got["raidLost"] == [3, True, 0], got["raidLost"])
+        check(f"{layout}: the guns against his cannon: neutral, both land (his shell, your 240)", got["neutral"] == [True, 240], got["neutral"])
+        check(f"{layout}: he answers a salvo with his guns: the salvo shot down (nothing off him), his guns' rounds doubled on you",
+              got["answered"] == [0, True], got["answered"])
 
         # 7. wrecked: back to the garage, FIGHT waiting for a repair; repaired, FIGHT again
-        js("progress.damage = 99.9; cooling.him = {}; rng = 1; hisMove()")
+        js("progress.damage = 100; hisShell(0, false)")
         pg.wait_for_function("run.phase === 'garage'", timeout=15000)
         got = js("[run.won, $('report').textContent, $('fight').disabled, $('drive').textContent]")
         js("progress.damage = 0; renderGarage()")
@@ -136,7 +182,7 @@ with sync_playwright() as p:
 
         # 8. his fortress down: THE WARLORD IS DOWN, then the ending's screen
         pg.click("#fight"); pg.wait_for_function("run.phase === 'run'", timeout=20000)
-        js("cooling.him = { cannon: 99, rockets: 99 }; warlord.hp = 1; hurtCar(warlord, 5)")
+        js(HOLD + "; warlord.hp = 1; hurtCar(warlord, 5)")
         pg.wait_for_timeout(200)  # drawn
         got = js("[run.won, run.phase, $('run-dist').textContent, progress.warlord]")
         pg.wait_for_function("menuOpen && screen === 'win'", timeout=15000)

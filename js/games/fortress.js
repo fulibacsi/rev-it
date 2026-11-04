@@ -241,7 +241,7 @@ function buyShells() { // distance.js, a tap on the card's button
 }
 const cannonOn = () => rigged() && progress.fortress.parts.some(p => p.kind === 'cannon'); // knocked out too (below)
 let reloading = 0, firedAt = -Infinity;
-function fireCannon() {
+function fireCannon(twice = false) { // twice: the finale's counter (finale.js)
   if (!cannonOn() || run.phase !== 'run' || reloading > 0) return false;
   if (!blocks('cannon')) { beep(140, 0.05); flash('JAMMED', '#6af', false); return false; } // every cannon knocked out (War Boys)
   if (progress.shells < 1) { beep(140, 0.05); flash('NO SHELLS', '#fb3', false); return false; }
@@ -253,7 +253,7 @@ function fireCannon() {
   beep(45, 0.3);
   shake = Math.max(shake, 0.35); // main.js: the rig jolts
   raiseHeat(WANTED.shot * CANNON.heat); // police.js
-  if (hit) hurtCar(hit, shellHit());
+  if (hit) hurtCar(hit, shellHit() * (twice ? 2 : 1));
   wearOut('cannon', WEAR.cannon); // each shell wears every cannon (below)
   return true;
 }
@@ -646,7 +646,8 @@ function rocketTick(dt) { // distance.js updateRun: locked on, fired (unless the
 }
 function landRocket(r) { // on the cell over its lane, or beside the rig: true if it hit
   shake = Math.max(shake, 0.3); // main.js
-  if (!runOver(ROCKET.hit, r.x, r.y)) { flash('MISSED IT', '#3f6', false); beep(90, 0.15); return false; }
+  if (!runOver(ROCKET.hit * (r.party?.twice ? 2 : 1), r.x, r.y)) { flash('MISSED IT', '#3f6', false); beep(90, 0.15); return false; } // the
+  // warlord's, double if it countered (finale.js)
   shake = Math.max(shake, 0.6);
   crashSound();
   flash('ROCKET HIT', '#f55', false);

@@ -2140,6 +2140,18 @@ race, the loot lost to a full inventory, and the parts lost a race.
    the board): open, whether it should fire at the reticle's notables in the act's races too.
    - `finale_test` checks it (the drop tables, the dealer, the button, a salvo of 400 on the cooldown, jammed), on both
      layouts.
+   The moves, the third PR (built 4 Nov; `finale.js`, `road.js`): the four-way cycle, both sides alike. A move takes a
+   while to land: the cannon winds up 1.2 s (yours too: the shell spent at the press), rockets lock on (his, 1.5 s) and
+   fly a second, raiders drive across, a burst lasts 0.8 s. While a move is under way, the other side's move that beats
+   it cancels it at once and does double, and the side it beat is open a beat (its next move a full beat away); the
+   move it beats is lost (raiders shot up are wrecked crew cars), and it lands all the same; a neutral one, both land.
+   His moves, any of the four at random every 3 s, each telegraphed: HIS CANNON! and his turret's mouth glowing brighter
+   as it winds up; ROCKETS! and their marks on your board; HIS RAIDERS!, three of his cars (rusted, armed) out of his
+   gate and straight at you, each ramming your front row (4% before Armor plating); HIS GUNS!, his nests flashing, eight
+   rounds at your front row (0.5% each). He answers your moves 30% of the time, 0.4 s after, with the move that beats
+   yours, when his cooldown allows. Claude's numbers, untuned.
+   - `finale_test` checks it (each counter: rockets on his cannon, the cannon on his raiders, the guns on his rockets,
+     raiders on his gun nests, each doubled; raiders lost to his cannon; a neutral pair; his answer), on both layouts.
 
 ### Balance targets and results
 
