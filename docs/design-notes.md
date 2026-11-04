@@ -1989,9 +1989,8 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - `rivals_test` checks them (a scavenger fetches a crate, none with the hold full; three gang cars in reach, three
      raiders each; eight at war: ATTACK all raid, GUARD a gunner first, SALVAGE a scavenger first; a gunner's volley),
      `loot_test` the stance on the card, on both layouts.
-   - Open (the owner, 4 Nov, after act 5 in debug mode): "there could be more pressure / ambushes", to tune once the act
-     is feature complete (the ambushes' budget, `AMBUSH.base` and `scale`, by `act5.py`). Debug mode's bottomless wallets
-     buy the fortress out at once, its ambushes as big as its strength: in play the budget grows with the board.
+   - The owner, 4 Nov, after act 5 in debug mode: "there could be more pressure / ambushes", tuned once the act was
+     feature complete: overlapping ambushes (below, after the finale).
    Crew wrecks, the eleventh PR (built 4 Nov; `oil.js`, `gang.js`, `fortress.js`), on the owner's (4 Nov: "what if crew
    has health too and they can be crashed?"; "everyone that gets hit diegetically also takes damage"; a wrecked car, not a
    dead driver: "gameplay-wise it is more consistent with the rest of the game"; "make the last 10 crew unkillable, and
@@ -2184,6 +2183,21 @@ race, the loot lost to a full inventory, and the parts lost a race.
    `horizon(g, w, y)`, between the far hills and the near ones (`main.js`).
    - `finale_test` checks it (none below 2×2, from 0 at 2×2 to 1 at 4×5, none once he is beaten; drawn in a run), with
      screenshots at 2×2 and 4×4 on both layouts.
+   Overlapping ambushes (built 4 Nov; `fortress.js`), the owner's pressure ("multiple ambushes can overlap", his
+   example: the army at 0:05, the police at 0:08, the army again at 0:12, the gang at 0:20 and 0:22, "and so on"). Each
+   ambush spent a third to two thirds of the race's budget, so a race had about three, all in its first 10-20 s, and the
+   rest of it was quiet; a bigger budget or closer spacing only made those three bigger (`act5.py`: the budget doubled,
+   3.9-4.6 a race; the spacing halved, 3.0-3.6). Now their places come first, along the whole race (the first 200-400 m
+   in, then 120-300 m apart in a cluster or 300-600 m in a gap), and the budget is shared out over them, what is left
+   over what is left of the race, more or less (0.6-1.4 of an even share). The army's at least whole (a tank, a rocket
+   car and a jeep: an even share bought it only its tank, and its rocket cars stopped coming). `act5.py` (seeds 1-4,
+   15 races): 8.3-9.2 ambushes a race (3.1-3.5), starting 4.7-5.2 s apart on average, the last about 40 s into a 50 s
+   race (15-21 s); damage up to 18-39% a race, 4-7% on average (the bot's armor and crew take it: the owner asked for
+   them to overlap, not to hurt more); the first 12 races' scrap 22,500-25,700 (19,200-25,400), points about the same:
+   no inflation. His fight opens at race 14-15 (the owner's 10-15). Rocket pods: 2-3 picked up in 15 races, two of four
+   seeds with two on the board by his fight, two with none: the dealer's wares, next.
+   - `ambush_test` checks the draw (five or more along the whole race, the last past 60% of it; the army's tank first,
+     its rocket cars and jeeps with it), on both layouts.
 
 ### Balance targets and results
 

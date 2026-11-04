@@ -54,15 +54,15 @@ with sync_playwright() as p:
         check(f"{layout}: strength and budget: a 1x1 with a cannon {got[0]}, {got[1]}; a 3x4 with two cannons, armor and a gun {got[2]}, {got[3]}; "
               f"the same half worn {got[4]}", got[3] > 2 * got[1] and got[1] < got[4] < got[3], got)
 
-        # 3. the draw: along the race in clusters and gaps, one faction each from its own roster, within the budget; the
-        # same again for the same race; the traffic's dice untouched
+        # 3. the draw: along the whole race (the owner, 4 Nov: overlapping), in clusters and gaps, one faction each from its
+        # own roster, within the budget; the same again for the same race; the traffic's dice untouched
         got = js("""(() => { const r0 = rng, a = drawAmbushes(), b = drawAmbushes(), length = Math.max(30, progress.pace) * runTime();
             const roster = { police: ['cop', 'suv', 'heli'], gang: ['gang', 'harpoon', 'rig'], army: ['jeep', 'rocket', 'tank'] };
             const gaps = a.slice(1).map((x, i) => x.at - a[i].at);
-            return [a.length >= 2, a[0].at >= 300 && a[0].at <= 600, gaps.every(g => g >= 200 && g <= 400 || g >= 600 && g <= 1000), a.every(x => x.at < length),
+            return [a.length >= 5, a[0].at >= 200 && a[0].at <= 400, gaps.every(g => g >= 120), a.at(-1).at > 0.6 * length && a.every(x => x.at < length),
                     a.every(x => x.members.length && x.members.every(m => roster[x.faction].includes(m))), costOf(a) <= budget() * 1.2,
                     JSON.stringify(a) === JSON.stringify(b), rng === r0, [...new Set(a.map(x => x.faction))].join()]; })()""")
-        check(f"{layout}: ambushes along the race, the first 300-600 m in, then 200-400 m (a cluster) or 600-1,000 m (a gap) apart, "
+        check(f"{layout}: five ambushes or more along the whole race, the first 200-400 m in, then 120 m or more apart (120-300 a cluster, 300-600 a gap), "
               f"each one faction's own, within the budget; the same for the same race; the traffic's dice untouched ({got[8]})",
               got[:8] == [True] * 8, got)
 

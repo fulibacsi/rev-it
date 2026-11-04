@@ -688,8 +688,9 @@ function markRockets() {
 // overlap. Their budget comes from the fortress's strength, its size and what is on it as worn as it is: bigger, more
 // of them, the budget growing slower than the fortress so that building pays (the owner: a 3x4 with two cannons sees
 // far more than a 2x3 with one). Claude's numbers, for act5.py
-const AMBUSH = { first: [300, 600], near: [200, 400], far: [600, 1000], cluster: 0.55, lead: 450, draws: 5, // m; s
-                 base: 8, scale: 4, power: 0.85 }; // the budget: base + scale x strength ^ power
+const AMBUSH = { first: [200, 400], near: [120, 300], far: [300, 600], cluster: 0.55, lead: 450, draws: 5, // m; s
+                 spread: [0.6, 1.4], base: 8, scale: 4, power: 0.85 }; // an ambush's share of the budget left, about even;
+                                                                        // the budget: base + scale x strength ^ power
 const COST = { cop: 1, suv: 3, heli: 6, gang: 1, harpoon: 3, rig: 6, jeep: 1, rocket: 3, tank: 10 }; // of the budget, a member
 // (the army's a 20% share while it was tanks alone; with its rocket cars and jeeps (layer 12) its ambushes spend their
 // whole share, and at 20% they came half as often: half the tanks, and the tanks bring the cannons. act5.py)
@@ -714,20 +715,26 @@ function drawAmbushes() { // rigRun, as a race starts
   const draws = Array.from({ length: AMBUSH.draws }, () => drawOnce(length, money)).sort((a, b) => costOf(a) - costOf(b));
   return draws[AMBUSH.draws >> 1];
 }
+// where they come first, along the whole race (the owner, 4 Nov: overlapping, one after another, "and so on"); then the
+// budget shared out over them, what is left over what is left of the race (more or less, AMBUSH.spread); the army's a
+// whole one at least, its tank, a rocket car and a jeep (an even share bought it only its tank: no rocket cars, no pods)
+const ARMY = COST.tank + COST.rocket + COST.jeep;
 function drawOnce(length, money) {
-  const list = [];
-  for (let at = within(AMBUSH.first), left = money * within([0.8, 1.2]); at < length - 200 && left >= 1;
-       at += ambushRoll() < AMBUSH.cluster ? within(AMBUSH.near) : within(AMBUSH.far)) {
-    const faction = pickFaction(left), share = money * within([0.3, 0.7]); // a third to two thirds of the race's, the army's
-    const members = buyMembers(faction, Math.min(left, faction === 'army' ? Math.max(share, COST.tank) : share)); // a tank at least
-    if (!members.length) continue;
+  const spots = [], list = [];
+  for (let at = within(AMBUSH.first); at < length - 200; at += ambushRoll() < AMBUSH.cluster ? within(AMBUSH.near) : within(AMBUSH.far)) spots.push(at);
+  let left = money * within([0.8, 1.2]);
+  spots.forEach((at, i) => {
+    if (left < 1) return;
+    const faction = pickFaction(left), share = left / (spots.length - i) * within(AMBUSH.spread);
+    const members = buyMembers(faction, Math.min(left, faction === 'army' ? Math.max(share, ARMY) : share));
+    if (!members.length) return;
     list.push({ at, faction, members, sent: 0 });
     left -= members.reduce((m, kind) => m + COST[kind], 0);
-  }
+  });
   return list;
 }
-function pickFaction(left) { // the army only once a tank is affordable: it brings its tank first, then its rocket cars and jeeps
-  const open = Object.keys(FACTIONS).filter(f => f !== 'army' || left >= COST.tank);
+function pickFaction(left) { // the army only once it is affordable whole (ARMY): its tank first, then its rocket cars and jeeps
+  const open = Object.keys(FACTIONS).filter(f => f !== 'army' || left >= ARMY);
   let r = ambushRoll() * open.reduce((k, f) => k + FACTIONS[f].share, 0);
   return open.find(f => (r -= FACTIONS[f].share) < 0) ?? open.at(-1);
 }
