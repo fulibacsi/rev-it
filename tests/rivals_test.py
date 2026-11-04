@@ -13,7 +13,7 @@ car on the rig rams you, from behind or a PIT from the side, three times, then i
 cannon too, slower to reel in) and reels it in; totaled first, the part drops in a crate. The army's (layer 12): a
 jeep comes past you and back, peppering the side of the board it is on, the raiders' and a ram's; a rocket car holds
 the road ahead in the reticle, its rocket's mark on the cell it will land on, a lane changed and it misses. The
-Foreman's Dispatch (layer 13): his speed of command, a cooldown on his sends. The Mine picker: mines picked up for shells; the Grinder:
+War chief: on the war rig he sends the raiders, a car each time he can (his Dispatch); the Foreman the oil crew alone. The Mine picker: mines picked up for shells; the Grinder:
 crashes at the front cost nothing; Ram plates: rams on the sides and back hurt less, the police car thrown back. The
 crew's Scavengers fetch the crates you would pass; its Gunners shoot the small fry near you. Over a notable one the reticle's tag: what it is, its health, the shells it would take, how far. Before the rig, act 4's reticle as it was. Phone and desktop."""
 import json, re
@@ -114,7 +114,8 @@ with sync_playwright() as p:
         # the sonar; not in the race; it comes past and cuts into your lane, brakes; totaled, its rank's points
         js(CLEAR)
         got = js("""(() => { Object.assign(traffic.find(c => !c.racer && !c.fleet && !c.police), { z: odo + 800 }); // to take over
-            const p0 = position(), n0 = rivals().length; gangClock = 0; updateGangCars(0.01); gangClock = 1e9; const g = window.g = traffic.find(c => c.gang && !c.wreck);
+            const p0 = position(), n0 = rivals().length; GANG_CAR.mines = 0; gangClock = 0; updateGangCars(0.01); gangClock = 1e9; GANG_CAR.mines = 0.5;
+            const g = window.g = traffic.find(c => c.gang && !c.wreck); // a chaser: half of them lay mines instead, at random
             return [g.stage, Math.round(g.z - odo), Math.round((g.v - speed) * 3.6), g.racer >= 1 && g.racer <= 100, position() === p0, rivals().length === n0]; })()""")
         check(f"{layout}: the gang sends a car of its own, its number at random: from 260 m back, 108 km/h quicker; your place "
               f"and the race's field as they were", got == ["chase", -260, 108, True, True, True], got)
@@ -348,19 +349,27 @@ with sync_playwright() as p:
               f"back, not 0.5", got[:2] == [0.5, 16.5] and got[2] == "a ram on the rig's sides and back hurts it 50% less, and the car "
               f"that rammed you is thrown 16 m back", got)
 
-        # 6c. the Foreman's Dispatch (layer 13, for fuel; the owner: his efficiency is his speed of command): out of sight
-        # before the Rebuild, and until the Foreman; on the war rig he sends a car every 0.75 s, 30% sooner a level (before it,
-        # four presses a second as ever); run here at an oil spot with room
-        got = js("""(() => { quarry = null; progress.levels.rebuild = 0; const before = [shows('workRate'), dispatchEvery()]; progress.levels.rebuild = 1;
-            const after = shows('workRate'); progress.levels.foreman = 1; progress.off.foreman = false; const withForeman = shows('workRate');
-            const every = [dispatchEvery(), +dispatchEvery(2).toFixed(2), UPGRADES.workRate.info(2)];
+        # 6c. the War chief (the owner, 3 Nov: the offensive dispatch apart from the oil's, bought): out of sight before the
+        # Rebuild; on the rig the Foreman sends the oil crew alone, four a second, and the War chief a raider at the crew's car
+        # every 0.75 s, 30% sooner a level of Dispatch (out of sight until the War chief); the bar under AUTO his cooldown.
+        # Run here with an oil spot with room and a gang car to raid both there
+        got = js("""(() => { const lv = { ...progress.levels }; progress.levels.rebuild = 0; const before = [shows('warChief'), shows('workRate')];
+            progress.levels.rebuild = 1; const after = [shows('warChief'), shows('workRate')];
+            Object.assign(progress.levels, { foreman: 1, warChief: 1 }); progress.off.foreman = progress.off.warChief = false; const withChief = shows('workRate');
+            const g = traffic.find(c => !c.racer && !c.fleet && !c.police && !c.wreck);
+            Object.assign(g, { racer: 7, gang: true, dir: 1, x: MY_LANES[1], z: odo + 60, v: speed, hp: 1e6, stage: null }); quarry = g;
             const s = { kind: 'oil', count: 5, crew: 0, rate: 0.5, reserve: 100, z: odo + 500, coming: [], done: false, got: 0, shown: -9 }, spots = run.spots;
-            run.spots = [s]; run.foreman = 0; const t0 = run.t; crewTick(0.01); const one = s.coming.length; crewTick(0.01); const still = s.coming.length;
-            run.t = t0 + 0.8; crewTick(0.01); const two = s.coming.length;
-            run.spots = spots; progress.levels.foreman = 0; return [...before, after, withForeman, ...every, one, still, two]; })()""")
-        check(f"{layout}: Dispatch: out of sight before the Rebuild (the Foreman's four presses a second there), and after it until "
-              f"the Foreman; on the rig a car every 0.75 s (0.37 s at level 2); he sends one, waits, and sends again 0.75 s on",
-              got == [False, 0.25, False, True, 0.75, 0.37, "the Foreman sends a car every 0.4 s", 1, 1, 2], got)
+            run.spots = [s]; run.foreman = run.warChief = 0; const t0 = run.t, now = () => [s.coming.length, raidersOn(raidAhead())];
+            crewTick(0.01); const first = now(); crewTick(0.01); const soon = now();
+            run.t = t0 + 0.3; crewTick(0.01); const foreman = now(); run.t = t0 + 0.8; crewTick(0.01); const chief = now();
+            crewAt = 0; renderCrew(); const bar = $('crew-send').classList.contains('cooldown'); // crewAt: it redraws at 15 Hz
+            traffic.forEach(c => { if (c.raider) c.gone = true; }); run.spots = spots; progress.levels = lv; quarry = null;
+            Object.assign(g, { racer: 0, gang: false, dir: -1, z: odo + 1500, hp: null }); crewAt = 0; renderCrew();
+            return [...before, ...after, withChief, first, soon, foreman, chief, bar, $('crew-send').classList.contains('cooldown'),
+                    +dispatchEvery(2).toFixed(2), UPGRADES.workRate.info(2)]; })()""")
+        check(f"{layout}: the War chief out of sight before the Rebuild, Dispatch until him; the Foreman sends the oil crew alone, four "
+              f"a second; the War chief a raider every 0.75 s (0.37 s at Dispatch 2), the bar under AUTO his cooldown, none without him",
+              got == [False, False, True, False, True, [1, 1], [1, 1], [2, 1], [3, 2], True, False, 0.37, "the War chief sends a car every 0.4 s"], got)
 
         # 6d. the crew's other jobs (layer 13, for fuel): a scavenger fetches a crate lying in a lane the fortress misses, while
         # the hold has room, run frame by frame; gunners on the deck shoot the nearest of the gang's cars within 60 m

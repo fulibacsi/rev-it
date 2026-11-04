@@ -1952,6 +1952,21 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - `loot_test` checks the card (oil crew 26 and war crew 54 of 80, none racing, the bar the only slider; dragged to 40:
      40 at war; its ? the war crew's tutorial; every car's dues), none of the crew on the grid on the road; `oil_test`
      that act 3's SEND has no cooldown bar.
+   The War chief, the ninth PR (built 4 Nov; `oil.js`), on the owner's (3 Nov: the offensive dispatch apart from the
+   resources', a boss of its own, "War chief", bought). On the war rig only:
+   - War chief, on the Crew page once rebuilt, after Raiders: 40 L, a switch. He sends the war crew, a raider at the car
+     the crew goes after each time he can: every 0.75 s, Dispatch's (now his, after him) 30% sooner a level. The bar
+     under AUTO fills with his cooldown.
+   - The Foreman sends the oil crew alone on the war rig, four a second as in acts 3 and 4: the cooldown had starved the
+     oil (above). Before the War chief the raids are SEND's, by hand.
+   - `act5.py` (seeds 1-4, 12 races; the bot presses SEND for what no boss sends yet, the raids until the War chief, the
+     oil until the Foreman): the War chief by race 3, Dispatch 2 by race 5, the Foreman by race 6-7; the fuel 41-45 L a
+     race (37-40 without him, the Foreman under the cooldown), the gang's cars totaled 84-114 (78-100), damage up to
+     22-50% a race (48-61%), P1 every race; 77-85k meters a race.
+   - `rivals_test` checks it (out of sight before the Rebuild, Dispatch until him; with an oil spot and a car to raid both
+     there, the Foreman sends the oil crew alone, four a second, the War chief a raider every 0.75 s, 0.37 s at Dispatch
+     2; the bar his cooldown, none without him), on both layouts; and asks for a chaser where it checks one (half the
+     gang's cars lay mines instead, at random).
    The front and the sides, the fifth PR (built 2 Nov; `fortress.js`, `damage.js`, `police.js`), scrap's defense, on the
    owner's answers of 2 Nov ("Mine picker is baseline, negates mines, gives you shells. Grinder on top of it negates
    frontal damage"; rams: "damage mitigation and knockback"; they replace the planned mine roller from two lanes wide

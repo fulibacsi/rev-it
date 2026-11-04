@@ -6,10 +6,10 @@ reticle's car is in reach (by the Auto cannon once it has it, layer 14: bought f
 Between races it repairs, turns the meters it doesn't need into fuel once it has bought Lengthen, Inventory and Widen as
 they come (in meters, the cheapest first; it saves up for the next of them), buys the War Rig's guns, the cannon's
 Autoloader and Heavy shells, the Mine picker, the Grinder and Ram plates (layer 13, the cheapest first), the Foreman (a
-level of Overfill, Double up; from then on it leaves the sending to him, as a player busy with the cannon and the board
-would) and his Dispatch, Scavengers and Gunners (layer 13, the cheapest first) before Racing, tuning and cars, crates of
-shells for points while it has fewer than 20, and, with room in the hold, the dealer's offer worth most to it (its
-packing's worth) that leaves a crate's points (layer 13).
+level of Overfill, Double up) and the War chief (from then on it leaves the oil to the one and the raids to the other,
+as a player busy with the cannon and the board would) and his Dispatch, Scavengers and Gunners (layer 13, the cheapest
+first) before Racing, tuning and cars, crates of shells for points while it has fewer than 20, and, with room in the
+hold, the dealer's offer worth most to it (its packing's worth) that leaves a crate's points (layer 13).
 
 As it drives (packing is the race's, never the garage's) it puts what the hold carries on the board, armor and spikes
 on the end rows first (hits come from ahead and behind) and the rest on the middle rows first, or swaps one in where
@@ -51,8 +51,9 @@ RACES = int(sys.argv[1]) if len(sys.argv) > 1 else 10
 SEED = int(sys.argv[2]) if len(sys.argv) > 2 else None
 OVERRIDES = sys.argv[3] if len(sys.argv) > 3 else ""
 HABITS = """window.afterAids = () => { // act4.py's bot, and the cannon
-  if (run.phase === 'run' && run.spots?.length && run.t >= (window.nextPress ?? 0) && !foremanOn()) { // the Foreman's, once bought
-    const best = bestSpot(); if (best) { run.pick = best; send(); window.nextPress = run.t + 0.25; } }
+  if (run.phase === 'run' && run.spots?.length && run.t >= (window.nextPress ?? 0)) { // what no boss sends for it yet: the
+    const best = (!warChiefOn() && raidNow()) || (!foremanOn() && bestSpot(false)) || null;  // raids the War chief's, the
+    if (best) { run.pick = best; send(); window.nextPress = run.t + 0.25; } }               // oil the Foreman's
   firing = false;
   if (run.phase !== 'run' || !target || target.wreck) return;
   firing = lvl('guns') > 0 && target.z - odo < RANGE;
@@ -131,7 +132,7 @@ count('sendHarpoon', f => { const ok = f(); if (ok) harpoons++; return ok; });
 count('fireHarpoon', (f, c) => { const n = progress.fortress.parts.length; f(c); if (progress.fortress.parts.length < n) stolen++; });
 count('sendChaser', f => { const up = sideLane() == null; const ok = f(); if (ok) { chasers++; if (up) shoulders++; } return ok; });
 count('copRam', (f, c, pit) => { pit ? pits++ : copRams++; f(c, pit); });
-// the crew sent: by the Foreman (his Dispatch, layer 13) or by the bot's SEND, and the raiders among them
+// the crew sent: by the Foreman or the War chief (his Dispatch, layer 13), or by the bot's SEND, and the raiders among them
 count('send', (f, s, quiet) => { const t = s ?? run.pick, ok = f(s, quiet); if (ok) { sent++; if (quiet) dispatched++; if (t?.kind === 'raid') raidsSent++; } return ok; });
 // the front (layer 13): mines picked up for shells; crashes at the front the Grinder ate
 count('pickMine', (f, m) => { const s = progress.shells; f(m); if (progress.shells > s) minesPicked++; });
@@ -197,7 +198,7 @@ with sync_playwright() as p:
             buyAll({json.dumps(WARRIG)}, true); buyAll(["autoloader", "heavyShells", "minePicker", "grinder", "ramPlates"], true);
             if (!whyNot('autocannon') && progress.points - cost('autocannon') >= {SHELLS_KEEP}) {{ buy('autocannon'); b.push('autocannon1'); }} // layer 14
             if (!lvl('overfill') && !whyNot('overfill')) {{ buy('overfill'); b.push('overfill1'); }} // the Foreman's way to Dispatch (layer 13)
-            buyAll(["doubleUp", "foreman", "workRate", "scavengers", "gunners"], true); buyAll({json.dumps(FLEET)}, false);
+            buyAll(["doubleUp", "foreman", "warChief", "workRate", "scavengers", "gunners"], true); buyAll({json.dumps(FLEET)}, false);
             let crates = 0; while (progress.shells < 20 && buyShells()) crates++; // the cannon's: 20 for a race
             // the dealer (layer 13): with room in the hold, the offer worth most to it (as it packs: a cannon five times
             // armor) that leaves a crate of shells' points
@@ -218,7 +219,7 @@ with sync_playwright() as p:
         res = ("P" + str(r["p"])) if r["p"] else r["dnf"]
         print(f"race {race:2}: {res:10} totals {r['totals']:2} (gang {r['gangDown']:2}, ranks +{r['ranks']:4} pts; gang cars {r['chasers']} ({r['shoulders']} up the shoulder), mine-layers {r['miners']}, mines {r['laid']} hit {r['minesHit']} picked {r['minesPicked']}; harpoons {r['harpoons']} down {r['harpoonsDown']}, parts taken {r['stolen']} back {r['recovered']}) +{r['scrap']:4} scrap  shells {r['shells']:2} hit {r['hits']:2} "
               f"+{r['got']:2} left {r['left']:3}  rigs {r['rigs']} down {r['rigsDown']} grenades {r['lobbed']:2} knocked out {r['knocked']:2} tapped {r['taps']:2}  suvs {r['suvs']} down {r['suvsDown']} slams {r['slams']}  helis {r['helis']} down {r['helisDown']} strips {r['dropped']} run over {r['ranOver']}  jeeps {r['jeeps']} down {r['jeepsDown']} shots {r['jeepShots']:3}  rocket cars {r['rocketCars']} down {r['rocketCarsDown']} rockets {r['rocketsFired']:2} hit {r['rocketHits']:2}  tanks {r['tanks']} down {r['tanksDown']}  cops {r['cops']} rams {r['copRams']} PITs {r['pits']}  checks {r['checks']:2}  "
-              f"dmg {r['dmg']:3}% ({fixed[0]}% after repairs, {fixed[1]:,} m left)  loot +{r['made']} got {r['picked']} (scavenged {r['fetched']})  gunners' shots {r['gunShots']}  sent {r['sent']} (the Foreman {r['dispatched']}), raiders {r['raidsSent']}  board [{board[0]}] "
+              f"dmg {r['dmg']:3}% ({fixed[0]}% after repairs, {fixed[1]:,} m left)  loot +{r['made']} got {r['picked']} (scavenged {r['fetched']})  gunners' shots {r['gunShots']}  sent {r['sent']} (by the bosses {r['dispatched']}), raiders {r['raidsSent']}  board [{board[0]}] "
               f"hold {board[1]}  {board[2]:,} kg  {r['m']:,} m  {r['w']} wide, crushed {r['crushed']} through {r['through']} ground {r['eaten']}  "
               f"hits on parts {r['onParts']:2} on the rig {r['onRig']:2}, lost [{', '.join(r['fell'])}] worn out [{', '.join(r['wornOut'])}], health left {r['worn']}%  "
               f"packed: {r['mounts']} on, {r['swaps']} swapped" + (f" (the board changed every {r['secs'] / moves:.0f} s)" if moves else "")
