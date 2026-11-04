@@ -150,6 +150,16 @@ with sync_playwright() as p:
         check(f"{layout}: rocket pods: the rocket car's drop mostly, nobody else's; the dealer offers one now and then; mounted, the "
               f"launch button; a salvo goes up (the lever then waits), lands a second later, 400 off him (200 a block, two blocks); jammed, nothing",
               got == ["rockets", False, True, True, True, False, 1, True, 0, 400, False, 0], got)
+        # 6b2. the dealer before his fight (the owner): once the warlord waits, a weapon of his fight the rig lacks is
+        # among the offers first: a rocket pod with none on the board; with nothing on the rig (no War Rig guns, a bare
+        # board), a cannon, a gun and a pod
+        got = js("""(() => { const f = progress.fortress, parts = f.parts, deal = f.deal, guns = progress.levels.guns, kinds = () => (f.deal = null, dealer().offers.map(p => p.kind));
+            const noPod = kinds(); f.parts = []; progress.levels.guns = 0; const bare = kinds();
+            f.parts = parts; progress.levels.guns = guns; f.parts.push({ kind: 'rockets', cells: [[0, 0]], x: 3, y: 3, from: 'rocket' }); const all = kinds();
+            f.parts.pop(); f.deal = deal; return [noPod[0], bare, all.length]; })()""")
+        check(f"{layout}: the dealer before his fight: a rocket pod first with none on the board; a cannon, a gun and a pod "
+              f"with nothing on the rig; three offers as ever", got == ["rockets", ["cannon", "gun", "rockets"], 3], got)
+
         # 6c. the cycle (layer 3): each move beats one (the cannon raiders, raiders guns, guns rockets, rockets the cannon).
         # Stepped here a 60th at a time, the loop paused. Under way, his move is cancelled by the one that beats it, yours
         # doing double, and he is open a beat; yours is lost to the one that beats it (raiders shot up: wrecks), his landing;

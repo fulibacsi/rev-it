@@ -2198,6 +2198,12 @@ race, the loot lost to a full inventory, and the parts lost a race.
    seeds with two on the board by his fight, two with none: the dealer's wares, next.
    - `ambush_test` checks the draw (five or more along the whole race, the last past 60% of it; the army's tank first,
      its rocket cars and jeeps with it), on both layouts.
+   The dealer before the fight (built 4 Nov; `fortress.js`), on the owner's ("if anything is missing from the rig, it
+   should be in the offers - that would even work if there's nothing on the rig"), as the overlapping ambushes still
+   left rocket pods hit and miss: once the warlord waits, each weapon of his fight the rig lacks is among the dealer's
+   offers first, a part each from what drops it most: a cannon (the tank's), a gun (a helicopter's), a rocket pod (a
+   rocket car's); the rest of the three as ever. One a race, as ever.
+   - `finale_test` checks it (a pod first with none on the board; a cannon, a gun and a pod with nothing on the rig).
 
 ### Balance targets and results
 
