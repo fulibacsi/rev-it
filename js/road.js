@@ -699,6 +699,7 @@ function updateTraffic(dt, clock) {
   for (const c of traffic) {
     if (c.warlord) warlordDrive(c); // the finale's (finale.js): he stands his ground, a wreck too
     else if (c.wreck) skid(c, dt);
+    else if (c.hisRaider) hisRaiderDrive(c, dt); // the warlord's, straight at you (finale.js)
     else if (c.heli) heliDrive(c, dt); // the police's helicopter (police.js)
     else if (c.police) policeDrive(c, dt); // police.js
     else if (c.tank) tankDrive(c, dt); // boss.js
@@ -720,7 +721,7 @@ function updateTraffic(dt, clock) {
     if (c.d > 0 && d <= 0) whoosh(Math.abs(speed - c.dir * c.v) * 3.6, c.x < carX ? -0.7 : 0.7); // went past the driver
     c.d = d;
     if (c.racer && (!c.gang || c.stage && !c.wreck) || c.passing || c.tank || (c.rig || c.heli || c.rocket || (c.harpoon || c.jeep) && c.stage !== 'leave') &&
-        !c.wreck || c.runner || c.raider || c.scav || c.warlord) { /* racers stay where they are, however far: their places are the race; a gang car
+        !c.wreck || c.runner || c.raider || c.scav || c.warlord || c.hisRaider) { /* racers stay where they are, however far: their places are the race; a gang car
       while it is at you; a police car comes up from behind; the tank holds the road, a rig comes and goes round you, a
       helicopter flies in, a harpoon truck comes past and holds the road, a jeep comes and goes past you, a rocket car holds
       the road; a car of your crew goes on to its spot, after its car, or after a crate */ }
@@ -731,7 +732,7 @@ function updateTraffic(dt, clock) {
       c.x = MY_LANES[c.lane];
     }
     // you ran into it: your front into its back, sideways into it while changing lanes, or head-on
-    const touching = !c.wreck && !c.raider && !c.scav && !c.alt && onCar(c.x) && c.z < odo + MY_FRONT && c.z + CAR_LEN > odo - MY_REAR && clock - c.hit > 1.5;
+    const touching = !c.wreck && !c.raider && !c.scav && !c.hisRaider && !c.alt && onCar(c.x) && c.z < odo + MY_FRONT && c.z + CAR_LEN > odo - MY_REAR && clock - c.hit > 1.5;
     if (touching) { c.hit = clock; c.dir > 0 ? bump(c) : c.suv ? slam(c) : mad(c) ? madHeadOn(c) : headOn(c); } // an SUV's kamikaze (police.js)
     // an oncoming car with you in its lane: flashes its lights and sounds its horn, once, about 3 s out
     c.beams = Math.max(0, (c.beams ?? 0) - dt);

@@ -220,8 +220,8 @@ function raidRam(c, o) { // a hit, as yours are, and it is knocked back (raiderD
   if (c.rammed) return;   // rig the raider takes a knock too (oil.js crewHit)
   c.rammed = KNOCK;
   c.turn = run.t;
-  hurtCar(o, HIT * (1 + 2 / 3 * lvl('bullbar')) * (notable(o) ? 0.2 : 1), true);
-  crewHit(WRECK.knock, c);
+  hurtCar(o, HIT * (1 + 2 / 3 * lvl('bullbar')) * (notable(o) ? 0.2 : 1) * (c.party?.twice ? 2 : 1), true); // finale.js: a
+  crewHit(WRECK.knock, c);                                                                                    // counter's double
   if (fighting()) c.gone = true; // finale.js: a raiding party rams once, and is back with you
 }
 
@@ -236,7 +236,7 @@ function renderGang() {
   drawHarpoons(); // fortress.js: a harpoon truck's cable, the War Boys' grenades, the army's rockets
   drawLobs();
   drawRockets();
-  drawSalvos(); // finale.js: yours, at the warlord
+  drawFight(); // finale.js: the warlord's telegraphs, your rockets at him
   const t = arOn() && run.phase === 'run' ? target : null, s = t?.seen;
   document.body.classList.toggle('ar-on', !!s);
   if (t) $('ar').style.setProperty('--hp', Math.max(0, t.hp ?? health(t)) / health(t)); // right as soon as it shows again
