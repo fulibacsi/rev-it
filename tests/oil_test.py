@@ -153,6 +153,7 @@ with sync_playwright() as p:
     before = js("busy('oil') + busy('refinery')"); js("progress.crude = 10; progress.levels.foreman = 1"); pg.wait_for_timeout(2500)
     got = js("[busy('oil') + busy('refinery'), $('crew-send').firstChild.nodeValue]")
     check("the Foreman: cars sent with no press, AUTO on the button", got[0] > before and got[1] == "AUTO", [before] + got)
+    check("no cooldown bar under the button before the war rig (act 5's)", not js("$('crew-send').classList.contains('cooldown')"))
     js("progress.off.foreman = true"); pg.wait_for_timeout(200)
     check("switched off: SEND again", js("$('crew-send').firstChild.nodeValue") == "SEND", js("$('crew-send').firstChild.nodeValue"))
     boxes = js("""['tracker', 'crew-ctl', 'sonar', 'tank', 'shifter', 'cluster', 'wheel', 'pedals', 'ignition', 'menu-button', 'timer'].map(id => {

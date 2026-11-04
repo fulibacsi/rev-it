@@ -47,6 +47,21 @@ with sync_playwright() as p:
         check(f"{layout}: Lengthen a row for 25,000 m, behind (the cannon stays in front); Inventory a slot for 20,000 m; no scrap, no points",
               got == [1, 1, True, True, 2, 2, 10000, 5000, 5000, 0], got)
 
+        # the war rig's crew (the owner, 3 Nov): nobody races; the role card has one slider, the oil crew (the Foreman splitting
+        # it) against the war crew, the rest; every car pays Racing's dues for the meters it rides with you
+        got = js("""(() => { garageTab = 'fleet'; renderGarage(); const card = $('cards').querySelector('.roles');
+            const rows = [...card.querySelectorAll('.ends > span')].map(e => e.firstChild.nodeValue.trim() + ' ' + e.querySelector('b').textContent);
+            const before = [oilCrew(), role('raider'), racersOf(), card.querySelectorAll('input[type=range]').length], s = card.querySelector('.crew-split');
+            s.value = 40; slideRole(s);
+            const after = [oilCrew(), role('harvester') + role('brewer'), role('raider'), racersOf(), card.querySelector('.ends .raider b').textContent,
+                           card.querySelector('.tip').dataset.tour, TUTORIALS.find(t => t.id === 'warcrew').open()];
+            const g = run.gain; run.gain = 3000; const dues = fleetDues(); run.gain = g; return [rows, ...before, ...after, dues]; })()""")
+        check(f"{layout}: the war rig's role card: oil crew 26 and war crew 54 of 80, none racing, the bar the only slider; dragged to "
+              f"40: 40 at war (the Foreman splitting the oil crew); its ? the war crew's tutorial; every car's dues, 30% of 3,000 m "
+              f"each: 72,000 m", got == [["Oil crew 26", "War crew 54"], 26, 54, 0, 1, 40, 40, 40, 0, "40", "warcrew", True, 72000], got)
+        pg.screenshot(path=f"{OUT}/loot_{layout}_roles.png")
+        js("progress.roles = { harvester: 17, brewer: 9, raider: 6 }; garageTab = 'fortress'; renderGarage()")
+
         # the dealer (layer 13): three parts of the enemies' on its card, the same until a race is run, on dice of their
         # own; one bought for points into the hold, the rest gone until the next race; a full hold, none
         got = js("""(() => { const r0 = rng; renderGarage(); const a = JSON.stringify(dealer().offers); renderGarage();
@@ -72,6 +87,7 @@ with sync_playwright() as p:
         check(f"{layout}: a race later, three more; with the hold full, none can be bought", got == [True, ["Your hold is full.", True]], got)
         pg.screenshot(path=f"{OUT}/loot_{layout}_dealer.png")
         pg.click("#drive"); pg.wait_for_function("run.phase === 'run'", timeout=20000)
+        check(f"{layout}: on the road, none of your crew on the grid: all of it rides with you", js("racers().filter(c => c.fleet).length") == 0, js("racers().filter(c => c.fleet).length"))
         js(CLEAR); pg.wait_for_timeout(200)
 
         check(f"{layout}: the heavy engines' sounds not loaded yet", js("!rigSoundsIn() && !document.querySelector('script[src*=\"rig-sounds\"]')"))

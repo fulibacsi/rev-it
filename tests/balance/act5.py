@@ -1,15 +1,15 @@
 """The fifth act, simulated (docs/design-notes.md, Act 5), as far as it is built: from the tank beaten (act4.py's car,
 crew and wallets at the tank, seed 1), the bot buys the Fortress tab and the Rebuild, mounts the tank's cannon on the
-board and races on: act4.py's bot (Hunter, the guns, the crew as the Foreman sends it, roles by the road's room) with
-the cannon fired whenever it is loaded, has a shell and the reticle's car is in reach (by the Auto cannon once it has
-it, layer 14: bought for points when 300 are left for shells). Between races it repairs, turns the meters it doesn't
-need into fuel once it has bought Lengthen, Inventory and Widen as they come (in meters, the cheapest first; it saves up
-for the next of them), buys the War Rig's guns, the cannon's Autoloader and Heavy shells, the Mine picker, the Grinder
-and Ram plates (layer 13, the cheapest first), the Foreman (a level of Overfill, Double up; from then on it leaves the
-sending to him, as a player busy with the cannon and the board would) and his Dispatch, Scavengers and Gunners (layer
-13, the cheapest first) before Racing, tuning and cars, crates of shells for points while it has fewer than 20, and,
-with room in the hold, the dealer's offer worth most to it (its packing's worth) that leaves a crate's points (layer
-13).
+board and races on: act4.py's bot (Hunter, the guns, the crew as the Foreman sends it; on the war rig nobody races, the
+oil crew set by the road's room and the rest at war) with the cannon fired whenever it is loaded, has a shell and the
+reticle's car is in reach (by the Auto cannon once it has it, layer 14: bought for points when 300 are left for shells).
+Between races it repairs, turns the meters it doesn't need into fuel once it has bought Lengthen, Inventory and Widen as
+they come (in meters, the cheapest first; it saves up for the next of them), buys the War Rig's guns, the cannon's
+Autoloader and Heavy shells, the Mine picker, the Grinder and Ram plates (layer 13, the cheapest first), the Foreman (a
+level of Overfill, Double up; from then on it leaves the sending to him, as a player busy with the cannon and the board
+would) and his Dispatch, Scavengers and Gunners (layer 13, the cheapest first) before Racing, tuning and cars, crates of
+shells for points while it has fewer than 20, and, with room in the hold, the dealer's offer worth most to it (its
+packing's worth) that leaves a crate's points (layer 13).
 
 As it drives (packing is the race's, never the garage's) it puts what the hold carries on the board, armor and spikes
 on the end rows first (hits come from ahead and behind) and the rest on the middle rows first, or swaps one in where
@@ -191,7 +191,7 @@ with sync_playwright() as p:
             const room = spots.reduce((k, s) => k + cap(s), 0) * reach() / m, want = Math.min(n, Math.round(room / 1.3));
             const share = progress.crude > 0.6 * tankSize() ? 0.5 : progress.crude < 0.2 * tankSize() ? 0.25 : 0.35;
             const brew = Math.min(n - big, Math.max(Math.ceil(big * 0.6), Math.round(want * share))), harv = Math.min(n - brew, Math.max(big, want - brew));
-            progress.roles = { harvester: harv, brewer: brew, raider: Math.min(n - brew - harv, 6) }; plan = null; })()""")
+            progress.roles = { harvester: harv, brewer: brew, raider: 0 }; plan = null; })()""")  # the rest at war, raiders (the rig's roles)
         got = js(f"""(() => {{ const b = [], buyAll = (ids, cheapest) => {{ for (;;) {{ const ok = ids.filter(id => !whyNot(id));
             if (!ok.length) return; const id = cheapest ? ok.sort((a, c) => cost(a) - cost(c))[0] : ok[0]; buy(id); b.push(id + lvl(id)); }} }};
             buyAll({json.dumps(WARRIG)}, true); buyAll(["autoloader", "heavyShells", "minePicker", "grinder", "ramPlates"], true);
