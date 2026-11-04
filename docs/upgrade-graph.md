@@ -73,6 +73,7 @@ flowchart TD
     wells["Deep wells"]
     double["Double up"]
     foreman["Foreman"]
+    warChief["War chief"]
     workRate["Dispatch"]
     scavengers["Scavengers"]
     gunners["Gunners"]
@@ -130,7 +131,9 @@ flowchart TD
   harvesting & brewing --> overfill
   overfill --> double
   double --> foreman
-  foreman -- "the Rebuild" --> workRate & scavengers & gunners
+  foreman -- "the Rebuild" --> scavengers & gunners
+  pack -- "the Rebuild" --> warChief
+  warChief --> workRate
 
   fleetTab -- "totaled a car" --> warrig
   warrig --> bullbar & armor & spikes & radio & hunter
@@ -215,9 +218,11 @@ Each upgrade and what it needs, one line each: the list to edit.
 - Overfill ← Harvesting, Brewing
 - Double up ← Overfill
 - Foreman ← Double up (Scouting max and Sonar range max too until 27 Oct)
-- Dispatch ← Foreman, the Rebuild (a story condition: act 5's; layer 13: 5 levels, 30 L growing 1.6 times: the
-  Foreman's speed of command: on the war rig he sends a car every 0.75 s, 30% sooner a level, down to 0.13 s; before the
-  Rebuild, four a second as ever. Its id `workRate`, from Claude's first reading, Work rate, kept for the saves)
+- War chief ← Raiders, the Rebuild (a story condition: act 5's; 40 L, a switch: on the war rig he sends the war crew,
+  raiders at the car the crew goes after, a car each time he can; the Foreman the oil crew alone there)
+- Dispatch ← War chief (layer 13: 5 levels, 30 L growing 1.6 times: his speed of command, a car every 0.75 s, 30% sooner
+  a level, down to 0.13 s; the Foreman's from 2 Nov until the War chief took the war crew. Its id `workRate`, from
+  Claude's first reading, Work rate, kept for the saves)
 - Scavengers ← Foreman, the Rebuild (layer 13: 3 levels, 40 L doubling: a car of the crew a level fetches a crate lying
   in a lane the fortress misses, into the hold, while it has room)
 - Gunners ← Foreman, the Rebuild (layer 13: 3 levels, 50 L doubling: a gunner a level on the deck shoots the nearest of
