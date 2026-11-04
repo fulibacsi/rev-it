@@ -369,9 +369,12 @@ function minerDrive(c, dt) { // gangDrive: up ahead and slower, then its mines, 
   c.z += c.v * dt;
   return true;
 }
-function mineTick() { // distance.js updateRun: a mine reached, run over or missed
+function mineTick() { // distance.js updateRun: a mine reached, run over or missed; a car of your crew's driven over (oil.js)
   for (const m of mines) {
-    if (m.over || odo + MY_FRONT < m.z) continue;
+    if (m.over) continue;
+    const c = traffic.find(c => (c.raider || c.scav) && !c.wreck && !c.gone && Math.abs(c.x - m.x) < 1 && c.z <= m.z && c.z + CAR_LEN >= m.z);
+    if (c) { m.over = m.blown = true; crewHit(WRECK.hp, c); continue; } // a wreck, the mine gone
+    if (odo + MY_FRONT < m.z) continue;
     m.over = true;
     if (lvl('minePicker')) { pickMine(m); continue; } // the Mine picker (above): lifted, a charge for the cannon
     if (!runOver(MINE.hit, m.x)) continue; // under a column of the board, or between them
@@ -380,7 +383,7 @@ function mineTick() { // distance.js updateRun: a mine reached, run over or miss
     flash('MINE!', '#f55', false);
     if (wrecked()) return finishRun('wrecked');
   }
-  mines = mines.filter(m => m.z > odo - 20);
+  mines = mines.filter(m => !m.blown && m.z > odo - 20);
 }
 function pickMine(m) { // under a column of the board: picked up; between them, or beside the rig, missed
   const cx = columnAt(m.x);
@@ -898,6 +901,7 @@ function runOver(pct, x, row = 0) {
 function hitCell(d, cx, cy) { // d: the hit's damage after Armor plating
   const f = progress.fortress, i = partAt(f, cx, cy);
   struck = { x: cx, y: cy, part: i >= 0, t: performance.now() };
+  if (cy * boardW() + cx < warJobs().gun) crewHit(d * WRECK.deck); // oil.js: the gunner on it (the cells manned row by row)
   if (i < 0) return addDamage(d); // through to the rig
   const p = f.parts[i];
   p.hp = Math.max(0, +(hpOf(p) - d).toFixed(2));

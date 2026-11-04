@@ -179,7 +179,7 @@ const RAID = 3, RAID_TANK = 6;
 // longest charges, the rest wait in line behind the car, the next HOLD m back and the others LINE m apart; one knocked
 // back goes to the back of the line. Raiders never touch one another
 const KNOCK = 0.8, BACK = 5, HOLD = 10, LINE = 6;
-const raiding = () => traffic.filter(c => c.raider && !c.gone);
+const raiding = () => traffic.filter(c => c.raider && !c.gone && !c.wreck); // a wrecked one skids off (oil.js crewHit)
 function raidAhead() { // the crew's car as a tracker row, while you have raiders (the same row while it is their target)
   const t = crewTarget();
   if (!role('raider') || !arOn() || !t || t.wreck || t.dir < 0 || t.z < odo + 5) return null;
@@ -215,11 +215,12 @@ function raiderDrive(c, dt) {
   if (o.z - c.z - CAR_LEN < 0.5 && Math.abs(o.x - c.x) < 1.2) { c.z = Math.min(c.z, o.z - CAR_LEN - 0.5); raidRam(c, o); }
   if (lvl('guns') && !c.gun && gap < 80) { c.gun = 1; tracers.push([c, o, performance.now()]); hurtCar(o, GUN * lvl('guns'), true); }
 }
-function raidRam(c, o) { // a hit, as yours are, and it is knocked back (raiderDrive) to the back of the line
-  if (c.rammed) return;
+function raidRam(c, o) { // a hit, as yours are, and it is knocked back (raiderDrive) to the back of the line; on the war
+  if (c.rammed) return;   // rig the raider takes a knock too (oil.js crewHit)
   c.rammed = KNOCK;
   c.turn = run.t;
   hurtCar(o, HIT * (1 + 2 / 3 * lvl('bullbar')) * (notable(o) ? 0.2 : 1), true);
+  crewHit(WRECK.knock, c);
 }
 
 // the AR layer: the reticle round the target where it is on the screen (road.js keeps c.seen), its health above it;

@@ -1991,6 +1991,36 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - Open (the owner, 4 Nov, after act 5 in debug mode): "there could be more pressure / ambushes", to tune once the act
      is feature complete (the ambushes' budget, `AMBUSH.base` and `scale`, by `act5.py`). Debug mode's bottomless wallets
      buy the fortress out at once, its ambushes as big as its strength: in play the budget grows with the board.
+   Crew wrecks, the eleventh PR (built 4 Nov; `oil.js`, `gang.js`, `fortress.js`), on the owner's (4 Nov: "what if crew
+   has health too and they can be crashed?"; "everyone that gets hit diegetically also takes damage"; a wrecked car, not a
+   dead driver: "gameplay-wise it is more consistent with the rest of the game"; "make the last 10 crew unkillable, and
+   gain 20% back each race until reached the purchased size again"). On the war rig only; Claude's numbers, first
+   guesses:
+   - What hits the crew: a raider takes a knock of 10 from each ram it makes; a raider or a scavenger that drives over a
+     mine is wrecked outright, the mine gone with it; a gunner takes what lands on the cell it mans, 10 health a % of
+     the rig's hit after Armor plating (a rocket's 15% at Armor plating 3: 37.5). The cells are manned row by row from
+     the front.
+   - The war crew's hits add up, and each time they come to a car's health (150, a racer's) one car is wrecked, the one
+     hit then (CREW CAR WRECKED, or GUNNER DOWN): it skids off onto the shoulder, out of the race, and the war crew is a
+     car short until it is fixed. A pool, not each car's own dents: no car's health is shown, and each car keeping its
+     own, the soundest sent first, none would break until nearly all of them did.
+   - The floor: with ten cars left none is wrecked (the hits add up to a car's, no further).
+   - Back on the road: the dents short of a wreck mend between races; after each race a fifth of the crew's size comes
+     back free (read as a fifth of the size bought, not of what is left: from the floor 10, 12, 15 is slow); the rest
+     for 3,000 m a car on the Crew page's Wrecked crew card, or by Auto repair (its AUTO switch on that card too), after
+     the rig's repairs. A wreck rides no meters: no Racing dues. The role card counts the cars left and the wrecks, its
+     bar as far as the cars left. Its tutorial, Crew wrecks (two pages), pops up with the first wreck; the race's
+     summary has the wrecks and those back free.
+   - `act5.py` (seeds 1-4, 12 races; the bot repairs what is left after the free fifth): 0-7 crew cars wrecked a race,
+     9-13 in the 12 races (of a war crew of 42-58), mostly mines (raiders on a mine-layer as it drops them) and hits on
+     the deck, a ram's knocks now and then; the free fifth (19 of 92) brought them all back every time, so the card never
+     showed for the bot. The races are within the spread of main's: tanks beaten 9-12 (11-17), meters 0.83-1.03
+     million (0.91-1.05), totals 255-341 (326-328). Wrecks that outlast a race wait for heavier fighting: the ambushes'
+     pressure, still to tune.
+   - `rivals_test` checks it (14 rams knock a raider 140, the 15th wrecks it, out of the war crew and off its car, the
+     tutorial popping up; a mine under a raider wrecks it; a hit on the manned cell its gunner; with ten cars left none;
+     16 of 80 back free; the dues of the cars left; none on the grid; the summary), `loot_test` the card (its repair for
+     meters, AUTO, the role card's count), on both layouts.
    The front and the sides, the fifth PR (built 2 Nov; `fortress.js`, `damage.js`, `police.js`), scrap's defense, on the
    owner's answers of 2 Nov ("Mine picker is baseline, negates mines, gives you shells. Grinder on top of it negates
    frontal damage"; rams: "damage mitigation and knockback"; they replace the planned mine roller from two lanes wide

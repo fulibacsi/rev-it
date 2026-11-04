@@ -69,7 +69,19 @@ with sync_playwright() as p:
               got == [True, ["ATTACK*", "GUARD", "SALVAGE"], "guard", "GUARD"], got)
         pg.screenshot(path=f"{OUT}/loot_{layout}_stance.png")
         js("Object.assign(progress.levels, { warChief: 0, gunners: 0 }); delete progress.stance")
-        js("progress.roles = { harvester: 17, brewer: 9, raider: 6 }; garageTab = 'fortress'; renderGarage()")
+        # crew wrecks (the owner, 4 Nov): while any are out, a card on the Crew page repairs them for meters, Auto repair's
+        # switch on it too; the role card splits the cars left
+        js("progress.roles = { harvester: 17, brewer: 9, raider: 6 }")
+        got = js("""(() => { Object.assign(progress, { crewDown: 14, bank: 50000 }); garageTab = 'fleet'; renderGarage(); const card = $('cards').querySelector('.wrecks');
+            return [card.querySelector('small').textContent, [...card.querySelectorAll('button')].map(b => b.textContent),
+                    $('cards').querySelector('.roles b').textContent, +$('cards').querySelector('.crew-split').max, role('raider')]; })()""")
+        pg.screenshot(path=f"{OUT}/loot_{layout}_wrecks.png")
+        pg.click('[data-fixcrew]'); pg.wait_for_timeout(100)
+        got += js("[progress.crewDown, progress.bank, !$('cards').querySelector('.wrecks'), $('cards').querySelector('.roles b').textContent]")
+        check(f"{layout}: 14 crew cars wrecked: the Crew page's card, 16 back free a race, repaired for 42,000 m, AUTO; the role "
+              f"card 66 cars, 40 at war; repaired, the card gone, 80 cars", got == ["14 cars out · 16 come back free after each race",
+              ["Repair · 42,000 m", "AUTO OFF"], "Roles · 66 cars · 14 wrecked", 66, 40, 0, 8000, True, "Roles · 80 cars"], got)
+        js("progress.bank = 10000; garageTab = 'fortress'; renderGarage()")
 
         # the dealer (layer 13): three parts of the enemies' on its card, the same until a race is run, on dice of their
         # own; one bought for points into the hold, the rest gone until the next race; a full hold, none

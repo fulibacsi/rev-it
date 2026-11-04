@@ -3,7 +3,7 @@ crew and wallets at the tank, seed 1), the bot buys the Fortress tab and the Reb
 board and races on: act4.py's bot (Hunter, the guns, the crew as the Foreman sends it; on the war rig nobody races, the
 oil crew set by the road's room and the rest at war) with the cannon fired whenever it is loaded, has a shell and the
 reticle's car is in reach (by the Auto cannon once it has it, layer 14: bought for points when 300 are left for shells).
-Between races it repairs, turns the meters it doesn't need into fuel once it has bought Lengthen, Inventory and Widen as
+Between races it repairs (the rig, and the crew's wrecks the free fifth left), turns the meters it doesn't need into fuel once it has bought Lengthen, Inventory and Widen as
 they come (in meters, the cheapest first; it saves up for the next of them), buys the War Rig's guns, the cannon's
 Autoloader and Heavy shells, the Mine picker, the Grinder and Ram plates (layer 13, the cheapest first), the Foreman (a
 level of Overfill, Double up) and the War chief (from then on it leaves the oil to the one and the raids to the other,
@@ -23,10 +23,11 @@ those totaled, the parts they took and those got back), scrap; shells (fired, hi
 sent (rival rigs, their War Boys' grenades, the parts they knocked out and those tapped back on; police cars, their rams
 and PITs; SUVs, their slams; helicopters, their spike strips and those run over; the army's jeeps and the shots they
 fired, its rocket cars, their rockets and those that hit; tanks) and how many went down; the gang's brake checks;
-damage; the loot (dropped, picked up, the scavengers' among them), the gunners' shots, the board's blocks and the hold,
-the rig's weight, the run's meters, the cars crushed and the head-ons rammed through, the crashes the Grinder ate; the
-shield (the hits on parts and on the rig, the parts shot off and worn out, the health the board has left: worn parts
-aren't repaired); how often the board changed (the owner's aim: about every 5 s); the fortress's strength and the
+damage; the crew's cars wrecked (by rams, mines and hits on the deck), those back free and those repaired; the loot
+(dropped, picked up, the scavengers' among them), the gunners' shots, the board's blocks and the hold, the rig's weight,
+the run's meters, the cars crushed and the head-ons rammed through, the crashes the Grinder ate; the shield (the hits
+on parts and on the rig, the parts shot off and worn out, the health the board has left: worn parts aren't repaired);
+how often the board changed (the owner's aim: about every 5 s); the fortress's strength and the
 ambushes' budget, and the race's ambushes (a faction's letter and its members, the ones never sent in brackets). Under
 each race, the ledger of the currencies: what the race brought in and what went out between races, and what is left. The
 act's own targets (10-15 races to the final fight) wait for its later layers.
@@ -141,6 +142,7 @@ count('hurt', (f, i) => { if (ground() && (i.plow || i.headOn || !i.side)) eaten
 count('scavDrive', (f, c, dt) => { const l = c.scav, was = l.tried; f(c, dt); if (!was && l.tried && l.got) fetched++; });
 count('crewJobs', (f, dt) => { const g = run.gunners; f(dt); if (run.gunners === GUNNERS.every && g !== GUNNERS.every) gunShots++; });
 count('slam', (f, c) => { slams++; f(c); });
+count('crewHit', (f, hp, c) => { const n = run.wrecked; f(hp, c); if (run.wrecked > n) !c ? byDeck++ : hp === WRECK.hp ? byMine++ : byRam++; }); // crew wrecks
 // the army (layer 12): its jeeps and their shots, its rocket cars and their rockets, those that hit (through runOver,
 // as the strips: not counted there)
 count('sendJeep', f => { const ok = f(); if (ok) jeeps++; return ok; });
@@ -169,15 +171,16 @@ with sync_playwright() as p:
         amb = js("[+strength().toFixed(1), +budget().toFixed(1)]")  # what the race's ambushes are drawn from
         w0 = js(WALLET)
         r = js(f"""(() => {{ {f"rng = {SEED * 1000 + race};" if SEED is not None else ""} window.nextPress = 0; reloading = 0;
-                  Object.assign(window, {{ shells: 0, hits: 0, rigs: 0, rigsDown: 0, lobbed: 0, knocked: 0, taps: 0, gangDown: 0, checks: 0, suvs: 0, suvsDown: 0, made: 0, picked: 0, crushed: 0, through: 0, onParts: 0, onRig: 0, fell: [], helis: 0, helisDown: 0, dropped: 0, ranOver: 0, copRams: 0, pits: 0, slams: 0, miners: 0, laid: 0, minesHit: 0, chasers: 0, shoulders: 0, harpoons: 0, harpoonsDown: 0, stolen: 0, recovered: 0, mounts: 0, swaps: 0, packAt: 0, wornOut: [], tanks: 0, tanksDown: 0, cops: 0, jeeps: 0, jeepsDown: 0, jeepShots: 0, rocketCars: 0, rocketCarsDown: 0, rocketsFired: 0, rocketHits: 0, minesPicked: 0, eaten: 0, fetched: 0, gunShots: 0, sent: 0, dispatched: 0, raidsSent: 0 }});
-                  simRun({{ ...progress.levels }}, 2, 1, {{}}, true);
+                  Object.assign(window, {{ shells: 0, hits: 0, rigs: 0, rigsDown: 0, lobbed: 0, knocked: 0, taps: 0, gangDown: 0, checks: 0, suvs: 0, suvsDown: 0, made: 0, picked: 0, crushed: 0, through: 0, onParts: 0, onRig: 0, fell: [], helis: 0, helisDown: 0, dropped: 0, ranOver: 0, copRams: 0, pits: 0, slams: 0, miners: 0, laid: 0, minesHit: 0, chasers: 0, shoulders: 0, harpoons: 0, harpoonsDown: 0, stolen: 0, recovered: 0, mounts: 0, swaps: 0, packAt: 0, wornOut: [], tanks: 0, tanksDown: 0, cops: 0, jeeps: 0, jeepsDown: 0, jeepShots: 0, rocketCars: 0, rocketCarsDown: 0, rocketsFired: 0, rocketHits: 0, minesPicked: 0, eaten: 0, fetched: 0, gunShots: 0, sent: 0, dispatched: 0, raidsSent: 0, byRam: 0, byMine: 0, byDeck: 0 }});
+                  const war0 = role('raider'); simRun({{ ...progress.levels }}, 2, 1, {{}}, true);
                   return {{ p: run.race && run.race.p, dnf: run.race && run.race.dnf, totals: run.totals, scrap: run.scrap, ranks: run.ranks, ambushes: ambushes.map(a => a.faction[0] + a.members.length + (a.sent < a.members.length ? '(' + a.sent + ')' : '')).join(' '),
                   dmg: Math.round(progress.damage), shells, hits, got: run.shells, left: progress.shells, rigs, rigsDown, lobbed, knocked, taps, gangDown, checks, suvs, suvsDown,
-                  tanks, tanksDown, cops, made, picked, m: run.gain, crushed, through, w: rigW, onParts, onRig, fell, wornOut, helis, helisDown, dropped, ranOver, copRams, pits, slams, miners, laid, minesHit, chasers, shoulders, harpoons, harpoonsDown, stolen, recovered, mounts, swaps, jeeps, jeepsDown, jeepShots, rocketCars, rocketCarsDown, rocketsFired, rocketHits, minesPicked, eaten, fetched, gunShots, sent, dispatched, raidsSent, secs: runTime(),
+                  tanks, tanksDown, cops, made, picked, m: run.gain, crushed, through, w: rigW, onParts, onRig, fell, wornOut, helis, helisDown, dropped, ranOver, copRams, pits, slams, miners, laid, minesHit, chasers, shoulders, harpoons, harpoonsDown, stolen, recovered, mounts, swaps, jeeps, jeepsDown, jeepShots, rocketCars, rocketCarsDown, rocketsFired, rocketHits, minesPicked, eaten, fetched, gunShots, sent, dispatched, raidsSent, secs: runTime(), wrecked: run.wrecked, byRam, byMine, byDeck, back: run.crewBack, down: progress.crewDown, war: war0,
                   worn: Math.round(100 * progress.fortress.parts.reduce((k, p) => k + hpOf(p), 0) / Math.max(1, progress.fortress.parts.reduce((k, p) => k + fullHp(p), 0))) }}; }})()""")
         w1 = js(WALLET)  # the race's takings: meters (the run's, the crew's racing, less the nitro), points, refined fuel, scrap
         wheel = js("wheel.held = false")
         js("while (repair() && progress.damage > 0);")
+        crewFix = js("fixCrew() / WRECK.cost")  # the crew's wrecks the free fifth left, repaired with the rig
         fixed = js("[Math.round(progress.damage), progress.bank]")
         w2 = js(WALLET)
         sizes = js(f"""(() => {{ const b = []; for (;;) {{ // the fortress's size first, in meters (layer 13), the reserve kept: then the pump
@@ -219,7 +222,7 @@ with sync_playwright() as p:
         res = ("P" + str(r["p"])) if r["p"] else r["dnf"]
         print(f"race {race:2}: {res:10} totals {r['totals']:2} (gang {r['gangDown']:2}, ranks +{r['ranks']:4} pts; gang cars {r['chasers']} ({r['shoulders']} up the shoulder), mine-layers {r['miners']}, mines {r['laid']} hit {r['minesHit']} picked {r['minesPicked']}; harpoons {r['harpoons']} down {r['harpoonsDown']}, parts taken {r['stolen']} back {r['recovered']}) +{r['scrap']:4} scrap  shells {r['shells']:2} hit {r['hits']:2} "
               f"+{r['got']:2} left {r['left']:3}  rigs {r['rigs']} down {r['rigsDown']} grenades {r['lobbed']:2} knocked out {r['knocked']:2} tapped {r['taps']:2}  suvs {r['suvs']} down {r['suvsDown']} slams {r['slams']}  helis {r['helis']} down {r['helisDown']} strips {r['dropped']} run over {r['ranOver']}  jeeps {r['jeeps']} down {r['jeepsDown']} shots {r['jeepShots']:3}  rocket cars {r['rocketCars']} down {r['rocketCarsDown']} rockets {r['rocketsFired']:2} hit {r['rocketHits']:2}  tanks {r['tanks']} down {r['tanksDown']}  cops {r['cops']} rams {r['copRams']} PITs {r['pits']}  checks {r['checks']:2}  "
-              f"dmg {r['dmg']:3}% ({fixed[0]}% after repairs, {fixed[1]:,} m left)  loot +{r['made']} got {r['picked']} (scavenged {r['fetched']})  gunners' shots {r['gunShots']}  sent {r['sent']} (by the bosses {r['dispatched']}), raiders {r['raidsSent']}  board [{board[0]}] "
+              f"dmg {r['dmg']:3}% ({fixed[0]}% after repairs, {fixed[1]:,} m left)  crew wrecked {r['wrecked']:2} of {r['war']} at war (rams {r['byRam']}, mines {r['byMine']}, the deck {r['byDeck']}) back free {r['back']} repaired {crewFix:.0f}  loot +{r['made']} got {r['picked']} (scavenged {r['fetched']})  gunners' shots {r['gunShots']}  sent {r['sent']} (by the bosses {r['dispatched']}), raiders {r['raidsSent']}  board [{board[0]}] "
               f"hold {board[1]}  {board[2]:,} kg  {r['m']:,} m  {r['w']} wide, crushed {r['crushed']} through {r['through']} ground {r['eaten']}  "
               f"hits on parts {r['onParts']:2} on the rig {r['onRig']:2}, lost [{', '.join(r['fell'])}] worn out [{', '.join(r['wornOut'])}], health left {r['worn']}%  "
               f"packed: {r['mounts']} on, {r['swaps']} swapped" + (f" (the board changed every {r['secs'] / moves:.0f} s)" if moves else "")
