@@ -54,7 +54,7 @@ const GUN = 6, RANGE = 200; // damage a shot a level; m your guns reach (a raide
 const MADNESS = 0.25, MAD_TOP = 0.9;
 const madShare = l => Math.min(MAD_TOP, MADNESS * l);
 const GANG = FIELD / 2 + 1; // fleet cars that make a gang
-const health = c => c.tank ? c.full ?? tankHealth() : c.rig ? RIG.hp : c.harpoon ? HARPOON.hp : c.rocket ? ROCKET.hp : c.jeep ? JEEP.hp : c.suv ? SUV.hp :
+const health = c => c.warlord ? FINALE.hp : c.tank ? c.full ?? tankHealth() : c.rig ? RIG.hp : c.harpoon ? HARPOON.hp : c.rocket ? ROCKET.hp : c.jeep ? JEEP.hp : c.suv ? SUV.hp :
   c.heli ? HELI.hp : c.police ? 200 : c.racer ? 150 : 100;
                      // full health (the tank: boss.js; a rig, a harpoon truck, the army's: fortress.js; an SUV and a helicopter: police.js)
 // scrap from a totaled car: 2.2 times the first guesses (with the heat), so act 4 takes about 15 races (act4.py)
@@ -138,6 +138,7 @@ function hurtCar(c, hp, gang) {
 }
 function total(c, gang, how) { // the scrap is yours, whoever did it; the heat too (police.js); how: the HUD's word for it
   if (c.tank) return tankDown(c); // boss.js
+  if (c.warlord) return warlordDown(c); // finale.js
   // a mad driver's stolen fuel (Fuel madness), double; a rival rig's (fortress.js), a police SUV's and helicopter's
   // (police.js); a rival gang car's shells
   const scrap = c.rig ? RIG.scrap : c.harpoon ? HARPOON.scrap : c.rocket ? ROCKET.scrap : c.suv ? SUV.scrap : c.heli ? HELI.scrap :
@@ -221,6 +222,7 @@ function raidRam(c, o) { // a hit, as yours are, and it is knocked back (raiderD
   c.turn = run.t;
   hurtCar(o, HIT * (1 + 2 / 3 * lvl('bullbar')) * (notable(o) ? 0.2 : 1), true);
   crewHit(WRECK.knock, c);
+  if (fighting()) c.gone = true; // finale.js: a raiding party rams once, and is back with you
 }
 
 // the AR layer: the reticle round the target where it is on the screen (road.js keeps c.seen), its health above it;

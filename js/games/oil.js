@@ -71,8 +71,8 @@ const arrive = () => ARRIVE * (1 - 0.1 * lvl('fleetPace'));
 const cap = s => Math.floor(s.count * (1 + 0.25 * lvl('overfill'))); // cars a spot takes
 const harvest = () => 1 + 0.2 * lvl('harvesting');
 const twice = () => lvl('doubleUp') > 0 && !progress.off.doubleUp; // a switch, as every one-level card is
-const foremanOn = () => lvl('foreman') > 0 && !progress.off.foreman;
-const warChiefOn = () => rigged() && lvl('warChief') > 0 && !progress.off.warChief;
+const foremanOn = () => lvl('foreman') > 0 && !progress.off.foreman && !fighting(); // neither in the finale (finale.js)
+const warChiefOn = () => rigged() && lvl('warChief') > 0 && !progress.off.warChief && !fighting();
 // s between the War chief's sends: a cooldown (the owner, above), 30% shorter a level of Dispatch (0.75 s down to
 // 0.13 s). act5.py, when the Foreman had it and sent the oil crew too: from 2 s he sent 25 cars a race, too few to crew
 // the oil (the fuel halved); from 0.75 s, 46-92. The Foreman sends four a second (FOREMAN), in every act

@@ -66,7 +66,7 @@ Object.assign(UPGRADES, {
                 info: () => 'fires the cannon for you whenever it is loaded and the car in the reticle is in reach; the pedal ' +
                   'reads AUTO' },
 });
-const autoCannon = () => lvl('autocannon') > 0 && !progress.off.autocannon;
+const autoCannon = () => lvl('autocannon') > 0 && !progress.off.autocannon && !fighting(); // none in the finale (finale.js)
 const ground = () => lvl('grinder') > 0; // the Grinder on the front: a crash there costs nothing
 const PLATES = { cut: 0.25, knock: 8 }; // Ram plates: a ram's damage less a level; m further back a level
 const plated = () => 1 - PLATES.cut * lvl('ramPlates'); // the share of a ram on the sides and back that gets through
@@ -114,14 +114,15 @@ function renderBoard() {
   if (dragging || throwing) return; // never under a finger: the drag would go with the element it holds (a hit on a part
                                     // redrew the board, and a drag on the road failed most times); it redraws after
   const f = progress.fortress, n = holdSize(), w = boardW(), h = boardH(); // redrawn on what shows: its cracks, not its health
-  const key = JSON.stringify([...f.parts, ...f.hold].map(p => [p.kind, p.x, p.y, p.cells, wear(p)])) + [f.parts.length, n, w, h, innerWidth, innerHeight, fallen.length,
+  const fight = fighting(); // finale.js: the board alone, the hold and its label hidden
+  const key = JSON.stringify([...f.parts, ...f.hold].map(p => [p.kind, p.x, p.y, p.cells, wear(p)])) + [f.parts.length, n, w, h, innerWidth, innerHeight, fallen.length, fight,
     f.parts.indexOf(aimedAt()), [...jammed.keys()].map(p => f.parts.indexOf(p))];
   if (key === shownBoard) return;
   shownBoard = key;
   // the cells as big as the plate allows, the hold beside the plan: inside its padding (6 px), past the label (16 px),
   // the gaps (8 px; 4 px between slots) and the 1 px borders of the plan and each slot
-  const b = $('board'), inW = b.clientWidth - 12, inH = b.clientHeight - 12 - 16 - 8;
-  const cell = Math.floor(Math.min(72, (inW - 8 - 4) / (w + 1), (inH - 2) / h, (inH - 6 * n) / n));
+  const b = $('board'), inW = b.clientWidth - 12, inH = b.clientHeight - (fight ? 8 : 12 + 16 + 8);
+  const cell = fight ? Math.floor((inH - 2) / h) : Math.floor(Math.min(72, (inW - 8 - 4) / (w + 1), (inH - 2) / h, (inH - 6 * n) / n));
   $('board').style.setProperty('--cell', `${cell}px`);
   Object.assign($('fort-grid').style, { width: `${cell * w}px`, height: `${cell * h}px` });
   $('fort-grid').innerHTML = f.parts.map((p, i) => partHtml(p, `data-part="${i}" data-wear="${wear(p)}"${p === aimedAt() ? ' data-hooked' : ''}${live(p) ? '' : ' data-jam'}`)).join('') +
@@ -262,6 +263,7 @@ function rigTick(dt) { // distance.js updateRun
 // nitro are the robot's now, so their keys do nothing
 function rigKey(k, repeat) {
   if (!rigged()) return false;
+  if (fighting() && fightKey(k, repeat)) return true; // finale.js: its instruments' keys
   if (k === ' ') { if (!repeat) fireCannon(); return true; }
   return ['Shift', 'b', 'B', 'ArrowUp', 'ArrowDown', 'n', 'N', 'f', 'F'].includes(k);
 }
@@ -630,7 +632,7 @@ function rocketDrive(c, dt) { // road.js updateTraffic: the road ahead held, as 
 const rocketCol = r => columnAt(r.x); // the board's column over its lane now
 function rocketTick(dt) { // distance.js updateRun: locked on, fired (unless the car was brought down first), landed
   for (const r of rockets) {
-    if (!r.air && (r.c.wreck || !r.c.rocket)) { r.gone = true; continue; }
+    if (!r.air && (r.c.wreck || !r.c.rocket && !r.c.warlord)) { r.gone = true; continue; } // a rocket car's, or the warlord's (finale.js)
     if ((r.t -= dt) > 0) continue;
     if (r.air) { r.gone = true; landRocket(r); continue; }
     const s = r.c.seen;
@@ -961,7 +963,7 @@ const HEADON = 20;
 const plowHit = i => i.headOn ? HEADON : clamp(i.kmh * 0.25, 2, 25) * CAR_KG / engine.mass;
 
 let pedalDown = false;
-$('cannon-pedal').onpointerdown = e => { e.preventDefault(); pedalDown = true; fireCannon(); };
+$('cannon-pedal').onpointerdown = e => { e.preventDefault(); pedalDown = true; if (fighting()) move('cannon'); else fireCannon(); }; // finale.js
 for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) $('cannon-pedal').addEventListener(ev, () => { pedalDown = false; });
 
 // every frame of Distance (distance.js render): the rig's cockpit, the board, a part being dragged or held, the pedal
@@ -989,9 +991,9 @@ function renderRig() {
   $('cannon-pedal').parentNode.classList.toggle('mounted', cannonOn());
   $('cannon-pedal').parentNode.classList.toggle('jammed', cannonOn() && !blocks('cannon')); // every cannon knocked out
   $('cannon-pedal').parentNode.classList.toggle('empty', progress.shells < 1);
-  $('cannon-pedal').parentNode.style.setProperty('--reload', (1 - reloading / reloadTime()).toFixed(2));
+  $('cannon-pedal').parentNode.style.setProperty('--reload', (fighting() ? readiness('cannon') : 1 - reloading / reloadTime()).toFixed(2)); // finale.js
   text('shell-count', bottomless() ? '∞' : String(progress.shells)); // debug mode: bottomless (distance.js save)
-  text('cannon-label', autoCannon() ? 'AUTO' : 'FIRE'); // the Auto cannon fires for you, as AUTO on the guns' trigger
+  text('cannon-label', fighting() ? 'CANNON' : autoCannon() ? 'AUTO' : 'FIRE'); // the Auto cannon fires for you, as AUTO on the guns' trigger
   const first = id => target?.seen && run.phase === 'run' && !progress.toured.includes(id); // the first one in sight
   if (target?.rig && first('rivals')) openTour('rivals', true);
   else if (target?.suv && first('pursuit')) openTour('pursuit', true);

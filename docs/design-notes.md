@@ -2086,7 +2086,48 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - `fortress_test` checks it (bought for 3,000 points; loaded, with a car in reach, it fires a shell itself, AUTO on
      the pedal; switched off, it doesn't, FIRE), on both layouts; and keeps the crates off the road while it throws a
      part off (a crate a car of the raiders' dropped went into the hold, three times on 2 Nov).
-15. The foreshadowing, the final fight and the ending.
+15. The foreshadowing, the final fight and the ending. Decided with the owner on 4 Nov, after a side view was weighed
+   (Mario & Luigi: Bowser's Inside Story's giant battles, Rocket Slime's tank battles) and put off: too many moving parts
+   for now, maybe later, with sprites made for it. The fight is in the cockpit's view:
+   - The trigger: the fortress full size, four lanes wide and five rows long (Widen 3, Lengthen 4), and the Grinder. The
+     warning signs come from a 2×2 board on: his fortress on the horizon, nearer as yours grows (to build).
+   - The staging (the owner): "front-to-front, head on against each other, both occupying 4 lanes, waiting, like it's
+     trench warfare". Both standing, 70 m apart; no traffic. His fortress needs its own art (the owner: later, visual
+     only); a stand-in till then.
+   - A long fight, health bars (the owner: "for the first iteration"): yours in the mirror where the time was, his over
+     his fortress. Lost, back to the garage, for a run to grind or another fight.
+   - Nothing automatic (the owner: "This is the finale, if you want to win, you have to play"): no aid, no Auto cannon or
+     Auto gun, no War chief, no Foreman.
+   - The dashboard cleared for big instruments (the owner): no crude tank, no tracker or SEND, no hold, no key; the board
+     kept, small, on the left pillar; the wheel kept; the stereo off the dash, as on a phone. The instruments, each there
+     only if you have its weapon (the owner): the CB radio (a raiding party: the war crew), the pedal (the cannon), a
+     lever (the guns: the War Rig's or the board's), a launch button (rockets: a pod on the board). Not the stalk nor the
+     wheel's button: instruments of their own. Phone: the radio and the lever for the left thumb, the button and the
+     pedal for the right. With nothing but the crew, losing is a valid outcome (the owner).
+   - The moves (the owner: rock-paper-scissors, "pokemon solved this problem"): Cannon beats Raiders (a shell into the
+     convoy), Raiders beat Guns (they overrun the gun nests), Guns beat Rockets (bullets down the salvo), Rockets beat the
+     Cannon (a salvo on the turret as it winds up); the opposites neutral. His moves telegraphed (his turret swinging
+     round, his pods opening, his gate opening); answered with the move that beats it, his is cancelled and yours does
+     twice the damage; with the one it beats, yours is cancelled and his lands; neutral, both land. A correct answer
+     opens a free beat. He answers yours the same way, with a delay and a chance to miss (to build).
+   - The pacing (the owner: "this system would only work if everything has similar cooldown time so you cannot win by
+     mashing all of the buttons"): equal cooldowns alone still let you press each as it comes ready, so one cooldown for
+     all of your moves (an MMO's global cooldown), Dispatch shortening it; the code asks only ready() and spend(), so a
+     cooldown a move, or turns, is one setting away (the owner: "make the codebase to be prepared").
+   - Rocket pods: a part, salvaged, the army's rocket cars dropping it most, the dealer sometimes (to build).
+   - The ambushes' pressure is tuned after this layer (the owner).
+   The standoff, the first PR (built 4 Nov; `finale.js`, `distance.js`, `road.js`): the trigger and THE WARLORD's card,
+   FIGHT beside DRIVE (waiting for a repair while the rig is wrecked); the standoff with his stand-in fortress 70 m off;
+   the cleared dashboard and the instruments (CB radio, lever, the pedal; the launch button waits for the pods), one
+   cooldown of 1.5 s, 0.08 of it less a level of Dispatch (0.9 s at 5); the cannon a shell (its reload is the beat's),
+   the lever a burst of eight rounds of the guns, the radio a party of three raiders, a ram each. His moves on his own
+   clock for now, every 3 s, his cannon (10% before Armor plating at a column of your front row) or a rocket locked on
+   a cell of the board; 8,000 health. Won, THE WARLORD IS DOWN and the WARLORD screen (its line now "where his fortress
+   stood"); lost, WRECKED. Auto repair after a fight as after a race. Debug mode's corner starts it (FINALE: act 5
+   bought out, the board packed). Claude's numbers, untuned: the balance waits for the moves and a bot.
+   - `finale_test` checks it (the trigger and its card, FIGHT; the standoff, the cleared dashboard and the instruments;
+     the shared cooldown and Dispatch; the cannon, the burst and the raiding party; his shell and rocket; the keys; lost
+     and won), on both layouts.
 
 ### Balance targets and results
 

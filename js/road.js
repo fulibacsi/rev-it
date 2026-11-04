@@ -283,6 +283,29 @@ const TANK_SPRITE = sprite(300, 230, (g, w, h) => { // the final boss (Distance)
   g.fillStyle = '#ddd'; g.font = `bold ${h * 0.16}px sans-serif`; g.textAlign = 'center'; g.fillText('★', w / 2, h * 0.7);
   g.fillStyle = '#a22'; g.fillRect(w * 0.12, h * 0.5, w * 0.08, h * 0.05); g.fillRect(w * 0.8, h * 0.5, w * 0.08, h * 0.05);
 });
+// the warlord's fortress (Distance's finale, finale.js), from the front, four lanes wide: a stand-in until its own art
+// (the owner: "we need a different sprite for the opposing fortress", later): a wall of welded steel on eight wheels,
+// a spiked ram along its foot, his turret in the middle with its gun at you, a gun nest either side, headlights
+const WARLORD_SPRITE = sprite(560, 260, (g, w, h) => {
+  g.fillStyle = '#141416'; // the wheels under it
+  for (let i = 0; i < 8; i++) { g.beginPath(); g.roundRect(w * (0.02 + i * 0.122), h * 0.84, w * 0.09, h * 0.16, 6); g.fill(); }
+  const wall = g.createLinearGradient(0, h * 0.3, 0, h * 0.86);
+  wall.addColorStop(0, '#5a5048'); wall.addColorStop(1, '#2c2622');
+  g.fillStyle = wall; g.beginPath(); g.roundRect(0, h * 0.3, w, h * 0.56, 10); g.fill(); // its front, rusted steel
+  g.strokeStyle = '#1a1614'; g.lineWidth = 3; // the plates' seams
+  for (let i = 1; i < 6; i++) { g.beginPath(); g.moveTo(w * i / 6, h * 0.3); g.lineTo(w * i / 6, h * 0.86); g.stroke(); }
+  g.fillStyle = '#8e2a1e'; g.fillRect(0, h * 0.5, w, h * 0.05); // the warlord's red band
+  g.fillStyle = '#c8c8d0'; // the ram's spikes, pointing at you
+  for (let i = 0; i < 14; i++) { const x = w * (0.03 + i * 0.07); g.beginPath(); g.moveTo(x, h * 0.86); g.lineTo(x + w * 0.02, h * 0.74); g.lineTo(x + w * 0.04, h * 0.86); g.fill(); }
+  g.fillStyle = '#f4f0d8'; for (const x of [0.12, 0.84]) { g.beginPath(); g.arc(w * x, h * 0.66, h * 0.05, 0, 2 * Math.PI); g.fill(); } // headlights
+  g.fillStyle = '#3a3530'; g.beginPath(); g.roundRect(w * 0.36, h * 0.04, w * 0.28, h * 0.32, 16); g.fill(); // his turret
+  g.fillStyle = '#111'; g.beginPath(); g.arc(w / 2, h * 0.2, h * 0.07, 0, 2 * Math.PI); g.fill(); // its gun's mouth, at you
+  for (const x of [0.06, 0.82]) { // the gun nests, a barrel each
+    g.fillStyle = '#3a3530'; g.beginPath(); g.roundRect(w * x, h * 0.16, w * 0.12, h * 0.16, 8); g.fill();
+    g.fillStyle = '#111'; g.beginPath(); g.arc(w * (x + 0.06), h * 0.24, h * 0.03, 0, 2 * Math.PI); g.fill();
+  }
+  g.fillStyle = '#ddd'; g.font = `bold ${h * 0.14}px sans-serif`; g.textAlign = 'center'; g.fillText('☠', w / 2, h * 0.47);
+});
 // the rival gang's war rig (Distance's act 5, fortress.js), from behind: a tanker welded up for war, in the gang's
 // white gone to rust and its red stripe; exhaust stacks either side, spikes along the top, a ladder, the tail lights in
 // the bumper, a spiked ram bar, dual wheels and mud flaps
@@ -674,7 +697,8 @@ function madHeadOn(c) {
 function updateTraffic(dt, clock) {
   RIVALS = traffic.filter(o => o.racer && !o.fleet);
   for (const c of traffic) {
-    if (c.wreck) skid(c, dt);
+    if (c.warlord) warlordDrive(c); // the finale's (finale.js): he stands his ground, a wreck too
+    else if (c.wreck) skid(c, dt);
     else if (c.heli) heliDrive(c, dt); // the police's helicopter (police.js)
     else if (c.police) policeDrive(c, dt); // police.js
     else if (c.tank) tankDrive(c, dt); // boss.js
@@ -696,7 +720,7 @@ function updateTraffic(dt, clock) {
     if (c.d > 0 && d <= 0) whoosh(Math.abs(speed - c.dir * c.v) * 3.6, c.x < carX ? -0.7 : 0.7); // went past the driver
     c.d = d;
     if (c.racer && (!c.gang || c.stage && !c.wreck) || c.passing || c.tank || (c.rig || c.heli || c.rocket || (c.harpoon || c.jeep) && c.stage !== 'leave') &&
-        !c.wreck || c.runner || c.raider || c.scav) { /* racers stay where they are, however far: their places are the race; a gang car
+        !c.wreck || c.runner || c.raider || c.scav || c.warlord) { /* racers stay where they are, however far: their places are the race; a gang car
       while it is at you; a police car comes up from behind; the tank holds the road, a rig comes and goes round you, a
       helicopter flies in, a harpoon truck comes past and holds the road, a jeep comes and goes past you, a rocket car holds
       the road; a car of your crew goes on to its spot, after its car, or after a crate */ }

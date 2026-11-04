@@ -530,3 +530,33 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
                  radial-gradient(circle at calc(100% - 7px) calc(100% - 7px), #9a9aa2 2px, transparent 2.5px),
                  linear-gradient(160deg, #5c5c64, #3a3a42); }
 .card .plate small { min-height: 0; font-weight: 400; font-size: 10px; letter-spacing: 0.5px; color: #b8b8c0; }
+
+/* the finale (finale.js): the dashboard cleared for the fight (the owner, 4 Nov): no oil, no SEND, no hold, no key, the
+   wheel without its trigger, no reticle (his health bar over him instead), and the stereo off the dash as on a phone (the
+   tapes play on); the board kept, small, on the left pillar under the sonar; the instruments big, the crew's and the
+   guns' for the left thumb, the rockets' and the cannon's pedal for the right */
+body.fight #tank, body.fight #tracker, body.fight #crew-ctl, body.fight #ignition, body.fight #fire, body.fight #trigger,
+body.fight #wheel-rim > rect, body.fight #fort-hold, body.fight #board > b, body.fight #ar, body.fight #stereo { display: none; }
+body.fight #board { left: 2vw; top: 31vh; bottom: auto; width: auto; height: 26vh; padding: 4px; }
+.touch.fight #board { left: var(--edge-l); }
+.instrument { display: none; position: fixed; top: 58vh; height: 39vh; touch-action: none; user-select: none;
+              -webkit-user-select: none; cursor: pointer; font: 700 11px system-ui, sans-serif; text-align: center; }
+.fight .instrument:not([hidden]) { display: block; }
+.instrument svg { display: block; width: 100%; height: 100%; }
+.instrument b { position: absolute; left: 0; right: 0; bottom: -2px; letter-spacing: 2px; color: #ffcf3f; }
+.instrument .ready { position: absolute; left: 12%; right: 12%; bottom: 14px; height: 4px; border-radius: 2px;
+                     background: #333; overflow: hidden; }
+.instrument .ready::after { content: ''; position: absolute; inset: 0; width: calc(var(--ready, 1) * 100%); background: #5f5; }
+.instrument.cooling svg { filter: brightness(0.6); } /* not yet: the shared cooldown */
+.instrument:active .press { transform: translateY(4px); }
+#fight-raid { left: 2.5vw; width: 21vw; }
+.touch #fight-raid { left: var(--edge-l); }
+#fight-guns { left: 24.5vw; width: 10vw; }
+#fight-rockets { left: 64.5vw; width: 17vw; }
+.fight:not(.touch) .cannon-box .pedal { width: 16vh; } /* on a desktop as big as the rest */
+#warlord-bar { position: fixed; z-index: 4; transform: translateY(-100%); padding-bottom: 6px; pointer-events: none;
+               font: 700 11px system-ui, sans-serif; letter-spacing: 2px; color: #f55; text-align: center; white-space: nowrap;
+               text-shadow: 0 1px 3px #000; }
+#warlord-bar[hidden] { display: none; }
+#warlord-bar i { display: block; height: 6px; margin-top: 2px; border: 1px solid #f55; background: #400; }
+#warlord-bar i::after { content: ''; display: block; height: 100%; width: calc(var(--hp, 1) * 100%); background: #f33; }
