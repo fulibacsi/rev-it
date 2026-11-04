@@ -81,11 +81,12 @@ const gunnerDps = (l = lvl('gunners')) => 4 + 2 * l; // a gunner's damage a seco
 // (the Foreman splitting it between harvesters and brewers: crewRun) and the rest at war, raiders; each pays Racing's
 // dues for the meters it rides (fleet.js fleetDues)
 const crewOn = () => progress.racing && fleetSize() > 0;
-const oilCrew = () => Math.min((progress.roles.harvester ?? 0) + (progress.roles.brewer ?? 0), fleetSize());
-const role = r => !crewOn() ? 0 : rigged() && r === 'raider' ? fleetSize() - oilCrew() : Math.min(progress.roles[r] ?? 0, fleetSize());
+const oilCrew = () => Math.min((progress.roles.harvester ?? 0) + (progress.roles.brewer ?? 0), crewLeft());
+const role = r => !crewOn() ? 0 : rigged() && r === 'raider' ? crewLeft() - oilCrew() : Math.min(progress.roles[r] ?? 0, fleetSize());
 const riders = () => role('harvester') + role('brewer') + role('raider'); // raiders ride with you too (gang.js)
 const racersOf = () => fleetSize() - riders(); // your crew on the grid (none on the war rig)
-const isRider = n => inFleet(n) && n > FIELD - riders(); // race.js raceField: not on the grid
+const isRider = n => inFleet(n) && (rigged() || n > FIELD - riders()); // race.js raceField: not on the grid (on the war rig
+                                                                     // none of yours, its wrecks neither)
 function makeRole(r, n) { // the script turns racers into harvesters or brewers; the role card moves them about
   if (r === 'oil') return setOilCrew(oilCrew() + n); // the war rig's card (rigRoleCard)
   const by = Math.max(-(progress.roles[r] ?? 0), Math.min(n, racersOf()));
@@ -160,7 +161,7 @@ const FIRST_PUDDLE = { kind: 'oil', z: 1400, count: 3, rate: 0.1, reserve: 60, s
 const FIRST_REFINERY = { kind: 'refinery', count: 2, rate: 1.2, scripted: true };
 const newSpot = (s, z = s.z) => ({ ...s, z, crew: 0, coming: [], done: false, got: 0, seen: null });
 function crewRun() { // startRun: this run's spots
-  Object.assign(run, { spots: [], pick: null, raid: null, t: 0, foreman: 0, warChief: 0, told: false, crude: 0, fuel: 0, worked: 0, sent: 0,
+  Object.assign(run, { spots: [], pick: null, raid: null, t: 0, foreman: 0, warChief: 0, told: false, crude: 0, fuel: 0, worked: 0, sent: 0, wear: 0, wrecked: 0,
                        firstOil: scripted() && progress.oil === 0 }); // the whole script this run: the puddle, then the refinery
   if (scripted()) run.spots = progress.oil === 0 ? [newSpot(FIRST_PUDDLE)] : [];
   else run.spots = nextSpots();
@@ -169,7 +170,7 @@ function crewRun() { // startRun: this run's spots
 }
 // on the war rig the Foreman splits the oil crew himself, by the crude in the tank (act5.py's bot did, from 31 Oct): more
 // brewers with the tank full, fewer with it near empty; enough harvesters for the biggest spot, the brewers for one too
-const setOilCrew = n => splitOil(clamp(n, 0, fleetSize()));
+const setOilCrew = n => splitOil(clamp(n, 0, crewLeft()));
 function splitOil(n = oilCrew()) {
   const big = biggest(), share = progress.crude > 0.6 * tankSize() ? 0.5 : progress.crude < 0.2 * tankSize() ? 0.25 : 0.35;
   const brewer = clamp(Math.min(n - big, Math.max(Math.ceil(big * 0.6), Math.round(n * share))), 0, n);
@@ -197,7 +198,7 @@ const spotsAhead = () => run.spots.filter(s => !s.done && s.z > odo && (s.script
 const tracking = () => !!run.spots?.length && (run.told || !scripted());
 const trackAhead = () => { const r = raidAhead(); return (r ? [...spotsAhead(), r] : spotsAhead()).sort((a, b) => a.z - b.z); }; // the tracker's
 function crewTick(dt) {
-  for (let i = traffic.length; i--;) if (traffic[i].gone) traffic.splice(i, 1); // runners there, or out of sight
+  for (let i = traffic.length; i--;) if (leftBehind(traffic[i])) traffic.splice(i, 1); // runners there, or out of sight
   if (!crewOn()) return;
   run.t += dt;
   crewJobs(dt); // the war rig's (below), spots or none
@@ -249,7 +250,7 @@ const hostile = c => !c.wreck && !c.fleet && c.dir > 0 && (c.racer || c.police &
 const raidTargets = () => traffic.filter(c => hostile(c) && c.z > odo + 5 && c.z - odo < RANGE).sort((a, b) => a.z - b.z);
 const deckTarget = () => traffic.filter(c => hostile(c) && Math.abs(c.z - odo) < GUNNERS.reach).sort((a, b) => Math.abs(a.z - odo) - Math.abs(b.z - odo))[0];
 const cratesOut = () => run.loot.filter(l => !l.tried && !l.fetched && l.z > odo + 5 && !onCar(l.x)); // fortress.js
-const scavsOut = () => traffic.filter(c => c.scav && !c.gone).length;
+const scavsOut = () => traffic.filter(c => c.scav && !c.gone && !c.wreck).length;
 function warJobs() { // the war crew's split now: { raid, gun, scav }
   const w = role('raider');
   if (!warChiefOn()) return { raid: w, gun: 0, scav: 0 };
@@ -292,6 +293,53 @@ function scavDrive(c, dt) { // road.js updateTraffic: off the shoulder into the 
   c.z += c.v * dt;
   c.x += clamp(l.x - c.x, -4 * dt, 4 * dt);
   if (c.z >= l.z - 1 && Math.abs(c.x - l.x) < 1) { l.tried = true; l.got = stow(l.part); c.gone = true; } // fortress.js
+}
+// ---- crew wrecks (the owner, 4 Nov: "everyone that gets hit diegetically also takes damage"; a wreck, not a death:
+// "gameplay-wise it is more consistent with the rest of the game"): on the war rig a crew car takes what it runs into, a
+// raider a knock from each ram it makes (gang.js raidRam), a raider or a scavenger a mine it drives over (fortress.js
+// mineTick), a gunner what lands on the cell it mans (fortress.js hitCell). The war crew's hits add up, and each time
+// they come to a car's health one more is wrecked, the one hit then: it skids off, out of the race and out of the war
+// crew until it is fixed. The last WRECK.floor cars are never wrecked (the owner: "make the last 10 crew unkillable").
+// The dents short of a wreck are mended between races; the wrecks come back a fifth of the crew a race, free (the owner:
+// "gain 20% back each race until reached the purchased size again"), or at once for meters (the Crew page's card, and
+// Auto repair). A wreck rides no meters: it pays no Racing dues (fleet.js). Claude's numbers, for act5.py: a racer's
+// health (gang.js); a ram's knock; a gunner's knock a % of the rig's hit (a rocket's 15% a gunner, less Armor plating's
+// share); a car's repair, m
+const WRECK = { hp: 150, knock: 10, deck: 10, floor: 10, back: 0.2, cost: 3000 };
+const crewLeft = () => fleetSize() - (rigged() ? progress.crewDown : 0);
+const leftBehind = c => c.gone || c.wreck && (c.raider || c.scav) && c.z < odo - 40; // a crew wreck left behind (crewTick)
+function crewHit(hp, c) { // c: the crew car hit, or none for a gunner
+  if (!rigged() || run.phase !== 'run') return;
+  run.wear += hp;
+  if (run.wear < WRECK.hp) return;
+  if (crewLeft() <= WRECK.floor || role('raider') <= 0) { run.wear = WRECK.hp; return; } // the last ten: battered, never out
+  run.wear = Math.min(run.wear - WRECK.hp, WRECK.hp - 1); // a wreck a hit, the one hit
+  progress.crewDown++;
+  run.wrecked++;
+  if (c) { c.wreck = true; if (c.scav) c.scav.fetched = false; } // it skids off (road.js); its crate is there for another
+  beep(90, 0.15);
+  flash(c ? 'CREW CAR WRECKED' : 'GUNNER DOWN', '#f55', false);
+  if (!progress.toured.includes('wrecks')) openTour('wrecks', true);
+}
+function crewBack() { // finishRun: a fifth of the crew's size back, free; the cars
+  const n = Math.min(progress.crewDown, Math.ceil(WRECK.back * fleetSize()));
+  progress.crewDown -= n;
+  return n;
+}
+function fixCrew() { // the Crew page's card (and Auto repair): as many as the meters pay for; the meters spent
+  const n = Math.min(progress.crewDown, Math.floor(progress.bank / WRECK.cost));
+  if (n <= 0) return 0;
+  progress.crewDown -= n;
+  progress.bank -= n * WRECK.cost;
+  save();
+  return n * WRECK.cost;
+}
+function wrecksCard() { // distance.js renderGarage, the Crew page's, while any are out: Auto repair's switch on it too
+  if (!rigged() || !progress.crewDown) return '';
+  const n = progress.crewDown, k = Math.min(n, Math.floor(progress.bank / WRECK.cost)); // what the meters pay for
+  return `<div class="card repair wrecks"><b>Wrecked crew</b><small>${n} car${n === 1 ? '' : 's'} out · ${Math.ceil(WRECK.back * fleetSize())} ` +
+    `come back free after each race</small><button data-fixcrew${k ? '' : ' disabled'}>Repair${k && k < n ? ` ${k}` : ''} · ` +
+    `${fmt(Math.max(1, k) * WRECK.cost)} m</button>${autoButton()}</div>`;
 }
 function spotDone(s, end) { // passed, dry, or (end) the run over
   s.done = true; s.coming = []; // its crew is yours again (busy counts only what isn't done)
@@ -464,16 +512,17 @@ function roleCard() {
 // its ?): its handle the line between the oil crew (left) and the war crew (right, the rest); − and + a car at a time.
 // Nobody races, and the Foreman splits the oil crew himself (splitOil): nothing to balance
 function rigRoleCard() {
-  return `<div class="card roles"><b>Roles · ${fleetSize()} cars</b><button class="tip" data-tour="warcrew" title="how it works">?</button>` +
+  const down = progress.crewDown ? ` · ${progress.crewDown} wrecked` : ''; // out until fixed (below)
+  return `<div class="card roles"><b>Roles · ${crewLeft()} cars${down}</b><button class="tip" data-tour="warcrew" title="how it works">?</button>` +
     `<div class="tug"><button data-role="oil" data-by="-1">−</button>` +
-    `<input type="range" class="crew-split" data-role="oil" min="0" max="${fleetSize()}" value="${oilCrew()}" ` +
+    `<input type="range" class="crew-split" data-role="oil" min="0" max="${crewLeft()}" value="${oilCrew()}" ` +
     `style="${splitStyle()}"><button data-role="oil" data-by="1">+</button></div>` +
     `<span class="ends"><span class="oil">Oil crew <b>${oilCrew()}</b></span><span class="raider">War crew <b>${role('raider')}</b></span></span>` +
     (warChiefOn() && (lvl('gunners') || lvl('scavengers')) ? '<span class="stance">Stance' + Object.keys(STANCES).map(k => // the War chief's
       `<button data-stance="${k}"${k === stance() ? ' class="on"' : ''}>${k.toUpperCase()}</button>`).join('') + '</span>' : '') +
     `${scouted() ? `<small><i>${scouted()}</i></small>` : ''}</div>`;
 }
-const splitStyle = () => `--of: ${(oilCrew() / Math.max(1, fleetSize())).toFixed(3)}`;
+const splitStyle = () => `--of: ${(oilCrew() / Math.max(1, crewLeft())).toFixed(3)}`;
 function syncRigRoles(card) {
   const bar = card.querySelector('.crew-split');
   bar.value = oilCrew();
@@ -525,6 +574,16 @@ TUTORIALS.push({ id: 'warjobs', name: 'The War chief', for: ['warChief', 'gunner
   { title: 'HIS STANCE',
     both: 'Short of crew, his stance on the role card says who goes first: ATTACK the raids, GUARD the guns, SALVAGE the ' +
       'crates. The rest raid.' },
+] });
+
+// the first crew car wrecked (crewHit): popped up then, and listed from then on
+TUTORIALS.push({ id: 'wrecks', name: 'Crew wrecks', open: () => rigged() && progress.toured.includes('wrecks'), pages: [
+  { title: 'WRECKED',
+    both: 'Your crew\'s cars take what they run into: a raider its rams, a car a mine, a gunner what lands on its cell. ' +
+      'Enough hits wreck one: it is out of the race, and of the war crew, until it is fixed.' },
+  { title: 'BACK ON THE ROAD',
+    both: 'A fifth of your crew comes back free after each race. The Crew page repairs the rest for meters, and Auto ' +
+      'repair does it for you. Your last ten cars are never wrecked.' },
 ] });
 
 // ---- the tutorials: popped up mid-run by the script, and kept under HOW TO DRIVE

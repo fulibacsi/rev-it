@@ -27,8 +27,9 @@ const fleetSize = () => lvl('fleet');
 const inFleet = n => progress.racing && n > FIELD - fleetSize(); // racer n is yours
 const fleetPace = () => 1 + 0.05 * lvl('fleetPace');
 // the dues for a run: a share of the meters your fleet drove from the grid, paid into the bank at the finish
-// On the war rig (the owner, 3 Nov) every car of the crew rides with you and pays for the meters it rides, yours (oil.js)
-const fleetDues = () => Math.round(0.1 * lvl('dues') * (rigged() ? fleetSize() * run.gain :
+// On the war rig (the owner, 3 Nov) every car of the crew rides with you and pays for the meters it rides, yours (oil.js);
+// a wreck rides none (oil.js crewHit)
+const fleetDues = () => Math.round(0.1 * lvl('dues') * (rigged() ? crewLeft() * run.gain :
   racers().reduce((m, c) => m + (c.fleet ? Math.max(0, c.z - c.grid) : 0), 0)));
 // team places (the owner, 23 Oct; points since 26 Oct, so what is left on the Black market stays in reach): at the
 // finish each racer of yours pays TEAM points for each ten places it is from the back (P101 to P92 one, P2 ten), so

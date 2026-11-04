@@ -86,13 +86,13 @@ const SAVE_KEY = 'car-rev-incremental';
 // crew's harvesters and brewers, pace: your m/s of late (oil.js); gang: the gang's moment has come, scrap: the
 // War Rig's, from totals: cars totaled (gang.js); wanted: police heat, 0 to 1 (police.js); tanks: tanks beaten (boss.js);
 // autoRepair: the repair card's AUTO switch (damage.js); fortress: act 5's fortress, its size, the parts on it and in
-// its hold (fortress.js);
+// its hold (fortress.js); crewDown: the war crew's wrecks, out until fixed (oil.js);
 // tape: the one in the stereo (stereo.js); time: seconds played, driven: meters in all, races: runs raced (the
 // menu's STATS)
 const FRESH = () => ({ bank: 0, best: 0, runs: 0, levels: {}, off: {}, engine: 0, racing: false, points: 0, finish: 101,
                        damage: 0, broken: [], nitro: 0, fuel: 0, crude: 0, oil: 0, roles: { harvester: 0, brewer: 0, raider: 0 }, pace: 70,
                        gang: false, scrap: 0, totals: 0, wanted: 0, tanks: 0, autoRepair: false, tape: 0,
-                       fortress: { parts: [], hold: [] }, shells: 0,
+                       fortress: { parts: [], hold: [] }, shells: 0, crewDown: 0,
                        time: 0, driven: 0, races: 0, seen: [], toured: [], dry: 0 }); // seen: upgrades seen unlocked (the tabs' !);
                                                        // toured: tutorials popped up (tutorial.js); dry: races in a row
                                                        // without a Black market buy (race.js raceWall)
@@ -114,7 +114,7 @@ function save() {
                                                                                                               // back to full
   try { localStorage.setItem(saveKey(), JSON.stringify(progress)); } catch { /* not saved */ }
 }
-const forgetRun = () => Object.assign(run, { gain: null, race: null, revealed: false, won: false, dues: 0, team: 0, scrap: 0, totals: 0, shells: 0, repaired: 0,
+const forgetRun = () => Object.assign(run, { gain: null, race: null, revealed: false, won: false, dues: 0, team: 0, scrap: 0, totals: 0, shells: 0, repaired: 0, wrecked: 0, crewBack: 0,
                                              firstTotal: false, boss: false, tank: null, beatTank: false, newBest: false, best: 0 });
 // RESET PROGRESS: a new game, by a player who has driven before, so its first run has no Driving tutorial (the owner,
 // 23 Oct)
@@ -288,7 +288,9 @@ function finishRun(dnf) { // dnf: why the run ended early (a crash), if it did
   if (run.race) { progress.races++; progress.dry++; }
   run.dues = fleetDues(); // fleet.js
   progress.bank += run.dues;
-  run.repaired = autoRepairOn() ? autoRepair() : 0; // damage.js: the repair card's AUTO, once the run's meters are in
+  run.crewBack = crewBack(); // oil.js: a fifth of the war crew's wrecks back, free
+  run.repaired = autoRepairOn() ? autoRepair() + fixCrew() : 0; // damage.js: the repair card's AUTO, once the run's meters are
+                                                                 // in; oil.js: the rest of the wrecks
   run.team = run.race ? teamPoints() : 0; // fleet.js: your racers' places pay points
   crewEnd(); // oil.js: what is still at work counts
   progress.points += run.team;
@@ -436,6 +438,7 @@ function runLine() {
     run.team && `team places +${fmt(run.team)} pts`, run.dues && `racing +${fmt(run.dues)} m`,
     run.crude >= 0.05 && `crude +${fmtL(run.crude)} L`, run.fuel >= 0.05 && `fuel +${fmtL(run.fuel)} L`,
     run.refill && `nitro refill −${fmt(run.refill)} m`, run.repaired && `repairs −${fmt(run.repaired)} m`,
+    run.wrecked && `crew cars wrecked ${run.wrecked}`, run.crewBack && `${run.crewBack} back free`,
     run.totals && `totaled ${run.totals}, +${fmt(run.scrap)} scrap`, run.shells && `+${run.shells} shells`, run.beatTank && `the tank scrapped, +${TANK.scrap} scrap`,
     arOn() && !rigged() && `police heat ${heatPct()}`, hint() && `<i>stuck? ${hint()}</i>`]
     .filter(Boolean).join(' · ');
@@ -454,6 +457,7 @@ function runRows() {
     if (run.dues) rows.push(['Racing', `+${fmt(run.dues)} m`]);
     if (run.refill) rows.push(['Nitro refill', `−${fmt(run.refill)} m`]);
     if (run.repaired) rows.push(['Repairs', `−${fmt(run.repaired)} m`]);
+    if (run.wrecked || run.crewBack) rows.push(['Crew wrecks', `${run.wrecked} wrecked, ${run.crewBack} back free`]); // oil.js
     if (run.totals) rows.push(['Totaled', `${run.totals}, +${fmt(run.scrap)} scrap`]);
     if (run.shells) rows.push(['Shells', `+${run.shells}`]);
     if (run.ranks) rows.push(["The gang's ranks", `+${fmt(run.ranks)} pts`]);
@@ -487,6 +491,8 @@ function closeCard() {
 
 // ---- garage ----
 let garageTab = 'workshop';
+// the repair card's AUTO switch, from act IV on (damage.js), and the Crew page's wrecks card's on the war rig (oil.js)
+const autoButton = () => gangOpen() ? `<button data-autorepair${progress.autoRepair ? ' class="on"' : ''}>AUTO ${progress.autoRepair ? 'ON' : 'OFF'}</button>` : '';
 function renderGarage(bought) {
   if (!pageOpen(garageTab)) garageTab = PAGES.map(([id]) => id).find(pageOpen) ?? 'workshop';
   $('bank').textContent = `${money(progress.bank)} m` + (progress.racing ? ` · ${money(progress.points)} pts` : '') +
@@ -508,7 +514,7 @@ function renderGarage(bought) {
   const d = progress.damage;
   $('drive').textContent = wrecked() ? `LIMP ${LIMP} m ▶` : 'DRIVE ▶'; // a wreck can always limp: no dead end
   // from act IV it stays with its AUTO switch (damage.js), damaged or not, so the switch can be turned off again
-  const auto = gangOpen() ? `<button data-autorepair${progress.autoRepair ? ' class="on"' : ''}>AUTO ${progress.autoRepair ? 'ON' : 'OFF'}</button>` : '';
+  const auto = autoButton();
   const state = d > 0 ? `${Math.round(d)}% damage · rev limit −${fmt(revLoss())} rpm` +
     `${progress.broken.length ? ` · broken: ${progress.broken.map(ordinal).join(', ')}` : ''}` : 'no damage';
   const fix = d > 0 ? `<button data-repair${progress.bank >= REPAIR ? '' : ' disabled'}>${progress.bank >= repairCost() ? 'Repair all' : 'Repair what I can'}` +
@@ -519,7 +525,7 @@ function renderGarage(bought) {
   const building = garageTab === 'fortress' && pageOpen('fortress') ? `<div class="card building"><b>UNDER CONSTRUCTION</b>` +
     `<small>Act V is being built a piece at a time, more with each update. Until then the tanks keep coming, each one ` +
     `tougher.</small></div>` : '';
-  $('cards').innerHTML = first + repairCard + building + shellCard() + dealCard() + (garageTab === 'fleet' && pageOpen('fleet') ? exchangeCard() + roleCard() : '') +
+  $('cards').innerHTML = first + repairCard + building + shellCard() + dealCard() + (garageTab === 'fleet' && pageOpen('fleet') ? exchangeCard() + wrecksCard() + roleCard() : '') +
     Object.entries(UPGRADES).filter(onTab).map(([id, u]) => {
     // the aids the war rig drives with, bolted on (fortress.js): their cards stay, under a metal plate (the owner, 30 Oct)
     if (rigDrives(id)) return `<div class="card plated"><b>${u.name}</b><i class="plate">BOLTED ON<small>` + (rigW > 1 &&
@@ -556,6 +562,7 @@ $('garage').onclick = e => {
   if (tab) garageTab = tab;
   if ('repair' in b.dataset && repair()) { beep(1320, 0.1); refreshCar(); }
   if ('autorepair' in b.dataset) { progress.autoRepair = !progress.autoRepair; save(); }
+  if ('fixcrew' in b.dataset && fixCrew()) beep(1320, 0.1); // oil.js: the wrecks card's
   if ('shells' in b.dataset && buyShells()) beep(1760, 0.08); // fortress.js
   if (b.dataset.deal && buyDeal(+b.dataset.deal)) beep(1760, 0.08);
   if (('exchange' in b.dataset || 'exchangeAll' in b.dataset) && convert('exchange' in b.dataset ? exchange : Infinity)) beep(1760, 0.08);

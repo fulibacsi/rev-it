@@ -401,6 +401,48 @@ with sync_playwright() as p:
               got == [True, True, 1, True, True, [3, 3, 3], {"raid": 8, "gun": 0, "scav": 0}, {"raid": 7, "gun": 1, "scav": 0},
                       {"raid": 7, "gun": 0, "scav": 1}, 4], got)
 
+        # 6e. crew wrecks (the owner, 4 Nov: "everyone that gets hit diegetically also takes damage"): a raider's ram knocks
+        # it, 10 a ram, adding up across the war crew; at a car's health (150) one is wrecked, the one hit: it skids off, out
+        # of the war crew, and its tutorial pops up. A mine driven over wrecks a car outright, and a hit on a manned cell its
+        # gunner; the last ten cars never. After a race a fifth of the crew comes back free; a wreck pays no Racing dues, and
+        # none of yours is on the grid
+        js(CLEAR)
+        got = js("""(() => { progress.toured = progress.toured.filter(id => id !== 'wrecks'); Object.assign(run, { wear: 0, wrecked: 0 });
+            Object.assign(progress, { crewDown: 0 }); const war = role('raider'), seen = [], was = window.flash;
+            window.flash = (t, ...a) => { seen.push(t); return was(t, ...a); };
+            const g = traffic.find(c => !c.racer && !c.fleet && !c.police && !c.wreck);
+            Object.assign(g, { racer: 7, gang: true, dir: 1, x: MY_LANES[1], z: odo + 30, v: speed, hp: 1e6, stage: null });
+            sendRaider({ car: g }); const c = traffic.find(c => c.raider === g && !c.gone);
+            for (let i = 0; i < 14; i++) { c.rammed = 0; raidRam(c, g); }
+            const knocked = [run.wear, run.wrecked, !!c.wreck];
+            c.rammed = 0; raidRam(c, g);
+            const wrecked = [run.wear, run.wrecked, progress.crewDown, c.wreck, role('raider') === war - 1, raidersOn({ car: g }), seen.at(-1)];
+            sendRaider({ car: g }); const m = traffic.find(c => c.raider === g && !c.gone && !c.wreck); mines = [{ x: m.x, z: m.z + 2 }]; mineTick();
+            const mined = [run.wrecked, m.wreck, mines.length];
+            Object.assign(progress.levels, { warChief: 1, gunners: 1 }); progress.off.warChief = false;
+            const cannon = progress.fortress.parts[0], manned = warJobs().gun; hitCell(15, 0, 0); cannon.hp = null;
+            const gunner = [manned, run.wrecked, seen.at(-1)];
+            progress.roles = { harvester: 3, brewer: 2, raider: 0 }; progress.crewDown = fleetSize() - 10; // ten left, five at war
+            sendRaider({ car: g }); const f = traffic.find(c => c.raider === g && !c.gone && !c.wreck); mines = [{ x: f.x, z: f.z + 2 }]; mineTick();
+            const floor = [crewLeft(), role('raider'), run.wrecked, !!f.wreck, progress.crewDown];
+            progress.roles = { harvester: 17, brewer: 9, raider: 6 }; progress.crewDown = 30; const back = [crewBack(), progress.crewDown];
+            progress.crewDown = 10; const gain = run.gain; run.gain = 1000; const dues = fleetDues(), grid = isRider(FIELD - fleetSize() + 1);
+            Object.assign(run, { wrecked: 3, crewBack: 16, phase: 'garage' }); const line = runLine(), rows = runRows().find(r => r[0] === 'Crew wrecks');
+            Object.assign(run, { gain, wrecked: 0, crewBack: 0, wear: 0, phase: 'run' }); progress.crewDown = 0; window.flash = was;
+            traffic.forEach(c => { if (c.raider) c.gone = true; }); Object.assign(progress.levels, { warChief: 0, gunners: 0 });
+            Object.assign(g, { racer: 0, gang: false, dir: -1, z: odo + 1500, hp: null });
+            return [knocked, wrecked, mined, gunner, floor, back, dues, grid, line.includes('crew cars wrecked 3 · 16 back free'), rows]; })()""")
+        check(f"{layout}: crew wrecks: 14 rams knock a raider 140, the 15th wrecks it (CREW CAR WRECKED): out of the war crew, off "
+              f"its car; a mine under a raider wrecks it; a hit on the manned cell its gunner (GUNNER DOWN); with ten cars left, none; "
+              f"after a race 16 of 80 back free; 70 cars pay 21,000 m of dues on 1,000 m; none on the grid; in the summary",
+              got == [[140, 0, False], [0, 1, 1, True, True, 0, "CREW CAR WRECKED"], [2, True, 0], [1, 3, "GUNNER DOWN"],
+                      [10, 5, 3, False, 70], [16, 14], 21000, True, True, ["Crew wrecks", "3 wrecked, 16 back free"]], got)
+        pg.wait_for_timeout(300)
+        got = js("[menuOpen && screen, tour.id]")
+        check(f"{layout}: the first crew car wrecked: its tutorial pops up", got == ["tour", "wrecks"], got)
+        pg.screenshot(path=f"{OUT}/rivals_{layout}_wrecks_tour.png")
+        while js("menuOpen"): js("turnTour(1)"); pg.wait_for_timeout(50)
+
         # 7. before the Rebuild, act 4's reticle as it was: the nearest car, the raiders' too
         js(CLEAR)
         got = js(f"(() => {{ progress.levels.rebuild = 0; const c = ({PUT})('car', 60, true); updateGang(0); "
