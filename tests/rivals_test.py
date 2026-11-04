@@ -443,6 +443,19 @@ with sync_playwright() as p:
         pg.screenshot(path=f"{OUT}/rivals_{layout}_wrecks_tour.png")
         while js("menuOpen"): js("turnTour(1)"); pg.wait_for_timeout(50)
 
+        # 6f. Field repair (the owner, 4 Nov: "a passive regen for the cars ... a second person sits in the car and fixes
+        # it"): the war crew's dents mended as it rides, 3 health a second a level, at the garage's 20 m a health, as far as
+        # the meters go; paid at the finish with the repairs
+        got = js("""(() => { const b0 = progress.bank; progress.levels.fieldRepair = 1; Object.assign(run, { wear: 100, field: 0 }); progress.bank = 9000;
+            fieldTick(1); const mended = [run.wear, run.field]; progress.bank = 30; Object.assign(run, { wear: 100, field: 0 }); fieldTick(1);
+            const short = [run.wear, run.field]; progress.bank = 9000; run.field = 60.2; const paid = [fieldPaid(), progress.bank];
+            const info = UPGRADES.fieldRepair.info(1), tip = tourFor('fieldRepair');
+            Object.assign(run, { wear: 0, field: 0 }); progress.bank = b0; progress.levels.fieldRepair = 0; return [mended, short, paid, info, tip]; })()""")
+        check(f"{layout}: Field repair 1: 100 of the war crew's dents mend by 3 in a second for 60 m; with 30 m in the bank, 1.5 "
+              f"of them; 60.2 m paid as 61 at the finish; its card, its ? the Crew wrecks tutorial",
+              got == [[97, 60], [98.5, 30], [61, 8939], "a second driver in each car of the war crew mends its dents as it rides: "
+                      "a car's every 50 s, 3,000 m a car", "wrecks"], got)
+
         # 7. before the Rebuild, act 4's reticle as it was: the nearest car, the raiders' too
         js(CLEAR)
         got = js(f"(() => {{ progress.levels.rebuild = 0; const c = ({PUT})('car', 60, true); updateGang(0); "

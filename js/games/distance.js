@@ -289,8 +289,9 @@ function finishRun(dnf) { // dnf: why the run ended early (a crash), if it did
   run.dues = fleetDues(); // fleet.js
   progress.bank += run.dues;
   run.crewBack = crewBack(); // oil.js: a fifth of the war crew's wrecks back, free
-  run.repaired = autoRepairOn() ? autoRepair() + fixCrew() : 0; // damage.js: the repair card's AUTO, once the run's meters are
-                                                                 // in; oil.js: the rest of the wrecks
+  // oil.js: Field repair's on the road; damage.js: the repair card's AUTO, once the run's meters are in; oil.js: the rest
+  // of the wrecks
+  run.repaired = fieldPaid() + (autoRepairOn() ? autoRepair() + fixCrew() : 0);
   run.team = run.race ? teamPoints() : 0; // fleet.js: your racers' places pay points
   crewEnd(); // oil.js: what is still at work counts
   progress.points += run.team;

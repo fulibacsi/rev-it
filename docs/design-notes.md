@@ -2021,6 +2021,20 @@ race, the loot lost to a full inventory, and the parts lost a race.
      tutorial popping up; a mine under a raider wrecks it; a hit on the manned cell its gunner; with ten cars left none;
      16 of 80 back free; the dues of the cars left; none on the grid; the summary), `loot_test` the card (its repair for
      meters, AUTO, the role card's count), on both layouts.
+   Field repair, the twelfth PR (built 4 Nov; `oil.js`), the owner's second way back for the crew (4 Nov: "a passive
+   regen for the cars (like on the road, actively using meters for repair - diegeticly a second person sits in the car
+   and fixes it, no need to have a proper visualization)"; the other, a mechanic seen on the road, went with the crew
+   members' deaths). On the Crew page once rebuilt, after Raiders (the dents are theirs first): 3 levels, 40 L doubling.
+   The war crew's dents (the hits short of a wreck) mend as it rides, 3 health a second a level (a car's in 50, 25, 17
+   s), at the garage's price (3,000 m a car: 20 m a health), as far as the bank goes, paid at the finish with the
+   repairs. Nothing on the screen. It can't stop a mine. Its ? is the Crew wrecks tutorial, with a page on it once
+   bought (the tutorial pops up as it is bought, if no wreck has yet).
+   - `act5.py` (seeds 1-4, 12 races; the bot buys it with the War chief's cards, the cheapest first): Field repair 1 by
+     race 6, then 1,200-2,800 m a race (12,000-15,500 m in the 12 races, under 2% of the meters); the wrecks by rams and
+     the deck in races 7-12 0-2 (3-8 without), the mines' as many (5 in one seed). The rest within the spread of the runs
+     without it: tanks beaten 5-18 (9-12), meters 0.93-1.07 million (0.83-1.03), damage up to 23-58% a race (15-58%).
+   - `rivals_test` checks it (100 dents mend by 3 in a second for 60 m; with 30 m, 1.5; paid at the finish, rounded
+     up; its card; its ?), on both layouts.
    The front and the sides, the fifth PR (built 2 Nov; `fortress.js`, `damage.js`, `police.js`), scrap's defense, on the
    owner's answers of 2 Nov ("Mine picker is baseline, negates mines, gives you shells. Grinder on top of it negates
    frontal damage"; rams: "damage mitigation and knockback"; they replace the planned mine roller from two lanes wide

@@ -50,6 +50,13 @@ Object.assign(UPGRADES, {
   gunners: { name: 'Gunners', tab: 'fleet', max: 3, base: 50, growth: 2, needs: ['warChief'], story: () => rigged(),
              info: l => l ? `gunners of the war crew on the deck, one a cell of it, at the gang's cars, police cars and jeeps ` +
                `within ${GUNNERS.reach} m: ${gunnerDps(l)} damage a second each` : 'nobody on the deck' },
+  // the war crew's repairs on the road (the owner, 4 Nov: "a passive regen for the cars (like on the road, actively using
+  // meters for repair - diegeticly a second person sits in the car and fixes it, no need to have a proper
+  // visualization)"): its dents mended as it rides, before they wreck a car (crewHit, below), at the garage's price.
+  // Raiders' (the dents are theirs first). Claude's numbers, for act5.py
+  fieldRepair: { name: 'Field repair', tab: 'fleet', max: 3, base: 40, growth: 2, needs: ['pack'], story: () => rigged(),
+                 info: l => l ? `a second driver in each car of the war crew mends its dents as it rides: a car's every ` +
+                   `${Math.round(WRECK.hp / fieldRate(l))} s, ${fmt(WRECK.cost)} m a car` : "the war crew's dents wait for the garage" },
 });
 const fmtL = n => (Math.round(n * 10) / 10).toString();
 const fmtKm = m => m < 1000 ? `${m} m` : `${m / 1000} km`;
@@ -161,7 +168,7 @@ const FIRST_PUDDLE = { kind: 'oil', z: 1400, count: 3, rate: 0.1, reserve: 60, s
 const FIRST_REFINERY = { kind: 'refinery', count: 2, rate: 1.2, scripted: true };
 const newSpot = (s, z = s.z) => ({ ...s, z, crew: 0, coming: [], done: false, got: 0, seen: null });
 function crewRun() { // startRun: this run's spots
-  Object.assign(run, { spots: [], pick: null, raid: null, t: 0, foreman: 0, warChief: 0, told: false, crude: 0, fuel: 0, worked: 0, sent: 0, wear: 0, wrecked: 0,
+  Object.assign(run, { spots: [], pick: null, raid: null, t: 0, foreman: 0, warChief: 0, told: false, crude: 0, fuel: 0, worked: 0, sent: 0, wear: 0, wrecked: 0, field: 0,
                        firstOil: scripted() && progress.oil === 0 }); // the whole script this run: the puddle, then the refinery
   if (scripted()) run.spots = progress.oil === 0 ? [newSpot(FIRST_PUDDLE)] : [];
   else run.spots = nextSpots();
@@ -272,6 +279,7 @@ function raidNext() { // the War chief's next raid: a hostile car in reach with 
 // way, its tracer drawn while it is in sight (gang.js drawTracers)
 function crewJobs(dt) {
   if (!rigged() || run.phase !== 'run') return;
+  fieldTick(dt); // Field repair (below)
   const jobs = warJobs(), out = scavsOut(), room = holdSize() - progress.fortress.hold.length - out, l = cratesOut()[0];
   if (l && out < jobs.scav && room > 0) {
     l.fetched = true;
@@ -320,6 +328,20 @@ function crewHit(hp, c) { // c: the crew car hit, or none for a gunner
   beep(90, 0.15);
   flash(c ? 'CREW CAR WRECKED' : 'GUNNER DOWN', '#f55', false);
   if (!progress.toured.includes('wrecks')) openTour('wrecks', true);
+}
+// Field repair (above): the war crew's dents mended as it rides, health a second, while the bank has the meters (paid at
+// the finish, with the repairs: fieldPaid)
+const fieldRate = (l = lvl('fieldRepair')) => 3 * l;
+function fieldTick(dt) {
+  const each = WRECK.cost / WRECK.hp, hp = Math.min(run.wear, fieldRate() * dt, (progress.bank - run.field) / each);
+  if (hp <= 0) return;
+  run.wear -= hp;
+  run.field += hp * each;
+}
+function fieldPaid() { // finishRun: the meters it spent; paid
+  const m = Math.ceil(run.field ?? 0);
+  progress.bank -= m;
+  return m;
 }
 function crewBack() { // finishRun: a fifth of the crew's size back, free; the cars
   const n = Math.min(progress.crewDown, Math.ceil(WRECK.back * fleetSize()));
@@ -576,14 +598,18 @@ TUTORIALS.push({ id: 'warjobs', name: 'The War chief', for: ['warChief', 'gunner
       'crates. The rest raid.' },
 ] });
 
-// the first crew car wrecked (crewHit): popped up then, and listed from then on
-TUTORIALS.push({ id: 'wrecks', name: 'Crew wrecks', open: () => rigged() && progress.toured.includes('wrecks'), pages: [
+// the first crew car wrecked (crewHit), or Field repair bought: popped up then, and listed from then on; Field repair's ?
+TUTORIALS.push({ id: 'wrecks', name: 'Crew wrecks', for: ['fieldRepair'],
+                 open: () => rigged() && (progress.toured.includes('wrecks') || lvl('fieldRepair') > 0), pages: [
   { title: 'WRECKED',
     both: 'Your crew\'s cars take what they run into: a raider its rams, a car a mine, a gunner what lands on its cell. ' +
       'Enough hits wreck one: it is out of the race, and of the war crew, until it is fixed.' },
   { title: 'BACK ON THE ROAD',
     both: 'A fifth of your crew comes back free after each race. The Crew page repairs the rest for meters, and Auto ' +
       'repair does it for you. Your last ten cars are never wrecked.' },
+  { title: 'FIELD REPAIR', if: () => lvl('fieldRepair') > 0,
+    both: 'A second driver in each car mends its dents as it rides, before they wreck it: paid in meters, as the garage\'s ' +
+      'repairs are.' },
 ] });
 
 // ---- the tutorials: popped up mid-run by the script, and kept under HOW TO DRIVE
