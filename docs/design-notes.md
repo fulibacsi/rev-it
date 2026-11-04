@@ -2152,6 +2152,29 @@ race, the loot lost to a full inventory, and the parts lost a race.
    yours, when his cooldown allows. Claude's numbers, untuned.
    - `finale_test` checks it (each counter: rockets on his cannon, the cannon on his raiders, the guns on his rockets,
      raiders on his gun nests, each doubled; raiders lost to his cannon; a neutral pair; his answer), on both layouts.
+   The balance, the fourth PR (built 4 Nov; `tests/balance/finale.py`, `finale.js`): a bot plays the fight from debug
+   mode's FINALE start (Dispatch 5, a two-block cannon, armor either side of it on the front row, two pairs of guns, 30
+   shells, a war crew of 54): each of his moves seen once it shows and answered after its reaction time, right as often
+   as its accuracy (good 0.4 s and 90%, average 0.7 s and 70%, poor 1 s and 50%); its own moves between his, the one he
+   can least answer. A masher, for contrast, presses whatever is ready. At the first numbers (his 8,000 health, a shell
+   10%, a ram 4%, a round 0.5%, a rocket 15%, before Armor plating) every one of them won in 21-38 s, health untouched:
+   the front row's parts took his hits. And he never answered: his one cooldown was his clock (3 s), so it was never
+   free; now his cooldown is a beat as yours (1.5 s), his moves on a clock of their own. The numbers chosen (Claude's
+   targets: a good player wins in about two minutes with health to spare, an average one now and then, a poor one or a
+   masher never): his health 30,000, a shell 15%, a ram 6%, a round 0.75%, a rocket 22% (his own now, not the rocket
+   car's). Six fights each:
+
+   | Build | good | average | poor | masher |
+   |---|---|---|---|---|
+   | the FINALE start | 4 won (46% left), 123 s | 2 won (16%), 142 s | none | none |
+   | with a two-block rocket pod | 6 won (97%), 96 s | 6 won (72%), 118 s | | |
+   | without Dispatch | 2 won (14%), 187 s | none | | |
+
+   Without a pod nothing of yours beats his cannon, so the pod is the fight's key piece; Dispatch the next (the owner:
+   a thin build loses, back to the road to grind). The shells run out (30 spent by the end): a crate's more before it
+   pays. A fight costs 17-46 wrecked crew cars (his cannon shooting up the raiders, their knocks), back a fifth a race
+   or repaired. A harder set (40,000, 40%, 15%, 2%, 60%) had every bot wrecked inside 40 s, the front row shot away and
+   the cannon with it; one between (30,000, 20%, 8%, 1%, 30%) let only the good bot win, with 22% left.
 
 ### Balance targets and results
 

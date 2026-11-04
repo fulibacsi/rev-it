@@ -646,7 +646,7 @@ function rocketTick(dt) { // distance.js updateRun: locked on, fired (unless the
 }
 function landRocket(r) { // on the cell over its lane, or beside the rig: true if it hit
   shake = Math.max(shake, 0.3); // main.js
-  if (!runOver(ROCKET.hit * (r.party?.twice ? 2 : 1), r.x, r.y)) { flash('MISSED IT', '#3f6', false); beep(90, 0.15); return false; } // the
+  if (!runOver((r.hit ?? ROCKET.hit) * (r.party?.twice ? 2 : 1), r.x, r.y)) { flash('MISSED IT', '#3f6', false); beep(90, 0.15); return false; } // the
   // warlord's, double if it countered (finale.js)
   shake = Math.max(shake, 0.6);
   crashSound();
