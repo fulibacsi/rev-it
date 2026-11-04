@@ -106,7 +106,7 @@ uv run --no-project --with playwright playwright install chromium         # once
   the iPhone's notch and home bar. Force a layout with `settings.layout = 'touch'; applyLayout()`.
 - After changing anything that feeds Distance's economy or the race, run the simulations in `tests/balance/`
   (`act1.py [cheapest|value]`, `act2.py`, `act3.py` for the Crew, `act4.py` for the War Rig, to the tank, `act5.py`
-  for the Fortress, as far as it is built) and compare
+  for the Fortress, as far as it is built, `finale.py` for the warlord's fight, a bot at three skills and a masher) and compare
   with the targets in the design notes.
 - Testing is emulation only. Say so when a change depends on how a real phone behaves.
 - Tests never send anything: the repository's build has no gate address. `reporting_test` builds the itch.io copy

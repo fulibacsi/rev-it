@@ -9,13 +9,15 @@
 // each there only if you have it (the owner): the CB radio sends a raiding party, the pedal fires the cannon, the lever
 // a burst of the guns, the launch button a salvo from the rocket pods on the board. They share one cooldown, so mashing them
 // all wins nothing (the owner), and Dispatch shortens it. He has the same four moves, each telegraphed (below), and each
-// move beats one of the others (the owner's rock-paper-scissors, below). Claude's numbers, for the balance to come: m
+// move beats one of the others (the owner's rock-paper-scissors, below). Claude's numbers, from tests/balance/finale.py
+// (a good player wins in about two minutes with the build it was tuned on, design notes): m
 // between you; his health; s a beat, and Dispatch's share less a level; s between his moves, the first; % his shell
 // before Armor plating (a rocket's 15); raiders a party; a burst's rounds, s apart; a salvo's damage a block of rocket
-// pods (a block of cannon's shell is 250); s a cannon winds up; % a ram of his raiders, a round of his guns (a police
-// car's ram 4, a jeep's round 0.4); m/s his raiders come at you; his chance to answer your move, s he takes to
-const FINALE = { gap: 70, hp: 8000, beat: 1.5, quicker: 0.08, his: 3, first: 2, shot: 10, party: 3, burst: 8, burstEvery: 0.1, salvo: 200,
-                 wind: 1.2, ram: 4, round: 0.5, charge: 30, react: 0.3, reactAfter: 0.4 };
+// pods (a block of cannon's shell is 250); s a cannon winds up; % a ram of his raiders, a round of his guns, a rocket of
+// his (a police car's ram 4, a jeep's round 0.4, a rocket car's 15); m/s his raiders come at you; his chance to answer
+// your move, s he takes to
+const FINALE = { gap: 70, hp: 30000, beat: 1.5, quicker: 0.08, his: 3, first: 2, shot: 15, party: 3, burst: 8, burstEvery: 0.1, salvo: 200,
+                 wind: 1.2, ram: 6, round: 0.75, rocket: 22, charge: 30, react: 0.3, reactAfter: 0.4 };
 const finaleOpen = () => rigged() && lvl('widen') >= 3 && lvl('lengthen') >= 4 && lvl('grinder') > 0;
 let warlord = null, salvos = []; // his fortress, on the road while you fight; your rockets in the air { t, hit, twice }
 const fighting = () => !!run.fight && run.phase !== 'garage'; // a fight under way (run.fight: the last run was one)
@@ -27,7 +29,8 @@ const fighting = () => !!run.fight && run.phase !== 'garage'; // a fight under w
 const PACE = 'shared';
 const MOVES = ['raid', 'cannon', 'guns', 'rockets'];
 let cooling = { you: {}, him: {} }; // s left, a side's moves
-const beatOf = side => side === 'you' ? FINALE.beat * (1 - FINALE.quicker * lvl('workRate')) : FINALE.his; // Dispatch: yours
+const beatOf = side => FINALE.beat * (side === 'you' ? 1 - FINALE.quicker * lvl('workRate') : 1); // Dispatch: yours; his moves
+                                                                                                    // come on a clock of their own
 const ready = (side, m) => (cooling[side][m] ?? 0) <= 0;
 function spend(side, m) { for (const k of PACE === 'shared' ? MOVES : [m]) cooling[side][k] = beatOf(side); }
 const readiness = m => clamp(1 - (cooling.you[m] ?? 0) / beatOf('you'), 0, 1); // the instruments' bars
@@ -45,8 +48,8 @@ function fightRun() { // startRun, for a fight: the road his, nobody else on it,
               look: { front: WARLORD_SPRITE, rear: WARLORD_SPRITE }, d: NaN, hit: -Infinity, seen: null }; // road.js
   traffic.push(warlord);
   target = quarry = null; // gang.js: the reticle on him once the fight is on
-  cooling = { you: {}, him: Object.fromEntries(MOVES.map(m => [m, FINALE.first])) };
-  Object.assign(run, { burst: 0, burstAt: 0, won: false });
+  cooling = { you: {}, him: {} };
+  Object.assign(run, { burst: 0, burstAt: 0, won: false, hisClock: FINALE.first });
   salvos = []; underway = []; answer = hisBurst = null;
 }
 function warlordDrive(c) { c.z = odo + FINALE.gap; } // road.js updateTraffic: he stands his ground
@@ -67,7 +70,7 @@ function fightTick(dt) {
   if (run.burst > 0 && (run.burstAt -= dt) <= 0) gunShot(); // your burst's rounds
   if (hisBurst && (hisBurst.at -= dt) <= 0) hisRound(); // his
   if (answer && (answer.t -= dt) <= 0) { const m = answer.m; answer = null; if (ready('him', m)) hisMove(m); } // his answer
-  else if (!answer && ready('him', 'cannon')) hisMove();
+  else if (!answer && (run.hisClock -= dt) <= 0 && ready('him', 'cannon')) { hisMove(); run.hisClock = FINALE.his; } // his own
   rocketTick(dt);
 }
 
@@ -191,7 +194,8 @@ const HIS = { // each move as it starts, as yours (YOURS, above)
     return { t: FINALE.wind, land() { hisShell(col, this.twice); }, cancel() {} };
   },
   rockets() { // locked on a cell of the board, its mark blinking, then up (fortress.js rocketTick lands them)
-    const r = { c: warlord, x: ROAD_LANES[lane + Math.floor(rand() * boardW())], y: Math.floor(rand() * boardH()), t: ROCKET.lock, air: false };
+    const r = { c: warlord, x: ROAD_LANES[lane + Math.floor(rand() * boardW())], y: Math.floor(rand() * boardH()), t: ROCKET.lock, air: false,
+                hit: FINALE.rocket };
     rockets.push(r);
     flash('ROCKETS!', '#f55', false);
     beep(1200, 0.08);

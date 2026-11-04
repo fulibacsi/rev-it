@@ -74,7 +74,7 @@ with sync_playwright() as p:
         pg.wait_for_timeout(1700)
         got += js("""(() => { const hp = warlord.hp, ok = move('guns'); return [ok, run.burst]; })()""")
         pg.wait_for_timeout(1200)
-        got += js("""[raiding().length, Math.round(8000 - 500 - warlord.hp)]""")
+        got += js("""[raiding().length, Math.round(health(warlord) - 500 - warlord.hp)]""")
         check(f"{layout}: one cooldown: the cannon winds up (nothing yet, a shell spent), the lever at once does nothing, 1.5 s "
               f"(0.9 at Dispatch 5); a beat later the burst, 8 rounds of 30, the shell's 500 in by then; no Auto cannon, no raiders "
               f"sent by the War chief", got == [True, False, 0, 1, 1.5, 1.5, 0.9, True, 8, 0, 240], got)
@@ -87,7 +87,7 @@ with sync_playwright() as p:
         check(f"{layout}: the CB radio sends three raiders; they ram him once each and are gone, 306 and their guns' rounds off him",
               got[:2] == [True, 3] and got[2] - got2 >= 306, [got, got2])
 
-        # 5. his moves, each telegraphed: his cannon winds up (HIS CANNON!), its shell 10% less Armor plating's 75% off a part
+        # 5. his moves, each telegraphed: his cannon winds up (HIS CANNON!), its shell 15% less Armor plating's 75% off a part
         # on your front row 1.2 s later; his rockets lock on a cell of the board; his raiders come out of his gate at you;
         # his gun nests fire a burst
         js("FINALE.react = 0")
@@ -100,8 +100,8 @@ with sync_playwright() as p:
             const out = [r, cars, !!hisBurst]; underway = []; rockets = []; hisBurst = null; traffic.forEach(c => { if (c.hisRaider) c.gone = true; });
             return out; })()""")
         js(HOLD)
-        check(f"{layout}: HIS CANNON! winds up, nothing hit yet; 1.2 s later 2.5 off a part on your front row; his rockets lock "
-              f"on; three of his raiders come at you; his guns fire", got == ["HIS CANNON!", True, True, [2.5], True, 3, True], got)
+        check(f"{layout}: HIS CANNON! winds up, nothing hit yet; 1.2 s later 3.75 off a part on your front row; his rockets lock "
+              f"on; three of his raiders come at you; his guns fire", got == ["HIS CANNON!", True, True, [3.75], True, 3, True], got)
 
         # 6. keys: S the raiders, Space the cannon, G the guns, as the instruments
         got = js("""(() => { cooling.you = {}; const k = key => { const e = new KeyboardEvent('keydown', { key }); dispatchEvent(e); };
@@ -143,7 +143,7 @@ with sync_playwright() as p:
             let hits = 0; const cell = window.hitCell; window.hitCell = (...a) => { hits++; return cell(...a); }; const board = () => hits; // hits landed
             const clear = () => { underway = []; answer = hisBurst = null; rockets = []; salvos = []; run.burst = 0; FINALE.react = 0;
               cooling = { you: {}, him: { raid: 99, cannon: 99, guns: 99, rockets: 99 } }; traffic.forEach(c => { if (c.raider || c.hisRaider) c.gone = true; }); step(0.05); };
-            const his = m => { cooling.him = {}; hisMove(m); }, out = {};
+            const his = m => { cooling.him = {}; hisMove(m); run.hisClock = 99; }, out = {}; // his own clock held: only the move set
             clear(); his('cannon'); step(1); let b0 = board(), h0 = hp(); move('rockets'); const open = +cooling.him.cannon.toFixed(1); step(1.5);
             out.cannonByRockets = [board() === b0, h0 - hp(), open];
             clear(); his('raid'); b0 = board(); h0 = hp(); move('cannon'); const downed = traffic.filter(c => c.hisRaider && c.wreck).length; step(1.5);
@@ -156,12 +156,12 @@ with sync_playwright() as p:
             out.raidLost = [progress.crewDown - down, board() !== b0, raiding().length];
             progress.crewDown = down; clear(); his('cannon'); b0 = board(); h0 = hp(); move('guns'); step(1.5);
             out.neutral = [board() !== b0, h0 - hp()];
-            clear(); FINALE.react = 1; cooling.him = {}; b0 = board(); h0 = hp(); move('rockets'); step(1.5);
+            clear(); FINALE.react = 1; cooling.him = {}; run.hisClock = 99; b0 = board(); h0 = hp(); move('rockets'); step(1.5);
             out.answered = [h0 - hp(), board() !== b0];
             clear(); FINALE.react = 0.3; f.parts.pop(); applyUpgrades(); menuOpen = false; window.hitCell = cell;
             return out; })()""")
         js(HOLD)
-        check(f"{layout}: rockets on his winding cannon: his shell never comes, the salvo doubled (800), he is open a beat", got["cannonByRockets"] == [True, 800, 3], got["cannonByRockets"])
+        check(f"{layout}: rockets on his winding cannon: his shell never comes, the salvo doubled (800), he is open a beat (1.5 s)", got["cannonByRockets"] == [True, 800, 1.5], got["cannonByRockets"])
         check(f"{layout}: the cannon on his raiders: all three wrecked, none rams you, the shell doubled (1,000)", got["raidByCannon"] == [3, True, 1000], got["raidByCannon"])
         check(f"{layout}: the guns on his rockets: shot down, nothing lands, the burst doubled (480)", got["rocketsByGuns"] == [True, True, 480], got["rocketsByGuns"])
         check(f"{layout}: raiders on his gun nests: his burst stops, their rams doubled (612 and more)", got["gunsByRaid"] == [True, True], got["gunsByRaid"])
