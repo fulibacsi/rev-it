@@ -2214,6 +2214,19 @@ race, the loot lost to a full inventory, and the parts lost a race.
      fight in all four (the bot's packing throws them off, or hits and harpoons take them): the dealer covers that.
    - `rivals_test` checks it (none with the trigger off; held, a salvo, the next 2 s later; 400 from two blocks a second
      later), on both layouts.
+   The ending (built 5 Nov; `finale.js`, `road.js`), the owner's (29 Oct: "the camera rises and falls back, and the
+   fortress, four lanes wide, crosses the wasteland into the sun with the crew following. Then the WARLORD screen"), built
+   while the owner playtested the finale. After THE WARLORD IS DOWN (4 s, his fortress burning), a phase of its own: the
+   cockpit fades away (1.5 s), the camera rises 9 m and falls back 32 m over 3 s (eased; the road renderer's camera, a
+   new `cam` offset behind and above the driver's eye, centered on the car), then all but stops (15% of the fortress's
+   speed) as your fortress drives on up the road and away from it into the sun, to 24 m/s: drawn from behind from your own board, eight wheels, tail lights, and on the deck each column's mightiest
+   part standing (a cannon's turret and gun, a rocket pod, a gun's twin barrels, an engine's stacks, spikes, armor). His
+   wreck is shoved off the road as you reach it; twelve of your crew's cars come up from behind the camera, past it, and
+   fall into rows of four behind the fortress; the sun drifts to where the road meets the sky. No boards or banners on the road.
+   After 10 s, the WARLORD screen; a tap or a key skips to it. Claude's numbers and drawing, for the owner's eye.
+   - `finale_test` checks it (the cockpit faded, the camera up and back, the fortress your board's width, twelve of your
+     crew behind it, his wreck aside; the WARLORD screen with its time up, the camera back in the cockpit; a tap skips),
+     on both layouts.
 
 ### Balance targets and results
 

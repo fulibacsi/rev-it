@@ -697,7 +697,8 @@ function madHeadOn(c) {
 function updateTraffic(dt, clock) {
   RIVALS = traffic.filter(o => o.racer && !o.fleet);
   for (const c of traffic) {
-    if (c.warlord) warlordDrive(c); // the finale's (finale.js): he stands his ground, a wreck too
+    if (c.warlord) warlordDrive(c, dt); // the finale's (finale.js): he stands his ground; in the ending his wreck is shoved aside
+    else if (c.yours || c.follower != null) endingDrive(c, dt); // the ending's (finale.js): your fortress, your crew behind it
     else if (c.wreck) skid(c, dt);
     else if (c.hisRaider) hisRaiderDrive(c, dt); // the warlord's, straight at you (finale.js)
     else if (c.heli) heliDrive(c, dt); // the police's helicopter (police.js)
@@ -721,7 +722,7 @@ function updateTraffic(dt, clock) {
     if (c.d > 0 && d <= 0) whoosh(Math.abs(speed - c.dir * c.v) * 3.6, c.x < carX ? -0.7 : 0.7); // went past the driver
     c.d = d;
     if (c.racer && (!c.gang || c.stage && !c.wreck) || c.passing || c.tank || (c.rig || c.heli || c.rocket || (c.harpoon || c.jeep) && c.stage !== 'leave') &&
-        !c.wreck || c.runner || c.raider || c.scav || c.warlord || c.hisRaider) { /* racers stay where they are, however far: their places are the race; a gang car
+        !c.wreck || c.runner || c.raider || c.scav || c.warlord || c.hisRaider || c.yours || c.follower != null) { /* racers stay where they are, however far: their places are the race; a gang car
       while it is at you; a police car comes up from behind; the tank holds the road, a rig comes and goes round you, a
       helicopter flies in, a harpoon truck comes past and holds the road, a jeep comes and goes past you, a rocket car holds
       the road; a car of your crew goes on to its spot, after its car, or after a crate */ }
@@ -732,7 +733,7 @@ function updateTraffic(dt, clock) {
       c.x = MY_LANES[c.lane];
     }
     // you ran into it: your front into its back, sideways into it while changing lanes, or head-on
-    const touching = !c.wreck && !c.raider && !c.scav && !c.hisRaider && !c.alt && onCar(c.x) && c.z < odo + MY_FRONT && c.z + CAR_LEN > odo - MY_REAR && clock - c.hit > 1.5;
+    const touching = !c.wreck && !c.raider && !c.scav && !c.hisRaider && !c.yours && c.follower == null && !c.alt && onCar(c.x) && c.z < odo + MY_FRONT && c.z + CAR_LEN > odo - MY_REAR && clock - c.hit > 1.5;
     if (touching) { c.hit = clock; c.dir > 0 ? bump(c) : c.suv ? slam(c) : mad(c) ? madHeadOn(c) : headOn(c); } // an SUV's kamikaze (police.js)
     // an oncoming car with you in its lane: flashes its lights and sounds its horn, once, about 3 s out
     c.beams = Math.max(0, (c.beams ?? 0) - dt);
@@ -790,10 +791,13 @@ const MARKS = {
   strip: v => ({ x: v.x, w: 3.4, h: 0.6, img: STRIP }),
   mine: v => ({ x: v.x, w: 1.6, h: 0.58, img: MINES[Math.floor(performance.now() / 250) % 2] }), // the gang's (fortress.js)
 };
+// the camera out of the cockpit (Distance's ending, finale.js): { back, up } m behind and above the driver's eye,
+// centered on the car; none, the driver's seat
+let cam = null;
 function drawRoad(g, w, h, dt) {
-  const depth = 1 / Math.tan(ROAD.fov / 2 * Math.PI / 180), horizon = h * ROAD.horizon, k0 = w / 2;
-  const pos = odo % (ROAD.count * ROAD.segment), base = Math.floor(pos / ROAD.segment);
-  const frac = pos / ROAD.segment - base, here = segments[base], eyeY = elevation(pos) + ROAD.eye;
+  const depth = 1 / Math.tan(ROAD.fov / 2 * Math.PI / 180), horizon = h * ROAD.horizon, k0 = w / 2, camZ = odo - (cam?.back ?? 0);
+  const loop = ROAD.count * ROAD.segment, pos = (camZ % loop + loop) % loop, base = Math.floor(pos / ROAD.segment);
+  const frac = pos / ROAD.segment - base, here = segments[base], eyeY = elevation(pos) + ROAD.eye + (cam?.up ?? 0);
   scenery += here.curve * speed * dt * 40;
   drawSky(g, w, horizon);
 
@@ -802,7 +806,7 @@ function drawRoad(g, w, h, dt) {
   let x = 0, dx = -here.curve * frac;
   for (let n = 0; n <= ROAD.draw; n++) {
     const s = segments[(base + n) % ROAD.count], z = Math.max(0.3, (n - frac) * ROAD.segment), scale = depth / z * k0;
-    proj.push({ x: w / 2 + (-(carX - ROAD.seat) - x) * scale, y: horizon + (eyeY - s.y) * scale, k: scale, z });
+    proj.push({ x: w / 2 + (-(carX - (cam ? 0 : ROAD.seat)) - x) * scale, y: horizon + (eyeY - s.y) * scale, k: scale, z });
     x += dx; dx += s.curve;
   }
   // below the horizon, beyond the drawn road (seen when it dips away): the sea on the left, the land on the right
@@ -859,7 +863,7 @@ function drawRoad(g, w, h, dt) {
   const placed = c => { const img = look(c), w = c.w ?? (img.pixel ? CAR_M : 1.8); // a car's art sets its height; up
     return { z: c.z, x: c.x + weave(c), w, h: c.h ?? (img.pixel ? w * img.height / img.width : 1.4), img, car: c, up: c.alt ?? 0 }; }; // in the air: m
   const ahead = [...traffic.map(placed), ...marks]
-    .map(o => ({ ...o, d: o.z - odo })).filter(o => o.d > 2 && o.d < (ROAD.draw - 2) * ROAD.segment).sort((p, q) => q.d - p.d);
+    .map(o => ({ ...o, d: o.z - camZ })).filter(o => o.d > 2 && o.d < (ROAD.draw - 2) * ROAD.segment).sort((p, q) => q.d - p.d);
   for (const c of [...traffic, ...marks.map(m => m.ref).filter(Boolean)]) c.seen = null; // where each car (and a mark that
                                                                     // asks: an act 3 spot) is on the screen, canvas px
   const blinkOn = performance.now() % 660 < 330; // turn signals: about 1.5 flashes a second

@@ -207,16 +207,34 @@ with sync_playwright() as p:
               got[0] is False and got[1].startswith("WRECKED by the warlord") and got[2:] == [True, "LIMP 40 m ▶", False], got)
         pg.screenshot(path=f"{OUT}/finale_{layout}_lost.png")
 
-        # 8. his fortress down: THE WARLORD IS DOWN, then the ending's screen
+        # 8. his fortress down: THE WARLORD IS DOWN; then the ending (the owner's): the cockpit gone, the camera up and back
+        # behind your fortress (your board's width), driving off into the sun, his wreck shoved aside, your crew falling in
+        # behind; then the WARLORD screen, its time up; and again, a tap skipping it
         pg.click("#fight"); pg.wait_for_function("run.phase === 'run'", timeout=20000)
         js(HOLD + "; warlord.hp = 1; hurtCar(warlord, 5)")
         pg.wait_for_timeout(200)  # drawn
         got = js("[run.won, run.phase, $('run-dist').textContent, progress.warlord]")
+        pg.wait_for_function("run.phase === 'ending'", timeout=15000)
+        pg.wait_for_timeout(4500)
+        got += js("""(() => { const me = traffic.find(c => c.yours), crew = traffic.filter(c => c.follower != null);
+            return [document.body.classList.contains('ending'), getComputedStyle($('cluster')).opacity === '0', cam.up, cam.back > 32, me.w,
+                    crew.length, crew.every(c => c.z < me.z), warlord.x > SHOULDER, odo > 50]; })()""")
+        pg.screenshot(path=f"{OUT}/finale_{layout}_ending.png")
+        js("run.ending.t = ENDING.secs - 0.05")
         pg.wait_for_function("menuOpen && screen === 'win'", timeout=15000)
-        got += js("[$('warlord').textContent]")
-        check(f"{layout}: his fortress down: THE WARLORD IS DOWN, then WARLORD OF THE COAST ROAD", got == [True, "finish", "THE WARLORD IS DOWN", 1,
-              "WARLORD OF THE COAST ROAD"], got)
+        got += js("[$('warlord').textContent, run.phase, cam, traffic.some(c => c.yours || c.follower != null), document.body.classList.contains('ending')]")
+        check(f"{layout}: his fortress down: THE WARLORD IS DOWN; the ending: the cockpit faded, the camera 9 m up and more than 32 m "
+              f"back (left behind once risen), your fortress 4 lanes wide, twelve of your crew behind it, his wreck shoved aside, on up "
+              f"the road; its time up, WARLORD OF THE COAST ROAD, the camera back in the cockpit", got == [True, "finish", "THE WARLORD IS DOWN", 1, True, True, 9, True, 14, 12,
+              True, True, True, "WARLORD OF THE COAST ROAD", "garage", None, False, False], got)
         pg.screenshot(path=f"{OUT}/finale_{layout}_win.png")
+        js("closeMenu()"); pg.wait_for_timeout(300)
+        pg.click("#fight"); pg.wait_for_function("run.phase === 'run'", timeout=20000)
+        js(HOLD + "; warlord.hp = 1; hurtCar(warlord, 5)")
+        pg.wait_for_function("run.phase === 'ending'", timeout=15000); pg.wait_for_timeout(500)
+        pg.mouse.click(400, 200)
+        pg.wait_for_function("menuOpen && screen === 'win'", timeout=5000)
+        check(f"{layout}: a tap skips the ending to the WARLORD screen", js("[run.phase, cam]") == ["garage", None], js("[run.phase, cam]"))
         ctx.close()
     b.close()
 print("ERRORS:", errors or "none", "| FAILS:", fails or "none")
