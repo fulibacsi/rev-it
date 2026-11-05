@@ -2204,6 +2204,12 @@ race, the loot lost to a full inventory, and the parts lost a race.
    offers first, a part each from what drops it most: a cannon (the tank's), a gun (a helicopter's), a rocket pod (a
    rocket car's); the rest of the three as ever. One a race, as ever.
    - `finale_test` checks it (a pod first with none on the board; a cannon, a gun and a pod with nothing on the rig).
+   Rocket pods in the races (built 4 Nov; `gang.js`), on the owner's ("Once on the rig, rockets should fire just like the
+   guns"): read as firing with the guns' trigger, held or Auto gun's, at the car in the reticle: a salvo from every
+   working pod every 2 s (the cannon's reload), landing a second later, 200 a block, as the finale's; each salvo wears
+   the pods (24 a block). Before, a pod outside the fight was only weight on the board.
+   - `rivals_test` checks it (none with the trigger off; held, a salvo, the next 2 s later; 400 from two blocks a second
+     later), on both layouts.
 
 ### Balance targets and results
 
