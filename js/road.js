@@ -283,28 +283,88 @@ const TANK_SPRITE = sprite(300, 230, (g, w, h) => { // the final boss (Distance)
   g.fillStyle = '#ddd'; g.font = `bold ${h * 0.16}px sans-serif`; g.textAlign = 'center'; g.fillText('★', w / 2, h * 0.7);
   g.fillStyle = '#a22'; g.fillRect(w * 0.12, h * 0.5, w * 0.08, h * 0.05); g.fillRect(w * 0.8, h * 0.5, w * 0.08, h * 0.05);
 });
-// the warlord's fortress (Distance's finale, finale.js), from the front, four lanes wide: a stand-in until its own art
-// (the owner: "we need a different sprite for the opposing fortress", later): a wall of welded steel on eight wheels,
-// a spiked ram along its foot, his turret in the middle with its gun at you, a gun nest either side, headlights
-const WARLORD_SPRITE = sprite(560, 260, (g, w, h) => {
-  g.fillStyle = '#141416'; // the wheels under it
-  for (let i = 0; i < 8; i++) { g.beginPath(); g.roundRect(w * (0.02 + i * 0.122), h * 0.84, w * 0.09, h * 0.16, 6); g.fill(); }
-  const wall = g.createLinearGradient(0, h * 0.3, 0, h * 0.86);
-  wall.addColorStop(0, '#5a5048'); wall.addColorStop(1, '#2c2622');
-  g.fillStyle = wall; g.beginPath(); g.roundRect(0, h * 0.3, w, h * 0.56, 10); g.fill(); // its front, rusted steel
-  g.strokeStyle = '#1a1614'; g.lineWidth = 3; // the plates' seams
-  for (let i = 1; i < 6; i++) { g.beginPath(); g.moveTo(w * i / 6, h * 0.3); g.lineTo(w * i / 6, h * 0.86); g.stroke(); }
-  g.fillStyle = '#8e2a1e'; g.fillRect(0, h * 0.5, w, h * 0.05); // the warlord's red band
-  g.fillStyle = '#c8c8d0'; // the ram's spikes, pointing at you
-  for (let i = 0; i < 14; i++) { const x = w * (0.03 + i * 0.07); g.beginPath(); g.moveTo(x, h * 0.86); g.lineTo(x + w * 0.02, h * 0.74); g.lineTo(x + w * 0.04, h * 0.86); g.fill(); }
-  g.fillStyle = '#f4f0d8'; for (const x of [0.12, 0.84]) { g.beginPath(); g.arc(w * x, h * 0.66, h * 0.05, 0, 2 * Math.PI); g.fill(); } // headlights
-  g.fillStyle = '#3a3530'; g.beginPath(); g.roundRect(w * 0.36, h * 0.04, w * 0.28, h * 0.32, 16); g.fill(); // his turret
-  g.fillStyle = '#111'; g.beginPath(); g.arc(w / 2, h * 0.2, h * 0.07, 0, 2 * Math.PI); g.fill(); // its gun's mouth, at you
-  for (const x of [0.06, 0.82]) { // the gun nests, a barrel each
-    g.fillStyle = '#3a3530'; g.beginPath(); g.roundRect(w * x, h * 0.16, w * 0.12, h * 0.16, 8); g.fill();
-    g.fillStyle = '#111'; g.beginPath(); g.arc(w * (x + 0.06), h * 0.24, h * 0.03, 0, 2 * Math.PI); g.fill();
+// the warlord's fortress (Distance's finale, finale.js), from the front, four lanes wide, on tracks (the owner, 5 Nov:
+// "I like lánctalp, maybe try a design with that"): four track units standing out in front of an armored hull, their
+// treads crowding where they curve over the idlers, fenders over them; a spiked dozer blade on two push arms across its
+// foot, a light bar above it; the hull's rusted plates and battlements, his red band and his skull painted on, vision
+// slits glowing; his turret in the middle, its gun's mouth at you, a gun nest either side, two exhaust stacks. His
+// moves' telegraphs are drawn over its turret's mouth (0.5, 0.2) and the nests' muzzles (0.12 and 0.88, 0.24)
+// (finale.js drawWarlord): keep them where they are
+const WARLORD_SPRITE = sprite(720, 334, (g, w, h) => {
+  const plate = (x, y, pw, ph, r, top, bottom) => { const gr = g.createLinearGradient(0, y, 0, y + ph);
+    gr.addColorStop(0, top); gr.addColorStop(1, bottom); g.fillStyle = gr; g.beginPath(); g.roundRect(x, y, pw, ph, r); g.fill(); };
+  const rivets = (x0, x1, y, n) => { g.fillStyle = '#8a7c6c'; for (let i = 0; i < n; i++) { g.beginPath(); g.arc(x0 + (x1 - x0) * (i + 0.5) / n, y, h * 0.008, 0, 2 * Math.PI); g.fill(); } };
+  const spikes = (x0, x1, y, n, len) => { g.fillStyle = '#d6d6de'; for (let i = 0; i < n; i++) { const x = x0 + (x1 - x0) * (i + 0.5) / n;
+    g.beginPath(); g.moveTo(x - len * 0.3, y); g.lineTo(x, y - len); g.lineTo(x + len * 0.3, y); g.fill(); } };
+  for (const x of [0.33, 0.67]) { // the exhaust stacks, behind the turret, sooted at the top
+    plate(w * x - w * 0.014, h * 0.01, w * 0.028, h * 0.3, 3, '#6a6a72', '#3a3a40');
+    g.fillStyle = '#141416'; g.fillRect(w * x - w * 0.017, 0, w * 0.034, h * 0.03);
   }
-  g.fillStyle = '#ddd'; g.font = `bold ${h * 0.14}px sans-serif`; g.textAlign = 'center'; g.fillText('☠', w / 2, h * 0.47);
+  plate(w * 0.02, h * 0.28, w * 0.96, h * 0.28, 10, '#6e6054', '#2e2722'); // the hull, rusted steel, lit from the sky
+  g.fillStyle = '#9a8a78'; g.fillRect(w * 0.03, h * 0.28, w * 0.94, h * 0.008); // its top edge
+  g.strokeStyle = '#1a1614'; g.lineWidth = 3; // its plates' seams
+  for (let i = 1; i < 8; i++) { g.beginPath(); g.moveTo(w * (0.02 + 0.96 * i / 8), h * 0.29); g.lineTo(w * (0.02 + 0.96 * i / 8), h * 0.56); g.stroke(); }
+  rivets(w * 0.04, w * 0.96, h * 0.305, 24);
+  g.fillStyle = 'rgba(130, 64, 30, 0.4)'; // rust run down from the rivets
+  for (const [x, l] of [[0.1, 0.1], [0.24, 0.07], [0.29, 0.12], [0.69, 0.09], [0.77, 0.06], [0.9, 0.11]]) g.fillRect(w * x, h * 0.31, w * 0.007, h * l);
+  g.fillStyle = '#8e2a1e'; g.fillRect(w * 0.02, h * 0.43, w * 0.96, h * 0.04); // his red band
+  g.fillStyle = '#ffcf6a'; // the vision slits, lit from inside
+  for (const x of [0.07, 0.19, 0.29, 0.66, 0.76, 0.88]) g.fillRect(w * x, h * 0.36, w * 0.045, h * 0.016);
+  for (const [x0, x1] of [[0.19, 0.33], [0.67, 0.81]]) for (let i = 0; i < 4; i++) // the battlements along its top
+    plate(w * (x0 + (x1 - x0) * i / 4 + 0.004), h * 0.22, w * (x1 - x0) / 4 - w * 0.012, h * 0.065, 2, '#7a6c5e', '#3e352e');
+  for (const x of [0.06, 0.82]) { // the gun nests, twin barrels each, spiked on top
+    plate(w * x, h * 0.14, w * 0.12, h * 0.18, 8, '#5a5046', '#2a2420');
+    spikes(w * (x + 0.01), w * (x + 0.11), h * 0.14, 3, h * 0.06);
+    g.fillStyle = '#0a0a0a'; for (const d of [-0.018, 0.018]) { g.beginPath(); g.arc(w * (x + 0.06 + d), h * 0.24, h * 0.022, 0, 2 * Math.PI); g.fill(); }
+  }
+  plate(w * 0.37, h * 0.04, w * 0.26, h * 0.32, 18, '#5a5046', '#2a2420'); // his turret
+  plate(w * 0.44, h * 0.1, w * 0.12, h * 0.2, 8, '#6a5e52', '#3a3430'); // its mantlet
+  g.fillStyle = '#0a0a0a'; g.beginPath(); g.arc(w / 2, h * 0.2, h * 0.055, 0, 2 * Math.PI); g.fill(); // its gun's mouth, at you
+  g.strokeStyle = '#7a7a82'; g.lineWidth = 4; g.beginPath(); g.arc(w / 2, h * 0.2, h * 0.062, 0, 2 * Math.PI); g.stroke();
+  rivets(w * 0.39, w * 0.61, h * 0.07, 9);
+  const bone = '#e8e2d0', cx = w / 2, cy = h * 0.45, s = h * 0.065; // his skull over crossed bones, painted on
+  g.strokeStyle = bone; g.lineWidth = s * 0.18; g.lineCap = 'round';
+  for (const d of [-1, 1]) { g.beginPath(); g.moveTo(cx - s, cy + s * (0.25 - 0.5 * d)); g.lineTo(cx + s, cy + s * (0.25 + 0.5 * d)); g.stroke(); }
+  g.lineCap = 'butt'; g.fillStyle = bone;
+  for (const [dx, dy] of [[-1, -0.25], [-1, 0.75], [1, -0.25], [1, 0.75]]) { g.beginPath(); g.arc(cx + dx * s, cy + dy * s, s * 0.15, 0, 2 * Math.PI); g.fill(); }
+  g.beginPath(); g.arc(cx, cy - s * 0.2, s * 0.5, 0, 2 * Math.PI); g.fill(); g.beginPath(); g.roundRect(cx - s * 0.3, cy, s * 0.6, s * 0.42, 3); g.fill();
+  g.fillStyle = '#1a1210';
+  for (const d of [-1, 1]) { g.beginPath(); g.arc(cx + d * s * 0.2, cy - s * 0.18, s * 0.14, 0, 2 * Math.PI); g.fill(); }
+  g.beginPath(); g.moveTo(cx, cy - s * 0.02); g.lineTo(cx - s * 0.07, cy + s * 0.1); g.lineTo(cx + s * 0.07, cy + s * 0.1); g.fill();
+  for (const d of [-0.15, 0, 0.15]) g.fillRect(cx + d * s - 1, cy + s * 0.2, 2, s * 0.22);
+  plate(w * 0.02, h * 0.56, w * 0.96, h * 0.18, 0, '#1c1916', '#0c0b0a'); // its belly, in the tracks' shade
+  plate(w * 0.415, h * 0.565, w * 0.17, h * 0.05, 3, '#6a6a72', '#2e2e34'); // the light bar, caged
+  for (let i = 0; i < 4; i++) { const x = w * (0.437 + i * 0.042), y = h * 0.59;
+    g.fillStyle = '#f4f0d8'; g.beginPath(); g.arc(x, y, h * 0.018, 0, 2 * Math.PI); g.fill();
+    g.fillStyle = '#2e2e34'; g.fillRect(x - 1, y - h * 0.018, 2, h * 0.036); }
+  for (const [x0, x1] of [[0, 0.17], [0.235, 0.405], [0.595, 0.765], [0.83, 1]]) { // the four tracks, their treads at you
+    const x = w * x0, tw = w * (x1 - x0), y = h * 0.5, th = h - y;
+    const round = g.createLinearGradient(x, 0, x + tw, 0); // round, over its idler
+    round.addColorStop(0, '#0c0c0e'); round.addColorStop(0.5, '#33333a'); round.addColorStop(1, '#0c0c0e');
+    g.save(); g.fillStyle = round; g.beginPath(); g.roundRect(x, y, tw, th, [tw * 0.3, tw * 0.3, 4, 4]); g.fill(); g.clip();
+    for (let k = 0; k < 13; k++) { // the grousers, a pad either side of the guide horns, crowded where the tread curves away
+      const u = k / 12, ty = y + th * (0.03 + 0.92 * u ** 1.4), gh = th * (0.012 + 0.036 * u);
+      for (const [a, b] of [[0.07, 0.43], [0.57, 0.93]]) {
+        g.fillStyle = '#3e3e45'; g.fillRect(x + tw * a, ty, tw * (b - a), gh);
+        g.fillStyle = '#74747e'; g.fillRect(x + tw * a, ty, tw * (b - a), Math.max(1, gh * 0.3));
+      }
+    }
+    g.fillStyle = '#55555c'; g.fillRect(x + tw * 0.47, y, tw * 0.06, th); // the guide horns down its middle
+    g.fillStyle = 'rgba(80, 58, 36, 0.6)'; // mud, caked low on it
+    for (const [f, r] of [[0.2, 0.16], [0.55, 0.22], [0.85, 0.14]]) { g.beginPath(); g.ellipse(x + tw * f, h * 0.99, tw * r, th * 0.07, 0, 0, 2 * Math.PI); g.fill(); }
+    g.restore();
+    plate(x - w * 0.006, h * 0.475, tw + w * 0.012, h * 0.04, 3, '#8a8a92', '#3a3a40'); // its fender
+    if (x0 === 0 || x1 === 1) spikes(x + tw * 0.1, x + tw * 0.9, h * 0.475, 3, h * 0.05);
+  }
+  for (const x of [0.2, 0.8]) plate(w * x - w * 0.015, h * 0.6, w * 0.03, h * 0.14, 4, '#7a7a82', '#3a3a40'); // the blade's push arms
+  const face = g.createLinearGradient(0, h * 0.7, 0, h * 0.85); // the dozer blade, its face curved: lit at the lip
+  face.addColorStop(0, '#b0b0b8'); face.addColorStop(0.35, '#5a5a62'); face.addColorStop(1, '#7a7a82');
+  g.fillStyle = face; g.beginPath(); g.roundRect(w * 0.14, h * 0.7, w * 0.72, h * 0.15, 6); g.fill();
+  g.fillStyle = '#d0d0d8'; g.fillRect(w * 0.14, h * 0.7, w * 0.72, h * 0.012); // its top edge, worn bright
+  g.fillStyle = '#2e2e34'; for (const x of [0.32, 0.5, 0.68]) g.fillRect(w * x - 1, h * 0.71, 3, h * 0.13); // its ribs
+  g.fillStyle = 'rgba(130, 64, 30, 0.45)'; g.fillRect(w * 0.14, h * 0.82, w * 0.72, h * 0.03); // rust along its foot
+  g.fillStyle = '#d6d6de'; // its teeth, at you and down
+  for (let i = 0; i < 13; i++) { const x = w * (0.15 + i * 0.0538); g.beginPath(); g.moveTo(x, h * 0.85); g.lineTo(x + w * 0.022, h * 0.95); g.lineTo(x + w * 0.044, h * 0.85); g.fill(); }
 });
 // the rival gang's war rig (Distance's act 5, fortress.js), from behind: a tanker welded up for war, in the gang's
 // white gone to rust and its red stripe; exhaust stacks either side, spikes along the top, a ladder, the tail lights in
