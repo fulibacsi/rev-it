@@ -456,6 +456,22 @@ with sync_playwright() as p:
               got == [[97, 60], [98.5, 30], [61, 8939], "a second driver in each car of the war crew mends its dents as it rides: "
                       "a car's every 50 s, 3,000 m a car", "wrecks"], got)
 
+        # 6g. rocket pods fire with the guns (the owner, 4 Nov: "Once on the rig, rockets should fire just like the guns"):
+        # the trigger held, or Auto gun, a salvo from every working pod at the car in the reticle, every 2 s, landing a
+        # second later, 200 a block; the trigger off, none
+        js(CLEAR)
+        got = js("""(() => { const f = progress.fortress, parts = f.parts, auto = progress.off.autogun;
+            f.parts = [...parts, { kind: 'rockets', cells: [[0, 0], [1, 0]], x: 0, y: 0, from: 'rocket' }]; progress.off.autogun = true;
+            const t = traffic.find(c => !c.racer && !c.fleet && !c.police && !c.wreck);
+            Object.assign(t, { dir: 1, z: odo + 80, x: MY_LANES[lane], hp: 5000, seen: [100, 100, 50, 40] }); target = t;
+            podReload = 0; podSalvos = []; firing = false; fireGuns(0.01); const off = podSalvos.length;
+            firing = true; fireGuns(0.01); const up = podSalvos.length; fireGuns(0.5); const again = podSalvos.length, guns = 5000 - t.hp;
+            fireGuns(0.6); const landed = 5000 - t.hp - guns; firing = false;
+            f.parts = parts; progress.off.autogun = auto; target = null; Object.assign(t, { dir: -1, z: odo + 1500, hp: null });
+            return [off, up, again, landed >= 400 && landed < 400 + 6 * 18 * 3]; })()""")
+        check(f"{layout}: a rocket pod fires with the guns: none with the trigger off; held, a salvo up, no second for 2 s; a "
+              f"second later 400 on the car (two blocks), the guns' rounds besides", got == [0, 1, 1, True], got)
+
         # 7. before the Rebuild, act 4's reticle as it was: the nearest car, the raiders' too
         js(CLEAR)
         got = js(f"(() => {{ progress.levels.rebuild = 0; const c = ({PUT})('car', 60, true); updateGang(0); "

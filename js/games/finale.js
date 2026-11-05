@@ -149,10 +149,11 @@ const YOURS = { // each move as it starts: its landing, and its undoing if it is
 function drawFight() { drawWarlord(); drawSalvos(); } // gang.js renderGang: his telegraphs, your rockets
 // a salvo in the air: from your rig's front up in a high arc and down onto his fortress, a trail of smoke behind each
 // rocket, as his come at you (fortress.js drawRockets)
-function drawSalvos() {
-  const s = warlord?.seen, w = canvas.width, h = canvas.height;
-  if (!s) return;
-  for (const r of salvos) {
+function drawSalvos() { // the fight's, at him, and the pods' in a race, at their car (gang.js firePods)
+  const w = canvas.width, h = canvas.height;
+  for (const r of [...salvos, ...podSalvos]) {
+    const s = (r.car ?? warlord)?.seen;
+    if (!s) continue;
     const k = 1 - r.t / ROCKET.flight, [x1, y1] = [w / 2, h * 0.7], [x2, y2] = [s[0] + s[2] / 2, s[1] + s[3] / 2];
     for (let i = 0; i < 3; i++) { // three rockets abreast
       const at = q => [x1 + (x2 - x1) * q + (i - 1) * w * 0.03 * (1 - q), y1 + (y2 - y1) * q - Math.sin(Math.PI * q) * h * 0.25];

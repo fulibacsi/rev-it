@@ -106,14 +106,33 @@ const tracers = []; // [from, to, when]: from a car's middle on the screen, null
 function fireGuns(dt) {
   reload = Math.max(0, reload - dt);
   const auto = lvl('autogun') && !progress.off.autogun && target?.seen && target.z - odo < RANGE;
-  if (!lvl('guns') || !(firing || auto) || reload) return;
+  const hit = target?.seen && target.z - odo < RANGE ? target : null, on = lvl('guns') && (firing || auto);
+  firePods(dt, on && hit);
+  if (!on || reload) return;
   reload = 0.25;
   beep(70, 0.04);
   raiseHeat(WANTED.shot);
-  const hit = target?.seen && target.z - odo < RANGE ? target : null;
   tracers.push([null, hit, performance.now()]);
   if (hit) hurtCar(hit, GUN * (lvl('guns') + blocks('gun'))); // the guns on the board too (fortress.js), and each shot
   wearOut('gun', WEAR.gun);                                     // wears them (fortress.js)
+}
+
+// the rocket pods on the board (the finale's part, finale.js) fire with the guns (the owner, 4 Nov: "Once on the rig,
+// rockets should fire just like the guns"): while the trigger is held, or Auto gun holds it, a salvo from every working
+// pod every POD.reload s at the car in the reticle, landing a rocket's flight later, as the finale's (Claude's: the
+// cannon's reload)
+const POD = { reload: 2 };
+let podReload = 0, podSalvos = []; // s to the next salvo; salvos in the air { t, hit, car } (finale.js drawSalvos)
+function firePods(dt, at) {
+  podReload = Math.max(0, podReload - dt);
+  for (const s of podSalvos) if ((s.t -= dt) <= 0 && !s.car.wreck) { hurtCar(s.car, s.hit); crashSound(); } // landed
+  podSalvos = podSalvos.filter(s => s.t > 0);
+  const n = blocks('rockets'); // fortress.js: working pods
+  if (!at || !n || podReload) return;
+  podReload = POD.reload;
+  podSalvos.push({ t: ROCKET.flight, hit: FINALE.salvo * n, car: at });
+  wearOut('rockets', WEAR.rockets);
+  beep(220, 0.2);
 }
 
 // you hit car c (impact from car.js): a hit, HIT off its health. The owner's numbers (14 Oct): traffic goes down in 3,

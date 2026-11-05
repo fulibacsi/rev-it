@@ -945,7 +945,8 @@ function fallOff(i, how = 'LOST') { // and what it did goes with it: its weight,
 // an engine block 200 s flat out. Half the first guesses, and a quarter for the cannon (the first guesses wore the
 // tank's cannon out in the second race, half of them by the third, and only a tank drops another): the ambushes, more
 // enemies and more loot, the tanks among them, are for the faster churn the owner wants
-const WEAR = { cannon: 1, gun: 0.05, spikes: 1, engine: 0.05, rockets: 0.5 }; // a pod: a salvo (finale.js), 24 a block
+const WEAR = { cannon: 1, gun: 0.05, spikes: 1, engine: 0.05, rockets: 0.12 }; // a pod: a salvo (finale.js, gang.js firePods), 100 a
+                                                                             // block as the cannon (0.5, 24: worn out in a race of firing with the guns)
 function wearOut(kind, by) { // fireCannon, gang.js fireGuns and ram, rigTick
   const f = progress.fortress;
   if (!rigged()) return;
