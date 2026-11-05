@@ -154,9 +154,9 @@ with sync_playwright() as p:
         # among the offers first: a rocket pod with none on the board; with nothing on the rig (no War Rig guns, a bare
         # board), a cannon, a gun and a pod
         got = js("""(() => { const f = progress.fortress, parts = f.parts, deal = f.deal, guns = progress.levels.guns, kinds = () => (f.deal = null, dealer().offers.map(p => p.kind));
-            const noPod = kinds(); f.parts = []; progress.levels.guns = 0; const bare = kinds();
-            f.parts = parts; progress.levels.guns = guns; f.parts.push({ kind: 'rockets', cells: [[0, 0]], x: 3, y: 3, from: 'rocket' }); const all = kinds();
-            f.parts.pop(); f.deal = deal; return [noPod[0], bare, all.length]; })()""")
+            f.parts = parts.filter(p => p.kind !== 'rockets'); const noPod = kinds(); f.parts = []; progress.levels.guns = 0; const bare = kinds();
+            f.parts = parts; progress.levels.guns = guns; const all = kinds(); // 6b's pod back on: nothing missing
+            f.deal = deal; return [noPod[0], bare, all.length]; })()""")
         check(f"{layout}: the dealer before his fight: a rocket pod first with none on the board; a cannon, a gun and a pod "
               f"with nothing on the rig; three offers as ever", got == ["rockets", ["cannon", "gun", "rockets"], 3], got)
 
