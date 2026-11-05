@@ -809,15 +809,20 @@ const condition = p => `${Math.round(100 * hpOf(p) / fullHp(p))}%`;
 // for act5.py (a fresh cannon of two blocks 1,800; a half-worn block of armor 150)
 const DEAL = { offers: 3, price: 300 };
 const dealPrice = p => Math.max(10, 10 * Math.round(DEAL.price * WORTH[p.kind] * p.cells.length * hpOf(p) / fullHp(p) / 10));
+// Once the warlord waits (finale.js), a weapon of his fight the rig lacks is among the offers first, a part each: a
+// cannon, a gun, a rocket pod (the owner, 4 Nov: "if anything is missing from the rig, it should be in the offers - that
+// would even work if there's nothing on the rig"), from what drops it most
+const FIGHT_PARTS = [['cannon', 'tank', 'cannon'], ['gun', 'heli', 'guns'], ['rockets', 'rocket', 'rockets']]; // kind, source, finale.js HAVE
 function dealer() { // this race's offers, drawn the first time they are asked for
   const f = progress.fortress;
   if (f.deal?.at !== progress.runs) {
     let dice = 1 + (progress.runs * 7919) % 2147483646;
     const roll = () => ((dice = (dice * 48271) % 2147483647) - 1) / 2147483646, from = Object.keys(DROPS);
-    f.deal = { at: progress.runs, sold: false, offers: Array.from({ length: DEAL.offers }, () => {
+    const missing = finaleOpen() ? FIGHT_PARTS.filter(([, , has]) => !HAVE[has]()).map(([kind, src]) => makePart(kind, src, roll)) : [];
+    f.deal = { at: progress.runs, sold: false, offers: [...missing, ...Array.from({ length: DEAL.offers - missing.length }, () => {
       const src = from[Math.floor(roll() * from.length)];
       return makePart(pick(DROPS[src][1], roll), src, roll);
-    }) };
+    })] };
   }
   return f.deal;
 }
