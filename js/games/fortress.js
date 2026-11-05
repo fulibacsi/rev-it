@@ -639,7 +639,7 @@ function rocketTick(dt) { // distance.js updateRun: locked on, fired (unless the
     if ((r.t -= dt) > 0) continue;
     if (r.air) { r.gone = true; landRocket(r); continue; }
     const s = r.c.seen;
-    Object.assign(r, { air: true, t: ROCKET.flight, from: s && [s[0] + s[2] / 2, s[1]] });
+    Object.assign(r, { air: true, t: r.flight ?? ROCKET.flight, from: s && [s[0] + s[2] / 2, s[1]] }); // the warlord's his own (finale.js)
     beep(220, 0.2);
   }
   rockets = rockets.filter(r => !r.gone);
@@ -659,7 +659,7 @@ function landRocket(r) { // on the cell over its lane, or beside the rig: true i
 function drawRockets() {
   const w = canvas.width, h = canvas.height;
   for (const r of rockets) {
-    if (!r.air || !r.from) continue;
+    if (!r.air || !r.from || r.c.warlord) continue; // the warlord's are drawn with his wind-ups (finale.js drawWarlord)
     const col = (r.x - carX) / LANE_W + (boardW() - 1) / 2, [x1, y1] = r.from, x2 = w * (0.4 + 0.2 * (col + 0.5) / boardW()), y2 = h * 0.72;
     const at = k => [x1 + (x2 - x1) * k, y1 + (y2 - y1) * k - Math.sin(Math.PI * k) * h * 0.3], k = 1 - r.t / ROCKET.flight, size = w / 160 * (1 + 2 * k);
     for (let i = 6; i > 0; i--) { // the smoke

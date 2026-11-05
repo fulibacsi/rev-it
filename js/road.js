@@ -760,7 +760,7 @@ function updateTraffic(dt, clock) {
     if (c.warlord) warlordDrive(c, dt); // the finale's (finale.js): he stands his ground; in the ending his wreck is shoved aside
     else if (c.yours || c.follower != null) endingDrive(c, dt); // the ending's (finale.js): your fortress, your crew behind it
     else if (c.wreck) skid(c, dt);
-    else if (c.hisRaider) hisRaiderDrive(c, dt); // the warlord's, straight at you (finale.js)
+    else if (c.party) chargeDrive(c); // a raiding party's car in the warlord's fight, either side's, straight across (finale.js)
     else if (c.heli) heliDrive(c, dt); // the police's helicopter (police.js)
     else if (c.police) policeDrive(c, dt); // police.js
     else if (c.tank) tankDrive(c, dt); // boss.js

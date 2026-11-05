@@ -2112,7 +2112,8 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - The pacing (the owner: "this system would only work if everything has similar cooldown time so you cannot win by
      mashing all of the buttons"): equal cooldowns alone still let you press each as it comes ready, so one cooldown for
      all of your moves (an MMO's global cooldown), Dispatch shortening it; the code asks only ready() and spend(), so a
-     cooldown a move, or turns, is one setting away (the owner: "make the codebase to be prepared").
+     cooldown a move, or turns, is one setting away (the owner: "make the codebase to be prepared"). Replaced after the
+     first playtest (5 Nov) by one move at a time, each 3 s (below).
    - Rocket pods: a part, salvaged, the army's rocket cars dropping it most, the dealer sometimes (to build).
    - The ambushes' pressure is tuned after this layer (the owner).
    The standoff, the first PR (built 4 Nov; `finale.js`, `distance.js`, `road.js`): the trigger and THE WARLORD's card,
@@ -2239,6 +2240,50 @@ race, the loot lost to a full inventory, and the parts lost a race.
    not a ☠ glyph, which each phone's fonts draw their own way); his turret in the middle, its gun's mouth at you, a gun
    nest either side with twin barrels and spikes, two exhaust stacks. The telegraphs stay where they were (the turret's
    mouth, the nests' muzzles).
+   The first playtest of the fight (5 Nov; `finale.js`, `road.js`, `fortress.js`). The owner: "it's hard to spot what is
+   coming (except the enemy raiders - those are great), and the cooldown feels too short, a crew sending overlapped with
+   a cannon shot easily ... A better wind-up animation could be better, eg. for rockets, they could first go up and then
+   turn towards the the player." Measured from the press to the landing, the moves outlasted the 1.5 s cooldown: your
+   raiders 4 s (so two cannon shots before they arrived), his 2.1 s, his rockets 2.5 s (1.5 s of it a mark on your board
+   only), the cannon 1.2 s (his a glow a few pixels wide at 70 m on a phone), the guns 0.8 s with no warning at all. The
+   owner's call: "stable 3s animations (including the wind-up) and only allow 1 move at a time, no cooldown. So
+   basically a hidden cooldown." Built so: every move, yours and his, takes 3 s, its wind-up and all, and its side makes
+   no other till then, however it ends: a move beaten or countered still costs its time (else a wrong guess would cost
+   nothing). Claude's, put to the owner: a countered side waits till the counter has landed and a beat (1.5 s) more,
+   your chance to strike back; Dispatch makes your moves quicker (3 s less 8% a level, 1.8 s at 5), his stay at 3 s. He
+   moves once he is free and has waited 0.5-2 s (at random), and answers yours as before. The wind-ups, each its own and
+   each with a sound (Web Audio, his louder than yours): his cannon a ring closing on his turret's mouth (the owner: "I
+   like the cannon closing circle"), the glow growing, the shot as it closes, under a hum rising to it; his gun nests
+   spinning up 2.3 s (their barrels' cluster a blur, glowing, throwing sparks, a rattle quickening), then the burst's
+   eight rounds over the last 0.7 s; his rockets three abreast out of his deck on their smoke, up to just below the
+   mirror in 1.5 s, over the top and down onto the cell they are locked on in 1.5 s, growing as they come (a roar going
+   up, a whistle coming down; the board's mark as before); his raiders out of his gate and across from a standstill,
+   quicker and quicker, ramming as the 3 s end. Yours the same way: your salvo up from the rig, over and down onto him;
+   your raiders out from your front and across at him (no longer up the shoulder from behind, nor firing their guns on
+   the way: their three rams are the raid). The owner: if this is not enough, symbols over him to make it obvious.
+   The bot (`tests/balance/finale.py`) changed with it: one at a time rewards patience, and the old bot's moves between
+   his (as soon as its cooldown allowed) left it busy when he moved: he countered it 19 times a fight, it countered him
+   6. Now it answers his moves and strikes only while he reels (busy with nothing under way: countered, or his move
+   beaten). With no wait after a counter (the counter's landing only), neither the good nor the average bot won a fight
+   in 5 minutes; with the beat, the fights ran 5 minutes, his health 30,000 too much for one move at a time and his hits
+   too little (a good bot with a pod lost 1%). The numbers chosen (Claude's targets as before: a good player wins in
+   about two minutes with health to spare, an average one now and then, a poor one or a masher never): his health
+   12,000, his hits about 2.5 times what they were (a shell 36%, a ram 15%, a round 1.8%, a rocket 55%, before Armor
+   plating). Six fights each:
+
+   | Build | good | average | poor | masher |
+   |---|---|---|---|---|
+   | the FINALE start | 6 won (55% left), 144 s | 3 won (23%), 188 s | none | none (wrecked in 70 s) |
+   | with a two-block rocket pod | 6 won (98%), 97 s | 6 won (79%), 116 s | 5 won (35%), 151 s | |
+   | without Dispatch | 2 won (52%), 187 s | none | | |
+
+   Of the sets tried (his health, his hits' multiple): 12,000 ×2 let the average bot win every fight; 12,000 ×3 and
+   15,000 ×3 cost the good bot a fight in six; 15,000 ×2 and 13,000 ×2.5 made the good bot's fights longer (173 s, 154
+   s), the average bot winning 2 in 6. The pod is still the fight's key piece (nothing else beats his cannon), Dispatch
+   the next.
+   - `finale_test` checks it (one at a time, 3 s and 1.8 s at Dispatch 5; nothing landing before its 3 s; the guns
+     spinning up before their burst; his shell 3 s on; the raiders ramming as the move ends; the salvo landing 3 s on;
+     the counters, the countered side waiting till the counter has landed and a beat more), on both layouts.
 
 ### Balance targets and results
 

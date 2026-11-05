@@ -7,31 +7,34 @@
 // Foreman. No traffic: his fortress holds the road. Your health is in the mirror where the time was, his over his
 // fortress (the owner: health bars for the first iteration). Your weapons are instruments of their own on the dashboard,
 // each there only if you have it (the owner): the CB radio sends a raiding party, the pedal fires the cannon, the lever
-// a burst of the guns, the launch button a salvo from the rocket pods on the board. They share one cooldown, so mashing them
-// all wins nothing (the owner), and Dispatch shortens it. He has the same four moves, each telegraphed (below), and each
+// a burst of the guns, the launch button a salvo from the rocket pods on the board. One at a time (the owner, 5 Nov):
+// each move takes 3 s, its wind-up and all, and its side makes no other till it is over, so mashing them all wins
+// nothing; Dispatch makes yours quicker. He has the same four moves, each with a wind-up of its own (below), and each
 // move beats one of the others (the owner's rock-paper-scissors, below). Claude's numbers, from tests/balance/finale.py
-// (a good player wins in about two minutes with the build it was tuned on, design notes): m
-// between you; his health; s a beat, and Dispatch's share less a level; s between his moves, the first; % his shell
-// before Armor plating (a rocket's 15); raiders a party; a burst's rounds, s apart; a salvo's damage a block of rocket
-// pods (a block of cannon's shell is 250); s a cannon winds up; % a ram of his raiders, a round of his guns, a rocket of
-// his (a police car's ram 4, a jeep's round 0.4, a rocket car's 15); m/s his raiders come at you; his chance to answer
-// your move, s he takes to
-const FINALE = { gap: 70, hp: 30000, beat: 1.5, quicker: 0.08, his: 3, first: 2, shot: 15, party: 3, burst: 8, burstEvery: 0.1, salvo: 200,
-                 wind: 1.2, ram: 6, round: 0.75, rocket: 22, charge: 30, react: 0.3, reactAfter: 0.4 };
+// (a good player wins in about two minutes with the build it was tuned on, design notes): m between you; his health;
+// s a move takes, wind-up and all, and Dispatch's share less a level of yours; s he waits once his move is over (at
+// random between the two), before his first; % his shell before Armor plating (a rocket's 15); raiders a party; a
+// burst's rounds, s apart; a salvo's damage a block of rocket pods (a block of cannon's shell is 250); % a ram of his
+// raiders, a round of his guns, a rocket of his (a police car's ram 4, a jeep's round 0.4, a rocket car's 15); his
+// chance to answer your move, s he takes to; s a countered side waits on after the counter has landed (your chance to strike)
+const FINALE = { gap: 70, hp: 12000, move: 3, quicker: 0.08, his: [0.5, 2], first: 2, shot: 36, party: 3, burst: 8, burstEvery: 0.1,
+                 salvo: 200, ram: 15, round: 1.8, rocket: 55, react: 0.3, reactAfter: 0.4, open: 1.5 };
 const finaleOpen = () => rigged() && lvl('widen') >= 3 && lvl('lengthen') >= 4 && lvl('grinder') > 0;
-let warlord = null, salvos = []; // his fortress, on the road while you fight; your rockets in the air { t, hit, twice }
+let warlord = null, salvos = []; // his fortress, on the road while you fight; your rockets in the air { t, T, hit }
 const fighting = () => !!run.fight && run.phase !== 'garage'; // a fight under way (run.fight: the last run was one)
 
-// the pacing (the owner, 4 Nov: "Let's go with the shared timeout and the dispatch improvement, but make the codebase to
-// be prepared for individual cooldowns or even turns"): ready() and spend() are all a fight asks, for you and for him
-// alike; PACE says how they answer. 'shared': a move cools every move of its side; 'each': only itself. Turns would
-// answer here too: ready only on your side's turn, spend passing it
+// the pacing (the owner, 4 Nov: "make the codebase to be prepared for individual cooldowns or even turns"; 5 Nov, after
+// playtesting it with a shared cooldown shorter than the moves, which overlapped: "stable 3s animations (including the
+// wind-up) and only allow 1 move at a time, no cooldown. So basically a hidden cooldown"): a move takes its side's beat,
+// however it ends (landed, beaten or countered: a wrong guess costs its time), and the side makes no other till then.
+// ready() and spend() are all a fight asks, for you and for him alike; PACE says how they answer. 'shared': a move
+// holds every move of its side; 'each': only itself. Turns would answer here too: ready only on your side's turn, spend
+// passing it
 const PACE = 'shared';
 const MOVES = ['raid', 'cannon', 'guns', 'rockets'];
 let cooling = { you: {}, him: {} }; // s left, a side's moves
-const beatOf = side => FINALE.beat * (side === 'you' ? 1 - FINALE.quicker * lvl('workRate') : 1); // Dispatch: yours; his moves
-                                                                                                    // come on a clock of their own
-const ready = (side, m) => (cooling[side][m] ?? 0) <= 0;
+const beatOf = side => FINALE.move * (side === 'you' ? 1 - FINALE.quicker * lvl('workRate') : 1); // a move's length; Dispatch: yours
+const ready = (side, m) => (cooling[side][m] ?? 0) <= 0;                                           // quicker
 function spend(side, m) { for (const k of PACE === 'shared' ? MOVES : [m]) cooling[side][k] = beatOf(side); }
 const readiness = m => clamp(1 - (cooling.you[m] ?? 0) / beatOf('you'), 0, 1); // the instruments' bars
 
@@ -49,54 +52,53 @@ function fightRun() { // startRun, for a fight: the road his, nobody else on it,
   traffic.push(warlord);
   target = quarry = null; // gang.js: the reticle on him once the fight is on
   cooling = { you: {}, him: {} };
-  Object.assign(run, { burst: 0, burstAt: 0, won: false, hisClock: FINALE.first });
-  salvos = []; underway = []; answer = hisBurst = null;
+  Object.assign(run, { won: false, hisClock: FINALE.first });
+  salvos = []; underway = []; answer = null;
 }
 function warlordDrive(c, dt) { // road.js updateTraffic: he stands his ground; in the ending his wreck is shoved aside
   if (run.phase === 'run') c.z = odo + FINALE.gap;
   else if (run.phase === 'ending' && c.z - odo < 45) c.x = Math.min(SHOULDER + 12, c.x + 12 * dt); // your Grinder's work
 }
 
-// distance.js updateRun, the fight's every frame: the cooldowns, the moves under way landing, the bursts' rounds, his
-// answer or his move when his clock allows, his rockets in the air (fortress.js)
+// distance.js updateRun, the fight's every frame: the cooldowns, the moves under way (a burst's rounds, then the
+// landing), his answer or, once free and he has waited, his move; his rockets in the air (fortress.js)
 function fightTick(dt) {
   for (const side of ['you', 'him']) for (const m of MOVES) cooling[side][m] = Math.max(0, (cooling[side][m] ?? 0) - dt);
   for (let i = traffic.length; i--;) if (leftBehind(traffic[i])) traffic.splice(i, 1); // oil.js: raiders home
   target = warlord.wreck ? null : warlord;
   rigTick(dt); // fortress.js: the cannon's reload, the engines' wear
-  for (const u of underway) { // a move lands; a party is home, or wrecked
-    if (u.lasts && !u.lasts()) u.off = true;
-    else if ((u.t -= dt) <= 0) { u.off = true; u.land(); }
+  for (const u of underway) {
+    u.t -= dt;
+    u.tick?.();
+    if (u.t <= 0) { u.off = true; u.land(); }
   }
   underway = underway.filter(u => !u.off);
   for (const r of salvos) r.t -= dt; // in the air (drawSalvos)
-  if (run.burst > 0 && (run.burstAt -= dt) <= 0) gunShot(); // your burst's rounds
-  if (hisBurst && (hisBurst.at -= dt) <= 0) hisRound(); // his
   if (answer && (answer.t -= dt) <= 0) { const m = answer.m; answer = null; if (ready('him', m)) hisMove(m); } // his answer
-  else if (!answer && (run.hisClock -= dt) <= 0 && ready('him', 'cannon')) { hisMove(); run.hisClock = FINALE.his; } // his own
+  else if (!answer && ready('him', 'cannon') && (run.hisClock -= dt) <= 0) hisMove(); // his own
   rocketTick(dt);
 }
 
 // ---- the moves (the owner, 4 Nov: rock-paper-scissors, "pokemon solved this problem for a buttload of strengths vs
 // weaknesses"): the cannon beats raiders (a shell into the convoy), raiders beat guns (they overrun the gun nests), guns
-// beat rockets (bullets down the salvo), rockets beat the cannon (a salvo on the turret as it winds up); the opposites
-// are neutral. A move takes a while to land (the cannon winds up, rockets lock on and fly, raiders drive across, a burst
-// lasts): under way, the other side's move that beats it cancels it and does twice its damage, and the side it beat is
-// open a beat (its next move a beat later); the move it beats is cancelled itself, and it lands all the same; a neutral
-// one, both land. Both sides alike: his moves telegraphed (his turret glowing as it winds up, his rockets' marks on the
-// board, his raiders driving at you, his gun nests flashing), and he answers yours now and then (FINALE.react)
+// beat rocket (bullets down the salvo), rockets beat the cannon (a salvo on the turret as it winds up); the opposites
+// are neutral. A move lands as its beat ends (the cannon winds up, rockets go up and come down, raiders drive across, the
+// guns spin up and fire): under way, the other side's move that beats it cancels it and does twice its damage, and the
+// side it beat waits till that has landed and a beat more; the move it beats is cancelled itself, and it lands all the same; a neutral
+// one, both land. Both sides alike: his moves wind up where you can see them (drawWarlord), and he answers yours now
+// and then (FINALE.react)
 const BEATS = { cannon: 'raid', raid: 'guns', guns: 'rockets', rockets: 'cannon' };
 const beater = m => MOVES.find(k => BEATS[k] === m);
-let underway = [], answer = null; // the moves under way: { side, m, t (s to land), twice, land(), cancel(), lasts() }; his answer coming
+let underway = [], answer = null; // the moves under way: { side, m, t (s to land), T (its length), twice, tick(), land(), cancel() }; his answer coming
 const NAMES = { cannon: 'CANNON', raid: 'RAIDERS', guns: 'GUNS', rockets: 'ROCKETS' };
 // a move made: against the other side's under way, countered, cancelled or neutral; then under way itself
 function made(side, m, u) {
-  const theirs = underway.filter(o => o.side !== side && !o.off && (o.lasts?.() ?? true)), hit = theirs.find(o => BEATS[m] === o.m), lost = theirs.find(o => BEATS[o.m] === m);
-  Object.assign(u, { side, m, twice: !!hit });
-  if (hit) { // countered: theirs cancelled, yours double, theirs open a beat
+  const theirs = underway.filter(o => o.side !== side && !o.off), hit = theirs.find(o => BEATS[m] === o.m), lost = theirs.find(o => BEATS[o.m] === m);
+  Object.assign(u, { side, m, T: u.t, twice: !!hit });
+  if (hit) { // countered: theirs cancelled, yours double, theirs waiting till yours has landed and a beat more
     Object.assign(hit, { off: true }); hit.cancel();
     const other = hit.side;
-    for (const k of MOVES) cooling[other][k] = Math.max(cooling[other][k] ?? 0, beatOf(other));
+    for (const k of MOVES) cooling[other][k] = Math.max(cooling[other][k] ?? 0, u.t + FINALE.open);
     flash(side === 'you' ? `${NAMES[hit.m]} COUNTERED · ×2` : `YOUR ${NAMES[hit.m]} COUNTERED`, side === 'you' ? '#5f5' : '#f55', false);
   }
   if (lost && !hit) { u.off = true; u.cancel(); // beaten: yours is lost, theirs lands
@@ -105,12 +107,30 @@ function made(side, m, u) {
   }
   underway.push(u);
 }
+// a move whose landing is a burst of the guns: its rounds over the last of its beat, the last as it lands
+const burstTime = () => (FINALE.burst - 1) * FINALE.burstEvery;
+function burst(t, round) {
+  return { t, rounds: FINALE.burst, tick() { while (this.rounds > 0 && this.t <= (this.rounds - 1) * FINALE.burstEvery) { this.rounds--; round(this); } },
+           land() {}, cancel() { this.rounds = 0; } };
+}
+// a raiding party's car, either side's: from a standstill at z0 down its lane, flat out, at z1 as its move lands
+// (chargeDrive); the party's rams are the move's landing
+function charger(u, i, n, car, z0, z1) {
+  const c = { ...car, party: u, x: ROAD_LANES[lane + Math.floor((i + 0.5) * boardW() / n)], z: z0, z0, z1, v: 0, d: NaN, hit: -Infinity, seen: null };
+  traffic.push(c);
+  return c;
+}
+function chargeDrive(c) { // road.js updateTraffic: as far across as its move is, quicker and quicker
+  const u = c.party, k = clamp(1 - u.t / u.T, 0, 1);
+  c.z = c.z0 + (c.z1 - c.z0) * k * k;
+  c.v = Math.abs(2 * (c.z1 - c.z0) * k / u.T);
+}
 
 // ---- your moves: an instrument pressed (or its key). Each fails, spending nothing, if it isn't there, isn't ready, or
 // (the cannon) has no shells; else it is under way, and he may answer it
 function move(m) {
   if (!run.fight || run.phase !== 'run' || warlord.wreck || !HAVE[m]() || !ready('you', m)) return false;
-  const u = YOURS[m]();
+  const u = YOURS[m](beatOf('you'));
   if (!u) return false;
   spend('you', m);
   beep(m === 'raid' ? 520 : 880, 0.05);
@@ -118,63 +138,40 @@ function move(m) {
   if (!u.off && !answer && ready('him', beater(m)) && rand() < FINALE.react) answer = { m: beater(m), t: FINALE.reactAfter };
   return true;
 }
-const YOURS = { // each move as it starts: its landing, and its undoing if it is beaten
-  cannon() { // a shell spent at once; it winds up, then fires (fortress.js)
+const YOURS = { // each move as it starts, t its beat: its landing, and its undoing if it is beaten
+  cannon(t) { // a shell spent at once; it winds up, then fires (fortress.js)
     if (!blocks('cannon')) { beep(140, 0.05); flash('JAMMED', '#6af', false); return null; } // every cannon knocked out
     if (progress.shells < 1) { beep(140, 0.05); flash('NO SHELLS', '#fb3', false); return null; }
     progress.shells--;
-    return { t: FINALE.wind, land() { reloading = 0; progress.shells++; fireCannon(this.twice); }, cancel() {} };
+    windSound('cannon', t, 0.5);
+    return { t, land() { reloading = 0; progress.shells++; fireCannon(this.twice); }, cancel() {} };
   },
-  raid() { // a party up the shoulder at him (gang.js): its rams are its landing; beaten, its cars are shot up, wrecks
-    const cars = [];
-    for (let n = Math.min(FINALE.party, role('raider')); n > 0; n--) { sendRaider({ car: warlord }); cars.push(traffic.at(-1)); }
-    const u = { t: Infinity, land() {}, cancel: () => { for (const c of cars) if (!c.gone && !c.wreck) crewHit(WRECK.hp, c); },
-                lasts: () => cars.some(c => !c.gone && !c.wreck) };
-    cars.forEach(c => { c.party = u; }); // its rams double if it counters (gang.js raidRam)
-    return u;
+  raid(t) { // a party out from your front and across at him abreast: a ram each as it lands (gang.js); beaten, they are
+    const u = { t, cars: [] }, n = Math.min(FINALE.party, role('raider')); // shot up, wrecks
+    for (let i = 0; i < n; i++) u.cars.push(charger(u, i, n, { raider: warlord, fleet: true, dir: 1, rammed: 0, gun: 0, turn: run.t,
+      look: racerSprite(FIELD - (run.sent++ % Math.max(1, riders())), true, true) }, odo + MY_FRONT + 2, warlord.z - 6));
+    return Object.assign(u, { land() { for (const c of this.cars) if (!c.gone && !c.wreck) raidRam(c, warlord); },
+      cancel() { for (const c of this.cars) { if (!c.gone && !c.wreck) crewHit(WRECK.hp, c); if (!c.wreck) c.gone = true; } } }); // oil.js
   },
-  guns() { // a burst: its rounds are its landing
-    const u = { t: FINALE.burst * FINALE.burstEvery, land() {}, cancel() { run.burst = 0; } };
-    Object.assign(run, { burst: FINALE.burst, burstAt: 0, burstOf: u });
-    return u;
+  guns(t) { // they spin up, then a burst (gunShot)
+    windSound('guns', t - burstTime(), 0.5);
+    return burst(t, gunShot);
   },
-  rockets() { // a salvo: up at once, landing a rocket's flight later
+  rockets(t) { // a salvo: up from your rig, over at the top and down onto him (drawSalvos)
     const n = blocks('rockets');
     if (!n) { beep(140, 0.05); flash('JAMMED', '#6af', false); return null; } // every pod knocked out (a War Boy's grenade)
-    const s = { t: ROCKET.flight, hit: FINALE.salvo * n };
+    const s = { t, T: t, hit: FINALE.salvo * n };
     salvos.push(s);
     wearOut('rockets', WEAR.rockets); // fortress.js
-    beep(220, 0.2);
-    return { t: ROCKET.flight, land() { salvos = salvos.filter(x => x !== s); if (!warlord.wreck) { hurtCar(warlord, s.hit * (this.twice ? 2 : 1)); crashSound(); } },
+    windSound('rockets', t, 0.5);
+    return { t, land() { salvos = salvos.filter(x => x !== s); if (!warlord.wreck) { hurtCar(warlord, s.hit * (this.twice ? 2 : 1)); crashSound(); } },
              cancel() { salvos = salvos.filter(x => x !== s); } };
   },
 };
-function drawFight() { drawWarlord(); drawSalvos(); } // gang.js renderGang: his telegraphs, your rockets
-// a salvo in the air: from your rig's front up in a high arc and down onto his fortress, a trail of smoke behind each
-// rocket, as his come at you (fortress.js drawRockets)
-function drawSalvos() { // the fight's, at him, and the pods' in a race, at their car (gang.js firePods)
-  const w = canvas.width, h = canvas.height;
-  for (const r of [...salvos, ...podSalvos]) {
-    const s = (r.car ?? warlord)?.seen;
-    if (!s) continue;
-    const k = 1 - r.t / ROCKET.flight, [x1, y1] = [w / 2, h * 0.7], [x2, y2] = [s[0] + s[2] / 2, s[1] + s[3] / 2];
-    for (let i = 0; i < 3; i++) { // three rockets abreast
-      const at = q => [x1 + (x2 - x1) * q + (i - 1) * w * 0.03 * (1 - q), y1 + (y2 - y1) * q - Math.sin(Math.PI * q) * h * 0.25];
-      for (let j = 4; j > 0; j--) {
-        const [x, y] = at(Math.max(0, k - j * 0.04));
-        g2d.fillStyle = `rgba(170, 170, 170, ${(0.5 - j * 0.1).toFixed(2)})`; g2d.beginPath(); g2d.arc(x, y, w / 260 * (1 + j * 0.3), 0, 2 * Math.PI); g2d.fill();
-      }
-      const [x, y] = at(k);
-      g2d.fillStyle = '#ffb347'; g2d.beginPath(); g2d.arc(x, y, w / 220, 0, 2 * Math.PI); g2d.fill();
-    }
-  }
-}
-function gunShot() { // a round of the burst: the War Rig's guns and the board's, as fireGuns does (gang.js)
-  run.burst--;
-  run.burstAt = FINALE.burstEvery;
+function gunShot(u) { // a round of your burst: the War Rig's guns and the board's, as fireGuns does (gang.js)
   beep(70, 0.04);
   tracers.push([null, warlord, performance.now()]);
-  hurtCar(warlord, GUN * (lvl('guns') + blocks('gun')) * (run.burstOf?.twice ? 2 : 1)); // double if it countered
+  hurtCar(warlord, GUN * (lvl('guns') + blocks('gun')) * (u.twice ? 2 : 1)); // double if it countered
   wearOut('gun', WEAR.gun); // fortress.js
 }
 // keys (fortress.js rigKey): S the raiders (SEND's), Space the cannon, G the guns, R the rockets
@@ -184,49 +181,43 @@ function fightKey(k, repeat) {
   return !!m;
 }
 
-// ---- his moves, on his own clock, any of the four at random, each telegraphed; and his answers to yours (move, above)
-let hisBurst = null; // his gun nests firing: { n rounds left, at s to the next, u its move }
+// ---- his moves, any of the four at random once he is free and has waited a while, each winding up where you can see
+// it; and his answers to yours (move, above)
 function hisMove(m = MOVES[Math.floor(rand() * MOVES.length)]) {
   spend('him', m);
-  made('him', m, HIS[m]());
+  run.hisClock = FINALE.his[0] + rand() * (FINALE.his[1] - FINALE.his[0]); // his wait once this one is over
+  made('him', m, HIS[m](beatOf('him')));
 }
 const HIS = { // each move as it starts, as yours (YOURS, above)
-  cannon() { // his turret winds up, glowing (drawWarlord), then a shell at a column of your front row
+  cannon(t) { // his turret winds up, a ring closing on its mouth (drawWarlord), then a shell at a column of your front row
     const col = Math.floor(rand() * boardW());
     flash('HIS CANNON!', '#f55', false);
-    beep(160, 0.3);
-    return { t: FINALE.wind, land() { hisShell(col, this.twice); }, cancel() {} };
+    windSound('cannon', t, 1);
+    return { t, land() { hisShell(col, this.twice); }, cancel() {} };
   },
-  rockets() { // locked on a cell of the board, its mark blinking, then up (fortress.js rocketTick lands them)
-    const r = { c: warlord, x: ROAD_LANES[lane + Math.floor(rand() * boardW())], y: Math.floor(rand() * boardH()), t: ROCKET.lock, air: false,
-                hit: FINALE.rocket };
+  rockets(t) { // up out of his deck on their smoke, over at the top and down onto a cell of the board, its mark blinking
+    const r = { c: warlord, x: ROAD_LANES[lane + Math.floor(rand() * boardW())], y: Math.floor(rand() * boardH()), t: t / 2, flight: t / 2,
+                air: false, hit: FINALE.rocket }; // fortress.js rocketTick lands it
     rockets.push(r);
     flash('ROCKETS!', '#f55', false);
-    beep(1200, 0.08);
-    const u = { t: ROCKET.lock + ROCKET.flight, land() {}, cancel() { rockets = rockets.filter(x => x !== r); } };
+    windSound('rockets', t, 1);
+    const u = { t, rocket: r, land() {}, cancel() { rockets = rockets.filter(x => x !== r); } };
     r.party = u; // doubled if it counters (fortress.js landRocket)
     return u;
   },
-  raid() { // three of his cars out of his gate and straight at you (hisRaiderDrive), each to ram your front row
-    const n = Math.min(FINALE.party, boardW()), cars = [];
-    for (let i = 0; i < n; i++) {
-      const k = 1 + Math.floor(rand() * 999);
-      cars.push({ hisRaider: true, dir: -1, x: ROAD_LANES[lane + Math.floor((i + 0.5) * boardW() / n)], z: warlord.z - 6 - 4 * i, v: FINALE.charge,
-                  look: madLook(trafficLook(k)), w: CAR_M, warned: true, d: NaN, hit: -Infinity, seen: null }); // road.js
-    }
-    traffic.push(...cars);
+  raid(t) { // three of his cars out of his gate and across at you abreast, each to ram your front row as it lands
+    const u = { t, cars: [] }, n = Math.min(FINALE.party, boardW());
+    for (let i = 0; i < n; i++) u.cars.push(charger(u, i, n, { hisRaider: true, dir: -1, w: CAR_M, warned: true,
+      look: madLook(trafficLook(1 + Math.floor(rand() * 999))) }, warlord.z - 6, odo + MY_FRONT + 1));
     flash('HIS RAIDERS!', '#f55', false);
     horn();
-    const u = { t: Infinity, land() {}, cancel() { for (const c of cars) if (!c.gone) Object.assign(c, { wreck: true, v: 0 }); },
-                lasts: () => cars.some(c => !c.gone && !c.wreck) };
-    cars.forEach(c => { c.party = u; });
-    return u;
+    return Object.assign(u, { land() { for (const c of this.cars) if (!c.gone && !c.wreck) hisRam(c, this.twice); },
+                              cancel() { for (const c of this.cars) if (!c.gone) Object.assign(c, { wreck: true, v: 0 }); } });
   },
-  guns() { // his gun nests fire a burst at you, round after round (hisRound)
-    const u = { t: FINALE.burst * FINALE.burstEvery, land() {}, cancel() { hisBurst = null; } };
-    hisBurst = { n: FINALE.burst, at: 0, u };
+  guns(t) { // his gun nests spin up (drawWarlord), then a burst at you, round after round (hisRound)
     flash('HIS GUNS!', '#f55', false);
-    return u;
+    windSound('guns', t - burstTime(), 1);
+    return burst(t, hisRound);
   },
 };
 function hisShell(col, twice) { // his cannon's: at a column of your front row (fortress.js hitCell)
@@ -237,40 +228,128 @@ function hisShell(col, twice) { // his cannon's: at a column of your front row (
   shake = Math.max(shake, 0.5);
   if (wrecked()) finishRun('wrecked');
 }
-function hisRound() { // a round of his guns, at a cell of your front row
-  const b = hisBurst;
-  b.at = FINALE.burstEvery;
-  if (--b.n <= 0) hisBurst = null;
+function hisRound(u) { // a round of his guns, at a cell of your front row
   tracers.push([warlord, 'you', performance.now()]);
   beep(90, 0.03);
-  hitCell(FINALE.round * (b.u.twice ? 2 : 1) * (1 - armorCut()), Math.floor(rand() * boardW()), 0);
+  hitCell(FINALE.round * (u.twice ? 2 : 1) * (1 - armorCut()), Math.floor(rand() * boardW()), 0);
   if (wrecked()) finishRun('wrecked');
 }
-// road.js updateTraffic: his raiders, straight at you down their lanes; one that reaches your front rams it, and is gone
-function hisRaiderDrive(c, dt) {
-  c.z -= c.v * dt;
-  if (c.z - odo > MY_FRONT + 1) return;
+function hisRam(c, twice) { // one of his raiders into your front row, and gone
   c.gone = true;
-  hitCell(FINALE.ram * (c.party?.twice ? 2 : 1) * (1 - armorCut()), clamp(columnAt(c.x), 0, boardW() - 1), 0); // fortress.js
+  hitCell(FINALE.ram * (twice ? 2 : 1) * (1 - armorCut()), clamp(columnAt(c.x), 0, boardW() - 1), 0); // fortress.js
   crashSound();
   shake = Math.max(shake, 0.4);
   if (wrecked()) finishRun('wrecked');
 }
-// his telegraphs, drawn over his fortress (gang.js renderGang): his turret's mouth glowing as it winds up, brighter the
-// nearer the shot; his gun nests' muzzles flashing while they fire
+
+// the wind-ups' sounds (Web Audio, engine.js), his louder than yours: the cannon a hum rising to its shot, the guns a
+// rattle spinning up, the rockets a roar going up and a whistle coming down
+function windSound(kind, secs, loud) {
+  if (!ctx) return;
+  const t = ctx.currentTime, mid = t + secs / 2, end = t + secs;
+  // a sound through a filter (at Hz), swept from f0 to f1 Hz (its own pitch, or the filter's for a hiss), swelling to vol
+  const voice = (src, filter, at, f0, f1, from, to, vol) => {
+    const g = ctx.createGain(), f = Object.assign(ctx.createBiquadFilter(), { type: filter }), p = src.frequency ?? f.frequency;
+    f.frequency.value = at;
+    p.setValueAtTime(f0, from); p.exponentialRampToValueAtTime(f1, to);
+    g.gain.setValueAtTime(0.0001, from); g.gain.exponentialRampToValueAtTime(vol * loud, to - 0.03); g.gain.exponentialRampToValueAtTime(0.0001, to + 0.05);
+    src.connect(f).connect(g).connect(carBus); src.start(from); src.stop(to + 0.1);
+  };
+  const osc = type => Object.assign(ctx.createOscillator(), { type }), hiss = () => Object.assign(ctx.createBufferSource(), { buffer: noise, loop: true });
+  if (kind === 'cannon') voice(osc('sawtooth'), 'lowpass', 900, 45, 180, t, end, 0.12);
+  if (kind === 'guns') voice(osc('square'), 'highpass', 300, 5, 30, t, end, 0.1);
+  if (kind === 'rockets') { voice(hiss(), 'bandpass', 0, 300, 1500, t, mid, 0.25); voice(osc('sine'), 'lowpass', 4000, 1600, 400, mid, end, 0.05); }
+}
+
+// his wind-ups, drawn over his fortress (gang.js renderGang), each its own (the owner, 5 Nov, after playtesting: "it's
+// hard to spot what is coming (except the enemy raiders - those are great)"; "I like the cannon closing circle"): his
+// cannon's ring closing on his turret's mouth, its glow growing, the shot as it closes; his gun nests spinning up,
+// glowing and throwing sparks, then flashing as they fire; his rockets up out of his deck on their smoke, over at the top
+// and down at you (the owner's: "they could first go up and then turn towards the player"). His raiders are their cars
 function drawWarlord() {
   const s = warlord?.seen;
   if (!s || warlord.wreck) return;
+  const cx = s[0] + s[2] / 2, now = performance.now();
   for (const u of underway) {
     if (u.side !== 'him') continue;
+    const k = clamp(1 - u.t / u.T, 0, 1);
     if (u.m === 'cannon') {
-      const k = clamp(1 - u.t / FINALE.wind, 0, 1), x = s[0] + s[2] / 2, y = s[1] + s[3] * 0.2, r = s[3] * (0.05 + 0.1 * k);
-      const glow = g2d.createRadialGradient(x, y, 0, x, y, r * 2);
-      glow.addColorStop(0, `rgba(255, 220, 120, ${(0.5 + 0.5 * k).toFixed(2)})`); glow.addColorStop(1, 'rgba(255, 90, 20, 0)');
-      g2d.fillStyle = glow; g2d.fillRect(x - 2 * r, y - 2 * r, 4 * r, 4 * r);
+      const y = s[1] + s[3] * 0.2, mouth = s[3] * 0.07, r = mouth + (Math.max(s[2] * 0.6, canvas.height * 0.3) - mouth) * (1 - k);
+      const glow = g2d.createRadialGradient(cx, y, 0, cx, y, s[3] * (0.1 + 0.3 * k));
+      glow.addColorStop(0, `rgba(255, 220, 120, ${(0.4 + 0.6 * k).toFixed(2)})`); glow.addColorStop(1, 'rgba(255, 90, 20, 0)');
+      g2d.fillStyle = glow; g2d.beginPath(); g2d.arc(cx, y, s[3] * (0.1 + 0.3 * k), 0, 2 * Math.PI); g2d.fill();
+      g2d.lineWidth = Math.max(2, s[3] * 0.025); g2d.strokeStyle = 'rgba(255, 240, 200, 0.6)'; // where it closes
+      g2d.beginPath(); g2d.arc(cx, y, mouth, 0, 2 * Math.PI); g2d.stroke();
+      if (k < 0.9 || now % 160 < 100) { // closing, blinking at the last
+        g2d.lineWidth = Math.max(3, s[3] * 0.05 * (0.6 + 0.8 * k)); g2d.strokeStyle = `rgb(255, ${Math.round(210 - 150 * k)}, 40)`;
+        g2d.beginPath(); g2d.arc(cx, y, r, 0, 2 * Math.PI); g2d.stroke();
+      }
     }
-    if (u.m === 'guns' && performance.now() % 120 < 60) for (const f of [0.12, 0.88]) {
-      g2d.fillStyle = '#fff3c0'; g2d.beginPath(); g2d.arc(s[0] + s[2] * f, s[1] + s[3] * 0.24, s[3] * 0.06, 0, 2 * Math.PI); g2d.fill();
+    if (u.m === 'guns') for (const f of [0.12, 0.88]) {
+      const x = s[0] + s[2] * f, y = s[1] + s[3] * 0.24;
+      if (u.rounds < FINALE.burst) { // firing
+        if (now % 120 < 60) { g2d.fillStyle = '#fff3c0'; g2d.beginPath(); g2d.arc(x, y, s[3] * 0.16, 0, 2 * Math.PI); g2d.fill(); }
+        continue;
+      }
+      const q = clamp(k * u.T / (u.T - burstTime()), 0, 1), a = now / 1000 * (3 + 40 * q * q), r = s[3] * (0.1 + 0.12 * q); // spinning up
+      const glow = g2d.createRadialGradient(x, y, 0, x, y, r * 1.6);
+      glow.addColorStop(0, `rgba(255, 200, 90, ${(0.4 + 0.6 * q).toFixed(2)})`); glow.addColorStop(1, 'rgba(255, 90, 20, 0)');
+      g2d.fillStyle = glow; g2d.beginPath(); g2d.arc(x, y, r * 1.6, 0, 2 * Math.PI); g2d.fill();
+      g2d.strokeStyle = '#fff0c8'; g2d.lineWidth = Math.max(3, s[3] * 0.04); // the barrels' cluster, a blur as it gets going
+      for (let i = 0; i < 3; i++) { const b = a + i * 2 * Math.PI / 3; g2d.beginPath(); g2d.moveTo(x, y); g2d.lineTo(x + Math.cos(b) * r, y + Math.sin(b) * r); g2d.stroke(); }
+      g2d.beginPath(); g2d.arc(x, y, r, 0, 2 * Math.PI); g2d.stroke();
+      g2d.fillStyle = '#ffd36a'; // sparks
+      for (let i = 0; i < Math.round(10 * q); i++) { const b = Math.random() * 2 * Math.PI, d = r * (1.1 + Math.random() * 1.6), z = Math.max(2, s[3] * 0.025);
+        g2d.fillRect(x + Math.cos(b) * d, y + Math.sin(b) * d, z, z); }
+    }
+    if (u.m === 'rockets') { // three abreast, out of his deck and up, over at the top, down onto the cell they are locked on
+      const r = u.rocket, w = canvas.width, col = (r.x - carX) / LANE_W + (boardW() - 1) / 2, to = [w * (0.4 + 0.2 * (col + 0.5) / boardW()), canvas.height * 0.72];
+      for (let i = -1; i <= 1; i++) drawRocket(k, [cx + i * s[2] * 0.15, s[1] + s[3] * 0.3], [cx + i * w * 0.05, canvas.height * PEAK], to, w / 240, w / 60);
+    }
+  }
+}
+// a rocket in the fight, either side's: up from where it was fired, over at the top of the windshield (PEAK down the
+// screen: below the mirror) and down onto what it is after, at k (0 to 1) of its beat; a trail of smoke behind it; its
+// size size0 going up, size1 as it lands
+const PEAK = 0.2;
+function rocketAt(k, from, peak, to) {
+  if (k < 0.5) { const q = (2 * k) ** 2; return [from[0] + (peak[0] - from[0]) * q, from[1] + (peak[1] - from[1]) * q]; } // up, quicker and quicker
+  const q = (2 * k - 1) ** 1.4, over = [peak[0] + (to[0] - peak[0]) * 0.25, peak[1] - canvas.height * 0.08], p = 1 - q; // over, and down
+  return [p * p * peak[0] + 2 * p * q * over[0] + q * q * to[0], p * p * peak[1] + 2 * p * q * over[1] + q * q * to[1]];
+}
+function drawRocket(k, from, peak, to, size0, size1) {
+  const size = q => q < 0.5 ? size0 : size0 + (size1 - size0) * (2 * q - 1) ** 2;
+  for (let j = 8; j > 0; j--) { // the smoke
+    const q = Math.max(0, k - j * 0.02), [x, y] = rocketAt(q, from, peak, to);
+    g2d.fillStyle = `rgba(190, 190, 190, ${(0.7 - j * 0.075).toFixed(2)})`; g2d.beginPath(); g2d.arc(x, y, size(q) * (0.9 + j * 0.25), 0, 2 * Math.PI); g2d.fill();
+  }
+  const [x, y] = rocketAt(k, from, peak, to);
+  g2d.fillStyle = '#ffb347'; g2d.beginPath(); g2d.arc(x, y, size(k) * 1.1, 0, 2 * Math.PI); g2d.fill(); // its flame, its nose
+  g2d.fillStyle = '#2b3011'; g2d.beginPath(); g2d.arc(x, y, size(k) * 0.7, 0, 2 * Math.PI); g2d.fill();
+}
+function drawFight() { drawWarlord(); drawSalvos(); } // gang.js renderGang: his wind-ups, your rockets
+// your salvos in the air: in the fight up from your rig, over at the top and down onto him (drawRocket); the pods' in a
+// race, at their car (gang.js firePods), from your rig's front up in a high arc and down onto it, as a rocket car's come
+// at you (fortress.js drawRockets)
+function drawSalvos() {
+  const w = canvas.width, h = canvas.height;
+  for (const r of [...salvos, ...podSalvos]) {
+    const s = (r.car ?? warlord)?.seen;
+    if (!s) continue;
+    const [x1, y1] = [w / 2, h * 0.7], [x2, y2] = [s[0] + s[2] / 2, s[1] + s[3] / 2];
+    if (r.T) { // the fight's
+      for (let i = -1; i <= 1; i++) drawRocket(1 - r.t / r.T, [x1 + i * w * 0.03, y1], [x1 + i * w * 0.05, h * PEAK], [x2 + i * s[2] * 0.15, y2], w / 160, w / 400);
+      continue;
+    }
+    const k = 1 - r.t / ROCKET.flight;
+    for (let i = 0; i < 3; i++) { // three rockets abreast
+      const at = q => [x1 + (x2 - x1) * q + (i - 1) * w * 0.03 * (1 - q), y1 + (y2 - y1) * q - Math.sin(Math.PI * q) * h * 0.25];
+      for (let j = 4; j > 0; j--) {
+        const [x, y] = at(Math.max(0, k - j * 0.04));
+        g2d.fillStyle = `rgba(170, 170, 170, ${(0.5 - j * 0.1).toFixed(2)})`; g2d.beginPath(); g2d.arc(x, y, w / 260 * (1 + j * 0.3), 0, 2 * Math.PI); g2d.fill();
+      }
+      const [x, y] = at(k);
+      g2d.fillStyle = '#ffb347'; g2d.beginPath(); g2d.arc(x, y, w / 220, 0, 2 * Math.PI); g2d.fill();
     }
   }
 }
@@ -284,6 +363,7 @@ function warlordDown(c) {
   finishFight(true);
 }
 function finishFight(won) {
+  for (let i = traffic.length; i--;) if (traffic[i].party) traffic.splice(i, 1); // raiding parties, either side's, gone
   run.won = won;
   run.gain = 0; // the garage's line of numbers: a run, but a fight's (distance.js runLine)
   progress.runs++;
@@ -321,13 +401,15 @@ for (const m of GAUGES) $(`fight-${m}`).onpointerdown = e => { e.preventDefault(
 TUTORIALS.push({ id: 'fight', name: "The warlord's fight", open: () => finaleOpen(), pages: [
   { title: 'YOUR WEAPONS',
     both: 'In his fight each weapon is an instrument of its own: the CB radio sends a raiding party, the pedal fires the ' +
-      'cannon, the lever a burst of the guns, the launch button the rockets (with a rocket pod on the board). They share ' +
-      'one cooldown: Dispatch shortens it.' },
+      'cannon, the lever a burst of the guns, the launch button the rockets (with a rocket pod on the board). One at a ' +
+      'time: each takes 3 seconds, its wind-up and all, and nothing else goes till it is over. Dispatch makes yours quicker.' },
   { title: 'WHAT BEATS WHAT',
     both: 'The cannon beats raiders, raiders beat guns, guns beat rockets, and rockets beat the cannon as it winds up.' },
   { title: 'HIS MOVES',
-    both: 'Each of his moves shows itself before it lands. Answer with the one that beats it: his is cancelled, yours does ' +
-      'double. Answer with the one it beats and yours is lost. He answers yours too, now and then.' },
+    both: 'Each of his moves winds up before it lands: a ring closing on his turret, his gun nests spinning up, his rockets ' +
+      'going up, his raiders coming. Answer with the one that beats it: his is cancelled, yours does double, and he reels ' +
+      'till yours has landed and a moment more: strike then. Answer with the one it beats and yours is lost. Strike while ' +
+      'he is free and he answers now and then.' },
 ] });
 
 // ---- the warning signs (the owner, 4 Nov: "only start to appear when war rig's size is at least 2 for each
