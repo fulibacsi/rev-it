@@ -19,7 +19,8 @@ def check(name, ok, got=""):
     if not ok: fails.append(name)
 # the road cleared but for what a check puts there: the traffic oncoming, a way off; the racers far behind; the clocks held
 CLEAR = "traffic.forEach((c, i) => { if (!c.racer && !c.fleet) Object.assign(c, { dir: -1, x: LANES.oncoming[i % 2], z: odo + 1500 + 40 * i, " \
-        "rig: false, police: false, suv: false, hp: null, wreck: false }); else if (c.racer) c.z = odo - 3000; }); " \
+        "rig: false, police: false, suv: false, tank: false, jeep: false, rocket: false, harpoon: false, heli: false, alt: 0, " \
+        "hp: null, wreck: false }); else if (c.racer) c.z = odo - 3000; }); " \
         "target = quarry = null; gangClock = copClock = 1e9; ambushes = []; run.loot = []"
 RIG = """() => { const c = traffic.find(c => !c.racer && !c.fleet && !c.wreck && !c.rig);
     Object.assign(c, { dir: 1, rig: true, stage: 'hold', t: 1e9, z: odo + 60, v: speed, lane: 1 - lane, x: MY_LANES[1 - lane],
