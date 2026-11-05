@@ -4,8 +4,8 @@ FIGHT beside DRIVE in the garage. In the fight his fortress stands head-on 70 m 
 you stand too; no aid, no Auto cannon, no War chief. The dashboard is cleared (no oil, no SEND, no hold, no key, no
 stereo, no reticle), the board kept, and your weapons are instruments of their own, each there only if you have it:
 the CB radio (a raiding party: three raiders, a ram each), the pedal (the cannon), the lever (a burst of the guns); no
-launch button without a rocket pod. They share one cooldown (Dispatch shortens it), so a second press too soon does
-nothing. Your health is in the mirror, his over his fortress. He fires his cannon at your front row and rockets at a
+launch button without a rocket pod. One move at a time, each 3 s with its wind-up (Dispatch shortens yours), so a
+second press meanwhile does nothing. Your health is in the mirror, his over his fortress. He fires his cannon at your front row and rockets at a
 cell of the board. Wrecked, back to the garage (FIGHT waits for a repair); his fortress down, the WARLORD screen.
 Phone and desktop."""
 import json
@@ -81,55 +81,64 @@ with sync_playwright() as p:
                                                    "CANNON", True], got)
         pg.screenshot(path=f"{OUT}/finale_{layout}_fight.png")
 
-        # 3. one cooldown for them all (1.5 s, 0.08 of it less a level of Dispatch): the cannon winds up (1.2 s) and fires (a
-        # shell: 250, Heavy shells none, two blocks), the lever too soon does nothing; a beat later its burst (8 rounds of
-        # 6 x (3 + 2)); no Auto cannon, no War chief meanwhile
+        # 3. one move at a time (the owner, 5 Nov), each 3 s, its wind-up and all (0.08 of it less a level of Dispatch): the
+        # cannon winds up and fires as it ends (a shell: 250, Heavy shells none, two blocks), the lever meanwhile does
+        # nothing; then the guns spin up and fire a burst over the last of theirs (8 rounds of 6 x (3 + 2)); no Auto
+        # cannon, no War chief meanwhile
         got = js(f"""(() => {{ {HOLD}; const hp0 = health(warlord), shells = progress.shells;
             const a = move('cannon'), b = move('guns'), hp1 = warlord.hp, cd = +cooling.you.guns.toFixed(2);
             return [a, b, hp0 - (hp1 ?? hp0), shells - progress.shells, cd, +beatOf('you').toFixed(2), (progress.levels.workRate = 5, +beatOf('you').toFixed(2))]; }})()""")
         js("progress.levels.workRate = 0")
+        pg.wait_for_timeout(2000)
+        got += js("[move('guns'), Math.round(health(warlord) - (warlord.hp ?? health(warlord)))]")
+        pg.wait_for_timeout(1300)
+        got += js("""(() => { const hp = warlord.hp; return [move('guns'), underway.find(u => u.side === 'you')?.rounds]; })()""")
+        pg.wait_for_timeout(1500)
+        got += js("[Math.round(health(warlord) - 500 - warlord.hp)]")
         pg.wait_for_timeout(1700)
-        got += js("""(() => { const hp = warlord.hp, ok = move('guns'); return [ok, run.burst]; })()""")
-        pg.wait_for_timeout(1200)
         got += js("""[raiding().length, Math.round(health(warlord) - 500 - warlord.hp)]""")
-        check(f"{layout}: one cooldown: the cannon winds up (nothing yet, a shell spent), the lever at once does nothing, 1.5 s "
-              f"(0.9 at Dispatch 5); a beat later the burst, 8 rounds of 30, the shell's 500 in by then; no Auto cannon, no raiders "
-              f"sent by the War chief", got == [True, False, 0, 1, 1.5, 1.5, 0.9, True, 8, 0, 240], got)
+        check(f"{layout}: one at a time: the cannon winds up (nothing yet, a shell spent), the lever meanwhile does nothing, 3 s "
+              f"(1.8 at Dispatch 5); 2 s on, still nothing; 3 s on, the shell's 500 in, the guns spinning up (nothing yet 1.5 s "
+              f"on), then 8 rounds of 30; no Auto cannon, no raiders sent by the War chief",
+              got == [True, False, 0, 1, 3, 3, 1.8, False, 0, True, 8, 0, 0, 240], got)
 
         # 4. the CB radio: a raiding party of three, a ram each (102 with the bull bar), and back
         pg.wait_for_timeout(1600)
         got = js("""(() => { const hp = warlord.hp, ok = move('raid'); return [ok, raiding().length, hp]; })()""")
         pg.wait_for_function("raiding().length === 0", timeout=15000)
         got2 = js("Math.round(warlord.hp)")
-        check(f"{layout}: the CB radio sends three raiders; they ram him once each and are gone, 306 and their guns' rounds off him",
-              got[:2] == [True, 3] and got[2] - got2 >= 306, [got, got2])
+        check(f"{layout}: the CB radio sends three raiders out from your front; they ram him once each as the move ends, 306, and are gone",
+              got[:2] == [True, 3] and got[2] - got2 == 306, [got, got2])
 
-        # 5. his moves, each telegraphed: his cannon winds up (HIS CANNON!), its shell 15% less Armor plating's 75% off a part
-        # on your front row 1.2 s later; his rockets lock on a cell of the board; his raiders come out of his gate at you;
-        # his gun nests fire a burst
+        # 5. his moves, each winding up: his cannon (HIS CANNON!), its shell 36% less Armor plating's 75% off a part on your
+        # front row 3 s later, nothing before; his rockets lock on a cell of the board; his raiders come out of his gate at
+        # you; his gun nests spin up
         js("FINALE.react = 0")
         got = js("""(() => { const f = progress.fortress; window.hp5 = f.parts.map(hpOf); cooling.him = {}; hisMove('cannon');
             return [$('flash').textContent, f.parts.every((p, i) => hpOf(p) === hp5[i]), underway.some(u => u.side === 'him' && u.m === 'cannon')]; })()""")
-        pg.wait_for_timeout(1500)
+        pg.wait_for_timeout(2000)
+        got += [js("""progress.fortress.parts.map((p, i) => +(hp5[i] - hpOf(p)).toFixed(2)).filter(x => x > 0)""")]
+        pg.wait_for_timeout(1300)
         got += [js("""progress.fortress.parts.map((p, i) => +(hp5[i] - hpOf(p)).toFixed(2)).filter(x => x > 0)""")]
         got += js("""(() => { cooling.him = {}; hisMove('rockets'); const r = rockets.at(-1)?.c === warlord; cooling.him = {}; hisMove('raid');
             const cars = traffic.filter(c => c.hisRaider).length; cooling.him = {}; hisMove('guns');
-            const out = [r, cars, !!hisBurst]; underway = []; rockets = []; hisBurst = null; traffic.forEach(c => { if (c.hisRaider) c.gone = true; });
-            return out; })()""")
+            const out = [r, cars, underway.find(u => u.side === 'him' && u.m === 'guns')?.rounds]; underway = []; rockets = [];
+            traffic.forEach(c => { if (c.hisRaider) c.gone = true; }); return out; })()""")
         js(HOLD)
-        check(f"{layout}: HIS CANNON! winds up, nothing hit yet; 1.2 s later 3.75 off a part on your front row; his rockets lock "
-              f"on; three of his raiders come at you; his guns fire", got == ["HIS CANNON!", True, True, [3.75], True, 3, True], got)
+        check(f"{layout}: HIS CANNON! winds up, nothing hit yet, nor 2 s on; 3 s on, 9 off a part on your front row; his rockets "
+              f"lock on; three of his raiders come at you; his gun nests spin up", got == ["HIS CANNON!", True, True, [], [9], True, 3, 8], got)
 
         # 6. keys: S the raiders, Space the cannon, G the guns, as the instruments
         got = js("""(() => { cooling.you = {}; const k = key => { const e = new KeyboardEvent('keydown', { key }); dispatchEvent(e); };
-            const s = progress.shells; k(' '); const cannon = progress.shells === s - 1; cooling.you = {}; k('g'); const guns = run.burst > 0;
+            const s = progress.shells; k(' '); const cannon = progress.shells === s - 1; cooling.you = {}; k('g');
+            const guns = underway.some(u => u.side === 'you' && u.m === 'guns');
             cooling.you = {}; const n = raiding().length; k('s'); return [cannon, guns, raiding().length - n]; })()""")
         check(f"{layout}: Space fires the cannon, G the guns, S sends the raiders", got == [True, True, 3], got)
 
         # 6b. rocket pods (layer 2): a part the army's rocket cars drop most, the dealer's sometimes; mounted, the launch
-        # button shows, and a press is a salvo from every pod block, landing a rocket's flight (1 s) later, 200 a block,
-        # on the one cooldown; with every pod knocked out, JAMMED and nothing spent
-        pg.wait_for_function("raiding().length === 0 && !run.burst", timeout=15000)  # section 6's raiders home, its burst over
+        # button shows, and a press is a salvo from every pod block, up, over and down onto him as its 3 s end, 200 a block,
+        # one move at a time; with every pod knocked out, JAMMED and nothing spent
+        pg.wait_for_function("raiding().length === 0 && !underway.length", timeout=15000)  # section 6's moves over
         got = js("""(() => { const t = DROPS.rocket[1], most = Object.keys(t).sort((a, b) => t[b] - t[a])[0];
             const others = Object.entries(DROPS).filter(([k]) => k !== 'rocket').some(([, d]) => d[1].rockets);
             const runs = progress.runs; let at = -1; const f = progress.fortress, deal = f.deal;
@@ -141,14 +150,14 @@ with sync_playwright() as p:
         js(HOLD)
         got += js("""(() => { cooling.you = {}; const shown = !$('fight-rockets').hidden;
             window.hp0 = warlord.hp; const a = move('rockets'), b = move('guns'); return [shown, a, b, salvos.length, warlord.hp === hp0]; })()""")
-        pg.wait_for_timeout(500)
-        pg.screenshot(path=f"{OUT}/finale_{layout}_rockets.png")  # the salvo in the air, the launch button
-        pg.wait_for_timeout(800)
+        pg.wait_for_timeout(1200)
+        pg.screenshot(path=f"{OUT}/finale_{layout}_rockets.png")  # the salvo going up, the launch button
+        pg.wait_for_timeout(2100)
         got += js("[salvos.length, Math.round(hp0 - warlord.hp)]")
         got += js("""(() => { cooling.you = {}; const pod = progress.fortress.parts.at(-1); jammed.set(pod, 9); const r = [move('rockets'), salvos.length];
             jammed.delete(pod); return r; })()""")
         check(f"{layout}: rocket pods: the rocket car's drop mostly, nobody else's; the dealer offers one now and then; mounted, the "
-              f"launch button; a salvo goes up (the lever then waits), lands a second later, 400 off him (200 a block, two blocks); jammed, nothing",
+              f"launch button; a salvo goes up (the lever then waits), lands 3 s later, 400 off him (200 a block, two blocks); jammed, nothing",
               got == ["rockets", False, True, True, True, False, 1, True, 0, 400, False, 0], got)
         # 6b2. the dealer before his fight (the owner): once the warlord waits, a weapon of his fight the rig lacks is
         # among the offers first: a rocket pod with none on the board; with nothing on the rig (no War Rig guns, a bare
@@ -162,36 +171,38 @@ with sync_playwright() as p:
 
         # 6c. the cycle (layer 3): each move beats one (the cannon raiders, raiders guns, guns rockets, rockets the cannon).
         # Stepped here a 60th at a time, the loop paused. Under way, his move is cancelled by the one that beats it, yours
-        # doing double, and he is open a beat; yours is lost to the one that beats it (raiders shot up: wrecks), his landing;
-        # neutral, both land. He answers yours now and then: with FINALE.react 1, at once, with the move that beats it
+        # doing double, and he waits till it has landed and a beat more; yours is lost to the one that beats it (raiders
+        # shot up: wrecks), his landing; neutral, both land. He answers yours now and then: with FINALE.react 1, 0.4 s on,
+        # with the move that beats it
         got = js("""(() => { menuOpen = true;
             const step = s => { for (let t = 0; t < s; t += 1 / 60) { fightTick(1 / 60); updateTraffic(1 / 60, performance.now() / 1000); } };
             const f = progress.fortress, hp = () => Math.round(warlord.hp ?? health(warlord));
             let hits = 0; const cell = window.hitCell; window.hitCell = (...a) => { hits++; return cell(...a); }; const board = () => hits; // hits landed
-            const clear = () => { underway = []; answer = hisBurst = null; rockets = []; salvos = []; run.burst = 0; FINALE.react = 0;
+            const clear = () => { underway = []; answer = null; rockets = []; salvos = []; FINALE.react = 0;
               cooling = { you: {}, him: { raid: 99, cannon: 99, guns: 99, rockets: 99 } }; traffic.forEach(c => { if (c.raider || c.hisRaider) c.gone = true; }); step(0.05); };
             const his = m => { cooling.him = {}; hisMove(m); run.hisClock = 99; }, out = {}; // his own clock held: only the move set
-            clear(); his('cannon'); step(1); let b0 = board(), h0 = hp(); move('rockets'); const open = +cooling.him.cannon.toFixed(1); step(1.5);
+            clear(); his('cannon'); step(1); let b0 = board(), h0 = hp(); move('rockets'); const open = +cooling.him.cannon.toFixed(1); step(3.1);
             out.cannonByRockets = [board() === b0, h0 - hp(), open];
-            clear(); his('raid'); b0 = board(); h0 = hp(); move('cannon'); const downed = traffic.filter(c => c.hisRaider && c.wreck).length; step(1.5);
+            clear(); his('raid'); b0 = board(); h0 = hp(); move('cannon'); const downed = traffic.filter(c => c.hisRaider && c.wreck).length; step(3.1);
             out.raidByCannon = [downed, board() === b0, h0 - hp()];
-            clear(); his('rockets'); b0 = board(); h0 = hp(); move('guns'); const gone = !rockets.length; step(3);
+            clear(); his('rockets'); b0 = board(); h0 = hp(); move('guns'); const gone = !rockets.length; step(3.1);
             out.rocketsByGuns = [gone, board() === b0, h0 - hp()];
-            clear(); his('guns'); step(0.2); move('raid'); const stopped = !hisBurst; h0 = hp(); step(5);
-            out.gunsByRaid = [stopped, h0 - hp() >= 612];
-            clear(); const down = progress.crewDown; his('cannon'); b0 = board(); move('raid'); step(1.5);
+            clear(); his('guns'); step(0.2); move('raid'); const stopped = !underway.some(u => u.side === 'him' && !u.off); h0 = hp(); step(3.1);
+            out.gunsByRaid = [stopped, h0 - hp()];
+            clear(); const down = progress.crewDown; his('cannon'); b0 = board(); move('raid'); step(3.1);
             out.raidLost = [progress.crewDown - down, board() !== b0, raiding().length];
-            progress.crewDown = down; clear(); his('cannon'); b0 = board(); h0 = hp(); move('guns'); step(1.5);
+            progress.crewDown = down; clear(); his('cannon'); b0 = board(); h0 = hp(); move('guns'); step(3.1);
             out.neutral = [board() !== b0, h0 - hp()];
-            clear(); FINALE.react = 1; cooling.him = {}; run.hisClock = 99; b0 = board(); h0 = hp(); move('rockets'); step(1.5);
+            clear(); FINALE.react = 1; cooling.him = {}; run.hisClock = 99; b0 = board(); h0 = hp(); move('rockets'); step(3.6);
             out.answered = [h0 - hp(), board() !== b0];
             clear(); FINALE.react = 0.3; f.parts.pop(); applyUpgrades(); menuOpen = false; window.hitCell = cell;
             return out; })()""")
         js(HOLD)
-        check(f"{layout}: rockets on his winding cannon: his shell never comes, the salvo doubled (800), he is open a beat (1.5 s)", got["cannonByRockets"] == [True, 800, 1.5], got["cannonByRockets"])
+        check(f"{layout}: rockets on his winding cannon: his shell never comes, the salvo doubled (800), he waits till it has landed "
+              f"and a beat more (4.5 s)", got["cannonByRockets"] == [True, 800, 4.5], got["cannonByRockets"])
         check(f"{layout}: the cannon on his raiders: all three wrecked, none rams you, the shell doubled (1,000)", got["raidByCannon"] == [3, True, 1000], got["raidByCannon"])
         check(f"{layout}: the guns on his rockets: shot down, nothing lands, the burst doubled (480)", got["rocketsByGuns"] == [True, True, 480], got["rocketsByGuns"])
-        check(f"{layout}: raiders on his gun nests: his burst stops, their rams doubled (612 and more)", got["gunsByRaid"] == [True, True], got["gunsByRaid"])
+        check(f"{layout}: raiders on his gun nests: his burst never comes, their rams doubled (612)", got["gunsByRaid"] == [True, 612], got["gunsByRaid"])
         check(f"{layout}: raiders into his winding cannon: shot up, three wrecks, and his shell lands", got["raidLost"] == [3, True, 0], got["raidLost"])
         check(f"{layout}: the guns against his cannon: neutral, both land (his shell, your 240)", got["neutral"] == [True, 240], got["neutral"])
         check(f"{layout}: he answers a salvo with his guns: the salvo shot down (nothing off him), his guns' rounds doubled on you",

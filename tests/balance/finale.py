@@ -2,10 +2,10 @@
 out, the board packed: a two-block cannon, armor either side, two pairs of guns, spikes, two engines; 30 shells, a war
 crew of 54), optionally with a two-block rocket pod, the fight stepped in the page a 60th of a second at a time, the
 game's own loop paused. A bot plays it as a player would: each of his moves seen once it shows, answered after its
-reaction time with the move that beats it (right as often as its accuracy says, else another of its moves), when that
-move is ready; between his moves, a move of its own as soon as the cooldown allows (the one he is least able to
-answer: the beater of which he has cooling longest). A masher, for contrast, presses whatever is ready, his moves
-unseen. Each fight to a win or a wreck (or 5 minutes): who won, how long it took, your health and his left, the moves
+reaction time with the move that beats it (right as often as its accuracy says, else another of its moves), when it is
+free; and a move of its own while he is busy with nothing under way (reeling from a counter, or his move beaten), at
+random (one at a time, 5 Nov: a move of its own while he is free he answers now and then, and while it is under way
+it can't answer his). A masher, for contrast, presses whatever is ready, his moves unseen. Each fight to a win or a wreck (or 5 minutes): who won, how long it took, your health and his left, the moves
 made and how they met (countered, lost, neutral), his answers.
 Usage: finale.py [fights] [skill...] [overrides]: skills good (0.4 s, 90%), average (0.7 s, 70%), poor (1 s, 50%),
 masher; the overrides JavaScript run first to try other numbers ("FINALE.hp = 6000")."""
@@ -48,9 +48,8 @@ FIGHT = """(([react, right, seed, pods]) => {
         seen.set(u, { at: t + react, m: good || !others.length ? beater(u.m) : others[Math.floor(roll() * others.length)] });
       }
       for (const [u, s] of seen) if (!s.done && t >= s.at) { if (u.off) s.done = true; else if (HAVE[s.m]() && ready('you', s.m)) { s.done = true; move(s.m); } }
-      if (!underway.some(u => u.side === 'him' && !u.off) && ready('you', 'cannon')) { // his clock: least able to answer
-        const can = have.filter(m => m !== 'cannon' || progress.shells > 0), open = m => cooling.him[beater(m)] ?? 0;
-        const best = Math.max(...can.map(open)), ties = can.filter(m => open(m) === best), pick = ties[Math.floor(roll() * ties.length)];
+      if (!underway.some(u => u.side === 'him' && !u.off) && !ready('him', 'cannon') && ready('you', 'cannon')) { // he reels
+        const can = have.filter(m => m !== 'cannon' || progress.shells > 0), pick = can[Math.floor(roll() * can.length)];
         if (pick) move(pick);
       }
     } else { const m = have.filter(m => ready('you', m))[Math.floor(roll() * have.length)]; if (m) move(m); } // a masher
