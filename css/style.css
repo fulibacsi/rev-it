@@ -560,3 +560,6 @@ body.fight #board { left: 2vw; top: 31vh; bottom: auto; width: auto; height: 26v
 #warlord-bar[hidden] { display: none; }
 #warlord-bar i { display: block; height: 6px; margin-top: 2px; border: 1px solid #f55; background: #400; }
 #warlord-bar i::after { content: ''; display: block; height: 100%; width: calc(var(--hp, 1) * 100%); background: #f33; }
+
+/* the ending (finale.js): the cockpit fades away as the camera rises out of it; the road and the sky alone */
+body.ending > :not(#world):not(#menu):not(#rotate) { opacity: 0; pointer-events: none; transition: opacity 1.5s; }

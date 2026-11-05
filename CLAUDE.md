@@ -64,7 +64,8 @@ talking about upgrades. Keep it up to date with every change to an upgrade, a ta
   Rebuild, the war rig's cockpit, the fortress's board, the cannon and its shells, the rival gang (unlimited, its ranks
   paying points), its mines, harpoon trucks and war rigs, the army's jeeps and rocket cars, the loot, the rig widened, the shield: hits by where they
   land, parts worn out and falling off; the ambushes, drawn by the fortress's strength), `finale.js` (the warlord's fight:
-  FIGHT, the standoff, the fight's instruments and their shared cooldown, his moves, the ending), `damage.js` (damage, heat, nitro), `aids.js` (Distance's driver aids: robot feet and
+  FIGHT, the standoff, the fight's instruments and their shared cooldown, his moves, the warning signs, the ending: the
+  camera out of the cockpit, your fortress into the sun), `damage.js` (damage, heat, nitro), `aids.js` (Distance's driver aids: robot feet and
   hands working the same pedals and lever as the player).
 - Saves: `localStorage` keys `car-rev-settings` and `car-rev-incremental` (Distance progress). Keep these names so
   players keep their saves. Debug mode plays `car-rev-incremental-debug` and never writes the real save.

@@ -271,7 +271,8 @@ function aid(id) {
 }
 
 // ---- a run ----
-// phase: 'garage' -> 'starting' (engine cranks) -> 'countdown' (car held on the brake) -> 'run' -> 'finish'
+// phase: 'garage' -> 'starting' (engine cranks) -> 'countdown' (car held on the brake) -> 'run' -> 'finish' (-> 'ending',
+// after the warlord's fight won: finale.js)
 // (braking, the score is in) -> 'garage'. best: the best distance before this run, marked on the road.
 const run = { phase: 'garage', count: 0, left: 0, best: progress.best, gain: null, newBest: false }; // gain null: no run yet
 
@@ -324,12 +325,13 @@ function finishRun(dnf) { // dnf: why the run ended early (a crash), if it did
 
 function updateRun(dt) {
   progress.time += dt; // played, garage included (the menu pauses it)
-  if (run.phase === 'starting' || run.phase === 'countdown' || fighting()) { speed = odo = 0; holdRacers(); } // held at the line;
-                                                                                                     // a fight's standoff
+  if (run.phase === 'starting' || run.phase === 'countdown' || fighting() && run.phase !== 'ending') { speed = odo = 0; holdRacers(); } // held
+                                                                                 // at the line; a fight's standoff
   if (run.phase === 'starting' && state === 'running') run.phase = 'countdown';
   else if (run.phase === 'countdown' && (run.count -= dt) <= 0) { run.phase = 'run'; brakePedal = 0; raceGo(); }
   else if (run.phase === 'run' && (run.left -= dt) <= 0) { run.left = 0; finishRun(); }
-  else if (run.phase === 'finish' && (run.count -= dt) <= 0) run.phase = 'garage';
+  else if (run.phase === 'finish' && (run.count -= dt) <= 0) run.phase = run.fight && run.won ? startEnding() : 'garage'; // finale.js
+  else if (run.phase === 'ending') endingTick(dt);
   run.still = run.phase === 'run' && speed < 1 ? (run.still ?? 0) + dt : 0; // s standing still in the run (stuck?)
   if (run.phase === 'run' && run.fight) fightTick(dt); // finale.js: nothing else on the road
   else if (run.phase === 'run' && raceTick()) run.revealed = true;
@@ -359,6 +361,7 @@ function onCollision(i) {
 // things beside the road: a board every 100 m and a banner at the best distance so far
 function roadMarks() {
   const marks = [];
+  if (run.phase === 'ending') return marks; // finale.js: the open road, no boards or banners
   for (let m = Math.max(100, Math.ceil(odo / 100) * 100); m < odo + 1500; m += 100) marks.push({ z: m, kind: 'board', value: m });
   if (run.best) marks.push({ z: run.best, kind: 'best', value: run.best });
   marks.push(...crewMarks(), ...omenMarks(), ...lootMarks(), ...mineMarks(), ...heliMarks()); // oil.js: act 3's spots, your
@@ -726,7 +729,7 @@ const DISTANCE = {
     if (progress.tanks) s.push(['Tanks beaten', fmt(progress.tanks)]);
     return s;
   },
-  stop() { run.phase = 'garage'; document.body.classList.remove('garage', 'low', 'has-flash', 'timing', 'has-fleet', 'ar-on', 'has-guns', 'has-heat', 'has-crew', 'has-tank', 'tag-on', 'rig', 'fight'); clearDamageView(); quietRig(); }, // earns nothing
+  stop() { run.phase = 'garage'; document.body.classList.remove('garage', 'low', 'has-flash', 'timing', 'has-fleet', 'ar-on', 'has-guns', 'has-heat', 'has-crew', 'has-tank', 'tag-on', 'rig', 'fight', 'ending'); cam = null; clearDamageView(); quietRig(); }, // earns nothing
   update: updateRun,
   render() { renderRun(); renderDamage(); renderSonar(); renderCrew(); renderGang(); renderPolice(); renderFight(); renderRig(); }, // the fight's
                                                                                        // dashboard first: the board sizes itself to it

@@ -52,7 +52,10 @@ function fightRun() { // startRun, for a fight: the road his, nobody else on it,
   Object.assign(run, { burst: 0, burstAt: 0, won: false, hisClock: FINALE.first });
   salvos = []; underway = []; answer = hisBurst = null;
 }
-function warlordDrive(c) { c.z = odo + FINALE.gap; } // road.js updateTraffic: he stands his ground
+function warlordDrive(c, dt) { // road.js updateTraffic: he stands his ground; in the ending his wreck is shoved aside
+  if (run.phase === 'run') c.z = odo + FINALE.gap;
+  else if (run.phase === 'ending' && c.z - odo < 45) c.x = Math.min(SHOULDER + 12, c.x + 12 * dt); // your Grinder's work
+}
 
 // distance.js updateRun, the fight's every frame: the cooldowns, the moves under way landing, the bursts' rounds, his
 // answer or his move when his clock allows, his rockets in the air (fortress.js)
@@ -349,4 +352,86 @@ function drawOmen(g, w, horizon) { // road.js drawSky, behind the near hills: up
   for (let i = 0; i < 10; i++) { const sx = x - ww / 2 + (i + 0.5) * ww / 10; g.beginPath(); g.moveTo(sx - ww * 0.02, y); g.lineTo(sx, y + hh * 0.18); g.lineTo(sx + ww * 0.02, y); g.fill(); }
   g.fillStyle = '#ffcf6a'; // its lights, a few winking out and on
   for (let i = 0; i < 7; i++) if (Math.sin(now * 0.7 + i * 2.3) > -0.6) g.fillRect(x - ww * 0.42 + i * ww * 0.13, y - hh * 0.62, Math.max(1, ww * 0.025), Math.max(1, hh * 0.1));
+}
+
+// ---- the ending (the owner, 29 Oct: "the camera rises and falls back, and the fortress, four lanes wide, crosses the
+// wasteland into the sun with the crew following. Then the WARLORD screen"): after THE WARLORD IS DOWN, the cockpit
+// fades away, the camera rises and falls back behind your fortress (drawn from your own board), which drives on into
+// the sun, shoving his wreck aside, your crew's cars falling in behind it; then the WARLORD screen. A tap or a key skips
+// it. Once it has risen the camera all but stops, and the fortress and the crew pull away from it into the sun.
+// Claude's numbers: s it lasts, s the camera takes to rise, m up, m back, m/s the fortress's top speed, cars following,
+// the camera's share of the fortress's speed once risen
+const ENDING = { secs: 10, rise: 3, up: 9, back: 32, top: 24, crew: 12, stay: 0.15 };
+const ease = k => k * k * (3 - 2 * k);
+function startEnding() { // distance.js updateRun, after a won fight's finish: the phase it goes on in
+  run.ending = { t: 0, v: 0, at: odo, cam: odo }; // cam: where the camera is
+  traffic.push({ yours: true, dir: 1, x: carX, z: odo - MY_REAR, w: boardW() * LANE_W, h: 4.6, look: { rear: fortressSprite() },
+                 warned: true, d: NaN, hit: -Infinity, seen: null });
+  for (let i = 0; i < Math.min(ENDING.crew, fleetSize()); i++) // out of the rig's dust behind the camera, into their places
+    traffic.push({ follower: i, dir: 1, x: ROAD_LANES[i % 4], z: odo - ENDING.back - 15 - 6 * i, v: 30, look: racerSprite(FIELD - i, true, true),
+                   warned: true, d: NaN, hit: -Infinity, seen: null });
+  document.body.classList.add('ending');
+  return 'ending';
+}
+function endingTick(dt) { // distance.js updateRun, the ending's every frame
+  const e = run.ending;
+  e.t += dt;
+  const k = ease(Math.min(1, e.t / ENDING.rise));
+  e.v = Math.min(ENDING.top, e.v + 5 * dt);
+  e.at += e.v * dt;
+  e.cam = e.t < ENDING.rise ? e.at - ENDING.back * k : e.cam + ENDING.stay * e.v * dt; // following it, then left behind
+  cam = { back: e.at - e.cam, up: ENDING.up * k }; // road.js
+  odo = e.at; speed = e.v; // the fortress's, as the road scrolls under it
+  const w = canvas.width, sun = -0.12 * w + 2 * w * Math.round((scenery + 0.12 * w) / (2 * w)); // road.js drawSky: the sun
+  scenery += (sun - scenery) * Math.min(1, dt * 0.8);                                          // where the road meets the sky
+  if (e.t >= ENDING.secs) endEnding();
+}
+function endingDrive(c, dt) { // road.js updateTraffic: your fortress where you are; your crew into rows of four behind it
+  if (c.yours) { c.z = odo - MY_REAR; return; }
+  const slot = odo - MY_REAR - 10 - 8 * Math.floor(c.follower / 4), lane = ROAD_LANES[c.follower % 4];
+  c.v = (run.ending?.v ?? 0) + clamp((slot - c.z) * 1.2, -8, 14);
+  c.z += c.v * dt;
+  c.x += clamp(lane - c.x, -3 * dt, 3 * dt);
+}
+function endEnding() { // its time up, or skipped: the WARLORD screen (distance.js renderRun, on the way to the garage)
+  if (run.phase !== 'ending') return;
+  cam = null;
+  for (let i = traffic.length; i--;) if (traffic[i].yours || traffic[i].follower != null) traffic.splice(i, 1);
+  document.body.classList.remove('ending');
+  run.phase = 'garage';
+}
+addEventListener('pointerdown', () => endEnding()); // a tap skips it
+addEventListener('keydown', () => endEnding());     // as does a key
+
+// your fortress from behind, for the ending: its eight wheels and tail lights, the deck, and on it what each column of
+// your board carries, the mightiest part of it standing (a cannon's turret, a rocket pod, a gun, an engine's stacks,
+// spikes, armor), in its colors
+const MIGHT = ['cannon', 'rockets', 'gun', 'engine', 'spikes', 'armor'];
+function fortressSprite() {
+  const cols = boardW(), parts = progress.fortress.parts;
+  return sprite(140 * cols, 300, (g, w, h) => {
+    const cw = w / cols, deck = h * 0.52;
+    g.fillStyle = '#141416'; // the wheels
+    for (let i = 0; i < 2 * cols; i++) { g.beginPath(); g.roundRect(w * (0.02 + i * 0.96 / (2 * cols)), h * 0.84, w * 0.9 / (2 * cols) - 6, h * 0.16, 6); g.fill(); }
+    g.fillStyle = '#2c2622'; g.fillRect(0, deck, w, h * 0.34); // the back of it, rusted steel
+    g.fillStyle = '#3c3c42'; g.fillRect(0, deck, w, h * 0.04); // the deck's edge
+    g.fillStyle = '#d33'; for (const x of [0.02, 0.9]) g.fillRect(w * x, h * 0.74, w * 0.08, h * 0.05); // tail lights
+    for (let c = 0; c < cols; c++) { // the column's mightiest part, standing on the deck
+      const kinds = parts.filter(p => p.cells.some(([cx]) => p.x + cx === c)).map(p => p.kind), kind = MIGHT.find(k => kinds.includes(k));
+      if (!kind) continue;
+      const x = c * cw, mid = x + cw / 2, tone = CRATE_TONES[kind]; // road.js
+      g.fillStyle = tone;
+      if (kind === 'cannon') { g.beginPath(); g.roundRect(x + cw * 0.15, deck - h * 0.24, cw * 0.7, h * 0.24, 14); g.fill();
+        g.fillStyle = '#22260d'; g.fillRect(mid - cw * 0.05, deck - h * 0.48, cw * 0.1, h * 0.26); } // its gun, up and ahead
+      else if (kind === 'rockets') { g.fillRect(x + cw * 0.2, deck - h * 0.22, cw * 0.6, h * 0.22); g.fillStyle = '#0c0e06';
+        for (const [a, b] of [[0.35, 0.07], [0.65, 0.07], [0.35, 0.16], [0.65, 0.16]]) { g.beginPath(); g.arc(x + cw * a, deck - h * b, cw * 0.08, 0, 2 * Math.PI); g.fill(); } }
+      else if (kind === 'gun') { g.fillRect(x + cw * 0.3, deck - h * 0.14, cw * 0.4, h * 0.14); g.fillStyle = '#14161a';
+        g.fillRect(mid - cw * 0.12, deck - h * 0.3, cw * 0.06, h * 0.16); g.fillRect(mid + cw * 0.06, deck - h * 0.3, cw * 0.06, h * 0.16); }
+      else if (kind === 'engine') { g.fillRect(x + cw * 0.2, deck - h * 0.12, cw * 0.6, h * 0.12); g.fillStyle = '#9a9aa4';
+        g.fillRect(x + cw * 0.25, deck - h * 0.34, cw * 0.08, h * 0.22); g.fillRect(x + cw * 0.67, deck - h * 0.34, cw * 0.08, h * 0.22); }
+      else if (kind === 'spikes') { g.fillStyle = '#e2e2ea';
+        for (let i = 0; i < 3; i++) { const sx = x + cw * (0.2 + i * 0.3); g.beginPath(); g.moveTo(sx - cw * 0.08, deck); g.lineTo(sx, deck - h * 0.16); g.lineTo(sx + cw * 0.08, deck); g.fill(); } }
+      else { g.fillRect(x + cw * 0.08, deck - h * 0.1, cw * 0.84, h * 0.1); } // armor plating
+    }
+  });
 }
