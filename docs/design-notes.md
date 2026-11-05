@@ -2092,8 +2092,7 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - The trigger: the fortress full size, four lanes wide and five rows long (Widen 3, Lengthen 4), and the Grinder. The
      warning signs come from a 2×2 board on: his fortress on the horizon, nearer as yours grows (to build).
    - The staging (the owner): "front-to-front, head on against each other, both occupying 4 lanes, waiting, like it's
-     trench warfare". Both standing, 70 m apart; no traffic. His fortress needs its own art (the owner: later, visual
-     only); a stand-in till then.
+     trench warfare". Both standing, 70 m apart; no traffic. His fortress has its own art, on tracks (below).
    - A long fight, health bars (the owner: "for the first iteration"): yours in the mirror where the time was, his over
      his fortress. Lost, back to the garage, for a run to grind or another fight.
    - Nothing automatic (the owner: "This is the finale, if you want to win, you have to play"): no aid, no Auto cannon or
@@ -2227,6 +2226,19 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - `finale_test` checks it (the cockpit faded, the camera up and back, the fortress your board's width, twelve of your
      crew behind it, his wreck aside; the WARLORD screen with its time up, the camera back in the cockpit; a tap skips),
      on both layouts.
+   His fortress's art (5 Nov; `road.js` WARLORD_SPRITE). The owner: "Let's go hunt for sprites and sprite parts to build
+   the fortress ... I am happy if you combine sprites with drawings, whatever works. I like "lánctalp" [caterpillar
+   tracks], maybe try a design with that." The hunt found nothing to build it from: the free packs reachable from a
+   cloud session (OpenGameArt's, Wikimedia Commons) draw vehicles side on, top down or isometric, never head-on as the
+   cockpit sees him; craftpix.net, gameart2d.com and pixabay.com are outside the environment's network allowance,
+   kenney.nl turned the session away and itch.io rate-limited it. So he is drawn in code, as the tank and the rival
+   gang's trucks are: four track units standing out in front of a rusted armored hull, their treads crowding where they
+   curve over the idlers (two pads a link either side of the guide horns), fenders over them, spiked on the outer two; a
+   dozer blade on two push arms across its foot, spiked, a caged light bar above it; the hull's plates, rivets and rust
+   runs, battlements along its top, his red band, vision slits lit amber, his skull and crossbones painted on (in paths,
+   not a ☠ glyph, which each phone's fonts draw their own way); his turret in the middle, its gun's mouth at you, a gun
+   nest either side with twin barrels and spikes, two exhaust stacks. The telegraphs stay where they were (the turret's
+   mouth, the nests' muzzles).
 
 ### Balance targets and results
 
