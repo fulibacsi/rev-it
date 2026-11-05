@@ -2134,7 +2134,7 @@ race, the loot lost to a full inventory, and the parts lost a race.
    rocket car now drops it most (when it drops at all, 45%: the pod 55%, armor 20%, a gun 15%, an engine 10%), and
    nothing else does; the dealer's offers come from the same tables, so a pod turns up there now and then. Mounted, the
    finale's launch button shows: a salvo from every working pod block, landing a rocket's flight (1 s) later, 200 a
-   block (a cannon block's shell is 250), on the one cooldown; each salvo wears the pods half a point (24 a block); a
+   block (a cannon block's shell is 250), on the one cooldown; each salvo wears the pods (100 a block since they fire in races too); a
    War Boy's grenade jams them as it does the cannon and the guns. Outside the fight a pod does nothing yet (weight on
    the board): open, whether it should fire at the reticle's notables in the act's races too.
    - `finale_test` checks it (the drop tables, the dealer, the button, a salvo of 400 on the cooldown, jammed), on both
@@ -2206,8 +2206,12 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - `finale_test` checks it (a pod first with none on the board; a cannon, a gun and a pod with nothing on the rig).
    Rocket pods in the races (built 4 Nov; `gang.js`), on the owner's ("Once on the rig, rockets should fire just like the
    guns"): read as firing with the guns' trigger, held or Auto gun's, at the car in the reticle: a salvo from every
-   working pod every 2 s (the cannon's reload), landing a second later, 200 a block, as the finale's; each salvo wears
-   the pods (24 a block). Before, a pod outside the fight was only weight on the board.
+   working pod every 2 s (the cannon's reload), landing a second later, 200 a block, as the finale's. Each salvo wears
+   the pods: at 24 salvos a block (the finale's first number) a pod was worn out in about a race of firing, none left
+   by the fight; now 100, as a cannon block's shells. Before, a pod outside the fight was only weight on the board.
+   - `act5.py` (seeds 1-4, 15 races, with the dealer above): the economy as before (totals 446-489, 445-481 without;
+     scrap 33,900-35,900), the fight open at race 14-15; a pod on the board for races 6-13 in two seeds, none by the
+     fight in all four (the bot's packing throws them off, or hits and harpoons take them): the dealer covers that.
    - `rivals_test` checks it (none with the trigger off; held, a salvo, the next 2 s later; 400 from two blocks a second
      later), on both layouts.
 
