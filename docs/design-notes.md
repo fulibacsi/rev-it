@@ -2308,6 +2308,20 @@ race, the loot lost to a full inventory, and the parts lost a race.
    sides' guns spin up as gatlings: six barrels round a hub in a dark housing, turning quicker and quicker, a blur at
    speed, heating from steel to orange, throwing sparks. And his health bar sat from his middle rightward (placed by its
    middle, sized from its left): over him now, as wide. Emulation only: the owner's phone has the last word.
+   The fight's tutorial and its card (6 Nov; `finale.js`, `tutorial.js`, `index.html`). The owner: "can we create a
+   tutorial for the bossfight along with a cheat-sheet of who-beats-who (maybe something that is accessible even during
+   the fight somehow)?" The fight had three pages of words, popped up in the garage as the trigger was bought, where
+   none of its instruments are. Now its tutorial pops up as the first fight starts, the fight paused, over the fight's
+   own cockpit: THE WARLORD (the standoff, the health bars, losing), a page for each instrument you have, lit in turn
+   (THE CB RADIO, THE CANNON, THE GUNS, THE ROCKETS: what a press does, and on desktop its key), ONE AT A TIME, WHAT
+   BEATS WHAT (lighting the card), HIS MOVES (his four wind-ups), COUNTER, THEN STRIKE. A new id (`warlordFight`), so a
+   game that saw the garage's pages sees this one; never popped up in the garage (`inFight`), and in HOW TO DRIVE from
+   the trigger on, so the pause menu reaches it mid-fight too; debug mode's FINALE start leaves it unseen. The cheat
+   sheet is a card taped to the windshield's top right corner in the fight (diegetic, as the game's readouts are): the
+   four moves drawn round it, CANNON, RAIDERS, GUNS, ROCKETS, red arrows between them reading "beats"; a tap pauses the
+   fight on the tutorial's WHAT BEATS WHAT page.
+   - `finale_test` checks it (a first fight: the tutorial up, paused, the pages of the instruments you have, each lit, the
+     card lit; DONE, the fight on; a tap on the card: the tutorial at its page), on both layouts.
 
 ### Balance targets and results
 

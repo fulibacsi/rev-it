@@ -7,7 +7,8 @@
 // when it opens in play: bought, or come with a run (the race, the gang, the tank), never mid-run (popTour). Its ? is on the cards of the upgrades it is for, once bought
 // (the owner's picks). Nothing of the race shows before the reveal: its systems are bought after it.
 // A page: title, at (the control to light up, a selector; none: the card alone; hidden in the garage, it shows while
-// the page is up), touch and desk (what to do, each way), both (said either way), if (only then)
+// the page is up), touch and desk (what to do, each way), both (said either way), if (only then). inFight: the warlord's
+// fight's, popped up in the fight, not the garage (finale.js)
 const TUTORIALS = [
   // always open: it pops up in a new game's first run, after the first act's card, unless seen (distance.js start)
   { id: 'driving', name: 'Driving', open: () => !rigged(), pages: [ // the war rig (fortress.js) has no shifter or pedals
@@ -181,7 +182,8 @@ function exitTour() {
 let openBefore = null; // marked before a purchase or a run, and done with once its tutorials have popped up
 const markTours = (...but) => { openBefore = new Set(opened().map(t => t.id).filter(id => !but.includes(id))); };
 function popTour() {
-  const t = openBefore && opened().find(t => t.open && !openBefore.has(t.id) && !progress.toured.includes(t.id));
+  const t = openBefore && opened().find(t => t.open && !t.inFight && !openBefore.has(t.id) && !progress.toured.includes(t.id)); // the
+  // warlord's fight's pops up in its first fight instead (finale.js)
   if (!t) { openBefore = null; return; }
   progress.toured.push(t.id);
   save();
