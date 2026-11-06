@@ -95,6 +95,7 @@ function warlordDrive(c, dt) { // road.js updateTraffic: he stands his ground; i
 // distance.js updateRun, the fight's every frame: the cooldowns, the moves under way (a burst's rounds, then the
 // landing), his answer or, once free and he has waited, his move; his rockets in the air (fortress.js)
 function fightTick(dt) {
+  if (!progress.toured.includes('warlordFight')) return openTour('warlordFight', true); // the first fight: its tutorial, paused
   for (const side of ['you', 'him']) for (const m of MOVES) cooling[side][m] = Math.max(0, (cooling[side][m] ?? 0) - dt);
   for (let i = traffic.length; i--;) if (leftBehind(traffic[i])) traffic.splice(i, 1); // oil.js: raiders home
   target = warlord.wreck ? null : warlord;
@@ -476,21 +477,50 @@ function renderFight() {
 // the instruments: a press as the finger lands, as SEND's (oil.js); the cannon's is its pedal (fortress.js)
 for (const m of GAUGES) $(`fight-${m}`).onpointerdown = e => { e.preventDefault(); move(m); };
 
-// the fight's tutorial: popped up after THE WARLORD's card (distance.js), as the last of the trigger is bought
-TUTORIALS.push({ id: 'fight', name: "The warlord's fight", open: () => finaleOpen(), pages: [
-  { title: 'YOUR WEAPONS',
-    both: 'In his fight each weapon is an instrument of its own: the CB radio sends a raiding party, the pedal fires the ' +
-      'cannon, the lever a burst of the guns, the launch button the rockets (with a rocket pod on the board). One at a ' +
-      'time: each takes 3 seconds, its wind-up and all, and nothing else goes till it is over. Dispatch makes yours quicker. ' +
-      'A weapon you lack, in the hold, the crew mounts as you go to fight, where it fits.' },
-  { title: 'WHAT BEATS WHAT',
-    both: 'The cannon beats raiders, raiders beat guns, guns beat rockets, and rockets beat the cannon as it winds up.' },
+// the fight's tutorial (the owner, 6 Nov: "can we create a tutorial for the bossfight along with a cheat-sheet of
+// who-beats-who (maybe something that is accessible even during the fight somehow)?"): in the cockpit as the first
+// fight starts, paused, each instrument you have lit up in turn (inFight: not popped up in the garage, where they
+// aren't; tutorial.js popTour), and in HOW TO DRIVE after. A new id, so a game that saw the garage's three pages has
+// this one too
+TUTORIALS.push({ id: 'warlordFight', name: "The warlord's fight", inFight: true, open: () => finaleOpen(), pages: [
+  { title: 'THE WARLORD',
+    both: 'His fortress holds the road, 70 m off: bring it down before he wrecks yours. His health is over him, yours in ' +
+      'the mirror. Wrecked, you are back in the garage: a run to grind, or another go. The fight waits while you read.' },
+  { title: 'THE CB RADIO', at: '#fight-raid', if: () => HAVE.raid(),
+    touch: 'Tap the CB radio: a raiding party of three drives across at him, a ram each.',
+    desk: 'S, or click the CB radio: a raiding party of three drives across at him, a ram each.' },
+  { title: 'THE CANNON', at: '#cannon-pedal', if: () => HAVE.cannon(),
+    touch: 'Press the pedal: your cannon locks on, the brackets closing on him, and fires as they close. A shell a shot.',
+    desk: 'Space, or click the pedal: your cannon locks on, the brackets closing on him, and fires as they close. A shell a shot.' },
+  { title: 'THE GUNS', at: '#fight-guns', if: () => HAVE.guns(),
+    touch: 'Pull the lever: your guns spin up, then fire a burst.',
+    desk: 'G, or click the lever: your guns spin up, then fire a burst.' },
+  { title: 'THE ROCKETS', at: '#fight-rockets', if: () => HAVE.rockets(),
+    touch: 'Hit the launch button: a salvo goes up, over the top and down on him.',
+    desk: 'R, or click the launch button: a salvo goes up, over the top and down on him.' },
+  { title: 'ONE AT A TIME',
+    both: 'Each move takes 3 seconds, its wind-up and all, and nothing else goes till it lands: the bars under the ' +
+      'instruments fill again. Dispatch makes yours quicker.' },
+  { title: 'WHAT BEATS WHAT', at: '#fight-sheet',
+    touch: 'The card on the windshield: the cannon beats raiders, raiders beat guns, guns beat rockets, and rockets beat the ' +
+      'cannon. Tap it in the fight to read this again.',
+    desk: 'The card on the windshield: the cannon beats raiders, raiders beat guns, guns beat rockets, and rockets beat the ' +
+      'cannon. Click it in the fight to read this again.' },
   { title: 'HIS MOVES',
-    both: 'Each of his moves winds up before it lands: a ring closing on his turret, his gun nests spinning up, his rockets ' +
-      'going up, his raiders coming. Answer with the one that beats it: his is cancelled, yours does double, and he reels ' +
-      'till yours has landed and a moment more: strike then. Answer with the one it beats and yours is lost. Strike while ' +
-      'he is free and he answers now and then.' },
+    both: 'His moves wind up for 3 seconds too: a ring closing on his turret is his cannon, his gun nests spinning up his ' +
+      'guns, rockets rising from his deck his rockets, his cars coming at you his raiders.' },
+  { title: 'COUNTER, THEN STRIKE',
+    both: 'Answer his move with the one that beats it: his is cancelled, yours does double, and he reels a moment after ' +
+      'yours lands: strike then. Answer with the one it beats and yours is lost. Strike while he is free and he may answer.' },
 ] });
+const SHEET_PAGE = 'WHAT BEATS WHAT';
+// the card on the windshield (index.html #fight-sheet), the cycle drawn: a tap opens the tutorial at it, the fight paused
+$('fight-sheet').onpointerdown = e => {
+  e.preventDefault();
+  openTour('warlordFight', true);
+  tour.page = pagesOf(tutorial('warlordFight')).findIndex(p => p.title === SHEET_PAGE);
+  renderTour();
+};
 
 // ---- the warning signs (the owner, 4 Nov: "only start to appear when war rig's size is at least 2 for each
 // dimension"): his fortress far off on the horizon, a silhouette against the sunset with its lights on and its smoke

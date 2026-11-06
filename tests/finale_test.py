@@ -81,6 +81,33 @@ with sync_playwright() as p:
                                                    "CANNON", True], got)
         pg.screenshot(path=f"{OUT}/finale_{layout}_fight.png")
 
+        # 2b. the fight's tutorial (the owner, 6 Nov): as a first fight starts (here, marked unseen mid-fight), it pops up
+        # over the cockpit, the fight paused; a page for each instrument you have (no launch button: no rockets page), each
+        # lit; WHAT BEATS WHAT lights the card on the windshield; DONE, the fight goes on. The card (who beats who) shows in
+        # the fight, and a tap on it opens the tutorial at its page
+        js(HOLD + "; underway = []; rockets = []; answer = null; run.hisClock = 0.5; progress.toured = progress.toured.filter(id => id !== 'warlordFight')")
+        pg.wait_for_timeout(300)
+        got = js("""(() => { const t = tutorial('warlordFight'), pages = pagesOf(t), box = e => e.getBoundingClientRect();
+            const lit = pages.map((p, i) => { tour.page = i; renderTour(); if (!p.at) return null; const s = box($('spot')), c = box(document.querySelector(p.at));
+              return $('spot').classList.contains('lit') && s.left <= c.left && s.top <= c.top && s.right >= c.right && s.bottom >= c.bottom; });
+            return [menuOpen && screen, tour.id, pages.map(p => p.title), lit.filter(x => x !== null), run.hisClock]; })()""")
+        pg.wait_for_timeout(1000)
+        got += js("[run.hisClock, underway.length]")  # paused: his clock where it was
+        js("tour.page = pagesOf(tutorial('warlordFight')).length - 1; renderTour(); turnTour(1)")  # DONE
+        got += js("[menuOpen, getComputedStyle($('fight-sheet')).display]")
+        check(f"{layout}: a first fight: its tutorial pops up, paused; the CB radio, the cannon and the guns lit, no rockets page; "
+              f"WHAT BEATS WHAT lights the card; DONE, the fight on, the card on the windshield",
+              got == ["tour", "warlordFight", ["THE WARLORD", "THE CB RADIO", "THE CANNON", "THE GUNS", "ONE AT A TIME", "WHAT BEATS WHAT",
+                      "HIS MOVES", "COUNTER, THEN STRIKE"], [True, True, True, True], 0.5, 0.5, 0, False, "block"], got)
+        pg.click("#fight-sheet")
+        got = js("[menuOpen && screen, tour.id, pagesOf(tutorial(tour.id))[tour.page]?.title, $('spot').classList.contains('lit')]")
+        pg.screenshot(path=f"{OUT}/finale_{layout}_sheet.png")
+        js("closeMenu()")
+        got += js("[menuOpen]")
+        check(f"{layout}: a tap on the card: the tutorial at WHAT BEATS WHAT, the card lit; closed, the fight on",
+              got == ["tour", "warlordFight", "WHAT BEATS WHAT", True, False], got)
+        js(HOLD + "; underway = []; rockets = []; answer = null")
+
         # 3. one move at a time (the owner, 5 Nov), each 3 s, its wind-up and all (0.08 of it less a level of Dispatch): the
         # cannon winds up and fires as it ends (a shell: 250, Heavy shells none, two blocks), the lever meanwhile does
         # nothing; then the guns spin up and fire a burst over the last of theirs (8 rounds of 6 x (3 + 2)); no Auto

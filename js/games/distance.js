@@ -182,7 +182,7 @@ function debugAct(act) {
     more = false;
     for (const id of Object.keys(UPGRADES)) if (mine(id) && lvl(id) < (most[id] ?? Infinity) && buy(id)) more = true;
   }
-  Object.assign(progress, { engine: lvl('engine'), nitro: nitroTank(), toured: moment ? opened().map(t => t.id) : [],
+  Object.assign(progress, { engine: lvl('engine'), nitro: nitroTank(), toured: moment ? opened().filter(t => !t.inFight).map(t => t.id) : [], // the fight's: its first fight
                             seen: Object.keys(UPGRADES).filter(shows) });
   markTours(); // tutorial.js: what is open before the moment
   moment?.();

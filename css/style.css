@@ -556,6 +556,13 @@ body.fight #board { left: 2vw; top: 31vh; bottom: auto; width: auto; height: 26v
 #fight-guns { left: 24.5vw; width: 10vw; }
 #fight-rockets { left: 64.5vw; width: 17vw; }
 .fight:not(.touch) .cannon-box .pedal { width: 16vh; } /* on a desktop as big as the rest */
+/* who beats who, on a card taped to the windshield's corner in the warlord's fight: a tap, its tutorial page (finale.js) */
+#fight-sheet { display: none; position: fixed; top: 9vh; right: 7vw; width: 15vw; transform: rotate(-4deg); cursor: pointer;
+               touch-action: none; user-select: none; }
+.fight #fight-sheet { display: block; }
+#fight-sheet svg { display: block; width: 100%; filter: drop-shadow(0 2px 3px #0009); }
+#fight-sheet text { font-family: system-ui, sans-serif; font-weight: 700; text-anchor: middle; fill: #26262b; }
+#fight-sheet .beats { fill: #b3261e; font-style: italic; }
 #warlord-bar { position: fixed; z-index: 4; transform: translateY(-100%); padding-bottom: 6px; pointer-events: none;
                font: 700 11px system-ui, sans-serif; letter-spacing: 2px; color: #f55; text-align: center; white-space: nowrap;
                text-shadow: 0 1px 3px #000; }

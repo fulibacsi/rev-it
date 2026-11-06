@@ -224,6 +224,31 @@
   <rect x="15" y="15" width="110" height="105" rx="12" fill="url(#hazard)"/><rect x="25" y="25" width="90" height="85" rx="8" fill="#222"/>
   <g class="press"><circle cx="70" cy="67" r="32" fill="#c33" stroke="#7a1a1a" stroke-width="5"/><circle cx="62" cy="58" r="10" fill="#f77" opacity="0.6"/></g>
 </svg><i class="ready"></i><b>ROCKETS</b></div>
+<!-- who beats who, on a card taped to the windshield's corner in the warlord's fight: a tap opens its tutorial page (finale.js) -->
+<div id="fight-sheet" title="what beats what"><svg viewBox="0 0 200 176">
+  <defs><marker id="sheet-arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+    <path d="M0,0 L10,5 L0,10 Z" fill="#b3261e"/></marker></defs>
+  <rect x="6" y="10" width="188" height="162" rx="4" fill="#ece3c8" stroke="#b9ad88" stroke-width="2"/>
+  <rect x="16" y="3" width="42" height="15" fill="#e6d98f" opacity="0.8" transform="rotate(-8 37 10)"/>
+  <rect x="142" y="3" width="42" height="15" fill="#e6d98f" opacity="0.8" transform="rotate(7 163 10)"/>
+  <text x="100" y="30" font-size="13">WHAT BEATS WHAT</text>
+  <g fill="none" stroke="#b3261e" stroke-width="3.5" stroke-linecap="round" marker-end="url(#sheet-arrow)">
+    <path d="M124,58 Q148,62 154,82"/><path d="M152,132 Q146,148 126,150"/><path d="M74,150 Q54,148 48,132"/><path d="M46,82 Q52,62 76,58"/></g>
+  <text x="100" y="108" font-size="12" class="beats">beats</text>
+  <g fill="#26262b" stroke="#26262b">
+    <g transform="translate(100,52)"><rect x="-4" y="-5" width="24" height="9" rx="3" stroke="none" transform="rotate(-18)"/>
+      <circle cx="-5" cy="5" r="7" fill="none" stroke-width="3"/></g> <!-- the cannon -->
+    <g transform="translate(158,100)" stroke="none"><path d="M-17,4 H17 V-3 L11,-5 L6,-12 H-7 L-12,-5 L-17,-3 Z"/>
+      <circle cx="-9" cy="5" r="4.5" stroke="#ece3c8" stroke-width="2"/><circle cx="9" cy="5" r="4.5" stroke="#ece3c8" stroke-width="2"/></g> <!-- a raider -->
+    <g transform="translate(100,144)" stroke="none"><circle r="11"/>
+      <g fill="#ece3c8"><circle cx="0" cy="-6" r="2.4"/><circle cx="5.2" cy="-3" r="2.4"/><circle cx="5.2" cy="3" r="2.4"/>
+      <circle cx="0" cy="6" r="2.4"/><circle cx="-5.2" cy="3" r="2.4"/><circle cx="-5.2" cy="-3" r="2.4"/></g></g> <!-- a gatling, front on -->
+    <g transform="translate(42,100) rotate(35)" stroke="none"><path d="M0,-15 C5,-9 5,0 4,7 H-4 C-5,0 -5,-9 0,-15 Z"/>
+      <path d="M-4,2 L-9,10 H-4 Z M4,2 L9,10 H4 Z"/><path d="M-2.5,8 L0,15 L2.5,8 Z" fill="#e8762a"/></g> <!-- a rocket -->
+  </g>
+  <g font-size="11"><text x="100" y="76">CANNON</text><text x="158" y="122">RAIDERS</text><text x="100" y="168">GUNS</text>
+    <text x="42" y="122">ROCKETS</text></g>
+</svg></div>
 <div id="warlord-bar" hidden><b>THE WARLORD</b><i></i></div> <!-- over his fortress (finale.js) -->
 <div id="fort-drag" hidden></div>
 
