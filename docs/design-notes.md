@@ -2298,6 +2298,16 @@ race, the loot lost to a full inventory, and the parts lost a race.
    run"); the fight's tutorial says so too.
    - `finale_test` checks it (FIGHT's note; no room on a checkered board; the pod on the rear row as the fight starts,
      the launch button, CREW MOUNTED), on both layouts.
+   The cannon's wind-up on a phone (6 Nov; `finale.js`). The owner: "the gun wind-up animation disappeared on phone ...
+   sorry, I meant cannon, guns are kinda fine. it would be nice if guns would spin up like gatling guns." In emulation
+   at the iPhone 14 Pro's size (852×393, three pixels to the point, the notch's insets) his ring drew all through its 3
+   s, but thin and orange over the orange sun; and yours had nothing to see at all, a hum only, which a phone on silent
+   mutes. Now his ring is bolder, outlined dark, and never thinner than 4 points; your cannon locks on him with four
+   brackets closing on his hull, in the heads-up display's color and outlined the same way, the shot as they close; your
+   guns wind up at their muzzles on the hood (a deck gunner's place without War Rig guns), as his do at his nests. Both
+   sides' guns spin up as gatlings: six barrels round a hub in a dark housing, turning quicker and quicker, a blur at
+   speed, heating from steel to orange, throwing sparks. And his health bar sat from his middle rightward (placed by its
+   middle, sized from its left): over him now, as wide. Emulation only: the owner's phone has the last word.
 
 ### Balance targets and results
 

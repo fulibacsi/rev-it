@@ -311,12 +311,9 @@ function drawWarlord() {
       const glow = g2d.createRadialGradient(cx, y, 0, cx, y, s[3] * (0.1 + 0.3 * k));
       glow.addColorStop(0, `rgba(255, 220, 120, ${(0.4 + 0.6 * k).toFixed(2)})`); glow.addColorStop(1, 'rgba(255, 90, 20, 0)');
       g2d.fillStyle = glow; g2d.beginPath(); g2d.arc(cx, y, s[3] * (0.1 + 0.3 * k), 0, 2 * Math.PI); g2d.fill();
-      g2d.lineWidth = Math.max(2, s[3] * 0.025); g2d.strokeStyle = 'rgba(255, 240, 200, 0.6)'; // where it closes
-      g2d.beginPath(); g2d.arc(cx, y, mouth, 0, 2 * Math.PI); g2d.stroke();
-      if (k < 0.9 || now % 160 < 100) { // closing, blinking at the last
-        g2d.lineWidth = Math.max(3, s[3] * 0.05 * (0.6 + 0.8 * k)); g2d.strokeStyle = `rgb(255, ${Math.round(210 - 150 * k)}, 40)`;
-        g2d.beginPath(); g2d.arc(cx, y, r, 0, 2 * Math.PI); g2d.stroke();
-      }
+      ring(cx, y, mouth, Math.max(2 * canvas.px, s[3] * 0.025), 'rgba(255, 240, 200, 0.7)'); // where it closes
+      if (k < 0.9 || now % 160 < 100) // closing, blinking at the last
+        ring(cx, y, r, Math.max(4 * canvas.px, s[3] * 0.06 * (0.6 + 0.8 * k)), `rgb(255, ${Math.round(220 - 160 * k)}, 40)`);
     }
     if (u.m === 'guns') for (const f of [0.12, 0.88]) {
       const x = s[0] + s[2] * f, y = s[1] + s[3] * 0.24;
@@ -324,16 +321,7 @@ function drawWarlord() {
         if (now % 120 < 60) { g2d.fillStyle = '#fff3c0'; g2d.beginPath(); g2d.arc(x, y, s[3] * 0.16, 0, 2 * Math.PI); g2d.fill(); }
         continue;
       }
-      const q = clamp(k * u.T / (u.T - burstTime()), 0, 1), a = now / 1000 * (3 + 40 * q * q), r = s[3] * (0.1 + 0.12 * q); // spinning up
-      const glow = g2d.createRadialGradient(x, y, 0, x, y, r * 1.6);
-      glow.addColorStop(0, `rgba(255, 200, 90, ${(0.4 + 0.6 * q).toFixed(2)})`); glow.addColorStop(1, 'rgba(255, 90, 20, 0)');
-      g2d.fillStyle = glow; g2d.beginPath(); g2d.arc(x, y, r * 1.6, 0, 2 * Math.PI); g2d.fill();
-      g2d.strokeStyle = '#fff0c8'; g2d.lineWidth = Math.max(3, s[3] * 0.04); // the barrels' cluster, a blur as it gets going
-      for (let i = 0; i < 3; i++) { const b = a + i * 2 * Math.PI / 3; g2d.beginPath(); g2d.moveTo(x, y); g2d.lineTo(x + Math.cos(b) * r, y + Math.sin(b) * r); g2d.stroke(); }
-      g2d.beginPath(); g2d.arc(x, y, r, 0, 2 * Math.PI); g2d.stroke();
-      g2d.fillStyle = '#ffd36a'; // sparks
-      for (let i = 0; i < Math.round(10 * q); i++) { const b = Math.random() * 2 * Math.PI, d = r * (1.1 + Math.random() * 1.6), z = Math.max(2, s[3] * 0.025);
-        g2d.fillRect(x + Math.cos(b) * d, y + Math.sin(b) * d, z, z); }
+      spinUp(x, y, s[3] * 0.17, spun(u, k));
     }
     if (u.m === 'rockets') { // three abreast, out of his deck and up, over at the top, down onto the cell they are locked on
       const r = u.rocket, w = canvas.width, col = (r.x - carX) / LANE_W + (boardW() - 1) / 2, to = [w * (0.4 + 0.2 * (col + 0.5) / boardW()), canvas.height * 0.72];
@@ -360,7 +348,65 @@ function drawRocket(k, from, peak, to, size0, size1) {
   g2d.fillStyle = '#ffb347'; g2d.beginPath(); g2d.arc(x, y, size(k) * 1.1, 0, 2 * Math.PI); g2d.fill(); // its flame, its nose
   g2d.fillStyle = '#2b3011'; g2d.beginPath(); g2d.arc(x, y, size(k) * 0.7, 0, 2 * Math.PI); g2d.fill();
 }
-function drawFight() { drawWarlord(); drawSalvos(); } // gang.js renderGang: his wind-ups, your rockets
+// a burst's spin-up, either side's (the guns' wind-up; the owner, 6 Nov: "it would be nice if guns would spin up like
+// gatling guns"): how far along (0 to 1) at k of its beat; drawn at x, y, r across: a gatling's barrels front on, six
+// round a hub in their dark housing, turning quicker and quicker, a blur at speed, heating from steel to orange,
+// glowing and throwing sparks
+const spun = (u, k) => clamp(k * u.T / (u.T - burstTime()), 0, 1);
+function spinUp(x, y, r, q) {
+  const a = performance.now() / 1000 * (2 + 45 * q * q), px = canvas.px, dot = (cx, cy, rr) => { g2d.beginPath(); g2d.arc(cx, cy, rr, 0, 2 * Math.PI); g2d.fill(); };
+  const glow = g2d.createRadialGradient(x, y, r * 0.5, x, y, r * (1.4 + 0.8 * q));
+  glow.addColorStop(0, `rgba(255, 190, 80, ${(0.2 + 0.6 * q).toFixed(2)})`); glow.addColorStop(1, 'rgba(255, 90, 20, 0)');
+  g2d.fillStyle = glow; dot(x, y, r * (1.4 + 0.8 * q));
+  g2d.fillStyle = '#16161a'; dot(x, y, r); // the housing
+  g2d.strokeStyle = '#8a8a94'; g2d.lineWidth = Math.max(px, r * 0.1); g2d.beginPath(); g2d.arc(x, y, r, 0, 2 * Math.PI); g2d.stroke();
+  const hot = `rgb(${Math.round(110 + 145 * q)}, ${Math.round(110 + 70 * q)}, ${Math.round(118 - 70 * q)})`; // steel to orange
+  if (q > 0.25) { // the blur of the barrels going round
+    g2d.strokeStyle = `rgba(255, 200, 130, ${(0.6 * (q - 0.25)).toFixed(2)})`; g2d.lineWidth = r * 0.34;
+    g2d.beginPath(); g2d.arc(x, y, r * 0.6, 0, 2 * Math.PI); g2d.stroke();
+  }
+  for (let i = 0; i < 6; i++) { const b = a + i * Math.PI / 3; g2d.fillStyle = hot; dot(x + Math.cos(b) * r * 0.6, y + Math.sin(b) * r * 0.6, r * 0.17);
+    g2d.fillStyle = '#060606'; dot(x + Math.cos(b) * r * 0.6, y + Math.sin(b) * r * 0.6, r * 0.08); } // each barrel's bore
+  g2d.fillStyle = '#5a5a62'; dot(x, y, r * 0.2); // the hub
+  g2d.fillStyle = '#ffd36a'; // sparks
+  for (let i = 0; i < Math.round(10 * q); i++) { const b = Math.random() * 2 * Math.PI, d = r * (1.2 + Math.random() * 1.4), z = Math.max(1.5 * px, r * 0.12);
+    g2d.fillRect(x + Math.cos(b) * d, y + Math.sin(b) * d, z, z); }
+}
+// a wind-up's ring or corner, outlined dark so it shows over the sun on a phone too
+function ring(x, y, r, lw, color) {
+  for (const [c, w] of [['rgba(20, 8, 4, 0.55)', lw + 3 * canvas.px], [color, lw]]) {
+    g2d.strokeStyle = c; g2d.lineWidth = w; g2d.beginPath(); g2d.arc(x, y, r, 0, 2 * Math.PI); g2d.stroke();
+  }
+}
+// your wind-ups (the owner, 6 Nov, on a phone: "the gun wind-up animation disappeared ... I meant cannon"; yours were
+// heard only, and a phone on silent mutes them): the guns on your hood spinning up at their muzzles (gang.js MUZZLES; a deck gunner's
+// place without them), then their burst's tracers; your cannon's lock on him, four brackets closing on his hull in the
+// heads-up display's color (his ring is his turret's, in his fire's), the shot as they close. Your rockets and raiders
+// show themselves
+function drawYours() {
+  const s = warlord?.seen, w = canvas.width, h = canvas.height;
+  if (!s || warlord.wreck) return;
+  for (const u of underway) {
+    if (u.side !== 'you') continue;
+    const k = clamp(1 - u.t / u.T, 0, 1);
+    if (u.m === 'guns' && u.rounds === FINALE.burst) { // spinning up
+      const q = spun(u, k), at = lvl('guns') ? [-1, 1].map(i => [w * MUZZLES[i][0], h * MUZZLES[i][1]]) : [[w * 0.5, h * 0.62]];
+      for (const [x, y] of at) spinUp(x, y, w * 0.02, q);
+    }
+    if (u.m === 'cannon' && (k < 0.9 || performance.now() % 160 < 100)) { // closing, blinking at the last
+      const cx = s[0] + s[2] / 2, cy = s[1] + s[3] * 0.55, half = s[2] * (0.25 + 0.55 * (1 - k)), arm = Math.max(s[2] * 0.08, w * 0.012);
+      const lw = Math.max(3 * canvas.px, w * 0.004 * (1 + k));
+      for (const [c, lwc] of [['rgba(0, 20, 18, 0.55)', lw + 3 * canvas.px], [`rgba(110, 255, 230, ${(0.6 + 0.4 * k).toFixed(2)})`, lw]]) {
+        g2d.strokeStyle = c; g2d.lineWidth = lwc; // outlined, as his ring
+        for (const [dx, dy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { // a corner each
+          const x = cx + dx * half, y = cy + dy * half * 0.6;
+          g2d.beginPath(); g2d.moveTo(x - dx * arm, y); g2d.lineTo(x, y); g2d.lineTo(x, y - dy * arm); g2d.stroke();
+        }
+      }
+    }
+  }
+}
+function drawFight() { drawWarlord(); drawYours(); drawSalvos(); } // gang.js renderGang: his wind-ups, yours, your rockets
 // your salvos in the air: in the fight up from your rig, over at the top and down onto him (drawRocket); the pods' in a
 // race, at their car (gang.js firePods), from your rig's front up in a high arc and down onto it, as a rocket car's come
 // at you (fortress.js drawRockets)
@@ -423,7 +469,7 @@ function renderFight() {
   bar.hidden = !s || warlord.wreck;
   if (bar.hidden) return;
   const k = 1 / canvas.px;
-  Object.assign(bar.style, { left: `${(s[0] + s[2] / 2) * k}px`, top: `${s[1] * k}px`, width: `${s[2] * k}px` });
+  Object.assign(bar.style, { left: `${s[0] * k}px`, top: `${s[1] * k}px`, width: `${s[2] * k}px` }); // over him, as wide
   bar.style.setProperty('--hp', hpLeft(warlord).toFixed(3)); // oil.js
 }
 
