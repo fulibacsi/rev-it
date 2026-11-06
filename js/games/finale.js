@@ -557,7 +557,7 @@ const ENDING = { secs: 10, rise: 3, up: 9, back: 32, top: 24, crew: 12, stay: 0.
 const ease = k => k * k * (3 - 2 * k);
 function startEnding() { // distance.js updateRun, after a won fight's finish: the phase it goes on in
   run.ending = { t: 0, v: 0, at: odo, cam: odo }; // cam: where the camera is
-  traffic.push({ yours: true, dir: 1, x: carX, z: odo - MY_REAR, w: boardW() * LANE_W, h: 4.6, look: { rear: fortressSprite() },
+  traffic.push({ yours: true, dir: 1, x: carX, z: odo - MY_REAR, w: boardW() * LANE_W, h: 6, look: { rear: fortressSprite() }, // near his 6.5 m
                  warned: true, d: NaN, hit: -Infinity, seen: null });
   for (let i = 0; i < Math.min(ENDING.crew, fleetSize()); i++) // out of the rig's dust behind the camera, into their places
     traffic.push({ follower: i, dir: 1, x: ROAD_LANES[i % 4], z: odo - ENDING.back - 15 - 6 * i, v: 30, look: racerSprite(FIELD - i, true, true),
@@ -595,35 +595,115 @@ function endEnding() { // its time up, or skipped: the WARLORD screen (distance.
 addEventListener('pointerdown', () => endEnding()); // a tap skips it
 addEventListener('keydown', () => endEnding());     // as does a key
 
-// your fortress from behind, for the ending: its eight wheels and tail lights, the deck, and on it what each column of
-// your board carries, the mightiest part of it standing (a cannon's turret, a rocket pod, a gun, an engine's stacks,
-// spikes, armor), in its colors
+// your fortress from behind, for the ending (the owner, 6 Nov: "during the end credit the fortress is not that nice ...
+// something as badass as the opposing fortress"), in the warlord's steel (road.js steelKit): dual tires under every
+// column, their tread at you, mud flaps behind them; the rusted armored back of it, its plates and rivets and rust runs,
+// your crew's hazard stripes where his red band is, a tally of the tanks you brought down, caged tail lights, a
+// bumper, a ladder, exhaust stacks up its corners; and on the deck what each column of your board carries, the
+// mightiest of it standing, once across the columns it holds (a cannon's turret and its barrel, a rocket pod's tubes, a gatling behind its shield, an
+// engine's blower and stacks, a rail of spikes, armor stacked), in its colors (road.js CRATE_TONES)
 const MIGHT = ['cannon', 'rockets', 'gun', 'engine', 'spikes', 'armor'];
 function fortressSprite() {
   const cols = boardW(), parts = progress.fortress.parts;
-  return sprite(140 * cols, 300, (g, w, h) => {
-    const cw = w / cols, deck = h * 0.52;
-    g.fillStyle = '#141416'; // the wheels
-    for (let i = 0; i < 2 * cols; i++) { g.beginPath(); g.roundRect(w * (0.02 + i * 0.96 / (2 * cols)), h * 0.84, w * 0.9 / (2 * cols) - 6, h * 0.16, 6); g.fill(); }
-    g.fillStyle = '#2c2622'; g.fillRect(0, deck, w, h * 0.34); // the back of it, rusted steel
-    g.fillStyle = '#3c3c42'; g.fillRect(0, deck, w, h * 0.04); // the deck's edge
-    g.fillStyle = '#d33'; for (const x of [0.02, 0.9]) g.fillRect(w * x, h * 0.74, w * 0.08, h * 0.05); // tail lights
-    for (let c = 0; c < cols; c++) { // the column's mightiest part, standing on the deck
-      const kinds = parts.filter(p => p.cells.some(([cx]) => p.x + cx === c)).map(p => p.kind), kind = MIGHT.find(k => kinds.includes(k));
-      if (!kind) continue;
-      const x = c * cw, mid = x + cw / 2, tone = CRATE_TONES[kind]; // road.js
-      g.fillStyle = tone;
-      if (kind === 'cannon') { g.beginPath(); g.roundRect(x + cw * 0.15, deck - h * 0.24, cw * 0.7, h * 0.24, 14); g.fill();
-        g.fillStyle = '#22260d'; g.fillRect(mid - cw * 0.05, deck - h * 0.48, cw * 0.1, h * 0.26); } // its gun, up and ahead
-      else if (kind === 'rockets') { g.fillRect(x + cw * 0.2, deck - h * 0.22, cw * 0.6, h * 0.22); g.fillStyle = '#0c0e06';
-        for (const [a, b] of [[0.35, 0.07], [0.65, 0.07], [0.35, 0.16], [0.65, 0.16]]) { g.beginPath(); g.arc(x + cw * a, deck - h * b, cw * 0.08, 0, 2 * Math.PI); g.fill(); } }
-      else if (kind === 'gun') { g.fillRect(x + cw * 0.3, deck - h * 0.14, cw * 0.4, h * 0.14); g.fillStyle = '#14161a';
-        g.fillRect(mid - cw * 0.12, deck - h * 0.3, cw * 0.06, h * 0.16); g.fillRect(mid + cw * 0.06, deck - h * 0.3, cw * 0.06, h * 0.16); }
-      else if (kind === 'engine') { g.fillRect(x + cw * 0.2, deck - h * 0.12, cw * 0.6, h * 0.12); g.fillStyle = '#9a9aa4';
-        g.fillRect(x + cw * 0.25, deck - h * 0.34, cw * 0.08, h * 0.22); g.fillRect(x + cw * 0.67, deck - h * 0.34, cw * 0.08, h * 0.22); }
-      else if (kind === 'spikes') { g.fillStyle = '#e2e2ea';
-        for (let i = 0; i < 3; i++) { const sx = x + cw * (0.2 + i * 0.3); g.beginPath(); g.moveTo(sx - cw * 0.08, deck); g.lineTo(sx, deck - h * 0.16); g.lineTo(sx + cw * 0.08, deck); g.fill(); } }
-      else { g.fillRect(x + cw * 0.08, deck - h * 0.1, cw * 0.84, h * 0.1); } // armor plating
+  return sprite(160 * cols, 320, (g, w, h) => {
+    const { plate, rivets, spikes } = steelKit(g), cw = w / cols, deck = h * 0.46, wall = h * 0.8, rv = h * 0.008;
+    const shade = (c, k) => { const n = parseInt(c.slice(1), 16), f = v => Math.round(Math.min(255, v * k)); // a tone lit or shaded
+      return `rgb(${f(n >> 16)}, ${f(n >> 8 & 255)}, ${f(n & 255)})`; };
+    const hazard = (x, y, hw, hh) => { // yellow and black, slanted
+      g.save(); g.beginPath(); g.rect(x, y, hw, hh); g.clip(); g.fillStyle = '#f2c12e'; g.fillRect(x, y, hw, hh); g.fillStyle = '#1b1b1f';
+      for (let sx = x - hh; sx < x + hw; sx += hh * 1.4) { g.beginPath(); g.moveTo(sx, y + hh); g.lineTo(sx + hh * 0.7, y + hh); g.lineTo(sx + hh * 1.4, y);
+        g.lineTo(sx + hh * 0.7, y); g.fill(); }
+      g.restore(); };
+    for (let i = 0; i < 2 * cols; i++) { // the tires, two a column, their tread at you
+      const tw = cw * 0.42, x = (i >> 1) * cw + (i % 2 ? cw * 0.53 : cw * 0.05), y = h * 0.74, th = h - y;
+      const round = g.createLinearGradient(x, 0, x + tw, 0);
+      round.addColorStop(0, '#08080a'); round.addColorStop(0.5, '#2a2a30'); round.addColorStop(1, '#08080a');
+      g.save(); g.fillStyle = round; g.beginPath(); g.roundRect(x, y, tw, th, [tw * 0.2, tw * 0.2, 6, 6]); g.fill(); g.clip();
+      g.fillStyle = '#3a3a42';
+      for (let k = 0; k < 6; k++) { const ty = y + th * (0.08 + k * 0.16); // the lugs, a chevron each
+        g.beginPath(); g.moveTo(x, ty); g.lineTo(x + tw / 2, ty + th * 0.05); g.lineTo(x + tw, ty); g.lineTo(x + tw, ty + th * 0.06);
+        g.lineTo(x + tw / 2, ty + th * 0.11); g.lineTo(x, ty + th * 0.06); g.fill(); }
+      g.fillStyle = 'rgba(80, 58, 36, 0.6)'; g.beginPath(); g.ellipse(x + tw / 2, h, tw * 0.6, th * 0.18, 0, 0, 2 * Math.PI); g.fill(); // mud
+      g.restore();
+    }
+    for (let c = 0; c < cols; c++) { // the mud flaps, behind each pair, a chevron on each: the tread below them
+      const x = c * cw + cw * 0.18, fw = cw * 0.64;
+      plate(x, h * 0.8, fw, h * 0.09, 3, '#1e1e22', '#0c0c0e');
+      g.fillStyle = '#f2c12e'; g.beginPath(); g.moveTo(x + fw * 0.38, h * 0.815); g.lineTo(x + fw / 2, h * 0.85); g.lineTo(x + fw * 0.62, h * 0.815);
+      g.lineTo(x + fw * 0.62, h * 0.835); g.lineTo(x + fw / 2, h * 0.87); g.lineTo(x + fw * 0.38, h * 0.835); g.fill();
+    }
+    plate(0, deck, w, wall - deck, 8, '#6e6054', '#2e2722'); // the back of it, rusted steel lit from the sky
+    g.strokeStyle = '#1a1614'; g.lineWidth = 3; // its plates' seams
+    for (let i = 1; i < 2 * cols; i++) { g.beginPath(); g.moveTo(w * i / (2 * cols), deck); g.lineTo(w * i / (2 * cols), wall); g.stroke(); }
+    rivets(w * 0.01, w * 0.99, deck + h * 0.02, 6 * cols, rv); rivets(w * 0.01, w * 0.99, wall - h * 0.02, 6 * cols, rv);
+    g.fillStyle = 'rgba(130, 64, 30, 0.4)'; // rust run down from the rivets
+    for (let i = 0; i < 2 * cols; i++) g.fillRect(w * (i + 0.3 + 0.2 * (i * 7 % 3)) / (2 * cols), deck + h * 0.025, w * 0.006, h * (0.06 + 0.05 * (i % 3)));
+    hazard(0, deck + h * 0.11, w, h * 0.05); // your crew's stripes
+    const tanks = Math.min(progress.tanks ?? 0, 3 * cols); // a tally of the tanks you brought down, stenciled
+    g.fillStyle = '#ece3c8';
+    for (let i = 0; i < tanks; i++) { const tx = w / 2 + (i - (tanks - 1) / 2) * cw * 0.2, ty = deck + h * 0.24;
+      g.fillRect(tx - cw * 0.07, ty, cw * 0.14, h * 0.025); g.fillRect(tx - cw * 0.04, ty - h * 0.02, cw * 0.08, h * 0.02); g.fillRect(tx, ty - h * 0.016, cw * 0.07, h * 0.006); }
+    for (const x of [0.04, 0.84]) for (const d of [0, 0.065]) { // the tail lights, two a side, glowing, caged
+      const lx = w * (x + d) + w * 0.03, ly = h * 0.68, r = h * 0.03, glow = g.createRadialGradient(lx, ly, 0, lx, ly, r * 2.2);
+      glow.addColorStop(0, 'rgba(255, 60, 40, 0.6)'); glow.addColorStop(1, 'rgba(255, 60, 40, 0)');
+      g.fillStyle = glow; g.beginPath(); g.arc(lx, ly, r * 2.2, 0, 2 * Math.PI); g.fill();
+      g.fillStyle = '#e8241a'; g.beginPath(); g.arc(lx, ly, r, 0, 2 * Math.PI); g.fill();
+      g.strokeStyle = '#2b2b30'; g.lineWidth = 2; g.beginPath(); g.moveTo(lx - r, ly); g.lineTo(lx + r, ly); g.moveTo(lx, ly - r); g.lineTo(lx, ly + r); g.stroke();
+    }
+    const lx = w * 0.3; // the ladder, up its back
+    g.strokeStyle = '#2b2b30'; g.lineWidth = 4;
+    for (const x of [lx, lx + w * 0.05]) { g.beginPath(); g.moveTo(x, deck - h * 0.02); g.lineTo(x, wall); g.stroke(); }
+    for (let y = deck + h * 0.03; y < wall; y += h * 0.05) { g.beginPath(); g.moveTo(lx, y); g.lineTo(lx + w * 0.05, y); g.stroke(); }
+    plate(-2, wall - h * 0.02, w + 4, h * 0.04, 3, '#8a8a92', '#3a3a40'); // the bumper
+    const top = [...Array(cols)].map((_, c) => { const here = parts.filter(p => p.cells.some(([cx]) => p.x + cx === c)); // each column's mightiest
+      return MIGHT.map(k => here.find(p => p.kind === k)).find(Boolean); });
+    for (let c = 0, n; c < cols; c += n) { // standing on the deck, once across the columns it holds
+      for (n = 1; c + n < cols && top[c + n] === top[c]; n++);
+      if (!top[c]) continue;
+      const kind = top[c].kind, x = c * cw, W = n * cw, mid = x + W / 2, tone = CRATE_TONES[kind], lit = shade(tone, 1.35), dark = shade(tone, 0.55); // road.js
+      if (kind === 'cannon') { // the turret from behind, its barrel up and away over it, a hatch, an aerial
+        g.fillStyle = '#16180a'; g.beginPath(); g.moveTo(mid - cw * 0.07, deck - h * 0.2); g.lineTo(mid - cw * 0.04, deck - h * 0.46);
+        g.lineTo(mid + cw * 0.04, deck - h * 0.46); g.lineTo(mid + cw * 0.07, deck - h * 0.2); g.fill();
+        g.fillRect(mid - cw * 0.06, deck - h * 0.47, cw * 0.12, h * 0.025); // its muzzle brake
+        plate(x + W * 0.06, deck - h * 0.24, W * 0.88, h * 0.24, 18, lit, dark);
+        plate(x + W * 0.1, deck - h * 0.24, W * 0.8, h * 0.06, 14, shade(tone, 0.8), shade(tone, 0.6)); // its sloped top
+        g.fillStyle = '#20240c'; g.beginPath(); g.arc(mid, deck - h * 0.2, cw * 0.11, Math.PI, 2 * Math.PI); g.fill(); // the mantlet
+        rivets(x + W * 0.1, x + W * 0.9, deck - h * 0.03, 7 * n, rv);
+        plate(x + W * 0.1, deck - h * 0.13, W * 0.14, h * 0.07, 3, shade(tone, 0.9), shade(tone, 0.5)); // a stowage box
+        g.fillStyle = dark; g.beginPath(); g.ellipse(mid + W * 0.2, deck - h * 0.22, cw * 0.1, h * 0.025, 0, 0, 2 * Math.PI); g.fill(); // the hatch
+        const ax = x + W * 0.12, ay = deck - h * 0.44; // the aerial, your pennant on it
+        g.strokeStyle = '#2b2b30'; g.lineWidth = 2; g.beginPath(); g.moveTo(x + W * 0.16, deck - h * 0.22); g.lineTo(ax, ay); g.stroke();
+        g.fillStyle = '#f2c12e'; g.beginPath(); g.moveTo(ax, ay); g.lineTo(ax - cw * 0.16, ay + h * 0.03); g.lineTo(ax, ay + h * 0.06); g.fill();
+        g.fillStyle = '#1b1b1f'; g.beginPath(); g.moveTo(ax, ay + h * 0.015); g.lineTo(ax - cw * 0.08, ay + h * 0.03); g.lineTo(ax, ay + h * 0.045); g.fill();
+      } else if (kind === 'rockets') { // the pod from behind: its tubes' ends, scorched
+        plate(x + W * 0.1, deck - h * 0.26, W * 0.8, h * 0.26, 8, lit, dark);
+        for (let r = 0; r < 2; r++) for (let k = 0; k < 3 * n; k++) { const tx = x + W * 0.1 + W * 0.8 * (k + 0.5) / (3 * n), ty = deck - h * (0.19 - r * 0.1);
+          g.fillStyle = '#3a2a14'; g.beginPath(); g.arc(tx, ty, cw * 0.085, 0, 2 * Math.PI); g.fill();
+          g.fillStyle = '#0a0806'; g.beginPath(); g.arc(tx, ty, cw * 0.06, 0, 2 * Math.PI); g.fill(); }
+        hazard(x + W * 0.1, deck - h * 0.03, W * 0.8, h * 0.03);
+      } else if (kind === 'gun') { // a gatling behind its shield, its barrels up and away, its belt hanging
+        g.fillStyle = '#14161a'; for (const d of [-0.05, -0.017, 0.017, 0.05]) g.fillRect(mid + cw * d - cw * 0.012, deck - h * 0.36, cw * 0.024, h * 0.2);
+        plate(mid - W * 0.32, deck - h * 0.2, W * 0.64, h * 0.2, 6, lit, dark);
+        g.fillStyle = '#c9a23a'; for (let k = 0; k < 6; k++) g.fillRect(mid + W * 0.2 + cw * 0.02 * k, deck - h * (0.12 - 0.018 * k), cw * 0.03, h * 0.012); // brass
+        rivets(mid - W * 0.28, mid + W * 0.28, deck - h * 0.17, 4 * n, rv);
+      } else if (kind === 'engine') { // the blower up through it, chrome stacks either side, sooted
+        plate(x + W * 0.12, deck - h * 0.13, W * 0.76, h * 0.13, 6, lit, dark);
+        plate(mid - cw * 0.16, deck - h * 0.25, cw * 0.32, h * 0.12, 4, '#d8d8e0', '#6a6a72'); // the blower
+        g.fillStyle = '#1a1a1c'; g.fillRect(mid - cw * 0.12, deck - h * 0.27, cw * 0.24, h * 0.03); // its scoop
+        for (const d of [0.2, 0.8]) { plate(x + W * d - cw * 0.04, deck - h * 0.4, cw * 0.08, h * 0.3, 3, '#e2e2ea', '#7a7a84');
+          g.fillStyle = '#141416'; g.fillRect(x + W * d - cw * 0.05, deck - h * 0.41, cw * 0.1, h * 0.02); }
+      } else if (kind === 'spikes') { // a rail of them, up and back
+        plate(x + W * 0.04, deck - h * 0.04, W * 0.92, h * 0.04, 2, '#8a8a92', '#3a3a40');
+        spikes(x + W * 0.04, x + W * 0.96, deck - h * 0.04, 4 * n, h * 0.2);
+      } else { // armor, stacked
+        plate(x + W * 0.04, deck - h * 0.1, W * 0.92, h * 0.1, 4, lit, dark);
+        plate(x + W * 0.12, deck - h * 0.17, W * 0.76, h * 0.08, 4, lit, dark);
+        rivets(x + W * 0.08, x + W * 0.92, deck - h * 0.05, 5 * n, rv);
+      }
+    }
+    for (const x of [0.012, 0.988]) { // the exhaust stacks, up its corners, sooted at the top
+      plate(w * x - w * 0.012, h * 0.04, w * 0.024, h * 0.72, 3, '#e2e2ea', '#6a6a72');
+      g.fillStyle = '#141416'; g.fillRect(w * x - w * 0.016, h * 0.03, w * 0.032, h * 0.03);
     }
   });
 }

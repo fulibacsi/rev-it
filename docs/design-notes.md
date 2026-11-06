@@ -2322,6 +2322,18 @@ race, the loot lost to a full inventory, and the parts lost a race.
    fight on the tutorial's WHAT BEATS WHAT page.
    - `finale_test` checks it (a first fight: the tutorial up, paused, the pages of the instruments you have, each lit, the
      card lit; DONE, the fight on; a tap on the card: the tutorial at its page), on both layouts.
+   Your fortress in the ending (6 Nov; `finale.js`, `road.js`). The owner: "during the end credit the fortress is not
+   that nice, I'd check if there's a more badass implementation of it - eg something as badass as the opposing
+   fortress." It was drawn in flat boxes; now in his steel (`road.js` steelKit, the plates, rivets and spikes his sprite
+   is drawn in, shared): dual tires under every column, their tread at you, mud flaps behind each pair with a chevron;
+   the rusted armored back of it, its plates' seams, rivets and rust runs; your crew's hazard stripes (yellow and black,
+   as the launch button's bezel) where his red band is; a stenciled tally of the tanks you brought down; caged tail
+   lights glowing, two a side; a ladder up its back, a bumper, chrome exhaust stacks up its corners. On the deck, as
+   before, each column's mightiest part, now drawn once across the columns it holds (a two-block cannon was two
+   turrets): the cannon's turret from behind, its sloped top, mantlet and barrel up and away, a hatch, a stowage box, an
+   aerial flying your pennant; a rocket pod's tubes, scorched, a hazard strip; a gatling behind its shield, its belt
+   hanging; an engine's chrome blower and stacks; a rail of spikes; armor stacked. And 6 m tall, near his 6.5 (4.6
+   squashed it flat on the road).
 
 ### Balance targets and results
 
