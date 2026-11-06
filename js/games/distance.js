@@ -547,6 +547,7 @@ function renderGarage(bought) {
   const d = progress.damage;
   $('drive').textContent = wrecked() ? `LIMP ${LIMP} m ▶` : 'DRIVE ▶'; // a wreck can always limp: no dead end
   $('fight').hidden = !finaleOpen(); // finale.js: from full size and the Grinder on, the warlord waits
+  $('fight').innerHTML = `FIGHT ▶${fightNote()}`; // what the crew mounts from the hold for it, or has no room for
   $('fight').disabled = wrecked(); // a wreck can't fight: repair first
   // from act IV it stays with its AUTO switch (damage.js), damaged or not, so the switch can be turned off again
   const auto = autoButton();

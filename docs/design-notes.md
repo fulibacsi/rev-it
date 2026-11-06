@@ -2284,6 +2284,20 @@ race, the loot lost to a full inventory, and the parts lost a race.
    - `finale_test` checks it (one at a time, 3 s and 1.8 s at Dispatch 5; nothing landing before its 3 s; the guns
      spinning up before their burst; his shell 3 s on; the raiders ramming as the move ends; the salvo landing 3 s on;
      the counters, the countered side waiting till the counter has landed and a beat more), on both layouts.
+   The hold's weapons (6 Nov; `finale.js`, `distance.js`). The owner, playtesting: "I can't find the rocket button on
+   the cockpit even though I have it." The pod was in the hold: the dealer and the road's loot put a part there, the
+   launch button shows only for a pod on the board, and in the fight the hold is hidden (the owner's cleared dashboard)
+   while mounting is the road's alone, never the garage's. So a weapon the dealer offered for the fight (above: "if
+   anything is missing from the rig, it should be in the offers") could not be used in it without a race first. Of three
+   ways out (the crew mounting it, the hold shown in the fight, a note only), the owner's: "the crew mounts it". As
+   FIGHT is pressed, each weapon of the fight you lack (the dealer's list: a cannon, a gun with no guns of the War
+   Rig's, a rocket pod) that the hold has goes onto free cells of the board, nothing thrown off: the rearmost that fit
+   (his shells, rams and rounds land on the front row), the biggest of its kind and then the soundest first. CREW
+   MOUNTED and its name as FIGHT! fades. One that fits nowhere stays in the hold. FIGHT says beforehand what the crew
+   will mount ("the crew mounts ROCKETS 2"), or, in amber, what has no room ("no room for ROCKETS 2: make room on a
+   run"); the fight's tutorial says so too.
+   - `finale_test` checks it (FIGHT's note; no room on a checkered board; the pod on the rear row as the fight starts,
+     the launch button, CREW MOUNTED), on both layouts.
 
 ### Balance targets and results
 
