@@ -290,12 +290,19 @@ const TANK_SPRITE = sprite(300, 230, (g, w, h) => { // the final boss (Distance)
 // slits glowing; his turret in the middle, its gun's mouth at you, a gun nest either side, two exhaust stacks. His
 // moves' telegraphs are drawn over its turret's mouth (0.5, 0.2) and the nests' muzzles (0.12 and 0.88, 0.24)
 // (finale.js drawWarlord): keep them where they are
+// the steel the fortresses are drawn in (the warlord's, below; yours in the ending, finale.js fortressSprite): a plate lit
+// from above (a gradient, top to bottom), a row of n rivets r across, a row of n spikes len long (up, or down)
+function steelKit(g) {
+  return {
+    plate(x, y, pw, ph, r, top, bottom) { const gr = g.createLinearGradient(0, y, 0, y + ph);
+      gr.addColorStop(0, top); gr.addColorStop(1, bottom); g.fillStyle = gr; g.beginPath(); g.roundRect(x, y, pw, ph, r); g.fill(); },
+    rivets(x0, x1, y, n, r) { g.fillStyle = '#8a7c6c'; for (let i = 0; i < n; i++) { g.beginPath(); g.arc(x0 + (x1 - x0) * (i + 0.5) / n, y, r, 0, 2 * Math.PI); g.fill(); } },
+    spikes(x0, x1, y, n, len, down) { g.fillStyle = '#d6d6de'; const d = down ? -1 : 1; for (let i = 0; i < n; i++) { const x = x0 + (x1 - x0) * (i + 0.5) / n;
+      g.beginPath(); g.moveTo(x - len * 0.3, y); g.lineTo(x, y - d * len); g.lineTo(x + len * 0.3, y); g.fill(); } },
+  };
+}
 const WARLORD_SPRITE = sprite(720, 334, (g, w, h) => {
-  const plate = (x, y, pw, ph, r, top, bottom) => { const gr = g.createLinearGradient(0, y, 0, y + ph);
-    gr.addColorStop(0, top); gr.addColorStop(1, bottom); g.fillStyle = gr; g.beginPath(); g.roundRect(x, y, pw, ph, r); g.fill(); };
-  const rivets = (x0, x1, y, n) => { g.fillStyle = '#8a7c6c'; for (let i = 0; i < n; i++) { g.beginPath(); g.arc(x0 + (x1 - x0) * (i + 0.5) / n, y, h * 0.008, 0, 2 * Math.PI); g.fill(); } };
-  const spikes = (x0, x1, y, n, len) => { g.fillStyle = '#d6d6de'; for (let i = 0; i < n; i++) { const x = x0 + (x1 - x0) * (i + 0.5) / n;
-    g.beginPath(); g.moveTo(x - len * 0.3, y); g.lineTo(x, y - len); g.lineTo(x + len * 0.3, y); g.fill(); } };
+  const { plate, spikes, ...kit } = steelKit(g), rivets = (x0, x1, y, n) => kit.rivets(x0, x1, y, n, h * 0.008);
   for (const x of [0.33, 0.67]) { // the exhaust stacks, behind the turret, sooted at the top
     plate(w * x - w * 0.014, h * 0.01, w * 0.028, h * 0.3, 3, '#6a6a72', '#3a3a40');
     g.fillStyle = '#141416'; g.fillRect(w * x - w * 0.017, 0, w * 0.034, h * 0.03);
