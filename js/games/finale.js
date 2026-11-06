@@ -44,7 +44,39 @@ const mounted = kind => progress.fortress.parts.some(p => p.kind === kind);
 const HAVE = { raid: () => role('raider') > 0, cannon: () => mounted('cannon'), guns: () => lvl('guns') > 0 || mounted('gun'),
                rockets: () => mounted('rockets') };
 
+// the hold's weapons, for his fight (the owner, 6 Nov, after a pod bought from the dealer before the fight stayed in the
+// hold, and so no launch button: "the crew mounts it"): as FIGHT is pressed, each weapon of the fight you lack
+// (fortress.js FIGHT_PARTS, as the dealer offers them) that the hold has goes onto free cells of the board, the
+// rearmost that fit (his shells and rams land on the front row), the biggest and then the soundest of its kind first.
+// One that fits nowhere stays in the hold, and the garage says so on FIGHT (fightNote). go: mount them (fortress.js
+// mount), else only the plan, on a copy of the board
+function armUp(go) {
+  const real = progress.fortress, f = go ? real : { parts: [...real.parts] }, mounts = [], none = [];
+  const name = p => `${PARTS[p.kind].name} ${p.cells.length}`, sound = p => hpOf(p) / fullHp(p);
+  for (const [kind, , has] of FIGHT_PARTS) {
+    if (HAVE[has]()) continue;
+    const parts = real.hold.filter(p => p.kind === kind).sort((a, b) => b.cells.length - a.cells.length || sound(b) - sound(a));
+    let at = null;
+    const p = parts.find(q => (at = spotFor(f, q.cells)));
+    if (!p) { if (parts.length) none.push(name(parts[0])); continue; }
+    mounts.push(name(p));
+    if (go) mount(real.hold.indexOf(p), ...at); else f.parts.push({ ...p, x: at[0], y: at[1] });
+  }
+  return { mounts, none };
+}
+function spotFor(f, cells) { // free cells for a part, the rearmost row first
+  for (let y = boardH() - 1; y >= 0; y--) for (let x = 0; x < boardW(); x++) if (onBoard(cells, x, y) && !under(f, cells, x, y).length) return [x, y];
+  return null;
+}
+function fightNote() { // distance.js renderGarage: on FIGHT, what the crew will mount, and what won't fit
+  if (!finaleOpen()) return '';
+  const { mounts, none } = armUp(false);
+  return mounts.length || none.length ? `<small${none.length ? ' class="none"' : ''}>${[mounts.length && `the crew mounts ${mounts.join(', ')}`,
+    none.length && `no room for ${none.join(', ')}: make room on a run`].filter(Boolean).join(' · ')}</small>` : '';
+}
+
 function fightRun() { // startRun, for a fight: the road his, nobody else on it, both of you standing
+  const { mounts } = armUp(true); // the crew at work before the fight
   traffic.length = 0;
   ambushes = []; // fortress.js: none today
   warlord = { warlord: true, dir: -1, x: carX, z: FINALE.gap, v: 0, w: 4 * LANE_W, h: 6.5, hp: null, wreck: false, warned: true,
@@ -52,7 +84,7 @@ function fightRun() { // startRun, for a fight: the road his, nobody else on it,
   traffic.push(warlord);
   target = quarry = null; // gang.js: the reticle on him once the fight is on
   cooling = { you: {}, him: {} };
-  Object.assign(run, { won: false, hisClock: FINALE.first });
+  Object.assign(run, { won: false, hisClock: FINALE.first, mounted: mounts.length ? { names: mounts, t: 0.8 } : null }); // said as FIGHT! fades, before his first move
   salvos = []; underway = []; answer = null;
 }
 function warlordDrive(c, dt) { // road.js updateTraffic: he stands his ground; in the ending his wreck is shoved aside
@@ -67,6 +99,7 @@ function fightTick(dt) {
   for (let i = traffic.length; i--;) if (leftBehind(traffic[i])) traffic.splice(i, 1); // oil.js: raiders home
   target = warlord.wreck ? null : warlord;
   rigTick(dt); // fortress.js: the cannon's reload, the engines' wear
+  if (run.mounted && (run.mounted.t -= dt) <= 0) { flash(`CREW MOUNTED ${run.mounted.names.join(', ')}`, '#ffd23a', false); run.mounted = null; }
   for (const u of underway) {
     u.t -= dt;
     u.tick?.();
@@ -402,7 +435,8 @@ TUTORIALS.push({ id: 'fight', name: "The warlord's fight", open: () => finaleOpe
   { title: 'YOUR WEAPONS',
     both: 'In his fight each weapon is an instrument of its own: the CB radio sends a raiding party, the pedal fires the ' +
       'cannon, the lever a burst of the guns, the launch button the rockets (with a rocket pod on the board). One at a ' +
-      'time: each takes 3 seconds, its wind-up and all, and nothing else goes till it is over. Dispatch makes yours quicker.' },
+      'time: each takes 3 seconds, its wind-up and all, and nothing else goes till it is over. Dispatch makes yours quicker. ' +
+      'A weapon you lack, in the hold, the crew mounts as you go to fight, where it fits.' },
   { title: 'WHAT BEATS WHAT',
     both: 'The cannon beats raiders, raiders beat guns, guns beat rockets, and rockets beat the cannon as it winds up.' },
   { title: 'HIS MOVES',

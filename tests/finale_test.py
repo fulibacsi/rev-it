@@ -4,7 +4,7 @@ FIGHT beside DRIVE in the garage. In the fight his fortress stands head-on 70 m 
 you stand too; no aid, no Auto cannon, no War chief. The dashboard is cleared (no oil, no SEND, no hold, no key, no
 stereo, no reticle), the board kept, and your weapons are instruments of their own, each there only if you have it:
 the CB radio (a raiding party: three raiders, a ram each), the pedal (the cannon), the lever (a burst of the guns); no
-launch button without a rocket pod. One move at a time, each 3 s with its wind-up (Dispatch shortens yours), so a
+launch button without a rocket pod (one in the hold, the crew mounts as FIGHT is pressed). One move at a time, each 3 s with its wind-up (Dispatch shortens yours), so a
 second press meanwhile does nothing. Your health is in the mirror, his over his fortress. He fires his cannon at your front row and rockets at a
 cell of the board. Wrecked, back to the garage (FIGHT waits for a repair); his fortress down, the WARLORD screen.
 Phone and desktop."""
@@ -217,6 +217,29 @@ with sync_playwright() as p:
         check(f"{layout}: wrecked, back to the garage (WRECKED by the warlord), FIGHT waits for a repair, DRIVE limps; repaired, FIGHT",
               got[0] is False and got[1].startswith("WRECKED by the warlord") and got[2:] == [True, "LIMP 40 m ▶", False], got)
         pg.screenshot(path=f"{OUT}/finale_{layout}_lost.png")
+
+        # 7b. the hold's weapons (the owner, 6 Nov: a pod bought before the fight stayed in the hold, no launch button: "the
+        # crew mounts it"): FIGHT says what the crew will mount; with no room for it (a board with no two free cells side by
+        # side), that it won't fit; FIGHT pressed, the crew mounts it on the rearmost free cells (the engine's row, beside
+        # it), the launch button shows, and CREW MOUNTED as FIGHT! fades
+        got = js("""(() => { const f = progress.fortress; f.hold = [{ kind: 'rockets', cells: [[0, 0], [1, 0]], from: 'rocket' }];
+            renderGarage(); const note = $('fight').innerText.split('\\n'), parts = f.parts;
+            f.parts = [...parts]; for (let y = 0; y < boardH(); y++) for (let x = 0; x < boardW(); x++) if (partAt(f, x, y) < 0 && (x + y) % 2 === 0)
+              f.parts.push({ kind: 'armor', cells: [[0, 0]], x, y, from: 'gang' });
+            renderGarage(); const full = [$('fight').innerText.split('\\n')[1], $('fight').querySelector('small').className];
+            f.parts = parts; renderGarage(); return [note, ...full]; })()""")
+        pg.screenshot(path=f"{OUT}/finale_{layout}_mounts.png")
+        pg.click("#fight"); pg.wait_for_function("run.phase === 'run'", timeout=20000)
+        js(HOLD)
+        pg.wait_for_timeout(1000)
+        got += js("""[progress.fortress.hold.length, progress.fortress.parts.filter(p => p.kind === 'rockets').map(p => [p.x, p.y]),
+                     !$('fight-rockets').hidden, $('flash').textContent]""")
+        check(f"{layout}: a pod in the hold: FIGHT says the crew mounts it; no room, that it won't fit; FIGHT pressed, it is on the "
+              f"board's rear row, the launch button shows, CREW MOUNTED", got == [["FIGHT ▶", "the crew mounts ROCKETS 2"],
+              "no room for ROCKETS 2: make room on a run", "none", 0, [[2, 4]], True, "CREW MOUNTED ROCKETS 2"], got)
+        js("progress.damage = 100; hisShell(0, false)")  # back to the garage, for 8's fight
+        pg.wait_for_function("run.phase === 'garage'", timeout=15000)
+        js("progress.damage = 0; renderGarage()")
 
         # 8. his fortress down: THE WARLORD IS DOWN; then the ending (the owner's): the cockpit gone, the camera up and back
         # behind your fortress (your board's width), driving off into the sun, his wreck shoved aside, your crew falling in

@@ -362,6 +362,8 @@ body.menu:has([data-screen="win"]:not([hidden]), [data-screen="act"]:not([hidden
                  margin: 0 -16px -14px; padding: 10px 16px 14px; background: #0b0d16; } /* DRIVE stays in view */
 #garage #drive { font-size: 18px; font-weight: 600; padding: 6px 28px; color: #111; background: var(--accent);
                  border-color: var(--accent); }
+#garage #fight small { display: block; font-size: 11px; font-weight: 400; color: #9ab; } /* what the crew mounts for it */
+#garage #fight small.none { color: #fb3; } /* or has no room for (finale.js fightNote) */
 
 /* instrument cluster behind the wheel, the wheel itself, and the controls around it */
 #cluster { position: fixed; left: 50%; top: 64vh; transform: translateX(-50%); width: 34vw; pointer-events: none; }
