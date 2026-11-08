@@ -259,11 +259,24 @@ function renderGang() {
   const t = arOn() && run.phase === 'run' ? target : null, s = t?.seen;
   document.body.classList.toggle('ar-on', !!s);
   if (t) $('ar').style.setProperty('--hp', Math.max(0, t.hp ?? health(t)) / health(t)); // right as soon as it shows again
-  if (!s) return; // out of sight: under your hood just after a bump, say
+  if (!s) return document.body.classList.remove('hud-yield'); // out of sight: under your hood just after a bump, say
   const k = 1 / canvas.px, w = Math.max(26, s[2] * k), h = Math.max(20, s[3] * k); // canvas px to page px (main.js resize)
   Object.assign($('ar').style, { left: `${(s[0] + s[2] / 2) * k - w / 2}px`, top: `${(s[1] + s[3] / 2) * k - h / 2}px`,
                                  width: `${w}px`, height: `${h}px` });
   text('ar-label', rigged() ? notableTag(t) : t.tank ? 'TANK' : !gangOpen() ? 'TOTAL IT' : t.racer ? `#${t.racer}` : ''); // fortress.js
+  clearOf();
+}
+// the reticle's target holds the road ahead, where on a phone the windshield's readouts and the crew's tag sit too (the
+// owner, 8 Nov: "I can't even see the tank in the 'army sends a tank' run, not even the reticle"): while the speed,
+// gear and revs would be over the reticle or its tag they fade out (the cluster shows them), and the crew's tag
+// (oil.js renderCrew, placed first) goes up above the reticle's tag
+function clearOf() {
+  const box = e => e.getBoundingClientRect(), a = box($('ar')), l = $('ar-label').textContent ? box($('ar-label')) : a;
+  const r = { left: Math.min(a.left, l.left), right: Math.max(a.right, l.right), top: Math.min(a.top - 14, l.top), bottom: a.bottom }; // its bar too
+  const over = b => b.width > 0 && b.left < r.right && b.right > r.left && b.top < r.bottom && b.bottom > r.top;
+  document.body.classList.toggle('hud-yield', over(box($('hud-main'))) || over(box($('hud-rpm'))));
+  const c = box($('crew-tag'));
+  if (document.body.classList.contains('tag-on') && over(c)) $('crew-tag').style.top = `${parseFloat($('crew-tag').style.top) - (c.bottom - r.top + 6)}px`;
 }
 
 // your car's war kit, seen from the seat (index.html #kit): each part shows from its level up, the Auto gun's red lamps

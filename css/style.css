@@ -15,6 +15,8 @@ body:not([data-game="distance"]) #kit { display: none; }
        color: var(--hud); text-shadow: 0 0 8px #0f8a, 0 0 2px #000;
        font-variant-numeric: tabular-nums; pointer-events: none; }
 #hud > :not(#flash) { opacity: 0.65; } /* the traffic shows through the readouts; the messages come at full strength */
+#hud > #hud-main, #hud > #hud-rpm { transition: opacity 0.2s; }
+.hud-yield #hud > #hud-main, .hud-yield #hud > #hud-rpm { opacity: 0; } /* the reticle's target under them (gang.js clearOf) */
 #hud-main { display: flex; justify-content: center; align-items: baseline; gap: 10px; letter-spacing: 1px; }
 #hud-speed { font-size: 46px; font-weight: 600; min-width: 2.2em; text-align: right; }
 #hud-gear { font-size: 30px; font-weight: 600; border: 2px solid var(--hud); border-radius: 6px; padding: 0 8px; }
@@ -99,7 +101,8 @@ body:not([data-game="distance"]) #kit { display: none; }
           border-radius: 2px; }
 #ar-bar i { display: block; height: 100%; width: calc(var(--hp, 1) * 100%); background: var(--ar); }
 #ar-label { position: absolute; left: 50%; bottom: calc(100% + 17px); transform: translateX(-50%); white-space: nowrap;
-            color: var(--ar); font: 600 11px system-ui, sans-serif; letter-spacing: 1px; }
+            color: var(--ar); font: 600 11px system-ui, sans-serif; letter-spacing: 1px;
+            text-shadow: 0 0 3px #000, 0 0 2px #000; } /* readable over the sun too (the owner, 8 Nov) */
 #ar-label:empty { display: none; }
 .rig #ar-label { padding: 2px 7px; border: 1px solid var(--ar); border-radius: 4px; background: #2a0a0699; color: #ffc0b0;
                  font: 700 12px monospace; letter-spacing: 0; } /* the war rig's: a tag, as the crew's (#crew-tag) */

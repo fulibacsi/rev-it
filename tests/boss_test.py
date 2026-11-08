@@ -112,5 +112,25 @@ with sync_playwright() as p:
     lanes = js(f"""() => new Promise(res => {{ const out = []; {box}; const h = setInterval(() => {{ out.push(lane);
         if (out.length >= 25) {{ clearInterval(h); res(out); }} }}, 100); }})""")
     check("Reckless auto-drive behind the tank: boxed in, it stays on your side", max(lanes) <= 1, lanes)
+    # 9. on a phone (the owner, 8 Nov: "I can't even see the tank in the 'army sends a tank' run, not even the reticle"):
+    # the tank up the road sits where the windshield's speed and gear and the crew's tag do. While the reticle and its tag
+    # are under them the readouts fade (the cluster shows them), and the crew's tag goes up above the reticle's; the TANK
+    # label shadowed, readable over the sun
+    ctx = b.new_context(viewport={"width": 844, "height": 390}, device_scale_factor=2, is_mobile=True, has_touch=True)
+    ph = ctx.new_page(); ph.on("pageerror", lambda e: errors.append(str(e))); pj = ph.evaluate
+    ph.goto(URL); pj("localStorage.clear(); settings.debug = true; applyDebug(); settings.layout = 'touch'; applyLayout()")
+    pj("debugAct(4); progress.toured = TUTORIALS.map(t => t.id).filter(id => id !== 'tanksent'); play(DISTANCE)"); ph.wait_for_timeout(400)
+    pj("while (menuOpen) closeMenu(); progress.wanted = 1; save(); renderGarage()")
+    ph.click("#drive"); ph.wait_for_timeout(300)
+    if pj("menuOpen && screen === 'act'"): ph.click("#act-go")
+    ph.wait_for_function("run.phase === 'run' && run.tank && run.tank.seen && target === run.tank", timeout=20000); ph.wait_for_timeout(1500)
+    got = pj("""(() => { const box = e => e.getBoundingClientRect(), a = box($('ar')), l = box($('ar-label')), c = box($('crew-tag'));
+        const top = Math.min(a.top - 14, l.top), clear = !document.body.classList.contains('tag-on') || c.bottom <= top || c.right <= Math.min(a.left, l.left) || c.left >= Math.max(a.right, l.right);
+        return [Math.round(run.tank.z - odo) > 60, getComputedStyle($('ar')).display, $('ar-label').textContent, document.body.classList.contains('hud-yield'),
+                getComputedStyle($('hud-main')).opacity, clear, getComputedStyle($('ar-label')).textShadow !== 'none']; })()""")
+    ph.screenshot(path=f"{OUT}/boss_phone_tank.png")
+    check("phone: the tank up the road in the reticle, TANK; the speed and gear faded off it, the crew's tag clear of it, the label shadowed",
+          got == [True, "block", "TANK", True, "0", True, True], got)
+    ctx.close()
     b.close()
 print("ERRORS:", errors or "none", "| FAILS:", fails or "none")
