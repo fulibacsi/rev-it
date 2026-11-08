@@ -730,7 +730,7 @@ const DISTANCE = {
     if (progress.tanks) s.push(['Tanks beaten', fmt(progress.tanks)]);
     return s;
   },
-  stop() { run.phase = 'garage'; document.body.classList.remove('garage', 'low', 'has-flash', 'timing', 'has-fleet', 'ar-on', 'has-guns', 'has-heat', 'has-crew', 'has-tank', 'tag-on', 'rig', 'fight', 'ending'); cam = null; clearDamageView(); quietRig(); }, // earns nothing
+  stop() { run.phase = 'garage'; document.body.classList.remove('garage', 'low', 'has-flash', 'timing', 'has-fleet', 'ar-on', 'has-guns', 'has-heat', 'has-crew', 'has-tank', 'hud-yield', 'tag-on', 'rig', 'fight', 'ending'); cam = null; clearDamageView(); quietRig(); }, // earns nothing
   update: updateRun,
   render() { renderRun(); renderDamage(); renderSonar(); renderCrew(); renderGang(); renderPolice(); renderFight(); renderRig(); }, // the fight's
                                                                                        // dashboard first: the board sizes itself to it

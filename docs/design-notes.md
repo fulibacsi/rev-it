@@ -2334,6 +2334,17 @@ race, the loot lost to a full inventory, and the parts lost a race.
    aerial flying your pennant; a rocket pod's tubes, scorched, a hazard strip; a gatling behind its shield, its belt
    hanging; an engine's chrome blower and stacks; a rail of spikes; armor stacked. And 6 m tall, near his 6.5 (4.6
    squashed it flat on the road).
+   The reticle's target on a phone (8 Nov; `gang.js`, `css/style.css`). The owner: "I can't see the enemies on the road,
+   starting with the army's tank ... I can't even see the tank in the 'army sends a tank' run, not even the reticle." On
+   a phone the windshield's readouts sit at 38% of the screen's height (since 18 Oct), right on the road's vanishing
+   point (the horizon at 40%), and the crew's tag sits over its spot up the road, there too: act 4's tank and act 5's
+   notables hold the road 80-250 m ahead, where both are, so the tank, its reticle and its tag were all under the speed,
+   the gear and the OIL tag (desktop's readouts are below the horizon). Now, in every act with a reticle, while the
+   reticle and its tag would be under the speed, gear and revs, those fade out (the cluster shows the same), and the
+   crew's tag goes up above the reticle's tag; and the reticle's tag (act 4's plain TANK) has a dark shadow, readable
+   over the sun. The messages still cross it for their 1.2 s. Emulation only: the owner's phone has the last word.
+   - `boss_test` checks it on a phone (the tank up the road in the reticle as TANK, the speed and gear faded, the crew's
+     tag clear of it, the label shadowed).
 
 ### Balance targets and results
 
